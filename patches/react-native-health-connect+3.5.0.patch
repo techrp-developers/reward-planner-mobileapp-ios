@@ -1,0 +1,36 @@
+diff --git a/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/permissions/HealthConnectPermissionDelegate.kt b/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/permissions/HealthConnectPermissionDelegate.kt
+index 5ec3641..ef10bc1 100644
+--- a/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/permissions/HealthConnectPermissionDelegate.kt
++++ b/node_modules/react-native-health-connect/android/src/main/java/dev/matinzd/healthconnect/permissions/HealthConnectPermissionDelegate.kt
+@@ -7,12 +7,10 @@ import androidx.health.connect.client.contracts.ExerciseRouteRequestContract
+ import androidx.health.connect.client.records.ExerciseRoute
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+-import kotlinx.coroutines.cancel
+ import kotlinx.coroutines.channels.Channel
+ import kotlinx.coroutines.launch
+ 
+ object HealthConnectPermissionDelegate {
+-  private val coroutineScope = CoroutineScope(Dispatchers.IO)
+   private val permissionsChannel = Channel<Set<String>>()
+   private val exerciseRouteChannel = Channel<ExerciseRoute?>()
+ 
+@@ -27,16 +25,14 @@ object HealthConnectPermissionDelegate {
+     val exerciseRouteRequestContract = ExerciseRouteRequestContract()
+ 
+     requestPermission = activity.registerForActivityResult(contract) {
+-      coroutineScope.launch {
++      CoroutineScope(Dispatchers.IO).launch {
+         permissionsChannel.send(it)
+-        coroutineContext.cancel()
+       }
+     }
+ 
+     requestRoutePermission = activity.registerForActivityResult(exerciseRouteRequestContract) {
+-      coroutineScope.launch {
++      CoroutineScope(Dispatchers.IO).launch {
+         exerciseRouteChannel.send(it)
+-        coroutineContext.cancel()
+       }
+     }
+   }

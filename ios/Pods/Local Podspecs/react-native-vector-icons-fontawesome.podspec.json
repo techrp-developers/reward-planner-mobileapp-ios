@@ -1,0 +1,21 @@
+{
+  "name": "react-native-vector-icons-fontawesome",
+  "version": "13.1.2",
+  "summary": "Fontawesome font for react native vector icons",
+  "homepage": "https://github.com/oblador/react-native-vector-icons",
+  "license": "MIT",
+  "authors": {
+    "name": "Joel Arvidsson",
+    "email": "joel@oblador.se"
+  },
+  "platforms": {
+    "ios": "15.1",
+    "tvos": "9.0",
+    "visionos": "1.0"
+  },
+  "source": {
+    "git": "https://github.com/oblador/react-native-vector-icons.git",
+    "tag": "v13.1.2"
+  },
+  "resources": "fonts/*.ttf"
+}
