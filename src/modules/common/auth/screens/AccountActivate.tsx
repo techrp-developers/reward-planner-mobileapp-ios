@@ -70,6 +70,10 @@ function AccountActivate() {
             <Logo width={180} height={180} />
           </View>
 
+
+          <View>
+
+          </View>
           <View style={styles.card}>
 
             <Text style={styles.title}>Activate Your Account</Text>
