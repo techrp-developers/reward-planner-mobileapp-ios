@@ -15,6 +15,88 @@ namespace facebook::react {
 
 
 
+void RNSFormSheetHostEventEmitter::onWillAppear(OnWillAppear event) const {
+  dispatchEvent("willAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onDidAppear(OnDidAppear event) const {
+  dispatchEvent("didAppear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onWillDisappear(OnWillDisappear event) const {
+  dispatchEvent("willDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onDidDisappear(OnDidDisappear event) const {
+  dispatchEvent("didDisappear", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onDismiss(OnDismiss event) const {
+  dispatchEvent("dismiss", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onNativeDismiss(OnNativeDismiss event) const {
+  dispatchEvent("nativeDismiss", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onNativeDismissPrevented(OnNativeDismissPrevented event) const {
+  dispatchEvent("nativeDismissPrevented", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onDetentChanged(OnDetentChanged event) const {
+  dispatchEvent("detentChanged", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "index", event.index);
+    return payload;
+  });
+}
+
+
+void RNSFormSheetHostEventEmitter::onSyncFlush(OnSyncFlush event) const {
+  dispatchEvent("syncFlush", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
+
+
+
 void RNSSplitHostEventEmitter::onCollapse(OnCollapse event) const {
   dispatchEvent("collapse", [](jsi::Runtime &runtime) {
     auto payload = jsi::Object(runtime);
@@ -87,6 +169,66 @@ void RNSSplitScreenEventEmitter::onDidDisappear(OnDidDisappear event) const {
   });
 }
 
+
+void RNSStackHeaderConfigAndroidEventEmitter::onToolbarMenuItemPress(OnToolbarMenuItemPress event) const {
+  dispatchEvent("toolbarMenuItemPress", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "id", event.id);
+    return payload;
+  });
+}
+
+
+void RNSStackHeaderConfigAndroidEventEmitter::onToolbarMenuGroupSelectionChange(OnToolbarMenuGroupSelectionChange event) const {
+  dispatchEvent("toolbarMenuGroupSelectionChange", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "groupId", event.groupId);
+
+    auto selectedIds = jsi::Array(runtime, event.selectedIds.size());
+    size_t selectedIdsIndex = 0;
+    for (auto selectedIdsValue : event.selectedIds) {
+      selectedIds.setValueAtIndex(runtime, selectedIdsIndex++, selectedIdsValue);
+    }
+    payload.setProperty(runtime, "selectedIds", selectedIds);
+  
+    return payload;
+  });
+}
+
+
+void RNSStackHeaderConfigIOSEventEmitter::onMenuItemPress(OnMenuItemPress event) const {
+  dispatchEvent("menuItemPress", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "menuItemId", event.menuItemId);
+    return payload;
+  });
+}
+
+
+void RNSStackHeaderConfigIOSEventEmitter::onMenuSelectionChange(OnMenuSelectionChange event) const {
+  dispatchEvent("menuSelectionChange", [event=std::move(event)](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    payload.setProperty(runtime, "menuId", event.menuId);
+
+    auto selectedMenuItemIds = jsi::Array(runtime, event.selectedMenuItemIds.size());
+    size_t selectedMenuItemIdsIndex = 0;
+    for (auto selectedMenuItemIdsValue : event.selectedMenuItemIds) {
+      selectedMenuItemIds.setValueAtIndex(runtime, selectedMenuItemIdsIndex++, selectedMenuItemIdsValue);
+    }
+    payload.setProperty(runtime, "selectedMenuItemIds", selectedMenuItemIds);
+  
+    return payload;
+  });
+}
+
+
+void RNSStackHeaderItemIOSEventEmitter::onHeaderItemPress(OnHeaderItemPress event) const {
+  dispatchEvent("headerItemPress", [](jsi::Runtime &runtime) {
+    auto payload = jsi::Object(runtime);
+    
+    return payload;
+  });
+}
 
 
 

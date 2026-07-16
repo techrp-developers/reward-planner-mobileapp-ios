@@ -12,8 +12,10 @@
 
 namespace facebook::react {
 
+extern const char RNSFormSheetContentWrapperComponentName[] = "RNSFormSheetContentWrapper";
 extern const char RNSScrollViewMarkerComponentName[] = "RNSScrollViewMarker";
 extern const char RNSSplitHostComponentName[] = "RNSSplitHost";
+extern const char RNSStackHeaderItemSpacerIOSComponentName[] = "RNSStackHeaderItemSpacerIOS";
 extern const char RNSStackHostComponentName[] = "RNSStackHost";
 extern const char RNSScreenContainerComponentName[] = "RNSScreenContainer";
 extern const char RNSScreenContentWrapperComponentName[] = "RNSScreenContentWrapper";

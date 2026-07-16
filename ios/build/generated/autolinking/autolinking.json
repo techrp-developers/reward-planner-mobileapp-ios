@@ -157,7 +157,7 @@
       "platforms": {
         "ios": {
           "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-gesture-handler/RNGestureHandler.podspec",
-          "version": "2.31.2",
+          "version": "2.32.0",
           "configurations": [],
           "scriptPhases": []
         },
@@ -279,7 +279,7 @@
       "platforms": {
         "ios": {
           "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-maps/react-native-maps.podspec",
-          "version": "1.27.2",
+          "version": "1.29.0",
           "configurations": [],
           "scriptPhases": []
         },
@@ -293,10 +293,12 @@
             "RNMapsCalloutComponentDescriptor",
             "RNMapsCircleComponentDescriptor",
             "RNMapsGoogleMapViewComponentDescriptor",
+            "RNMapsGoogleMarkerComponentDescriptor",
             "RNMapsGooglePolygonComponentDescriptor",
             "RNMapsMapViewComponentDescriptor",
             "RNMapsMarkerComponentDescriptor",
             "RNMapsOverlayComponentDescriptor",
+            "RNMapsPolygonComponentDescriptor",
             "RNMapsPolylineComponentDescriptor",
             "RNMapsUrlTileComponentDescriptor",
             "RNMapsWMSTileComponentDescriptor"
@@ -315,7 +317,7 @@
       "platforms": {
         "ios": {
           "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-permissions/RNPermissions.podspec",
-          "version": "5.5.1",
+          "version": "5.6.0",
           "configurations": [],
           "scriptPhases": []
         },
@@ -364,7 +366,7 @@
       "platforms": {
         "ios": {
           "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-reanimated/RNReanimated.podspec",
-          "version": "4.3.1",
+          "version": "4.3.0",
           "configurations": [],
           "scriptPhases": []
         },
@@ -430,7 +432,7 @@
       "platforms": {
         "ios": {
           "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens/RNScreens.podspec",
-          "version": "4.25.2",
+          "version": "4.26.2",
           "configurations": [],
           "scriptPhases": []
         },
@@ -456,7 +458,8 @@
             "RNSSafeAreaViewComponentDescriptor",
             "RNSStackScreenComponentDescriptor",
             "RNSStackHeaderConfigComponentDescriptor",
-            "RNSStackHeaderSubviewComponentDescriptor"
+            "RNSStackHeaderSubviewComponentDescriptor",
+            "RNSFormSheetHostComponentDescriptor"
           ],
           "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
@@ -834,8 +837,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "vscode"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--binary-path <string>",
@@ -1002,8 +1004,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "vscode"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--appId <string>",

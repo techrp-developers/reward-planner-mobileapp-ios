@@ -23,8 +23,10 @@
 		@"RNGestureHandlerButton": NSClassFromString(@"RNGestureHandlerButtonComponentView"), // react-native-gesture-handler
 		@"RNMapsGoogleMapView": NSClassFromString(@"RNMapsGoogleMapView"), // react-native-maps
 		@"RNMapsGooglePolygon": NSClassFromString(@"RNMapsGooglePolygonView"), // react-native-maps
+		@"RNMapsGoogleMarker": NSClassFromString(@"RNMapsGoogleMarkerView"), // react-native-maps
 		@"RNMapsMapView": NSClassFromString(@"RNMapsMapView"), // react-native-maps
 		@"RNMapsMarker": NSClassFromString(@"RNMapsMarkerView"), // react-native-maps
+		@"RNMapsPolygon": NSClassFromString(@"RNMapsPolygonView"), // react-native-maps
 		@"RNCSafeAreaProvider": NSClassFromString(@"RNCSafeAreaProviderComponentView"), // react-native-safe-area-context
 		@"RNCSafeAreaView": NSClassFromString(@"RNCSafeAreaViewComponentView"), // react-native-safe-area-context
 		@"RNSVGCircle": NSClassFromString(@"RNSVGCircle"), // react-native-svg
@@ -69,6 +71,9 @@
 		@"RNSSearchBar": NSClassFromString(@"RNSSearchBar"), // react-native-screens
 		@"RNSStackScreen": NSClassFromString(@"RNSStackScreenComponentView"), // react-native-screens
 		@"RNSStackHost": NSClassFromString(@"RNSStackHostComponentView"), // react-native-screens
+		@"RNSStackHeaderConfigIOS": NSClassFromString(@"RNSStackHeaderConfigComponentView"), // react-native-screens
+		@"RNSStackHeaderItemIOS": NSClassFromString(@"RNSStackHeaderItemComponentView"), // react-native-screens
+		@"RNSStackHeaderItemSpacerIOS": NSClassFromString(@"RNSStackHeaderItemSpacerComponentView"), // react-native-screens
 		@"RNSTabsScreenIOS": NSClassFromString(@"RNSTabsScreenComponentView"), // react-native-screens
 		@"RNSTabsHostIOS": NSClassFromString(@"RNSTabsHostComponentView"), // react-native-screens
 		@"RNSTabsBottomAccessory": NSClassFromString(@"RNSTabsBottomAccessoryComponentView"), // react-native-screens
@@ -77,6 +82,8 @@
 		@"RNSSplitScreen": NSClassFromString(@"RNSSplitScreenComponentView"), // react-native-screens
 		@"RNSSafeAreaView": NSClassFromString(@"RNSSafeAreaViewComponentView"), // react-native-screens
 		@"RNSScrollViewMarker": NSClassFromString(@"RNSScrollViewMarkerComponentView"), // react-native-screens
+		@"RNSFormSheetHost": NSClassFromString(@"RNSFormSheetHostComponentView"), // react-native-screens
+		@"RNSFormSheetContentWrapper": NSClassFromString(@"RNSFormSheetContentWrapperComponentView"), // react-native-screens
     };
   });
 

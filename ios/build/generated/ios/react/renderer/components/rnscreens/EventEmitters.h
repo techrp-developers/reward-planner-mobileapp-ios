@@ -20,6 +20,70 @@ class RNSFullWindowOverlayEventEmitter : public ViewEventEmitter {
   
   
 };
+class RNSFormSheetContentWrapperEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  
+  
+};
+class RNSFormSheetHostEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnWillAppear {
+      
+    };
+
+  struct OnDidAppear {
+      
+    };
+
+  struct OnWillDisappear {
+      
+    };
+
+  struct OnDidDisappear {
+      
+    };
+
+  struct OnDismiss {
+      
+    };
+
+  struct OnNativeDismiss {
+      
+    };
+
+  struct OnNativeDismissPrevented {
+      
+    };
+
+  struct OnDetentChanged {
+      int index;
+    };
+
+  struct OnSyncFlush {
+      
+    };
+  void onWillAppear(OnWillAppear value) const;
+
+  void onDidAppear(OnDidAppear value) const;
+
+  void onWillDisappear(OnWillDisappear value) const;
+
+  void onDidDisappear(OnDidDisappear value) const;
+
+  void onDismiss(OnDismiss value) const;
+
+  void onNativeDismiss(OnNativeDismiss value) const;
+
+  void onNativeDismissPrevented(OnNativeDismissPrevented value) const;
+
+  void onDetentChanged(OnDetentChanged value) const;
+
+  void onSyncFlush(OnSyncFlush value) const;
+};
 class RNSScrollViewMarkerEventEmitter : public ViewEventEmitter {
  public:
   using ViewEventEmitter::ViewEventEmitter;
@@ -86,10 +150,44 @@ class RNSStackHeaderConfigAndroidEventEmitter : public ViewEventEmitter {
  public:
   using ViewEventEmitter::ViewEventEmitter;
 
-  
-  
+  struct OnToolbarMenuItemPress {
+      std::string id;
+    };
+
+  struct OnToolbarMenuGroupSelectionChange {
+      std::string groupId;
+    std::vector<std::string> selectedIds;
+    };
+  void onToolbarMenuItemPress(OnToolbarMenuItemPress value) const;
+
+  void onToolbarMenuGroupSelectionChange(OnToolbarMenuGroupSelectionChange value) const;
 };
 class RNSStackHeaderConfigIOSEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnMenuItemPress {
+      std::string menuItemId;
+    };
+
+  struct OnMenuSelectionChange {
+      std::string menuId;
+    std::vector<std::string> selectedMenuItemIds;
+    };
+  void onMenuItemPress(OnMenuItemPress value) const;
+
+  void onMenuSelectionChange(OnMenuSelectionChange value) const;
+};
+class RNSStackHeaderItemIOSEventEmitter : public ViewEventEmitter {
+ public:
+  using ViewEventEmitter::ViewEventEmitter;
+
+  struct OnHeaderItemPress {
+      
+    };
+  void onHeaderItemPress(OnHeaderItemPress value) const;
+};
+class RNSStackHeaderItemSpacerIOSEventEmitter : public ViewEventEmitter {
  public:
   using ViewEventEmitter::ViewEventEmitter;
 

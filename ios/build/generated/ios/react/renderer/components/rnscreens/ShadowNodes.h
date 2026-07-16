@@ -18,6 +18,17 @@
 
 namespace facebook::react {
 
+JSI_EXPORT extern const char RNSFormSheetContentWrapperComponentName[];
+
+/*
+ * `ShadowNode` for <RNSFormSheetContentWrapper> component.
+ */
+using RNSFormSheetContentWrapperShadowNode = ConcreteViewShadowNode<
+    RNSFormSheetContentWrapperComponentName,
+    RNSFormSheetContentWrapperProps,
+    RNSFormSheetContentWrapperEventEmitter,
+    RNSFormSheetContentWrapperState>;
+
 JSI_EXPORT extern const char RNSScrollViewMarkerComponentName[];
 
 /*
@@ -39,6 +50,17 @@ using RNSSplitHostShadowNode = ConcreteViewShadowNode<
     RNSSplitHostProps,
     RNSSplitHostEventEmitter,
     RNSSplitHostState>;
+
+JSI_EXPORT extern const char RNSStackHeaderItemSpacerIOSComponentName[];
+
+/*
+ * `ShadowNode` for <RNSStackHeaderItemSpacerIOS> component.
+ */
+using RNSStackHeaderItemSpacerIOSShadowNode = ConcreteViewShadowNode<
+    RNSStackHeaderItemSpacerIOSComponentName,
+    RNSStackHeaderItemSpacerIOSProps,
+    RNSStackHeaderItemSpacerIOSEventEmitter,
+    RNSStackHeaderItemSpacerIOSState>;
 
 JSI_EXPORT extern const char RNSStackHostComponentName[];
 

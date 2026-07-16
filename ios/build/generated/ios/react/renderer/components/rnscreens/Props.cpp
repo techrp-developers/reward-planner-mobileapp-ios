@@ -45,6 +45,101 @@ folly::dynamic RNSFullWindowOverlayProps::getDiffProps(
   return result;
 }
 #endif
+RNSFormSheetContentWrapperProps::RNSFormSheetContentWrapperProps(
+    const PropsParserContext &context,
+    const RNSFormSheetContentWrapperProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps)
+
+     {}
+    
+#ifdef RN_SERIALIZABLE_STATE
+ComponentName RNSFormSheetContentWrapperProps::getDiffPropsImplementationTarget() const {
+  return "RNSFormSheetContentWrapper";
+}
+
+folly::dynamic RNSFormSheetContentWrapperProps::getDiffProps(
+    const Props* prevProps) const {
+  static const auto defaultProps = RNSFormSheetContentWrapperProps();
+  const RNSFormSheetContentWrapperProps* oldProps = prevProps == nullptr
+      ? &defaultProps
+      : static_cast<const RNSFormSheetContentWrapperProps*>(prevProps);
+  if (this == oldProps) {
+    return folly::dynamic::object();
+  }
+  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
+  
+  return result;
+}
+#endif
+RNSFormSheetHostProps::RNSFormSheetHostProps(
+    const PropsParserContext &context,
+    const RNSFormSheetHostProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    isOpen(convertRawProp(context, rawProps, "isOpen", sourceProps.isOpen, {false})),
+    detents(convertRawProp(context, rawProps, "detents", sourceProps.detents, {})),
+    prefersGrabberVisible(convertRawProp(context, rawProps, "prefersGrabberVisible", sourceProps.prefersGrabberVisible, {false})),
+    preferredCornerRadius(convertRawProp(context, rawProps, "preferredCornerRadius", sourceProps.preferredCornerRadius, {-1.0})),
+    largestUndimmedDetentIndex(convertRawProp(context, rawProps, "largestUndimmedDetentIndex", sourceProps.largestUndimmedDetentIndex, {-1})),
+    initialDetentIndex(convertRawProp(context, rawProps, "initialDetentIndex", sourceProps.initialDetentIndex, {0})),
+    prefersScrollingExpandsWhenScrolledToEdge(convertRawProp(context, rawProps, "prefersScrollingExpandsWhenScrolledToEdge", sourceProps.prefersScrollingExpandsWhenScrolledToEdge, {true})),
+    preventNativeDismiss(convertRawProp(context, rawProps, "preventNativeDismiss", sourceProps.preventNativeDismiss, {false})),
+    nativeContainerBackgroundColor(convertRawProp(context, rawProps, "nativeContainerBackgroundColor", sourceProps.nativeContainerBackgroundColor, {})) {}
+    
+#ifdef RN_SERIALIZABLE_STATE
+ComponentName RNSFormSheetHostProps::getDiffPropsImplementationTarget() const {
+  return "RNSFormSheetHost";
+}
+
+folly::dynamic RNSFormSheetHostProps::getDiffProps(
+    const Props* prevProps) const {
+  static const auto defaultProps = RNSFormSheetHostProps();
+  const RNSFormSheetHostProps* oldProps = prevProps == nullptr
+      ? &defaultProps
+      : static_cast<const RNSFormSheetHostProps*>(prevProps);
+  if (this == oldProps) {
+    return folly::dynamic::object();
+  }
+  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
+  
+  if (isOpen != oldProps->isOpen) {
+    result["isOpen"] = isOpen;
+  }
+    
+  if (detents != oldProps->detents) {
+    result["detents"] = toDynamic(detents);
+  }
+    
+  if (prefersGrabberVisible != oldProps->prefersGrabberVisible) {
+    result["prefersGrabberVisible"] = prefersGrabberVisible;
+  }
+    
+  if ((preferredCornerRadius != oldProps->preferredCornerRadius) && !(std::isnan(preferredCornerRadius) && std::isnan(oldProps->preferredCornerRadius))) {
+    result["preferredCornerRadius"] = preferredCornerRadius;
+  }
+    
+  if (largestUndimmedDetentIndex != oldProps->largestUndimmedDetentIndex) {
+    result["largestUndimmedDetentIndex"] = largestUndimmedDetentIndex;
+  }
+    
+  if (initialDetentIndex != oldProps->initialDetentIndex) {
+    result["initialDetentIndex"] = initialDetentIndex;
+  }
+    
+  if (prefersScrollingExpandsWhenScrolledToEdge != oldProps->prefersScrollingExpandsWhenScrolledToEdge) {
+    result["prefersScrollingExpandsWhenScrolledToEdge"] = prefersScrollingExpandsWhenScrolledToEdge;
+  }
+    
+  if (preventNativeDismiss != oldProps->preventNativeDismiss) {
+    result["preventNativeDismiss"] = preventNativeDismiss;
+  }
+    
+  if (nativeContainerBackgroundColor != oldProps->nativeContainerBackgroundColor) {
+    result["nativeContainerBackgroundColor"] = *nativeContainerBackgroundColor;
+  }
+  return result;
+}
+#endif
 RNSScrollViewMarkerProps::RNSScrollViewMarkerProps(
     const PropsParserContext &context,
     const RNSScrollViewMarkerProps &sourceProps,
@@ -101,6 +196,7 @@ RNSSplitHostProps::RNSSplitHostProps(
     displayModeButtonVisibility(convertRawProp(context, rawProps, "displayModeButtonVisibility", sourceProps.displayModeButtonVisibility, {RNSSplitHostDisplayModeButtonVisibility::Automatic})),
     columnMetrics(convertRawProp(context, rawProps, "columnMetrics", sourceProps.columnMetrics, {})),
     orientation(convertRawProp(context, rawProps, "orientation", sourceProps.orientation, {RNSSplitHostOrientation::Inherit})),
+    colorScheme(convertRawProp(context, rawProps, "colorScheme", sourceProps.colorScheme, {RNSSplitHostColorScheme::Inherit})),
     primaryBackgroundStyle(convertRawProp(context, rawProps, "primaryBackgroundStyle", sourceProps.primaryBackgroundStyle, {RNSSplitHostPrimaryBackgroundStyle::Default})),
     topColumnForCollapsing(convertRawProp(context, rawProps, "topColumnForCollapsing", sourceProps.topColumnForCollapsing, {RNSSplitHostTopColumnForCollapsing::Default})),
     presentsWithGesture(convertRawProp(context, rawProps, "presentsWithGesture", sourceProps.presentsWithGesture, {true})),
@@ -148,6 +244,10 @@ folly::dynamic RNSSplitHostProps::getDiffProps(
     
   if (orientation != oldProps->orientation) {
     result["orientation"] = toDynamic(orientation);
+  }
+    
+  if (colorScheme != oldProps->colorScheme) {
+    result["colorScheme"] = toDynamic(colorScheme);
   }
     
   if (primaryBackgroundStyle != oldProps->primaryBackgroundStyle) {
@@ -207,14 +307,18 @@ RNSStackHeaderConfigAndroidProps::RNSStackHeaderConfigAndroidProps(
     transparent(convertRawProp(context, rawProps, "transparent", sourceProps.transparent, {false})),
     backButtonHidden(convertRawProp(context, rawProps, "backButtonHidden", sourceProps.backButtonHidden, {false})),
     type(convertRawProp(context, rawProps, "type", sourceProps.type, {RNSStackHeaderConfigAndroidType::Small})),
-    backButtonTintColor(convertRawProp(context, rawProps, "backButtonTintColor", sourceProps.backButtonTintColor, {})),
+    backButtonTintColorNormal(convertRawProp(context, rawProps, "backButtonTintColorNormal", sourceProps.backButtonTintColorNormal, {})),
+    backButtonTintColorPressed(convertRawProp(context, rawProps, "backButtonTintColorPressed", sourceProps.backButtonTintColorPressed, {})),
+    backButtonTintColorFocused(convertRawProp(context, rawProps, "backButtonTintColorFocused", sourceProps.backButtonTintColorFocused, {})),
     backButtonDrawableIconResourceName(convertRawProp(context, rawProps, "backButtonDrawableIconResourceName", sourceProps.backButtonDrawableIconResourceName, {})),
     backButtonImageIconResource(convertRawProp(context, rawProps, "backButtonImageIconResource", sourceProps.backButtonImageIconResource, {})),
     scrollFlagScroll(convertRawProp(context, rawProps, "scrollFlagScroll", sourceProps.scrollFlagScroll, {false})),
     scrollFlagEnterAlways(convertRawProp(context, rawProps, "scrollFlagEnterAlways", sourceProps.scrollFlagEnterAlways, {false})),
     scrollFlagEnterAlwaysCollapsed(convertRawProp(context, rawProps, "scrollFlagEnterAlwaysCollapsed", sourceProps.scrollFlagEnterAlwaysCollapsed, {false})),
     scrollFlagExitUntilCollapsed(convertRawProp(context, rawProps, "scrollFlagExitUntilCollapsed", sourceProps.scrollFlagExitUntilCollapsed, {false})),
-    scrollFlagSnap(convertRawProp(context, rawProps, "scrollFlagSnap", sourceProps.scrollFlagSnap, {false})) {}
+    scrollFlagSnap(convertRawProp(context, rawProps, "scrollFlagSnap", sourceProps.scrollFlagSnap, {false})),
+    toolbarMenu(convertRawProp(context, rawProps, "toolbarMenu", sourceProps.toolbarMenu, {})),
+    toolbarMenuGroupDividerEnabled(convertRawProp(context, rawProps, "toolbarMenuGroupDividerEnabled", sourceProps.toolbarMenuGroupDividerEnabled, {false})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSStackHeaderConfigAndroidProps::getDiffPropsImplementationTarget() const {
@@ -252,8 +356,16 @@ folly::dynamic RNSStackHeaderConfigAndroidProps::getDiffProps(
     result["type"] = toDynamic(type);
   }
     
-  if (backButtonTintColor != oldProps->backButtonTintColor) {
-    result["backButtonTintColor"] = *backButtonTintColor;
+  if (backButtonTintColorNormal != oldProps->backButtonTintColorNormal) {
+    result["backButtonTintColorNormal"] = *backButtonTintColorNormal;
+  }
+    
+  if (backButtonTintColorPressed != oldProps->backButtonTintColorPressed) {
+    result["backButtonTintColorPressed"] = *backButtonTintColorPressed;
+  }
+    
+  if (backButtonTintColorFocused != oldProps->backButtonTintColorFocused) {
+    result["backButtonTintColorFocused"] = *backButtonTintColorFocused;
   }
     
   if (backButtonDrawableIconResourceName != oldProps->backButtonDrawableIconResourceName) {
@@ -283,6 +395,14 @@ folly::dynamic RNSStackHeaderConfigAndroidProps::getDiffProps(
   if (scrollFlagSnap != oldProps->scrollFlagSnap) {
     result["scrollFlagSnap"] = scrollFlagSnap;
   }
+    
+  if (toolbarMenu != oldProps->toolbarMenu) {
+    result["toolbarMenu"] = toolbarMenu;
+  }
+    
+  if (toolbarMenuGroupDividerEnabled != oldProps->toolbarMenuGroupDividerEnabled) {
+    result["toolbarMenuGroupDividerEnabled"] = toolbarMenuGroupDividerEnabled;
+  }
   return result;
 }
 #endif
@@ -292,9 +412,13 @@ RNSStackHeaderConfigIOSProps::RNSStackHeaderConfigIOSProps(
     const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
     title(convertRawProp(context, rawProps, "title", sourceProps.title, {})),
+    subtitle(convertRawProp(context, rawProps, "subtitle", sourceProps.subtitle, {})),
     hidden(convertRawProp(context, rawProps, "hidden", sourceProps.hidden, {false})),
     transparent(convertRawProp(context, rawProps, "transparent", sourceProps.transparent, {false})),
-    backButtonHidden(convertRawProp(context, rawProps, "backButtonHidden", sourceProps.backButtonHidden, {false})) {}
+    backButtonHidden(convertRawProp(context, rawProps, "backButtonHidden", sourceProps.backButtonHidden, {false})),
+    largeTitle(convertRawProp(context, rawProps, "largeTitle", sourceProps.largeTitle, {})),
+    largeSubtitle(convertRawProp(context, rawProps, "largeSubtitle", sourceProps.largeSubtitle, {})),
+    largeTitleEnabled(convertRawProp(context, rawProps, "largeTitleEnabled", sourceProps.largeTitleEnabled, {false})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSStackHeaderConfigIOSProps::getDiffPropsImplementationTarget() const {
@@ -316,6 +440,10 @@ folly::dynamic RNSStackHeaderConfigIOSProps::getDiffProps(
     result["title"] = title;
   }
     
+  if (subtitle != oldProps->subtitle) {
+    result["subtitle"] = subtitle;
+  }
+    
   if (hidden != oldProps->hidden) {
     result["hidden"] = hidden;
   }
@@ -326,6 +454,106 @@ folly::dynamic RNSStackHeaderConfigIOSProps::getDiffProps(
     
   if (backButtonHidden != oldProps->backButtonHidden) {
     result["backButtonHidden"] = backButtonHidden;
+  }
+    
+  if (largeTitle != oldProps->largeTitle) {
+    result["largeTitle"] = largeTitle;
+  }
+    
+  if (largeSubtitle != oldProps->largeSubtitle) {
+    result["largeSubtitle"] = largeSubtitle;
+  }
+    
+  if (largeTitleEnabled != oldProps->largeTitleEnabled) {
+    result["largeTitleEnabled"] = largeTitleEnabled;
+  }
+  return result;
+}
+#endif
+RNSStackHeaderItemIOSProps::RNSStackHeaderItemIOSProps(
+    const PropsParserContext &context,
+    const RNSStackHeaderItemIOSProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    placement(convertRawProp(context, rawProps, "placement", sourceProps.placement, {RNSStackHeaderItemIOSPlacement::Trailing})),
+    itemId(convertRawProp(context, rawProps, "itemId", sourceProps.itemId, {})),
+    title(convertRawProp(context, rawProps, "title", sourceProps.title, {})),
+    menu(convertRawProp(context, rawProps, "menu", sourceProps.menu, {})),
+    respondsToOnPress(convertRawProp(context, rawProps, "respondsToOnPress", sourceProps.respondsToOnPress, {false})) {}
+    
+#ifdef RN_SERIALIZABLE_STATE
+ComponentName RNSStackHeaderItemIOSProps::getDiffPropsImplementationTarget() const {
+  return "RNSStackHeaderItemIOS";
+}
+
+folly::dynamic RNSStackHeaderItemIOSProps::getDiffProps(
+    const Props* prevProps) const {
+  static const auto defaultProps = RNSStackHeaderItemIOSProps();
+  const RNSStackHeaderItemIOSProps* oldProps = prevProps == nullptr
+      ? &defaultProps
+      : static_cast<const RNSStackHeaderItemIOSProps*>(prevProps);
+  if (this == oldProps) {
+    return folly::dynamic::object();
+  }
+  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
+  
+  if (placement != oldProps->placement) {
+    result["placement"] = toDynamic(placement);
+  }
+    
+  if (itemId != oldProps->itemId) {
+    result["itemId"] = itemId;
+  }
+    
+  if (title != oldProps->title) {
+    result["title"] = title;
+  }
+    
+  if (menu != oldProps->menu) {
+    result["menu"] = menu;
+  }
+    
+  if (respondsToOnPress != oldProps->respondsToOnPress) {
+    result["respondsToOnPress"] = respondsToOnPress;
+  }
+  return result;
+}
+#endif
+RNSStackHeaderItemSpacerIOSProps::RNSStackHeaderItemSpacerIOSProps(
+    const PropsParserContext &context,
+    const RNSStackHeaderItemSpacerIOSProps &sourceProps,
+    const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
+
+    placement(convertRawProp(context, rawProps, "placement", sourceProps.placement, {RNSStackHeaderItemSpacerIOSPlacement::Trailing})),
+    sizing(convertRawProp(context, rawProps, "sizing", sourceProps.sizing, {RNSStackHeaderItemSpacerIOSSizing::Flexible})),
+    width(convertRawProp(context, rawProps, "width", sourceProps.width, {0.0})) {}
+    
+#ifdef RN_SERIALIZABLE_STATE
+ComponentName RNSStackHeaderItemSpacerIOSProps::getDiffPropsImplementationTarget() const {
+  return "RNSStackHeaderItemSpacerIOS";
+}
+
+folly::dynamic RNSStackHeaderItemSpacerIOSProps::getDiffProps(
+    const Props* prevProps) const {
+  static const auto defaultProps = RNSStackHeaderItemSpacerIOSProps();
+  const RNSStackHeaderItemSpacerIOSProps* oldProps = prevProps == nullptr
+      ? &defaultProps
+      : static_cast<const RNSStackHeaderItemSpacerIOSProps*>(prevProps);
+  if (this == oldProps) {
+    return folly::dynamic::object();
+  }
+  folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
+  
+  if (placement != oldProps->placement) {
+    result["placement"] = toDynamic(placement);
+  }
+    
+  if (sizing != oldProps->sizing) {
+    result["sizing"] = toDynamic(sizing);
+  }
+    
+  if ((width != oldProps->width) && !(std::isnan(width) && std::isnan(oldProps->width))) {
+    result["width"] = width;
   }
   return result;
 }
@@ -472,7 +700,7 @@ RNSModalScreenProps::RNSModalScreenProps(
     leftScrollEdgeEffect(convertRawProp(context, rawProps, "leftScrollEdgeEffect", sourceProps.leftScrollEdgeEffect, {RNSModalScreenLeftScrollEdgeEffect::Automatic})),
     rightScrollEdgeEffect(convertRawProp(context, rawProps, "rightScrollEdgeEffect", sourceProps.rightScrollEdgeEffect, {RNSModalScreenRightScrollEdgeEffect::Automatic})),
     topScrollEdgeEffect(convertRawProp(context, rawProps, "topScrollEdgeEffect", sourceProps.topScrollEdgeEffect, {RNSModalScreenTopScrollEdgeEffect::Automatic})),
-    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {false})) {}
+    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {true})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSModalScreenProps::getDiffPropsImplementationTarget() const {
@@ -803,9 +1031,8 @@ RNSScreenProps::RNSScreenProps(
     leftScrollEdgeEffect(convertRawProp(context, rawProps, "leftScrollEdgeEffect", sourceProps.leftScrollEdgeEffect, {RNSScreenLeftScrollEdgeEffect::Automatic})),
     rightScrollEdgeEffect(convertRawProp(context, rawProps, "rightScrollEdgeEffect", sourceProps.rightScrollEdgeEffect, {RNSScreenRightScrollEdgeEffect::Automatic})),
     topScrollEdgeEffect(convertRawProp(context, rawProps, "topScrollEdgeEffect", sourceProps.topScrollEdgeEffect, {RNSScreenTopScrollEdgeEffect::Automatic})),
-    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {false})),
-    androidResetScreenShadowStateOnOrientationChangeEnabled(convertRawProp(context, rawProps, "androidResetScreenShadowStateOnOrientationChangeEnabled", sourceProps.androidResetScreenShadowStateOnOrientationChangeEnabled, {true})),
-    ios26AllowInteractionsDuringTransition(convertRawProp(context, rawProps, "ios26AllowInteractionsDuringTransition", sourceProps.ios26AllowInteractionsDuringTransition, {true})) {}
+    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {true})),
+    androidResetScreenShadowStateOnOrientationChangeEnabled(convertRawProp(context, rawProps, "androidResetScreenShadowStateOnOrientationChangeEnabled", sourceProps.androidResetScreenShadowStateOnOrientationChangeEnabled, {true})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSScreenProps::getDiffPropsImplementationTarget() const {
@@ -982,10 +1209,6 @@ folly::dynamic RNSScreenProps::getDiffProps(
   if (androidResetScreenShadowStateOnOrientationChangeEnabled != oldProps->androidResetScreenShadowStateOnOrientationChangeEnabled) {
     result["androidResetScreenShadowStateOnOrientationChangeEnabled"] = androidResetScreenShadowStateOnOrientationChangeEnabled;
   }
-    
-  if (ios26AllowInteractionsDuringTransition != oldProps->ios26AllowInteractionsDuringTransition) {
-    result["ios26AllowInteractionsDuringTransition"] = ios26AllowInteractionsDuringTransition;
-  }
   return result;
 }
 #endif
@@ -1050,9 +1273,12 @@ RNSScreenStackHeaderConfigProps::RNSScreenStackHeaderConfigProps(
     topInsetEnabled(convertRawProp(context, rawProps, "topInsetEnabled", sourceProps.topInsetEnabled, {false})),
     headerLeftBarButtonItems(convertRawProp(context, rawProps, "headerLeftBarButtonItems", sourceProps.headerLeftBarButtonItems, {})),
     headerRightBarButtonItems(convertRawProp(context, rawProps, "headerRightBarButtonItems", sourceProps.headerRightBarButtonItems, {})),
-    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {false})),
+    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {true})),
     userInterfaceStyle(convertRawProp(context, rawProps, "userInterfaceStyle", sourceProps.userInterfaceStyle, {RNSScreenStackHeaderConfigUserInterfaceStyle::Unspecified})),
     consumeTopInset(convertRawProp(context, rawProps, "consumeTopInset", sourceProps.consumeTopInset, {false})),
+    consumeLeftInset(convertRawProp(context, rawProps, "consumeLeftInset", sourceProps.consumeLeftInset, {true})),
+    consumeRightInset(convertRawProp(context, rawProps, "consumeRightInset", sourceProps.consumeRightInset, {true})),
+    consumeBottomInset(convertRawProp(context, rawProps, "consumeBottomInset", sourceProps.consumeBottomInset, {true})),
     legacyTopInsetBehavior(convertRawProp(context, rawProps, "legacyTopInsetBehavior", sourceProps.legacyTopInsetBehavior, {false})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
@@ -1203,6 +1429,18 @@ folly::dynamic RNSScreenStackHeaderConfigProps::getDiffProps(
     result["consumeTopInset"] = consumeTopInset;
   }
     
+  if (consumeLeftInset != oldProps->consumeLeftInset) {
+    result["consumeLeftInset"] = consumeLeftInset;
+  }
+    
+  if (consumeRightInset != oldProps->consumeRightInset) {
+    result["consumeRightInset"] = consumeRightInset;
+  }
+    
+  if (consumeBottomInset != oldProps->consumeBottomInset) {
+    result["consumeBottomInset"] = consumeBottomInset;
+  }
+    
   if (legacyTopInsetBehavior != oldProps->legacyTopInsetBehavior) {
     result["legacyTopInsetBehavior"] = legacyTopInsetBehavior;
   }
@@ -1216,7 +1454,7 @@ RNSScreenStackHeaderSubviewProps::RNSScreenStackHeaderSubviewProps(
 
     type(convertRawProp(context, rawProps, "type", sourceProps.type, {RNSScreenStackHeaderSubviewType::Left})),
     hidesSharedBackground(convertRawProp(context, rawProps, "hidesSharedBackground", sourceProps.hidesSharedBackground, {false})),
-    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {false})) {}
+    synchronousShadowStateUpdatesEnabled(convertRawProp(context, rawProps, "synchronousShadowStateUpdatesEnabled", sourceProps.synchronousShadowStateUpdatesEnabled, {true})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSScreenStackHeaderSubviewProps::getDiffPropsImplementationTarget() const {
@@ -1253,8 +1491,6 @@ RNSScreenStackProps::RNSScreenStackProps(
     const RNSScreenStackProps &sourceProps,
     const RawProps &rawProps): ViewProps(context, sourceProps, rawProps),
 
-    iosPreventReattachmentOfDismissedScreens(convertRawProp(context, rawProps, "iosPreventReattachmentOfDismissedScreens", sourceProps.iosPreventReattachmentOfDismissedScreens, {true})),
-    iosPreventReattachmentOfDismissedModals(convertRawProp(context, rawProps, "iosPreventReattachmentOfDismissedModals", sourceProps.iosPreventReattachmentOfDismissedModals, {true})),
     nativeContainerBackgroundColor(convertRawProp(context, rawProps, "nativeContainerBackgroundColor", sourceProps.nativeContainerBackgroundColor, {})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
@@ -1273,14 +1509,6 @@ folly::dynamic RNSScreenStackProps::getDiffProps(
   }
   folly::dynamic result = HostPlatformViewProps::getDiffProps(prevProps);
   
-  if (iosPreventReattachmentOfDismissedScreens != oldProps->iosPreventReattachmentOfDismissedScreens) {
-    result["iosPreventReattachmentOfDismissedScreens"] = iosPreventReattachmentOfDismissedScreens;
-  }
-    
-  if (iosPreventReattachmentOfDismissedModals != oldProps->iosPreventReattachmentOfDismissedModals) {
-    result["iosPreventReattachmentOfDismissedModals"] = iosPreventReattachmentOfDismissedModals;
-  }
-    
   if (nativeContainerBackgroundColor != oldProps->nativeContainerBackgroundColor) {
     result["nativeContainerBackgroundColor"] = *nativeContainerBackgroundColor;
   }
@@ -1518,7 +1746,8 @@ RNSTabsHostIOSProps::RNSTabsHostIOSProps(
     layoutDirection(convertRawProp(context, rawProps, "layoutDirection", sourceProps.layoutDirection, {RNSTabsHostIOSLayoutDirection::Inherit})),
     tabBarTintColor(convertRawProp(context, rawProps, "tabBarTintColor", sourceProps.tabBarTintColor, {})),
     tabBarMinimizeBehavior(convertRawProp(context, rawProps, "tabBarMinimizeBehavior", sourceProps.tabBarMinimizeBehavior, {RNSTabsHostIOSTabBarMinimizeBehavior::Automatic})),
-    tabBarControllerMode(convertRawProp(context, rawProps, "tabBarControllerMode", sourceProps.tabBarControllerMode, {RNSTabsHostIOSTabBarControllerMode::Automatic})) {}
+    tabBarControllerMode(convertRawProp(context, rawProps, "tabBarControllerMode", sourceProps.tabBarControllerMode, {RNSTabsHostIOSTabBarControllerMode::Automatic})),
+    bottomAccessoryHidden(convertRawProp(context, rawProps, "bottomAccessoryHidden", sourceProps.bottomAccessoryHidden, {false})) {}
     
 #ifdef RN_SERIALIZABLE_STATE
 ComponentName RNSTabsHostIOSProps::getDiffPropsImplementationTarget() const {
@@ -1570,6 +1799,10 @@ folly::dynamic RNSTabsHostIOSProps::getDiffProps(
     
   if (tabBarControllerMode != oldProps->tabBarControllerMode) {
     result["tabBarControllerMode"] = toDynamic(tabBarControllerMode);
+  }
+    
+  if (bottomAccessoryHidden != oldProps->bottomAccessoryHidden) {
+    result["bottomAccessoryHidden"] = bottomAccessoryHidden;
   }
   return result;
 }

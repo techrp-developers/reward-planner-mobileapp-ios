@@ -17,6 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@protocol RCTRNSFormSheetContentWrapperViewProtocol <NSObject>
+
+@end
+
+@protocol RCTRNSFormSheetHostViewProtocol <NSObject>
+
+@end
+
 @protocol RCTRNSScrollViewMarkerViewProtocol <NSObject>
 
 @end
@@ -60,6 +68,14 @@ RCT_EXTERN inline void RCTRNSSplitHostHandleCommand(
 @end
 
 @protocol RCTRNSStackHeaderConfigIOSViewProtocol <NSObject>
+
+@end
+
+@protocol RCTRNSStackHeaderItemIOSViewProtocol <NSObject>
+
+@end
+
+@protocol RCTRNSStackHeaderItemSpacerIOSViewProtocol <NSObject>
 
 @end
 
