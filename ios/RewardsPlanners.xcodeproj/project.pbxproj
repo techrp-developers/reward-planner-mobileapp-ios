@@ -302,13 +302,6 @@
 			remoteGlobalIDString = 1F0939C33C744C7CAFAC370CE03481E4;
 			remoteInfo = "React-microtasksnativemodule";
 		};
-		D06F5D052FE50BA900E6406A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = CBD3ED0EE17B6208FCC8E2328720C718;
-			remoteInfo = "react-native-biometrics";
-		};
 		D06F5D072FE50BA900E6406A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
@@ -680,6 +673,13 @@
 			remoteGlobalIDString = 65D0A19C165FA1126B1360680FE6DB12;
 			remoteInfo = Yoga;
 		};
+		D0D68BD8300A38D800072054 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 83A8CC3246A95431ACEA83C7C742228B;
+			remoteInfo = "react-native-netinfo";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -857,11 +857,11 @@
 				D06F5D002FE50BA900E6406A /* libReact-logger.a */,
 				D06F5D022FE50BA900E6406A /* libReact-Mapbuffer.a */,
 				D06F5D042FE50BA900E6406A /* libReact-microtasksnativemodule.a */,
-				D06F5D062FE50BA900E6406A /* libreact-native-biometrics.a */,
 				D06F5D082FE50BA900E6406A /* libreact-native-geolocation.a */,
 				D06F5D0A2FE50BA900E6406A /* libreact-native-image-picker.a */,
 				D06F5D0C2FE50BA900E6406A /* RNImagePickerPrivacyInfo.bundle */,
 				D06F5D0E2FE50BA900E6406A /* libreact-native-maps.a */,
+				D0D68BD9300A38D800072054 /* libreact-native-netinfo.a */,
 				D06F5D102FE50BA900E6406A /* libreact-native-razorpay.a */,
 				D06F5D122FE50BA900E6406A /* libreact-native-safe-area-context.a */,
 				D06F5D142FE50BA900E6406A /* libReact-NativeModulesApple.a */,
@@ -1259,13 +1259,6 @@
 			remoteRef = D06F5D032FE50BA900E6406A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		D06F5D062FE50BA900E6406A /* libreact-native-biometrics.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libreact-native-biometrics.a";
-			remoteRef = D06F5D052FE50BA900E6406A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		D06F5D082FE50BA900E6406A /* libreact-native-geolocation.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1637,6 +1630,13 @@
 			remoteRef = D06F5D6F2FE50BA900E6406A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		D0D68BD9300A38D800072054 /* libreact-native-netinfo.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libreact-native-netinfo.a";
+			remoteRef = D0D68BD8300A38D800072054 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -1677,9 +1677,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1716,9 +1720,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -1758,7 +1766,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RewardsPlanners/Info.plist;
@@ -1769,7 +1777,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.5;
+				MARKETING_VERSION = 5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1795,7 +1803,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RewardsPlanners/Info.plist;
@@ -1806,7 +1814,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.5;
+				MARKETING_VERSION = 5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

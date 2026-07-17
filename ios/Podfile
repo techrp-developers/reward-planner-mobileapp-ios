@@ -1,5 +1,30 @@
 # ENV['RCT_NEW_ARCH_ENABLED'] = '0'
 
+# ============================================================================
+# XCODE 26 / iOS 26 SDK COMPATIBILITY CONFIGURATION
+# ============================================================================
+# This Podfile has been optimized for Xcode 26 and iOS 26 SDK compatibility.
+# All settings below are REQUIRED for successful builds with Xcode 26+
+# 
+# Key Compatibility Measures:
+# 1. Explicit Modules disabled (CLANG_ENABLE_EXPLICIT_MODULES = NO)
+#    - Xcode 16+ enables Explicit Modules by default
+#    - Clang dependency scanner runs before pod modulemaps are available
+#    - Disabling restores correct build order
+#
+# 2. User Script Sandboxing disabled (ENABLE_USER_SCRIPT_SANDBOXING = NO)
+#    - CocoaPods shell scripts require filesystem access
+#    - Required for all pod installations
+#
+# 3. dSYM generation for Release builds
+#    - App Store requires debug symbols for all code
+#    - Prevents "Upload Symbols Failed" warnings
+#
+# 4. Hermes script patching
+#    - Fixes "nvm not initialized" in Xcode's sandboxed build environment
+#    - Ensures Hermes can find node binary during archive
+# ============================================================================
+
 def node_require(script)
   require Pod::Executable.execute_command('node', ['-p',
     "require.resolve(
@@ -54,12 +79,18 @@ post_install do |installer|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
 
+      # ========================================================================
+      # XCODE 26 COMPATIBILITY: Explicit Modules Disabled
+      # ========================================================================
       # Xcode 16+ enables Explicit Modules by default. The Clang dependency
       # scanner runs before the script phase that copies pod modulemaps into
       # DerivedData, so Clang looks for a modulemap that doesn't exist yet.
       # Disabling explicit modules for all pod targets restores the old build
       # order and fixes the cascade of "modulemap not found" / "Unable to find
       # module dependency" errors seen with Xcode 26.
+      #
+      # Reference: https://developer.apple.com/forums/thread/732619
+      # ========================================================================
       config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
 
       if target.name == 'RNScreens'
@@ -67,9 +98,15 @@ post_install do |installer|
         config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
       end
 
+      # ========================================================================
+      # APP STORE COMPATIBILITY: dSYM Generation for All Pods
+      # ========================================================================
       # Generate dSYM for all pods in Release so the archive includes symbols.
       # This eliminates the "Upload Symbols Failed" warning for Razorpay and
       # any other binary pods that ship without pre-built dSYMs.
+      #
+      # Required for App Store submission with Xcode 26+
+      # ========================================================================
       if config.name == 'Release'
         config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
         config.build_settings['GENERATE_MASTER_OBJECT_FILE'] = 'NO'
@@ -77,9 +114,16 @@ post_install do |installer|
       end
     end
 
+    # ========================================================================
+    # HERMES ENGINE: Node Binary Patching for Sandboxed Xcode Environment
+    # ========================================================================
     # Patch the Hermes "Replace Hermes" script phase so it uses the absolute
     # node path. Without this, xcodebuild archive fails because nvm is not
     # initialised in Xcode's sandboxed shell environment.
+    #
+    # The absolute path is captured during pod install (when nvm is active)
+    # and baked into the build phase so archive works in Xcode's sandbox.
+    # ========================================================================
     next unless target.name == 'hermes-engine'
     target.build_phases.each do |phase|
       next unless phase.is_a?(Xcodeproj::Project::Object::PBXShellScriptBuildPhase)
@@ -89,12 +133,18 @@ post_install do |installer|
     end
   end
 
+  # ========================================================================
+  # XCODE 26 COMPATIBILITY: Main App Target Explicit Modules
+  # ========================================================================
   # The explicit-modules fix above only patches the Pods project. Xcode 16+/26
   # still enables Explicit Modules on the *main app target* by default, which
   # is in a separate project (RewardsPlanners.xcodeproj) that CocoaPods'
   # `installer.pods_project` doesn't reach. Patch it directly here so the
   # main target's Clang dependency scanner doesn't run before pod modulemaps
   # are copied into DerivedData.
+  #
+  # Reference: https://github.com/CocoaPods/CocoaPods/issues/12476
+  # ========================================================================
   main_project_path = File.join(Pod::Config.instance.installation_root, 'RewardsPlanners.xcodeproj')
   main_project = Xcodeproj::Project.open(main_project_path)
   main_project.targets.each do |target|
