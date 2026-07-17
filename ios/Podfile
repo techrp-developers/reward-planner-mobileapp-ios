@@ -88,4 +88,20 @@ post_install do |installer|
       phase.shell_script = "export NODE_BINARY=\"#{node_binary}\"\n" + phase.shell_script
     end
   end
+
+  # The explicit-modules fix above only patches the Pods project. Xcode 16+/26
+  # still enables Explicit Modules on the *main app target* by default, which
+  # is in a separate project (RewardsPlanners.xcodeproj) that CocoaPods'
+  # `installer.pods_project` doesn't reach. Patch it directly here so the
+  # main target's Clang dependency scanner doesn't run before pod modulemaps
+  # are copied into DerivedData.
+  main_project_path = File.join(Pod::Config.instance.installation_root, 'RewardsPlanners.xcodeproj')
+  main_project = Xcodeproj::Project.open(main_project_path)
+  main_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['CLANG_ENABLE_EXPLICIT_MODULES'] = 'NO'
+      config.build_settings['ENABLE_USER_SCRIPT_SANDBOXING'] = 'NO'
+    end
+  end
+  main_project.save
 end
