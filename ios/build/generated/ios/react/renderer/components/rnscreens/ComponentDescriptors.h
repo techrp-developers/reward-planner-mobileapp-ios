@@ -16,8 +16,10 @@
 
 namespace facebook::react {
 
+using RNSFormSheetContentWrapperComponentDescriptor = ConcreteComponentDescriptor<RNSFormSheetContentWrapperShadowNode>;
 using RNSScrollViewMarkerComponentDescriptor = ConcreteComponentDescriptor<RNSScrollViewMarkerShadowNode>;
 using RNSSplitHostComponentDescriptor = ConcreteComponentDescriptor<RNSSplitHostShadowNode>;
+using RNSStackHeaderItemSpacerIOSComponentDescriptor = ConcreteComponentDescriptor<RNSStackHeaderItemSpacerIOSShadowNode>;
 using RNSStackHostComponentDescriptor = ConcreteComponentDescriptor<RNSStackHostShadowNode>;
 using RNSScreenContainerComponentDescriptor = ConcreteComponentDescriptor<RNSScreenContainerShadowNode>;
 using RNSScreenContentWrapperComponentDescriptor = ConcreteComponentDescriptor<RNSScreenContentWrapperShadowNode>;

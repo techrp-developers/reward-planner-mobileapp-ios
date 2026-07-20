@@ -73,6 +73,7 @@ public:
   virtual jsi::Value checkLocationAccuracy(jsi::Runtime &rt) = 0;
   virtual jsi::Value checkMultiple(jsi::Runtime &rt, jsi::Array permissions) = 0;
   virtual jsi::Value checkNotifications(jsi::Runtime &rt) = 0;
+  virtual jsi::Value openContactPicker(jsi::Runtime &rt) = 0;
   virtual jsi::Value openPhotoPicker(jsi::Runtime &rt) = 0;
   virtual jsi::Value openSettings(jsi::Runtime &rt, jsi::String type) = 0;
   virtual jsi::Value request(jsi::Runtime &rt, jsi::String permission) = 0;
@@ -157,6 +158,14 @@ private:
 
       return bridging::callFromJs<jsi::Value>(
           rt, &T::checkNotifications, jsInvoker_, instance_);
+    }
+    jsi::Value openContactPicker(jsi::Runtime &rt) override {
+      static_assert(
+          bridging::getParameterCount(&T::openContactPicker) == 1,
+          "Expected openContactPicker(...) to have 1 parameters");
+
+      return bridging::callFromJs<jsi::Value>(
+          rt, &T::openContactPicker, jsInvoker_, instance_);
     }
     jsi::Value openPhotoPicker(jsi::Runtime &rt) override {
       static_assert(

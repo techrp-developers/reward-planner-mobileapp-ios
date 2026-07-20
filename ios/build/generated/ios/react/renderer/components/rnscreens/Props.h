@@ -37,6 +37,50 @@ class RNSFullWindowOverlayProps final : public ViewProps {
   
 };
 
+class RNSFormSheetContentWrapperProps final : public ViewProps {
+ public:
+  RNSFormSheetContentWrapperProps() = default;
+  RNSFormSheetContentWrapperProps(const PropsParserContext& context, const RNSFormSheetContentWrapperProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  
+
+  #ifdef RN_SERIALIZABLE_STATE
+  ComponentName getDiffPropsImplementationTarget() const override;
+
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
+};
+
+class RNSFormSheetHostProps final : public ViewProps {
+ public:
+  RNSFormSheetHostProps() = default;
+  RNSFormSheetHostProps(const PropsParserContext& context, const RNSFormSheetHostProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  bool isOpen{false};
+  std::vector<double> detents{};
+  bool prefersGrabberVisible{false};
+  Float preferredCornerRadius{-1.0};
+  int largestUndimmedDetentIndex{-1};
+  int initialDetentIndex{0};
+  bool prefersScrollingExpandsWhenScrolledToEdge{true};
+  bool preventNativeDismiss{false};
+  SharedColor nativeContainerBackgroundColor{};
+
+  #ifdef RN_SERIALIZABLE_STATE
+  ComponentName getDiffPropsImplementationTarget() const override;
+
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
+};
+
 enum class RNSScrollViewMarkerLeftScrollEdgeEffect { Automatic, Hard, Soft, Hidden };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSScrollViewMarkerLeftScrollEdgeEffect &result) {
@@ -294,6 +338,29 @@ static inline folly::dynamic toDynamic(const RNSSplitHostOrientation &value) {
   return toString(value);
 }
 #endif
+enum class RNSSplitHostColorScheme { Inherit, Light, Dark };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSplitHostColorScheme &result) {
+  auto string = (std::string)value;
+  if (string == "inherit") { result = RNSSplitHostColorScheme::Inherit; return; }
+  if (string == "light") { result = RNSSplitHostColorScheme::Light; return; }
+  if (string == "dark") { result = RNSSplitHostColorScheme::Dark; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSSplitHostColorScheme &value) {
+  switch (value) {
+    case RNSSplitHostColorScheme::Inherit: return "inherit";
+    case RNSSplitHostColorScheme::Light: return "light";
+    case RNSSplitHostColorScheme::Dark: return "dark";
+  }
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const RNSSplitHostColorScheme &value) {
+  return toString(value);
+}
+#endif
 enum class RNSSplitHostPrimaryBackgroundStyle { Default, None, Sidebar };
 
 static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSSplitHostPrimaryBackgroundStyle &result) {
@@ -449,6 +516,7 @@ class RNSSplitHostProps final : public ViewProps {
   RNSSplitHostDisplayModeButtonVisibility displayModeButtonVisibility{RNSSplitHostDisplayModeButtonVisibility::Automatic};
   RNSSplitHostColumnMetricsStruct columnMetrics{};
   RNSSplitHostOrientation orientation{RNSSplitHostOrientation::Inherit};
+  RNSSplitHostColorScheme colorScheme{RNSSplitHostColorScheme::Inherit};
   RNSSplitHostPrimaryBackgroundStyle primaryBackgroundStyle{RNSSplitHostPrimaryBackgroundStyle::Default};
   RNSSplitHostTopColumnForCollapsing topColumnForCollapsing{RNSSplitHostTopColumnForCollapsing::Default};
   bool presentsWithGesture{true};
@@ -539,7 +607,9 @@ class RNSStackHeaderConfigAndroidProps final : public ViewProps {
   bool transparent{false};
   bool backButtonHidden{false};
   RNSStackHeaderConfigAndroidType type{RNSStackHeaderConfigAndroidType::Small};
-  SharedColor backButtonTintColor{};
+  SharedColor backButtonTintColorNormal{};
+  SharedColor backButtonTintColorPressed{};
+  SharedColor backButtonTintColorFocused{};
   std::string backButtonDrawableIconResourceName{};
   ImageSource backButtonImageIconResource{};
   bool scrollFlagScroll{false};
@@ -547,6 +617,8 @@ class RNSStackHeaderConfigAndroidProps final : public ViewProps {
   bool scrollFlagEnterAlwaysCollapsed{false};
   bool scrollFlagExitUntilCollapsed{false};
   bool scrollFlagSnap{false};
+  folly::dynamic toolbarMenu{};
+  bool toolbarMenuGroupDividerEnabled{false};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
@@ -565,9 +637,126 @@ class RNSStackHeaderConfigIOSProps final : public ViewProps {
 #pragma mark - Props
 
   std::string title{};
+  std::string subtitle{};
   bool hidden{false};
   bool transparent{false};
   bool backButtonHidden{false};
+  std::string largeTitle{};
+  std::string largeSubtitle{};
+  bool largeTitleEnabled{false};
+
+  #ifdef RN_SERIALIZABLE_STATE
+  ComponentName getDiffPropsImplementationTarget() const override;
+
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
+};
+
+enum class RNSStackHeaderItemIOSPlacement { Leading, Trailing, Title, Subtitle, LargeSubtitle };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSStackHeaderItemIOSPlacement &result) {
+  auto string = (std::string)value;
+  if (string == "leading") { result = RNSStackHeaderItemIOSPlacement::Leading; return; }
+  if (string == "trailing") { result = RNSStackHeaderItemIOSPlacement::Trailing; return; }
+  if (string == "title") { result = RNSStackHeaderItemIOSPlacement::Title; return; }
+  if (string == "subtitle") { result = RNSStackHeaderItemIOSPlacement::Subtitle; return; }
+  if (string == "largeSubtitle") { result = RNSStackHeaderItemIOSPlacement::LargeSubtitle; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSStackHeaderItemIOSPlacement &value) {
+  switch (value) {
+    case RNSStackHeaderItemIOSPlacement::Leading: return "leading";
+    case RNSStackHeaderItemIOSPlacement::Trailing: return "trailing";
+    case RNSStackHeaderItemIOSPlacement::Title: return "title";
+    case RNSStackHeaderItemIOSPlacement::Subtitle: return "subtitle";
+    case RNSStackHeaderItemIOSPlacement::LargeSubtitle: return "largeSubtitle";
+  }
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const RNSStackHeaderItemIOSPlacement &value) {
+  return toString(value);
+}
+#endif
+
+class RNSStackHeaderItemIOSProps final : public ViewProps {
+ public:
+  RNSStackHeaderItemIOSProps() = default;
+  RNSStackHeaderItemIOSProps(const PropsParserContext& context, const RNSStackHeaderItemIOSProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  RNSStackHeaderItemIOSPlacement placement{RNSStackHeaderItemIOSPlacement::Trailing};
+  std::string itemId{};
+  std::string title{};
+  folly::dynamic menu{};
+  bool respondsToOnPress{false};
+
+  #ifdef RN_SERIALIZABLE_STATE
+  ComponentName getDiffPropsImplementationTarget() const override;
+
+  folly::dynamic getDiffProps(const Props* prevProps) const override;
+  #endif
+
+  
+};
+
+enum class RNSStackHeaderItemSpacerIOSPlacement { Leading, Trailing };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSStackHeaderItemSpacerIOSPlacement &result) {
+  auto string = (std::string)value;
+  if (string == "leading") { result = RNSStackHeaderItemSpacerIOSPlacement::Leading; return; }
+  if (string == "trailing") { result = RNSStackHeaderItemSpacerIOSPlacement::Trailing; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSStackHeaderItemSpacerIOSPlacement &value) {
+  switch (value) {
+    case RNSStackHeaderItemSpacerIOSPlacement::Leading: return "leading";
+    case RNSStackHeaderItemSpacerIOSPlacement::Trailing: return "trailing";
+  }
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const RNSStackHeaderItemSpacerIOSPlacement &value) {
+  return toString(value);
+}
+#endif
+enum class RNSStackHeaderItemSpacerIOSSizing { Fixed, Flexible };
+
+static inline void fromRawValue(const PropsParserContext& context, const RawValue &value, RNSStackHeaderItemSpacerIOSSizing &result) {
+  auto string = (std::string)value;
+  if (string == "fixed") { result = RNSStackHeaderItemSpacerIOSSizing::Fixed; return; }
+  if (string == "flexible") { result = RNSStackHeaderItemSpacerIOSSizing::Flexible; return; }
+  abort();
+}
+
+static inline std::string toString(const RNSStackHeaderItemSpacerIOSSizing &value) {
+  switch (value) {
+    case RNSStackHeaderItemSpacerIOSSizing::Fixed: return "fixed";
+    case RNSStackHeaderItemSpacerIOSSizing::Flexible: return "flexible";
+  }
+}
+
+#ifdef RN_SERIALIZABLE_STATE
+static inline folly::dynamic toDynamic(const RNSStackHeaderItemSpacerIOSSizing &value) {
+  return toString(value);
+}
+#endif
+
+class RNSStackHeaderItemSpacerIOSProps final : public ViewProps {
+ public:
+  RNSStackHeaderItemSpacerIOSProps() = default;
+  RNSStackHeaderItemSpacerIOSProps(const PropsParserContext& context, const RNSStackHeaderItemSpacerIOSProps &sourceProps, const RawProps &rawProps);
+
+#pragma mark - Props
+
+  RNSStackHeaderItemSpacerIOSPlacement placement{RNSStackHeaderItemSpacerIOSPlacement::Trailing};
+  RNSStackHeaderItemSpacerIOSSizing sizing{RNSStackHeaderItemSpacerIOSSizing::Flexible};
+  Float width{0.0};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
@@ -1037,7 +1226,7 @@ class RNSModalScreenProps final : public ViewProps {
   RNSModalScreenLeftScrollEdgeEffect leftScrollEdgeEffect{RNSModalScreenLeftScrollEdgeEffect::Automatic};
   RNSModalScreenRightScrollEdgeEffect rightScrollEdgeEffect{RNSModalScreenRightScrollEdgeEffect::Automatic};
   RNSModalScreenTopScrollEdgeEffect topScrollEdgeEffect{RNSModalScreenTopScrollEdgeEffect::Automatic};
-  bool synchronousShadowStateUpdatesEnabled{false};
+  bool synchronousShadowStateUpdatesEnabled{true};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
@@ -1528,9 +1717,8 @@ class RNSScreenProps final : public ViewProps {
   RNSScreenLeftScrollEdgeEffect leftScrollEdgeEffect{RNSScreenLeftScrollEdgeEffect::Automatic};
   RNSScreenRightScrollEdgeEffect rightScrollEdgeEffect{RNSScreenRightScrollEdgeEffect::Automatic};
   RNSScreenTopScrollEdgeEffect topScrollEdgeEffect{RNSScreenTopScrollEdgeEffect::Automatic};
-  bool synchronousShadowStateUpdatesEnabled{false};
+  bool synchronousShadowStateUpdatesEnabled{true};
   bool androidResetScreenShadowStateOnOrientationChangeEnabled{true};
-  bool ios26AllowInteractionsDuringTransition{true};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
@@ -1723,9 +1911,12 @@ class RNSScreenStackHeaderConfigProps final : public ViewProps {
   bool topInsetEnabled{false};
   std::vector<folly::dynamic> headerLeftBarButtonItems{};
   std::vector<folly::dynamic> headerRightBarButtonItems{};
-  bool synchronousShadowStateUpdatesEnabled{false};
+  bool synchronousShadowStateUpdatesEnabled{true};
   RNSScreenStackHeaderConfigUserInterfaceStyle userInterfaceStyle{RNSScreenStackHeaderConfigUserInterfaceStyle::Unspecified};
   bool consumeTopInset{false};
+  bool consumeLeftInset{true};
+  bool consumeRightInset{true};
+  bool consumeBottomInset{true};
   bool legacyTopInsetBehavior{false};
 
   #ifdef RN_SERIALIZABLE_STATE
@@ -1776,7 +1967,7 @@ class RNSScreenStackHeaderSubviewProps final : public ViewProps {
 
   RNSScreenStackHeaderSubviewType type{RNSScreenStackHeaderSubviewType::Left};
   bool hidesSharedBackground{false};
-  bool synchronousShadowStateUpdatesEnabled{false};
+  bool synchronousShadowStateUpdatesEnabled{true};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;
@@ -1794,8 +1985,6 @@ class RNSScreenStackProps final : public ViewProps {
 
 #pragma mark - Props
 
-  bool iosPreventReattachmentOfDismissedScreens{true};
-  bool iosPreventReattachmentOfDismissedModals{true};
   SharedColor nativeContainerBackgroundColor{};
 
   #ifdef RN_SERIALIZABLE_STATE
@@ -2236,6 +2425,7 @@ class RNSTabsHostIOSProps final : public ViewProps {
   SharedColor tabBarTintColor{};
   RNSTabsHostIOSTabBarMinimizeBehavior tabBarMinimizeBehavior{RNSTabsHostIOSTabBarMinimizeBehavior::Automatic};
   RNSTabsHostIOSTabBarControllerMode tabBarControllerMode{RNSTabsHostIOSTabBarControllerMode::Automatic};
+  bool bottomAccessoryHidden{false};
 
   #ifdef RN_SERIALIZABLE_STATE
   ComponentName getDiffPropsImplementationTarget() const override;

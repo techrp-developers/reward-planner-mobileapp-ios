@@ -15,9 +15,13 @@
 
 namespace facebook::react {
 
+using RNSFormSheetContentWrapperState = StateData;
+
 using RNSScrollViewMarkerState = StateData;
 
 using RNSSplitHostState = StateData;
+
+using RNSStackHeaderItemSpacerIOSState = StateData;
 
 using RNSStackHostState = StateData;
 

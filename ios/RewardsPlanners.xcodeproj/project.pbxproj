@@ -8,10 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		1B89D282E91B8B57EF119621 /* libPods-RewardsPlanners.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E7040058CF0A0044C8860057 /* libPods-RewardsPlanners.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		D9391CF4F9EA7A37C2E19E30 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		DD4549E535C6BBE89EA72257 /* libPods-RewardsPlanners.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 94FA01604CC23FD4AFF3A93F /* libPods-RewardsPlanners.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -301,13 +301,6 @@
 			proxyType = 2;
 			remoteGlobalIDString = 1F0939C33C744C7CAFAC370CE03481E4;
 			remoteInfo = "React-microtasksnativemodule";
-		};
-		D06F5D052FE50BA900E6406A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = CBD3ED0EE17B6208FCC8E2328720C718;
-			remoteInfo = "react-native-biometrics";
 		};
 		D06F5D072FE50BA900E6406A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -680,6 +673,13 @@
 			remoteGlobalIDString = 65D0A19C165FA1126B1360680FE6DB12;
 			remoteInfo = Yoga;
 		};
+		D0D68BD8300A38D800072054 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 83A8CC3246A95431ACEA83C7C742228B;
+			remoteInfo = "react-native-netinfo";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -690,12 +690,14 @@
 		243139C8D77842F39BF43D8F /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		28E616389B6248FC884775F5 /* FontAwesome6_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf"; sourceTree = "<group>"; };
 		2EA97FA06AC84B039A6E5728 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"; sourceTree = "<group>"; };
+		4FE4C6868278995FA6C5F019 /* Pods-RewardsPlanners.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.release.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.release.xcconfig"; sourceTree = "<group>"; };
+		5ADCCE18A0B82A12A4FE31B6 /* Pods-RewardsPlanners.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.debug.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.debug.xcconfig"; sourceTree = "<group>"; };
 		739961AF622C4F229DE2F45C /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = RewardsPlanners/AppDelegate.swift; sourceTree = "<group>"; };
-		78E8E1FDA584AEB0E072BDBC /* Pods-RewardsPlanners.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.release.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RewardsPlanners/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		90CE755B2952413FA7DC7C83 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		917B2A984D8148A7950ED3EE /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
+		94FA01604CC23FD4AFF3A93F /* libPods-RewardsPlanners.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RewardsPlanners.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3045F036F9B4D72A6E730E9 /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
 		B05A745BB42243A2A5FA8685 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 		B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Pods.xcodeproj; path = Pods/Pods.xcodeproj; sourceTree = SOURCE_ROOT; };
@@ -705,9 +707,7 @@
 		D358F10F25184128B572DAFE /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		D3DBB6D3FFB84F2BBB8C93D5 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		E21B7910E8CD400A98645EDD /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
-		E7040058CF0A0044C8860057 /* libPods-RewardsPlanners.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RewardsPlanners.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E71865909FA740ECA95D9FEA /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
-		EB54CDFE49F5BE5379100C88 /* Pods-RewardsPlanners.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.debug.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F1F72CC16E5B45DF98B13418 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		F554E4E116AF46319AD76FF4 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
@@ -720,7 +720,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1B89D282E91B8B57EF119621 /* libPods-RewardsPlanners.a in Frameworks */,
+				DD4549E535C6BBE89EA72257 /* libPods-RewardsPlanners.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -743,7 +743,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				E7040058CF0A0044C8860057 /* libPods-RewardsPlanners.a */,
+				94FA01604CC23FD4AFF3A93F /* libPods-RewardsPlanners.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -808,8 +808,8 @@
 			isa = PBXGroup;
 			children = (
 				B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */,
-				EB54CDFE49F5BE5379100C88 /* Pods-RewardsPlanners.debug.xcconfig */,
-				78E8E1FDA584AEB0E072BDBC /* Pods-RewardsPlanners.release.xcconfig */,
+				5ADCCE18A0B82A12A4FE31B6 /* Pods-RewardsPlanners.debug.xcconfig */,
+				4FE4C6868278995FA6C5F019 /* Pods-RewardsPlanners.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -857,11 +857,11 @@
 				D06F5D002FE50BA900E6406A /* libReact-logger.a */,
 				D06F5D022FE50BA900E6406A /* libReact-Mapbuffer.a */,
 				D06F5D042FE50BA900E6406A /* libReact-microtasksnativemodule.a */,
-				D06F5D062FE50BA900E6406A /* libreact-native-biometrics.a */,
 				D06F5D082FE50BA900E6406A /* libreact-native-geolocation.a */,
 				D06F5D0A2FE50BA900E6406A /* libreact-native-image-picker.a */,
 				D06F5D0C2FE50BA900E6406A /* RNImagePickerPrivacyInfo.bundle */,
 				D06F5D0E2FE50BA900E6406A /* libreact-native-maps.a */,
+				D0D68BD9300A38D800072054 /* libreact-native-netinfo.a */,
 				D06F5D102FE50BA900E6406A /* libreact-native-razorpay.a */,
 				D06F5D122FE50BA900E6406A /* libreact-native-safe-area-context.a */,
 				D06F5D142FE50BA900E6406A /* libReact-NativeModulesApple.a */,
@@ -922,13 +922,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "RewardsPlanners" */;
 			buildPhases = (
-				124A64AC69F36DBA22807B49 /* [CP] Check Pods Manifest.lock */,
+				14347F58DF3823999CF5E166 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				3594F8B172204A2B19C5A779 /* [CP] Embed Pods Frameworks */,
-				E5310B3E87D3C9D64432E53A /* [CP] Copy Pods Resources */,
+				67C7AD628CA536E45CBBB8A2 /* [CP] Embed Pods Frameworks */,
+				54B16C75099D1222B04B1FD5 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1257,13 +1257,6 @@
 			fileType = archive.ar;
 			path = "libReact-microtasksnativemodule.a";
 			remoteRef = D06F5D032FE50BA900E6406A /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		D06F5D062FE50BA900E6406A /* libreact-native-biometrics.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libreact-native-biometrics.a";
-			remoteRef = D06F5D052FE50BA900E6406A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		D06F5D082FE50BA900E6406A /* libreact-native-geolocation.a */ = {
@@ -1637,6 +1630,13 @@
 			remoteRef = D06F5D6F2FE50BA900E6406A /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		D0D68BD9300A38D800072054 /* libreact-native-netinfo.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libreact-native-netinfo.a";
+			remoteRef = D0D68BD8300A38D800072054 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
@@ -1669,7 +1669,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		124A64AC69F36DBA22807B49 /* [CP] Check Pods Manifest.lock */ = {
+		14347F58DF3823999CF5E166 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1691,24 +1691,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		3594F8B172204A2B19C5A779 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E5310B3E87D3C9D64432E53A /* [CP] Copy Pods Resources */ = {
+		54B16C75099D1222B04B1FD5 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1723,6 +1706,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		67C7AD628CA536E45CBBB8A2 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1749,16 +1749,18 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = EB54CDFE49F5BE5379100C88 /* Pods-RewardsPlanners.debug.xcconfig */;
+			baseConfigurationReference = 5ADCCE18A0B82A12A4FE31B6 /* Pods-RewardsPlanners.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RewardsPlanners/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Reward Planners";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -1767,7 +1769,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.5;
+				MARKETING_VERSION = 5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1784,16 +1786,18 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 78E8E1FDA584AEB0E072BDBC /* Pods-RewardsPlanners.release.xcconfig */;
+			baseConfigurationReference = 4FE4C6868278995FA6C5F019 /* Pods-RewardsPlanners.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RewardsPlanners/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Reward Planners";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
@@ -1802,7 +1806,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.5;
+				MARKETING_VERSION = 5.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

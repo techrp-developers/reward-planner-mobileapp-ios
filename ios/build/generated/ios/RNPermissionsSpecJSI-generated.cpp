@@ -43,6 +43,11 @@ static jsi::Value __hostFunction_NativeRNPermissionsCxxSpecJSI_checkNotification
     rt
   );
 }
+static jsi::Value __hostFunction_NativeRNPermissionsCxxSpecJSI_openContactPicker(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
+  return static_cast<NativeRNPermissionsCxxSpecJSI *>(&turboModule)->openContactPicker(
+    rt
+  );
+}
 static jsi::Value __hostFunction_NativeRNPermissionsCxxSpecJSI_openPhotoPicker(jsi::Runtime &rt, TurboModule &turboModule, const jsi::Value* args, size_t count) {
   return static_cast<NativeRNPermissionsCxxSpecJSI *>(&turboModule)->openPhotoPicker(
     rt
@@ -93,6 +98,7 @@ NativeRNPermissionsCxxSpecJSI::NativeRNPermissionsCxxSpecJSI(std::shared_ptr<Cal
   methodMap_["checkLocationAccuracy"] = MethodMetadata {0, __hostFunction_NativeRNPermissionsCxxSpecJSI_checkLocationAccuracy};
   methodMap_["checkMultiple"] = MethodMetadata {1, __hostFunction_NativeRNPermissionsCxxSpecJSI_checkMultiple};
   methodMap_["checkNotifications"] = MethodMetadata {0, __hostFunction_NativeRNPermissionsCxxSpecJSI_checkNotifications};
+  methodMap_["openContactPicker"] = MethodMetadata {0, __hostFunction_NativeRNPermissionsCxxSpecJSI_openContactPicker};
   methodMap_["openPhotoPicker"] = MethodMetadata {0, __hostFunction_NativeRNPermissionsCxxSpecJSI_openPhotoPicker};
   methodMap_["openSettings"] = MethodMetadata {1, __hostFunction_NativeRNPermissionsCxxSpecJSI_openSettings};
   methodMap_["request"] = MethodMetadata {1, __hostFunction_NativeRNPermissionsCxxSpecJSI_request};

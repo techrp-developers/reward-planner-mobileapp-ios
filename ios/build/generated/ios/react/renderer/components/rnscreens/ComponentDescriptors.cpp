@@ -16,8 +16,10 @@ namespace facebook::react {
 
 void rnscreens_registerComponentDescriptorsFromCodegen(
   std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {
+registry->add(concreteComponentDescriptorProvider<RNSFormSheetContentWrapperComponentDescriptor>());
 registry->add(concreteComponentDescriptorProvider<RNSScrollViewMarkerComponentDescriptor>());
 registry->add(concreteComponentDescriptorProvider<RNSSplitHostComponentDescriptor>());
+registry->add(concreteComponentDescriptorProvider<RNSStackHeaderItemSpacerIOSComponentDescriptor>());
 registry->add(concreteComponentDescriptorProvider<RNSStackHostComponentDescriptor>());
 registry->add(concreteComponentDescriptorProvider<RNSScreenContainerComponentDescriptor>());
 registry->add(concreteComponentDescriptorProvider<RNSScreenContentWrapperComponentDescriptor>());
