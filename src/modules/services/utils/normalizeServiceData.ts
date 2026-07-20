@@ -66,6 +66,16 @@ function normalizeVariant(raw: ServiceVariantRaw): NormalizedVariant {
     paragraphs: Array.isArray(raw.paragraphs) ? raw.paragraphs : [],
     when_required: Array.isArray(raw.when_required) ? raw.when_required : [],
     journey: Array.isArray(raw.journey) ? raw.journey : [],
+    rewards: {
+      can_earn: Boolean(raw.rewards?.can_earn),
+      earn_coins: Number(raw.rewards?.earn_coins || 0),
+      earn_type: raw.rewards?.earn_type ?? null,
+      earn_value: Number(raw.rewards?.earn_value || 0),
+      can_redeem: Boolean(raw.rewards?.can_redeem),
+      max_redeem_coins: Number(raw.rewards?.max_redeem_coins || 0),
+      redemption_type: raw.rewards?.redemption_type ?? null,
+      redemption_value: Number(raw.rewards?.redemption_value || 0),
+    },
   };
 }
 
