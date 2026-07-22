@@ -1,15 +1,16 @@
 import React from "react";
 import {
   Image,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import GradientButton from "../../constant/GradientButton";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 import Husband from "../../assete/insurance/Gender (1).png";
 import Wife from "../../assete/insurance/Gender (2).png";
@@ -29,7 +30,7 @@ type Props = {
 };
 
 export default function Step1PA({ data, setData, onNext }: Props) {
-  const insets = useSafeAreaInsets();
+  const servicesTheme = useServicesTheme();
   const selectedGender = data.gender || "Male";
   const selfIcon = selectedGender === "Male" ? Husband : Wife;
 
@@ -56,17 +57,17 @@ export default function Step1PA({ data, setData, onNext }: Props) {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
       >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select your gender</Text>
-          <View style={styles.genderContainer}>
+          <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Select your gender</Text>
+          <View style={[styles.genderContainer, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
             {["Male", "Female"].map((gender) => {
               const isActive = selectedGender === gender;
 
@@ -85,7 +86,7 @@ export default function Step1PA({ data, setData, onNext }: Props) {
                       end={{ x: 1, y: 0 }}
                     />
                   )}
-                  <Text style={[styles.genderText, isActive && styles.textWhite]}>{gender}</Text>
+                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{gender}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -94,22 +95,36 @@ export default function Step1PA({ data, setData, onNext }: Props) {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Personal Accident covers self only</Text>
-            <Text style={styles.sectionSubtitle}>This policy is issued for the insured individual only.</Text>
+            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Personal Accident covers self only</Text>
+            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>This policy is issued for the insured individual only.</Text>
           </View>
 
           <View style={styles.singleCardWrap}>
-            <View style={[styles.card, styles.cardActive]}>
-              <View style={[styles.iconCircle, styles.iconCircleActive]}>
+            <View style={[
+              styles.card,
+              styles.cardActive,
+              {
+                backgroundColor: servicesTheme.isDark ? "#18112A" : "#FFFFFF",
+                borderColor: servicesTheme.colors.primary,
+                shadowColor: servicesTheme.colors.shadow,
+              },
+            ]}>
+              <View style={[styles.iconCircle, styles.iconCircleActive, { backgroundColor: servicesTheme.isDark ? "#27272A" : "#EEECFF" }]}>
                 <Image source={selfIcon} style={styles.iconImage} />
               </View>
-              <Text style={[styles.cardLabel, styles.cardLabelActive]}>Self</Text>
+              <Text style={[styles.cardLabel, { color: servicesTheme.colors.textStrong }]}>Self</Text>
             </View>
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
+      <View style={[
+        styles.footer,
+        {
+          backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)",
+          borderTopColor: servicesTheme.colors.divider,
+        },
+      ]}>
         <GradientButton title="Continue" onPress={handleContinue} />
       </View>
       </LinearGradient>
@@ -205,8 +220,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 16,
-    paddingHorizontal: 20,
+    padding: 20,
     backgroundColor: "rgba(255,255,255,0.95)",
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",

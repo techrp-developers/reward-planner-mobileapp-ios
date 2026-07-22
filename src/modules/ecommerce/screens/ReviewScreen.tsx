@@ -28,6 +28,7 @@ import { createReview } from "../api/ReviewApi";
 import { useAuth } from "../../common/auth/context/AuthContext";
 import type { HomeStackParamList } from "../navigation/types";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type ReviewRoute = RouteProp<HomeStackParamList, "ReviewScreen">;
@@ -84,9 +85,11 @@ function PreferenceRow({
   value: Sentiment;
   onChange: (next: Sentiment) => void;
 }) {
+  const { theme } = useAppTheme();
+
   return (
     <View style={styles.optionRow}>
-      <Text style={styles.optionText}>{label}</Text>
+      <Text style={[styles.optionText, { color: theme.text }]}>{label}</Text>
 
       <View style={styles.iconRow}>
         <TouchableOpacity activeOpacity={0.75} onPress={() => onChange(value === 1 ? 0 : 1)}>
@@ -113,6 +116,7 @@ export default function ReviewScreen() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<ReviewRoute>();
   const { isAuthenticated } = useAuth();
+  const { isDark, theme } = useAppTheme();
   const bottomTabHeight = useBottomTabBarHeight();
 
   const {
@@ -136,8 +140,8 @@ export default function ReviewScreen() {
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
 
@@ -297,7 +301,7 @@ export default function ReviewScreen() {
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: theme.background }]}>
       <ProductHead cartCount={0} />
 
       <ScrollView
@@ -305,7 +309,7 @@ export default function ReviewScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.productCard}>
+        <View style={[styles.productCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
           {showReviewHeaderSkeleton ? (
             <>
               <SkeletonBox pulse={pulse} width={64} height={64} borderRadius={8} />
@@ -326,26 +330,26 @@ export default function ReviewScreen() {
               />
 
               <View style={styles.productTextWrap}>
-                <Text numberOfLines={1} style={styles.productTitle}>
+                <Text numberOfLines={1} style={[styles.productTitle, { color: theme.text }]}>
                   {product_name || "Product"}
                 </Text>
-                <Text style={styles.productSubtitle}>{deliveredText}</Text>
+                <Text style={[styles.productSubtitle, { color: theme.secondaryText }]}>{deliveredText}</Text>
               </View>
             </>
           )}
         </View>
 
-        <View style={styles.formCard}>
-          <Text style={styles.formTitle}>Your Experience Matters</Text>
+        <View style={[styles.formCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.formTitle, { color: theme.text }]}>Your Experience Matters</Text>
 
           {showReviewHeaderSkeleton ? <StarRowSkeleton pulse={pulse} /> : <StarRow rating={rating} onRate={setRating} />}
 
-          <Text style={styles.sectionTitle}>Add Photos</Text>
-          <View style={styles.photoBox}>
-            <Text style={styles.photoText}>Add up to 6 photos like Amazon reviews.</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Add Photos</Text>
+          <View style={[styles.photoBox, { backgroundColor: isDark ? "#2D2148" : "#F9ECF8" }]}>
+            <Text style={[styles.photoText, { color: theme.secondaryText }]}>Add up to 6 photos like Amazon reviews.</Text>
             <View style={styles.mediaActionRow}>
               <TouchableOpacity
-                style={styles.galleryButton}
+                style={[styles.galleryButton, { backgroundColor: theme.card, borderColor: "#D946EF" }]}
                 activeOpacity={0.75}
                 onPress={handlePickFromGallery}
               >
@@ -353,7 +357,7 @@ export default function ReviewScreen() {
                 <Text style={styles.galleryButtonText}>Gallery</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.cameraButton} activeOpacity={0.75} onPress={handleOpenCamera}>
+              <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.card }]} activeOpacity={0.75} onPress={handleOpenCamera}>
                 <MaterialCommunityIcons name="camera-outline" size={22} color="#D946EF" />
               </TouchableOpacity>
             </View>
@@ -368,7 +372,7 @@ export default function ReviewScreen() {
                     onPress={() =>
                       setReviewMedia((current) => current.filter((item) => item.uri !== media.uri))
                     }
-                    style={styles.removeMediaBtn}
+                    style={[styles.removeMediaBtn, { backgroundColor: theme.card }]}
                   >
                     <MaterialCommunityIcons name="close-circle" size={22} color="#DC2626" />
                   </TouchableOpacity>
@@ -379,16 +383,22 @@ export default function ReviewScreen() {
 
           {reviewMedia.length < MAX_REVIEW_MEDIA ? (
             <TouchableOpacity
-              style={styles.addMoreChip}
+              style={[
+                styles.addMoreChip,
+                {
+                  backgroundColor: isDark ? "#2D2148" : "#EEF2FF",
+                  borderColor: isDark ? "#5B4B86" : "#C7D2FE",
+                },
+              ]}
               activeOpacity={0.8}
               onPress={handlePickFromGallery}
             >
               <MaterialCommunityIcons name="plus" size={16} color="#5B47A3" />
-              <Text style={styles.addMoreText}>Add more photos</Text>
+              <Text style={[styles.addMoreText, { color: theme.primary }]}>Add more photos</Text>
             </TouchableOpacity>
           ) : null}
 
-          <Text style={styles.sectionTitle}>What did you love about it?</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>What did you love about it?</Text>
           <PreferenceRow
             label="Value for Money"
             value={valueForMoney}
@@ -401,14 +411,21 @@ export default function ReviewScreen() {
             onChange={setSmoothExperience}
           />
 
-          <Text style={styles.sectionTitle}>Tell us more</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Tell us more</Text>
           <TextInput
             value={reviewText}
             onChangeText={setReviewText}
             placeholder="Share what you loved about this product"
-            placeholderTextColor="#9CA3AF"
+            placeholderTextColor={theme.secondaryText}
             multiline
-            style={styles.textInput}
+            style={[
+              styles.textInput,
+              {
+                backgroundColor: isDark ? "#111827" : "#FFFFFF",
+                borderColor: theme.border,
+                color: theme.text,
+              },
+            ]}
           />
 
           <TouchableOpacity

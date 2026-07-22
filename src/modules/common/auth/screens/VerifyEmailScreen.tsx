@@ -14,6 +14,7 @@ import Logo from "../../../../assets/homepage/login_logo.svg";
 import { resendActivationOtp } from "../api/AuthAPI";
 import { useAlert } from "../../../ecommerce/components/alerts";
 import type { AuthStackParamList } from "../navigation/types";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList>;
 type VerifyRoute = RouteProp<AuthStackParamList, "VerifyEmail">;
@@ -22,6 +23,7 @@ function VerifyEmailScreenComponent() {
   const navigation = useNavigation<Nav>();
   const route = useRoute<VerifyRoute>();
   const alert = useAlert();
+  const { isDark } = useAppTheme();
   const [resent, setResent] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
@@ -50,27 +52,30 @@ function VerifyEmailScreenComponent() {
   }, [navigation]);
 
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "top"]}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}
+      edges={["left", "right", "top"]}
+    >
       <View style={styles.logoWrap}>
         <Logo width={160} height={160} />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
         <View style={styles.iconWrap}>
           <MaterialCommunityIcons name="email-check-outline" size={34} color="#FFFFFF" />
         </View>
 
-        <Text style={styles.title}>Verify Successfully</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#1F2937" }]}>Verify Successfully</Text>
+        <Text style={[styles.subtitle, { color: isDark ? "#A1A1AA" : "#6B7280" }]}>
           Verification link has been sent to
         </Text>
-        <Text style={styles.email}>{email || "your email"}</Text>
-        <Text style={styles.helper}>
+        <Text style={[styles.email, { color: isDark ? "#F472B6" : "#852BAF" }]}>{email || "your email"}</Text>
+        <Text style={[styles.helper, { color: isDark ? "#A1A1AA" : "#6B7280" }]}>
           Open your email and click the verify link, then login to continue.
         </Text>
 
         {resent && (
-          <Text style={styles.resentText}>
+          <Text style={[styles.resentText, { color: isDark ? "#34D399" : "#16A34A" }]}>
             Verification email re-sent successfully.
           </Text>
         )}
@@ -79,7 +84,7 @@ function VerifyEmailScreenComponent() {
           disabled={resendLoading}
           onPress={handleResend}
         >
-          <Text style={styles.link}>
+          <Text style={[styles.link, { color: isDark ? "#F472B6" : "#5B47A3" }]}>
             {resendLoading ? "Sending..." : "Resend verification email"}
           </Text>
         </TouchableOpacity>
@@ -105,7 +110,6 @@ export default VerifyEmailScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F5F0FF",
     paddingHorizontal: 20,
   },
   logoWrap: {
@@ -113,7 +117,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   card: {
-    backgroundColor: "#FFFFFF",
     borderRadius: 20,
     paddingHorizontal: 20,
     paddingVertical: 24,

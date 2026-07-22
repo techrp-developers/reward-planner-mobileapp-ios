@@ -1,9 +1,9 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import StickyBottomCTA from '../../../../bottombar/StickyBottomCTA'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
+import { useAppTheme } from '../../../../theme/ThemeContext'
 
 type Props = {
   total: number;
@@ -26,6 +26,7 @@ export default function OrderProcedbutton({
   bottomOffset,
   onLayout,
 }: Props) {
+  const { isDark, theme } = useAppTheme()
   const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
   const autoSticky = useStickyBottomCTA();
   const resolvedBottomOffset = bottomOffset ?? autoSticky.bottomOffset;
@@ -33,16 +34,18 @@ export default function OrderProcedbutton({
 
   return (
     <StickyBottomCTA bottomOffset={resolvedBottomOffset} onLayout={resolvedOnLayout}>
-      <View style={[styles.wrapper, { paddingBottom: wrapperPaddingBottom }]}>
-        <View style={styles.freeBanner}>
-          <MaterialCommunityIcons name="check-circle" size={18} color="#16A34A" />
-          <Text style={styles.freeText}>Yay! You got FREE Delivery</Text>
-        </View>
-
+      <View style={[
+        styles.wrapper,
+        {
+          paddingBottom: wrapperPaddingBottom,
+          backgroundColor: isDark ? '#111827' : '#F4F5FF',
+          shadowColor: isDark ? '#000000' : '#111827',
+        },
+      ]}>
         <View style={styles.bottomBar}>
           <View>
-            <Text style={styles.price}>₹{safeTotal}</Text>
-            <Text style={styles.items}>{count} items selected</Text>
+            <Text style={[styles.price, { color: theme.text }]}>₹{safeTotal}</Text>
+            <Text style={[styles.items, { color: theme.secondaryText }]}>{count} items selected</Text>
           </View>
 
           <TouchableOpacity activeOpacity={0.85} onPress={onPlaceOrder} disabled={loading || disabled}>
@@ -99,21 +102,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 13,
   },
-  freeBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#DCFCE7',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 10,
-    marginBottom: 12,
-  },
-  freeText: {
-    marginLeft: 6,
-    color: '#15803D',
-    fontSize: 12,
-    fontWeight: '500',
-  },
   bottomBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -130,6 +118,7 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+
     borderRadius: 12,
   },
   disabledButton: {

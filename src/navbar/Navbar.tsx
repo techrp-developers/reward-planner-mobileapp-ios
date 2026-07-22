@@ -5,7 +5,6 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
-  Image,
   Animated,
   Platform,
 } from "react-native";
@@ -18,26 +17,38 @@ import {
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useQuery } from "@tanstack/react-query";
+
 import { fetchUserInfo, getStoredUserName } from "../modules/common/auth/api/AuthAPI";
 import { fetchAllAddress } from "../modules/ecommerce/api/AddressApi";
 import { useAuth } from "../modules/common/auth/context/AuthContext";
-import { handleNavigateWithPrefetch } from "../modules/ecommerce/navigation/navigationPerformance";
+import { addressesQueryKey, handleNavigateWithPrefetch } from "../modules/ecommerce/navigation/navigationPerformance";
 
-import ProductTop from "./assete/Product_BG.jpg";
 import ServiceTop from "./assete/Service_BG.png";
 import PaymentTop from "./assete/Payment_BG.png";
+import BusBookingTop from "./assete/Bus_BG.png";
+import Background1 from "./assete/Background1.jpeg";
 
 import WalletSvg from "../assets/homepage/navwallet.svg";
 import Home_Nav from "../assets/menu/Home_Nav.svg";
 import Services from "../assets/menu/Services.svg";
 import Payments from "../assets/menu/Payments.svg";
-import Dine_Out from "../assets/menu/Dine_Out.svg";
+import Payments2 from "../assets/menu/Payments2.svg";
+// import Dine_Out from "../assets/menu/Dine_Out.svg";
+import Bus_Booking from "../assets/menu/Bus_Booking.svg";
+import Bus from "../assets/menu/Bus.svg";
 import Reward from "../assets/product/rewards.svg";
+import { useAppTheme } from "../theme/ThemeContext";
 
 import type { RootStackParamList } from "@/navigation/types";
 
 // --- Types & Constants ---
-type TopTab = "Product" | "Services" | "Payments" | "DineOut";
+export type TopTab = "Product" | "Services" | "Payments" | "DineOut";
+
+type NavbarProps = {
+  activeModule?: TopTab;
+  onModuleChange?: (tab: TopTab) => void;
+};
 
 type ApiAddress = {
   address_type?: string;
@@ -74,6 +85,7 @@ type NavbarUserSnapshot = {
 };
 
 const NAVBAR_USER_TTL_MS = 60_000;
+const EMPTY_ADDRESS_LABEL = "Address not set";
 let navbarUserCache: NavbarUserSnapshot | null = null;
 let navbarUserInFlight: Promise<NavbarUserSnapshot> | null = null;
 
@@ -100,17 +112,17 @@ const PAYMENT_ROUTES = new Set([
 ]);
 
 const BG_MAP: Record<TopTab, any> = {
-  Product: ProductTop,
+  Product: Background1,
   Services: ServiceTop,
   Payments: PaymentTop,
-  DineOut: ProductTop,
+  DineOut: BusBookingTop,
 };
 
-const TAB_THEME: Record<TopTab, { bgColor: string }> = {
+const TAB_THEME: Record<TopTab, { bgColor: string; activeTint?: string }> = {
   Product: { bgColor: "#5F341A" },
   Services: { bgColor: "#4F6BFF" },
-  Payments: { bgColor: "#7C3AED" }, // looks closer to your screenshot (purple)
-  DineOut: { bgColor: "#DC2626" },
+  Payments: { bgColor: "#EAE2FF", activeTint: "#532C99" },
+  DineOut: { bgColor: "#FFE3E8", activeTint: "#CE1538" },
 };
 
 const TOP_TABS: TopTab[] = ["Product", "Services", "Payments", "DineOut"];
@@ -198,16 +210,27 @@ const TopIconWithLabel = React.memo(
     active,
     onPress,
     Icon,
+    ActiveIcon,
     label,
     activeColor,
+    activeTint,
+    inactiveTint,
+    inactiveBackground,
+    inactiveBorder,
   }: {
     active: boolean;
     onPress: () => void;
     Icon: SvgIcon;
+    ActiveIcon?: SvgIcon;
     label: string;
     activeColor: string;
+    activeTint?: string;
+    inactiveTint: string;
+    inactiveBackground: string;
+    inactiveBorder: string;
   }) => {
-    const tint = active ? "#FFFFFF" : "#374151";
+    const tint = active ? activeTint ?? "#FFFFFF" : inactiveTint;
+    const RenderIcon = active && ActiveIcon ? ActiveIcon : Icon;
 
     return (
       <TouchableOpacity
@@ -215,13 +238,17 @@ const TopIconWithLabel = React.memo(
         onPress={onPress}
         style={[
           styles.topTabCard,
+          {
+            backgroundColor: inactiveBackground,
+            borderColor: inactiveBorder,
+          },
           active && styles.topTabCardActive,
           active && { backgroundColor: activeColor },
         ]}
       >
         {/* NOTE: depending on how your SVG is exported, it may use fill/stroke or color.
             We pass all 3 so it works in most cases. */}
-        <Icon width={28} height={28} fill={tint} stroke={tint} color={tint} />
+        <RenderIcon width={28} height={28} fill={tint} stroke={tint} color={tint} />
 
         <Text style={[styles.topTabLabel, { color: tint }]}>{label}</Text>
       </TouchableOpacity>
@@ -229,11 +256,12 @@ const TopIconWithLabel = React.memo(
   }
 );
 
-export default function Navbar() {
+export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<any>();
   const { isAuthenticated } = useAuth();
+  const { isDark, theme } = useAppTheme();
   const insets = useSafeAreaInsets();
   const [rewardPoints, setRewardPoints] = React.useState(0);
   const rewardPointsLabel = React.useMemo(() => {
@@ -256,49 +284,103 @@ export default function Navbar() {
   const routeModuleName = route?.params?.moduleName;
   const moduleName = routeModuleName ?? deepestRoute.moduleName;
 
-  const activeTab = React.useMemo<TopTab>(
+  const detectedActiveTab = React.useMemo<TopTab>(
     () =>
       getActiveTab(deepestRoute.routeName || route.name, moduleName, activeModuleTab),
     [deepestRoute.routeName, route.name, moduleName, activeModuleTab]
   );
+  const activeTab = activeModule ?? detectedActiveTab;
   const showLocation = activeTab === "Product";
 
-  const bgSource = React.useMemo(() => BG_MAP[activeTab], [activeTab]);
   const activeThemeColor = React.useMemo(
     () => TAB_THEME[activeTab]?.bgColor ?? TAB_THEME.Product.bgColor,
     [activeTab]
   );
+  const walletBadgeColor = React.useMemo(
+    () => TAB_THEME[activeTab]?.activeTint ?? activeThemeColor,
+    [activeTab, activeThemeColor]
+  );
+  const navbarSurface = isDark ? theme.card : "#FFFFFF";
+  const navbarBorder = isDark ? theme.border : "rgba(0,0,0,0.10)";
+  const navbarIconColor = isDark ? "#FFFFFF" : "#111827";
+  const navbarMutedColor = isDark ? theme.secondaryText : "#6B7280";
   const isNavigatingRef = React.useRef(false);
+  const backgroundOpacities = React.useRef<Record<TopTab, Animated.Value>>({
+    Product: new Animated.Value(activeTab === "Product" ? 1 : 0),
+    Services: new Animated.Value(activeTab === "Services" ? 1 : 0),
+    Payments: new Animated.Value(activeTab === "Payments" ? 1 : 0),
+    DineOut: new Animated.Value(activeTab === "DineOut" ? 1 : 0),
+  }).current;
 
   // Cross-fade the background instead of remounting the Image on every tab
   // switch — remounting could briefly leave the previous module's background
   // visible underneath while the content below had already switched, and
   // felt like a hard cut rather than a smooth transition.
-  const [prevBgSource, setPrevBgSource] = React.useState(bgSource);
-  const bgFade = React.useRef(new Animated.Value(1)).current;
-
   React.useEffect(() => {
-    if (bgSource === prevBgSource) return;
-    bgFade.setValue(0);
-    Animated.timing(bgFade, {
-      toValue: 1,
-      duration: 220,
-      useNativeDriver: true,
-    }).start(({ finished }) => {
-      if (finished) setPrevBgSource(bgSource);
+    const animations = TOP_TABS.map((tab) => {
+      backgroundOpacities[tab].stopAnimation();
+      return Animated.timing(backgroundOpacities[tab], {
+        toValue: tab === activeTab ? 1 : 0,
+        duration: 150,
+        useNativeDriver: true,
+      });
     });
-  }, [bgSource, prevBgSource, bgFade]);
+
+    Animated.parallel(animations).start();
+    return () => animations.forEach((animation) => animation.stop());
+  }, [activeTab, backgroundOpacities]);
 
   const [displayName, setDisplayName] = React.useState("User");
   const [displayAddress, setDisplayAddress] =
-    React.useState("Address not set");
-  const hasAddress = String(displayAddress || "").trim() !== "Address not set";
+    React.useState(EMPTY_ADDRESS_LABEL);
+  const hasAddress = String(displayAddress || "").trim() !== EMPTY_ADDRESS_LABEL;
+
+  // Shares the same query cache the address screens invalidate after add/edit/
+  // delete/set-default, so the navbar address updates immediately instead of
+  // only refreshing once per 60s cache window on mount.
+  const { data: liveAddressData } = useQuery({
+    queryKey: addressesQueryKey,
+    queryFn: fetchAllAddress,
+    enabled: isAuthenticated,
+    staleTime: 10 * 60 * 1000,
+  });
+
+  React.useEffect(() => {
+    if (!isAuthenticated || !liveAddressData) return;
+
+    const list: ApiAddress[] = Array.isArray(liveAddressData?.data) ? liveAddressData.data : [];
+    const selectedAddress =
+      list.find((item) => Number(item?.is_default) === 1) || list[0];
+
+    const addressText = [
+      selectedAddress?.address1,
+      selectedAddress?.address2,
+      selectedAddress?.city,
+      selectedAddress?.state,
+      selectedAddress?.zipcode,
+    ]
+      .map((part) => String(part || "").trim())
+      .filter(Boolean)
+      .join(", ");
+
+    const nextDisplayAddress = addressText || EMPTY_ADDRESS_LABEL;
+    setDisplayAddress(nextDisplayAddress);
+    if (navbarUserCache) {
+      navbarUserCache = {
+        ...navbarUserCache,
+        displayAddress: nextDisplayAddress,
+      };
+    }
+  }, [isAuthenticated, liveAddressData]);
 
   const applyUserSnapshot = React.useCallback((snapshot: NavbarUserSnapshot) => {
     setDisplayName((prev) => (prev === snapshot.displayName ? prev : snapshot.displayName));
-    setDisplayAddress((prev) =>
-      prev === snapshot.displayAddress ? prev : snapshot.displayAddress
-    );
+    setDisplayAddress((prev) => {
+      if (prev !== EMPTY_ADDRESS_LABEL && snapshot.displayAddress === EMPTY_ADDRESS_LABEL) {
+        return prev;
+      }
+      return prev === snapshot.displayAddress ? prev : snapshot.displayAddress;
+    });
     setRewardPoints((prev) =>
       prev === snapshot.rewardPoints ? prev : snapshot.rewardPoints
     );
@@ -348,31 +430,35 @@ export default function Navbar() {
       // then navigates inside ModuleStack) and from within MainLayout (already on Home –
       // React Navigation detects the screen is focused and updates the nested state directly).
       // No handleNavigateWithPrefetch wrapper so the switch is instant (<1 frame).
-      (navigation as any).navigate("Home", {
-        screen: SCREEN[tab],
-        params: { moduleName: tab },
-      });
+       if (onModuleChange) {
+         onModuleChange(tab);
+       } else {
+         (navigation as any).navigate("Home", {
+           screen: SCREEN[tab],
+           params: { moduleName: tab },
+         });
+       }
 
       requestAnimationFrame(() => {
         isNavigatingRef.current = false;
       });
     },
-    [activeTab, navigation]
+    [activeTab, navigation, onModuleChange]
   );
 
   const navigateToAddAddress = React.useCallback(() => {
-    navigateToScreen("AddressSelect");
+    navigateToScreen("AddressSelect", { manageOnly: true });
   }, [navigateToScreen]);
 
   const navigateToChangeAddress = React.useCallback(() => {
-    navigateToScreen("AddressSelect");
+    navigateToScreen("AddressSelect", { manageOnly: true });
   }, [navigateToScreen]);
 
   const loadNavbarUser = React.useCallback(async (forceRefresh = false) => {
     if (!isAuthenticated) {
       applyUserSnapshot({
         displayName: "Guest",
-        displayAddress: "Address not set",
+        displayAddress: EMPTY_ADDRESS_LABEL,
         rewardPoints: 0,
         ts: Date.now(),
       });
@@ -412,29 +498,12 @@ export default function Navbar() {
           storedName ||
           "User";
 
-        const addressRes = await fetchAllAddress();
-        const addresses: ApiAddress[] = Array.isArray(addressRes?.data)
-          ? addressRes.data
-          : [];
-
-        const selectedAddress =
-          addresses.find((item) => Number(item?.is_default) === 1) ||
-          addresses[0];
-
-        const addressText = [
-          selectedAddress?.address1,
-          selectedAddress?.address2,
-          selectedAddress?.city,
-          selectedAddress?.state,
-          selectedAddress?.zipcode,
-        ]
-          .map((part) => String(part || "").trim())
-          .filter(Boolean)
-          .join(", ");
-
+        // Address is now sourced reactively from the shared addresses query
+        // (see liveAddressData above), which updates instantly whenever an
+        // address is added/edited/deleted/set-default anywhere in the app.
         const snapshot: NavbarUserSnapshot = {
           displayName: String(userName),
-          displayAddress: addressText || "Address not set",
+          displayAddress: navbarUserCache?.displayAddress || EMPTY_ADDRESS_LABEL,
           rewardPoints: fetchedRewardPoints,
           ts: Date.now(),
         };
@@ -445,7 +514,7 @@ export default function Navbar() {
         console.warn("Failed to load navbar user info:", error);
         return {
           displayName: navbarUserCache?.displayName || "User",
-          displayAddress: navbarUserCache?.displayAddress || "Address not set",
+          displayAddress: navbarUserCache?.displayAddress || EMPTY_ADDRESS_LABEL,
           rewardPoints: navbarUserCache?.rewardPoints || 0,
           ts: Date.now(),
         } as NavbarUserSnapshot;
@@ -465,25 +534,27 @@ export default function Navbar() {
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top + 8 }]}>
       <StatusBar
-        barStyle="dark-content"
+        barStyle={isDark ? "light-content" : "dark-content"}
         translucent
         backgroundColor="transparent"
       />
 
       {/* ✅ Background cross-fades smoothly between modules */}
-      <View style={styles.bgWrapper} pointerEvents="none">
-        <Image
-          source={prevBgSource}
-          style={[styles.absoluteFill, { top: -insets.top }]}
-          resizeMode="cover"
-        />
-        {bgSource !== prevBgSource && (
+      <View
+        style={[styles.bgWrapper, { backgroundColor: activeThemeColor }]}
+        pointerEvents="none"
+      >
+        {TOP_TABS.map((tab) => (
           <Animated.Image
-            source={bgSource}
-            style={[styles.absoluteFill, { top: -insets.top, opacity: bgFade }]}
+            key={tab}
+            source={BG_MAP[tab]}
+            style={[
+              styles.absoluteFill,
+              { top: -insets.top, opacity: backgroundOpacities[tab] },
+            ]}
             resizeMode="cover"
           />
-        )}
+        ))}
       </View>
 
       {/* TOP 4 ICON TABS */}
@@ -494,6 +565,10 @@ export default function Navbar() {
           Icon={Home_Nav as unknown as SvgIcon}
           label="Product"
           activeColor={TAB_THEME.Product.bgColor}
+          activeTint={TAB_THEME.Product.activeTint}
+          inactiveTint={navbarIconColor}
+          inactiveBackground={navbarSurface}
+          inactiveBorder={navbarBorder}
         />
 
         <TopIconWithLabel
@@ -502,22 +577,36 @@ export default function Navbar() {
           Icon={Services as unknown as SvgIcon}
           label="Services"
           activeColor={TAB_THEME.Services.bgColor}
+          activeTint={TAB_THEME.Services.activeTint}
+          inactiveTint={navbarIconColor}
+          inactiveBackground={navbarSurface}
+          inactiveBorder={navbarBorder}
         />
 
         <TopIconWithLabel
           active={activeTab === "Payments"}
           onPress={() => handleTab("Payments")}
           Icon={Payments as unknown as SvgIcon}
+          ActiveIcon={Payments2 as unknown as SvgIcon}
           label="Payments"
           activeColor={TAB_THEME.Payments.bgColor}
+          activeTint={TAB_THEME.Payments.activeTint}
+          inactiveTint={navbarIconColor}
+          inactiveBackground={navbarSurface}
+          inactiveBorder={navbarBorder}
         />
 
         <TopIconWithLabel
           active={activeTab === "DineOut"}
           onPress={() => handleTab("DineOut")}
-          Icon={Dine_Out as unknown as SvgIcon}
-          label="Dine Out"
+          Icon={Bus_Booking as unknown as SvgIcon}
+          ActiveIcon={Bus as unknown as SvgIcon}
+          label="Bus Booking"
           activeColor={TAB_THEME.DineOut.bgColor}
+          activeTint={TAB_THEME.DineOut.activeTint}
+          inactiveTint={navbarIconColor}
+          inactiveBackground={navbarSurface}
+          inactiveBorder={navbarBorder}
         />
       </View>
 
@@ -528,8 +617,8 @@ export default function Navbar() {
           pointerEvents={showLocation ? "auto" : "none"}
         >
           <MaterialCommunityIcons name="map-marker" size={18} color="#16A34A" />
-          <Text style={styles.locationText} numberOfLines={1} ellipsizeMode="tail">
-            <Text style={styles.homeBold}>HOME- </Text>
+          <Text style={[styles.locationText, { color: "#111827" }]} numberOfLines={1} ellipsizeMode="tail">
+            <Text style={[styles.homeBold, { color: "#111827" }]}>HOME- </Text>
             {displayName}
             {hasAddress ? `, ${displayAddress}` : ""}
           </Text>
@@ -539,7 +628,7 @@ export default function Navbar() {
               numberOfLines={1}
               onPress={navigateToChangeAddress}
             >
-              {" "}Change
+              {" "}Change Address
             </Text>
           ) : (
             <Text
@@ -557,17 +646,29 @@ export default function Navbar() {
       <View style={styles.searchRow}>
         <TouchableOpacity
           activeOpacity={0.9}
-          style={styles.searchContainer}
+          style={[
+            styles.searchContainer,
+            {
+              backgroundColor: navbarSurface,
+              borderColor: navbarBorder,
+              shadowColor: isDark ? "#000000" : "#000000",
+            },
+          ]}
           onPress={() => {
             if (activeTab === "Services") {
               navigateToScreen("ServiceSearch");
+            } else if (activeTab === "Payments") {
+              (navigation as any).navigate("Home", {
+                screen: "PaymentsModule",
+                params: { screen: "Search" },
+              });
             } else {
               navigateToScreen("SearchScreen");
             }
           }}
         >
-          <MaterialCommunityIcons name="magnify" size={20} color="#111827" />
-          <Text style={styles.fakePlaceholder}>Search “Reward Planners”</Text>
+          <MaterialCommunityIcons name="magnify" size={20} color={navbarIconColor} />
+          <Text style={[styles.fakePlaceholder, { color: navbarMutedColor }]}>Search “Reward Planners”</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -580,7 +681,7 @@ export default function Navbar() {
           <View
             style={[
               styles.walletTag,
-              { backgroundColor: activeThemeColor },
+              { backgroundColor: walletBadgeColor },
             ]}
           >
             <View style={styles.walletTagInner}>
@@ -619,7 +720,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 280,
-    zIndex: -1,
     overflow: "hidden",
   },
 

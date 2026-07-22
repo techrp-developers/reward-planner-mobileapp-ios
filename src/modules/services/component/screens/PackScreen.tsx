@@ -16,6 +16,7 @@ import { addBundleToCart, getBundleDetail, getBuyNowBundlePreview, type BundleEn
 import { useQueryClient } from '@tanstack/react-query';
 import { SERVICE_CART_QUERY_KEY, SERVICE_CHECKOUT_QUERY_KEY } from '../../constant/queryKeys';
 import PackBanner from '../../assete/service/PackBanner.png';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 type PackRouteProp = RouteProp<HomeStackParamList, 'PackScreen'>;
 
@@ -59,7 +60,9 @@ type NormalizedSelectionItem = {
 };
 
 const parsePrice = (value: string | number | null | undefined) => {
-  const parsed = Number(value ?? 0);
+  const parsed = typeof value === 'number'
+    ? value
+    : Number(String(value ?? '').replace(/[^0-9.]/g, ''));
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
@@ -98,6 +101,7 @@ const parseTrustStat = (raw: string): StatItem => {
 
 function PackScreen() {
   const navigation = useNavigation<NavProp>();
+  const servicesTheme = useServicesTheme();
   const route = useRoute<PackRouteProp>();
   const queryClient = useQueryClient();
   const [priceType, setPriceType] =
@@ -311,11 +315,10 @@ function PackScreen() {
     // ✅ Individual mode
     const selectedItems = items.filter(item => selectedSet.has(item.id));
 
-    const original = selectedItems.reduce((s, i) => s + i.individualPrice, 0);
-    const discounted = selectedItems.reduce((s, i) => s + i.price, 0);
+    const discounted = selectedItems.reduce((s, i) => s + i.individualPrice, 0);
 
     return {
-      original,
+      original: 0,
       discounted,
       savings: 0,
     };
@@ -365,7 +368,7 @@ function PackScreen() {
 
       const selected_items = addBundlePayload.selected_items.map(Number);
 
-      console.log("🚀 FINAL PAYLOAD:", {
+      __DEV__ && console.log("🚀 FINAL PAYLOAD:", {
         bundle_id: finalBundleId,
         selected_items,
       });
@@ -375,12 +378,13 @@ function PackScreen() {
         selected_items,
       });
 
-      console.log("📦 PREVIEW RESPONSE:", preview);
+      __DEV__ && console.log("📦 PREVIEW RESPONSE:", preview);
 
       navigation.navigate("ServiceCheckoutScreen", {
         mode: "buy_now", // ✅ IMPORTANT
         previewData: preview,
         bundle_id: finalBundleId,
+        selected_items,
       });
 
     } catch (error: any) {
@@ -404,8 +408,8 @@ function PackScreen() {
 
     setIsAddingToCart(true);
     try {
-      console.log('[PackScreen] Selected item IDs:', selectedItemIds);
-      console.log('🧾 FINAL PAYLOAD:', addBundlePayload);
+      __DEV__ && console.log('[PackScreen] Selected item IDs:', selectedItemIds);
+      __DEV__ && console.log('🧾 FINAL PAYLOAD:', addBundlePayload);
 
       const response = await addBundleToCart(resolvedBundleId, addBundlePayload);
 
@@ -437,18 +441,18 @@ function PackScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loaderContainer}>
+      <View style={[styles.loaderContainer, { backgroundColor: servicesTheme.colors.background }]}>
         <ScreenHeader
           title={screenTitle}
           onBackPress={() => navigation.goBack()}
         />
-        <ActivityIndicator size="large" color="#8665FF" style={styles.loader} />
+        <ActivityIndicator size="large" color={servicesTheme.colors.primary} style={styles.loader} />
       </View>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
       {/* HEADER */}
       <ScreenHeader
         title={screenTitle}
@@ -475,7 +479,7 @@ function PackScreen() {
         />
 
         {/* SELECTED COUNT */}
-        <Text style={styles.selectedText}>
+        <Text style={[styles.selectedText, { color: servicesTheme.colors.muted }]}>
           Selected {selectedItemIds.length} items
         </Text>
 
@@ -501,7 +505,7 @@ function PackScreen() {
         ))}
 
         {priceType === 'bundle' && totals.savings > 0 && (
-          <Text style={styles.savingsText}>You save ₹{totals.savings}</Text>
+          <Text style={[styles.savingsText, { color: servicesTheme.colors.success }]}>You save ₹{totals.savings}</Text>
         )}
 
         <PackFooterCTA

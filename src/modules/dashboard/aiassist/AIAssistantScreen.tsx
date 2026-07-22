@@ -1,5 +1,5 @@
 import { fetchUserInfo } from '../../common/auth/api/AuthAPI';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAlert } from '../../ecommerce/components/alerts';
 import {
   View,
@@ -13,7 +13,7 @@ import {
   Platform,
   SafeAreaView,
 } from 'react-native';
-import Svg, { Path, Rect, Circle, G } from 'react-native-svg';
+import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import RPAIAssistantHeader from '../header/Rpaiassistantheader';
 
 // ---------- Icon Components ----------
@@ -186,7 +186,7 @@ const AIAssistantScreen: React.FC = () => {
               multiline={false}
               returnKeyType="send"
             />
-            <TouchableOpacity activeOpacity={0.7} style={styles.micButton}>
+            <TouchableOpacity activeOpacity={0.7} style={styles.micButton} onPress={handleUnavailable}>
               <MicIcon />
             </TouchableOpacity>
           </View>

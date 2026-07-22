@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import React, { useCallback, useMemo } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
 import ProductCard from "../../constants/product_cart/ProductCard";
@@ -15,10 +15,14 @@ import {
   PROMO_CARD_GAP,
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
+import HomeSectionSkeleton from "./HomeSectionSkeleton";
+import { queryClient } from "../../../../query/queryClient";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 const FEATURED_LIMIT = 10;
+const FEATURES_PRODUCTS_QUERY_KEY = ["ecommerce", "home", "features-products"] as const;
 
 const pickRandomProducts = (products: any[], limit = FEATURED_LIMIT) => {
   if (products.length <= limit) {
@@ -48,10 +52,10 @@ const getProductList = (payload: any) => {
 
 export default function FeaturesProduct() {
   const navigation = useNavigation<Nav>();
-  const [refreshSeed, setRefreshSeed] = useState(0);
+  const { isDark, theme } = useAppTheme();
 
   const { data: allProducts = [], isLoading } = useQuery({
-    queryKey: ["ecommerce", "home", "features-products"],
+    queryKey: FEATURES_PRODUCTS_QUERY_KEY,
     queryFn: async () => {
       const res = await fetchAllProducts();
       return getProductList(res).map(normalizeProduct);
@@ -61,22 +65,16 @@ export default function FeaturesProduct() {
     placeholderData: (previousData) => previousData,
   });
 
-  useFocusEffect(
-    useCallback(() => {
-      setRefreshSeed((value) => value + 1);
-    }, [])
-  );
-
   const randomProducts = useMemo(
     () => pickRandomProducts(allProducts, FEATURED_LIMIT),
-    [allProducts, refreshSeed]
+    [allProducts]
   );
 
   const firstRow = useMemo(() => randomProducts.slice(0, 5), [randomProducts]);
   const secondRow = useMemo(() => randomProducts.slice(5, 10), [randomProducts]);
 
   const handleExplore = useCallback(() => {
-    navigation.navigate("ProductScreen");
+    navigation.navigate("ProductScreen", { source: "all" });
   }, [navigation]);
 
   const renderCard = React.useCallback(
@@ -87,30 +85,31 @@ export default function FeaturesProduct() {
   );
 
   if (isLoading && allProducts.length === 0) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="small" color="#5B47A3" />
-      </View>
-    );
+    return <HomeSectionSkeleton height={620} backgroundColor={theme.background} />;
   }
 
   if (randomProducts.length === 0) return null;
 
   return (
-    <LinearGradient colors={["#FFF4D6", "#FFECD6", "#FFDDCE"]} style={styles.fullScreen}>
+    <LinearGradient
+      colors={isDark ? ["#09090B", "#18120D", "#2A1A0C"] : ["#F6D58B", "#D69A33", "#8A531F"]}
+      style={styles.fullScreen}
+    >
       <View style={styles.contentWrap}>
-        <View style={styles.headerCurve} />
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.heading}>Featured This Week</Text>
+            <Text style={[styles.heading, { color: isDark ? "#FFFFFF" : "#111827" }]}>Featured This Week</Text>
           </View>
           <TouchableOpacity
-            style={styles.exploreBtn}
+            style={[
+              styles.exploreBtn,
+              { backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.35)" },
+            ]}
             activeOpacity={0.85}
             onPress={handleExplore}
           >
-            <Text style={styles.exploreText}>Explore More</Text>
-            <MaterialIcons name="arrow-forward-ios" size={14} color="#5B47A3" />
+            <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>Explore More</Text>
+            <MaterialIcons name="arrow-forward-ios" size={14} color={isDark ? "#FFFFFF" : "#111827"} />
           </TouchableOpacity>
         </View>
         <HorizontalProductList
@@ -136,9 +135,22 @@ export default function FeaturesProduct() {
   );
 }
 
+export const prefetchFeaturesProductSection = () =>
+  queryClient.prefetchQuery({
+    queryKey: FEATURES_PRODUCTS_QUERY_KEY,
+    queryFn: async () => {
+      const res = await fetchAllProducts();
+      return getProductList(res).map(normalizeProduct);
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
 // ================== RESPONSIVE STYLES ==================
 const styles = StyleSheet.create({
-  fullScreen: { flex: 1 },
+  fullScreen: {
+    flex: 1,
+    marginTop: 12,
+  },
   contentWrap: { paddingBottom: 8 },
   headerCurve: {
     height: 20,

@@ -7,6 +7,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   ListRenderItem,
+  Share,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
@@ -85,6 +86,12 @@ export default function ProductHero({ images, activeDot, onDotPress, loadImages 
     [logicalToLoopedIndex, onDotPress]
   );
 
+  const handleShare = useCallback(() => {
+    const image = images[activeDot];
+    if (!image) return;
+    Share.share({ message: image, title: 'Product' }).catch(() => {});
+  }, [activeDot, images]);
+
   const getItemLayout = useCallback(
     (_: ArrayLike<string> | null | undefined, index: number) => ({
       length: width,
@@ -142,9 +149,9 @@ export default function ProductHero({ images, activeDot, onDotPress, loadImages 
           ))}
         </View>
 
-        <TouchableOpacity style={styles.shareBtn} activeOpacity={0.85}>
+        {/* <TouchableOpacity style={styles.shareBtn} activeOpacity={0.85} onPress={handleShare}>
           <MaterialCommunityIcons name="share-variant" size={18} color="#222" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );

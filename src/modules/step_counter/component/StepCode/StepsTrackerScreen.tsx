@@ -44,12 +44,23 @@ const BG = ['#070A16', '#111735', '#201A3F'];
 // ─── Brand colours (on-dark) ──────────────────────────────────────────────────
 
 const BRAND = {
-  hc:      { icon: 'heart-pulse', bg: 'rgba(230,57,70,0.18)',  tint: '#FF6B7A' },
-  samsung: { icon: 'cellphone',   bg: 'rgba(20,40,160,0.22)', tint: '#7B9FFF' },
-  google:  { icon: 'google-fit',  bg: 'rgba(52,168,83,0.18)', tint: '#62D985' },
+  hc:      { icon: 'heart-pulse',  bg: 'rgba(230,57,70,0.18)',   tint: '#FF6B7A' },
+  samsung: { icon: 'cellphone',    bg: 'rgba(20,40,160,0.22)',   tint: '#7B9FFF' },
+  google:  { icon: 'google-fit',   bg: 'rgba(52,168,83,0.18)',   tint: '#62D985' },
+  other:   { icon: 'watch-variant', bg: 'rgba(142,162,255,0.14)', tint: '#B9C4FF' },
 };
 
-type OptionalProvider = 'Samsung Health' | 'Google Fit';
+function hasStepsPermission(permissions: any[]): boolean {
+  return permissions.some(p => {
+    if (typeof p === 'string') {
+      const s = p.toLowerCase();
+      return s.includes('read_steps') || (s.includes('steps') && s.includes('read'));
+    }
+    const recordType = String(p.recordType ?? p.permission?.recordType ?? '').toLowerCase();
+    const accessType = String(p.accessType ?? p.permission?.accessType ?? '').toLowerCase();
+    return recordType === 'steps' && accessType === 'read';
+  });
+}
 
 // ─── Permission guide (animated accordion) ────────────────────────────────────
 
@@ -63,9 +74,6 @@ const STEPS: GuideStep[] = [
   { icon: 'numeric-5-circle-outline', title: 'Come back here',       desc: 'Return to this screen — the status refreshes automatically.' },
 ];
 
-// Alternate path for users who already have Health Connect / Google Fit installed
-// and granted permission once, but the app's own system permission was revoked or
-// never enabled — fixable via the OS app-info screen instead of Health Connect.
 const STEPS_ALREADY_INSTALLED: GuideStep[] = [
   { icon: 'numeric-1-circle-outline', title: 'Open phone Settings',  desc: 'Go to your phone\'s Settings app.' },
   { icon: 'numeric-2-circle-outline', title: 'Go to Apps',           desc: 'Tap "Apps" (or "Apps & notifications").' },
@@ -124,20 +132,19 @@ type ProviderCardProps = {
   installed: boolean;
   connected: boolean;
   mandatory: boolean;
-  selected:  boolean;
   onPress:   () => void;
 };
 
 const ProviderCard = ({
   title, subtitle, iconName, iconBg, iconTint,
-  installed, connected, mandatory, selected, onPress,
+  installed, connected, mandatory, onPress,
 }: ProviderCardProps) => {
   const statusLabel = connected ? 'Connected' : installed ? 'Open' : 'Install';
   const statusColor = connected ? VD.success : installed ? VD.accentDark : VD.warning;
 
   return (
     <TouchableOpacity
-      style={[ss.providerCard, selected && ss.providerCardSelected]}
+      style={ss.providerCard}
       onPress={onPress}
       activeOpacity={0.78}
     >
@@ -158,15 +165,9 @@ const ProviderCard = ({
       </View>
 
       <View style={ss.providerAction}>
-        {mandatory ? (
-          <View style={[ss.statusPill, { backgroundColor: statusColor + '22' }]}>
-            <Text style={[ss.statusText, { color: statusColor }]}>{statusLabel}</Text>
-          </View>
-        ) : (
-          <View style={[ss.radio, selected && ss.radioSelected]}>
-            {selected && <View style={ss.radioDot} />}
-          </View>
-        )}
+        <View style={[ss.statusPill, { backgroundColor: statusColor + '22' }]}>
+          <Text style={[ss.statusText, { color: statusColor }]}>{statusLabel}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -178,7 +179,7 @@ export default function StepsTrackerScreen() {
   const {
     healthConnectStatus, grantedPermissions,
     healthConnectError, isSetupComplete,
-    openHealthConnect, totalSteps, refreshStatus,
+    openHealthConnect, requestStepsPermission, totalSteps, refreshStatus,
   } = useStepTracker();
 
   const navigation = useNavigation<any>();
@@ -186,18 +187,34 @@ export default function StepsTrackerScreen() {
 
   const [isGoogleFitInstalled,     setIsGoogleFitInstalled]     = useState(false);
   const [isSamsungHealthInstalled, setIsSamsungHealthInstalled] = useState(false);
-  const [selectedOptional,         setSelectedOptional]         = useState<OptionalProvider | null>(null);
   const [guideOpen,                setGuideOpen]                = useState(false);
   const [altGuideOpen,             setAltGuideOpen]              = useState(false);
 
   const isHCInstalled = healthConnectStatus !== '0' && healthConnectStatus !== String(SdkAvailabilityStatus.SDK_UNAVAILABLE);
-  const hasStepsPerm  = grantedPermissions.some(p => p.recordType === 'Steps' && p.accessType === 'read');
+  const hasStepsPerm  = hasStepsPermission(grantedPermissions);
   const isHCReady     = healthConnectStatus === String(SdkAvailabilityStatus.SDK_AVAILABLE) && hasStepsPerm;
   const showGuide     = isHCInstalled && !hasStepsPerm;
-  const canProceed    = isHCReady && selectedOptional !== null && totalSteps > 0;
+  const canProceed    = isHCReady && totalSteps > 0;
+
+  // Prevent a double-navigation crash: when handleContinue calls
+  // requestStepsPermission(), that sets isSetupComplete = true which would
+  // fire the auto-redirect below at the same time as navigation.navigate('StepForm').
+  // Holding this ref true during the Continue flow suppresses the redirect;
+  // the user lands on StepForm instead and the redirect fires on Dashboard
+  // via isSetupComplete being true on re-entry to StepsTrackerScreen never happens.
+  const continueInProgressRef = useRef(false);
 
   useEffect(() => { checkApps(); }, []);
-  useEffect(() => { if (isSetupComplete && isHCReady) navigation.replace('Dashboard'); }, [isSetupComplete, isHCReady, navigation]);
+
+  // Auto-redirect for returning users: if setup was already complete (from
+  // AsyncStorage or backend check) and HC is ready, skip the screen entirely.
+  // Suppressed while handleContinue is running to avoid the double-navigation crash.
+  useEffect(() => {
+    if (isSetupComplete && isHCReady && !continueInProgressRef.current) {
+      navigation.replace('Dashboard');
+    }
+  }, [isSetupComplete, isHCReady, navigation]);
+
   useEffect(() => { setGuideOpen(showGuide); }, [showGuide]);
 
   const checkApps = async () => {
@@ -218,42 +235,56 @@ export default function StepsTrackerScreen() {
 
   const openAppSettings = () => Linking.openSettings();
 
-  const handleOptional = async (provider: OptionalProvider) => {
-    setSelectedOptional(provider);
+  const handleOpenApp = async (packageId: string, storeId: string, installed: boolean) => {
     try {
-      if (provider === 'Google Fit') {
-        isGoogleFitInstalled
-          ? await SendIntentAndroid.openApp('com.google.android.apps.fitness', {})
-          : await Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.fitness');
+      if (installed) {
+        await SendIntentAndroid.openApp(packageId, {});
       } else {
-        isSamsungHealthInstalled
-          ? await SendIntentAndroid.openApp('com.sec.android.app.shealth', {})
-          : await Linking.openURL('https://play.google.com/store/apps/details?id=com.sec.android.app.shealth');
+        await Linking.openURL(`https://play.google.com/store/apps/details?id=${storeId}`);
       }
     } catch {}
   };
 
-  const handleContinue = useCallback(() => {
+  const handleContinue = useCallback(async () => {
+    // Returning user: setup was already complete (from AsyncStorage or backend
+    // check) and HC is ready. The auto-redirect effect either already fired or
+    // is about to — navigating via Continue would race it and crash. Go to
+    // Dashboard directly so only one navigation is ever in flight.
+    if (isSetupComplete && isHCReady) {
+      navigation.replace('Dashboard');
+      return;
+    }
+
     if (!isHCReady) {
       alert.warning(
         !isHCInstalled ? 'Health Connect Required' : 'Permission Missing',
-        !isHCInstalled ? 'Please install Health Connect to continue.'
-                       : 'Please grant Steps permission in Health Connect, then return here.',
+        !isHCInstalled
+          ? 'Please install Health Connect to continue.'
+          : 'Please grant Steps permission in Health Connect, then return here.',
       );
       if (isHCInstalled) setGuideOpen(true);
       return;
     }
     if (totalSteps <= 0) {
-      alert.warning('No Steps Found', 'Open Google Fit or Samsung Health, allow Health Connect sync, walk a few steps, then return.');
+      alert.warning(
+        'No Steps Found',
+        'Open your fitness app (Google Fit, Samsung Health, Fitbit, Garmin, etc.), enable Health Connect sync, walk a few steps, then return here.',
+      );
       refreshStatus();
       return;
     }
-    if (!selectedOptional) {
-      alert.info('Select a Fitness App', 'Choose Samsung Health or Google Fit to continue.');
-      return;
+    // Block the auto-redirect effect while this async flow is in progress.
+    // requestStepsPermission() sets isSetupComplete = true internally, which
+    // would otherwise fire the redirect at the same time as navigate('StepForm').
+    continueInProgressRef.current = true;
+    try {
+      const setupReady = await requestStepsPermission();
+      if (!setupReady) return;
+      navigation.navigate('StepForm');
+    } finally {
+      continueInProgressRef.current = false;
     }
-    navigation.navigate('StepForm');
-  }, [isHCReady, isHCInstalled, totalSteps, selectedOptional, navigation, alert, refreshStatus]);
+  }, [isHCReady, isHCInstalled, totalSteps, requestStepsPermission, navigation, alert, refreshStatus]);
 
   return (
     <SafeAreaView style={ss.safe} edges={['top', 'bottom']}>
@@ -283,7 +314,7 @@ export default function StepsTrackerScreen() {
             subtitle="Google's unified health data platform"
             iconName={BRAND.hc.icon} iconBg={BRAND.hc.bg} iconTint={BRAND.hc.tint}
             installed={isHCInstalled} connected={isHCReady}
-            mandatory selected={false} onPress={handleHCPress}
+            mandatory onPress={handleHCPress}
           />
 
           <TouchableOpacity style={ss.guideToggle} onPress={() => setGuideOpen(v => !v)} activeOpacity={0.7}>
@@ -295,7 +326,7 @@ export default function StepsTrackerScreen() {
 
           <PermissionGuide visible={guideOpen} steps={STEPS} headerText="How to grant Steps permission" />
 
-          {(isHCInstalled || isGoogleFitInstalled) && !hasStepsPerm && (
+          {(isHCInstalled || isGoogleFitInstalled || isSamsungHealthInstalled) && !hasStepsPerm && (
             <>
               <TouchableOpacity style={ss.guideToggle} onPress={() => setAltGuideOpen(v => !v)} activeOpacity={0.7}>
                 <MaterialCommunityIcons name={altGuideOpen ? 'chevron-up' : 'cog-outline'} size={14} color={VD.warning} />
@@ -317,10 +348,10 @@ export default function StepsTrackerScreen() {
             </>
           )}
 
-          {/* Choose one */}
-          <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Choose Your Fitness App</Text>
+          {/* Optional fitness apps — launchers, not required selection */}
+          <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Sync a Fitness App</Text>
           <Text style={ss.sectionHint}>
-            Select the app that syncs your step data to Health Connect.
+            Open any app below to enable Health Connect sync. You can also use Fitbit, Garmin, or any other compatible app — no specific app is required.
           </Text>
 
           <ProviderCard
@@ -328,22 +359,32 @@ export default function StepsTrackerScreen() {
             subtitle="Ideal for Samsung devices — syncs automatically"
             iconName={BRAND.samsung.icon} iconBg={BRAND.samsung.bg} iconTint={BRAND.samsung.tint}
             installed={isSamsungHealthInstalled} connected={false}
-            mandatory={false} selected={selectedOptional === 'Samsung Health'}
-            onPress={() => handleOptional('Samsung Health')}
+            mandatory={false}
+            onPress={() => handleOpenApp('com.sec.android.app.shealth', 'com.sec.android.app.shealth', isSamsungHealthInstalled)}
           />
           <ProviderCard
             title="Google Fit"
             subtitle="Works on all Android phones — great for step tracking"
             iconName={BRAND.google.icon} iconBg={BRAND.google.bg} iconTint={BRAND.google.tint}
             installed={isGoogleFitInstalled} connected={false}
-            mandatory={false} selected={selectedOptional === 'Google Fit'}
-            onPress={() => handleOptional('Google Fit')}
+            mandatory={false}
+            onPress={() => handleOpenApp('com.google.android.apps.fitness', 'com.google.android.apps.fitness', isGoogleFitInstalled)}
           />
+
+          {/* Other apps note */}
+          <View style={ss.otherAppsRow}>
+            <View style={[ss.providerIcon, { backgroundColor: BRAND.other.bg, width: 36, height: 36, borderRadius: 10 }]}>
+              <MaterialCommunityIcons name={BRAND.other.icon} size={18} color={BRAND.other.tint} />
+            </View>
+            <Text style={ss.otherAppsText}>
+              Also works with <Text style={ss.otherAppsHighlight}>Fitbit, Garmin Connect, Huawei Health, Strava</Text> and any app that supports Health Connect.
+            </Text>
+          </View>
 
           <View style={ss.appTip}>
             <MaterialCommunityIcons name="lightbulb-outline" size={13} color={VD.accentDark} />
             <Text style={ss.appTipText}>
-              After selecting, open the app → Settings → Manage connected apps → Enable Health Connect.
+              Inside your fitness app, go to Settings → Connected apps → Health Connect and enable it. Then walk a few steps so data appears.
             </Text>
           </View>
 
@@ -406,7 +447,6 @@ const ss = StyleSheet.create({
     borderWidth: 1, borderColor: VD.cardBorder,
     padding: SPACING.md, marginBottom: SPACING.sm,
   },
-  providerCardSelected: { borderColor: VD.accent, backgroundColor: VD.accentFaint },
   providerIcon:    { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md, flexShrink: 0 },
   providerText:    { flex: 1, marginRight: SPACING.sm },
   providerTitleRow:{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
@@ -417,9 +457,16 @@ const ss = StyleSheet.create({
   requiredText:    { fontSize: 10, fontWeight: '700', color: VD.error },
   statusPill:      { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
   statusText:      { fontSize: 11, fontWeight: '700' },
-  radio:           { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: VD.whiteLow, alignItems: 'center', justifyContent: 'center' },
-  radioSelected:   { borderColor: VD.accentDark },
-  radioDot:        { width: 10, height: 10, borderRadius: 5, backgroundColor: VD.accentDark },
+
+  // Other apps row
+  otherAppsRow: {
+    width: '100%', flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
+    backgroundColor: VD.cardBg, borderRadius: BORDER_RADIUS.large,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    padding: SPACING.md, marginBottom: SPACING.sm,
+  },
+  otherAppsText:      { flex: 1, fontSize: 12, color: VD.whiteLow, lineHeight: 18 },
+  otherAppsHighlight: { color: VD.accentDark, fontWeight: '600' },
 
   // Guide toggle
   guideToggle: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: SPACING.xs, marginBottom: SPACING.xs },

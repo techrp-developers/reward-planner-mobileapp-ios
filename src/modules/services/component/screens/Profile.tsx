@@ -1,20 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import CartHead from '../constant/navbar/CartHead';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, Switch } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import OrderItemCard from '../../../common/order/OrderItemCard';
-import { fetchHistory } from '../../../ecommerce/api/OrderApi';
-import { FlatList } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../navigation/type';
 import type { RootStackParamList } from '../../../../navigation/RootNavigator';
 import { fetchUserInfo, getStoredUserName, deleteCustomer } from '../../../common/auth/api/AuthAPI';
-import { getProductImageUrl } from '../../../ecommerce/api/ProductApi';
 import { useAuth } from '../../../common/auth/context/AuthContext';
 import LinearGradient from 'react-native-linear-gradient';
 import { LogoutConfirmationModal } from '../../../common/auth/screens/LogoutConfirmationModal';
+import { useAppTheme } from '../../../../theme/ThemeContext';
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
 const SERVICES_PROFILE_TOP_OFFSET = 110;
@@ -23,11 +20,10 @@ function Profile() {
     const navigation = useNavigation<Nav>();
     const rootNavigation = navigation.getParent()?.getParent()?.getParent() as RootNav | undefined;
     const { isAuthenticated, user, logout } = useAuth();
+    const { isDark, toggleTheme } = useAppTheme();
     const [name, setName] = useState("User");
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
-    const [orders, setOrders] = useState<any[]>([]);
-    const [ordersLoading, setOrdersLoading] = useState(false);
 
     const handleOpenOrders = () => {
         navigation.navigate("MyOrder");
@@ -35,17 +31,8 @@ function Profile() {
     const handleOpenNotes = () => {
         navigation.navigate("TodoList");
     };
-    const handleOpenOrdersDetails = (order: any) => {
-        const orderId = Number(order?.order_id ?? order?.id);
-        if (!orderId || Number.isNaN(orderId)) return;
-
-        navigation.navigate("OrderConfirmedScreen", {
-            order_id: orderId,
-        });
-    };
     const OpenAddressDetails = () => {
-        // direct app-level navigation (AddAddressMap is now in AppStack)
-        navigation.navigate("AddAddressMap");
+        navigation.navigate("AddressSelect", { manageOnly: true });
     };
 
 
@@ -132,7 +119,7 @@ function Profile() {
 
             setName(userName);
         } catch (error) {
-            console.log("Failed to load user", error);
+            __DEV__ && console.log("Failed to load user", error);
         }
     }, [isAuthenticated, user]);
 
@@ -146,52 +133,11 @@ function Profile() {
         }, [loadUser])
     );
 
-    const loadOrders = useCallback(async () => {
-        if (!isAuthenticated) {
-            setOrders([]);
-            return;
-        }
-
-        try {
-            setOrdersLoading(true);
-            const res = await fetchHistory();
-            if (res?.success) {
-                setOrders(res.orders || []);
-            } else {
-                setOrders([]);
-            }
-        } finally {
-            setOrdersLoading(false);
-        }
-    }, [isAuthenticated]);
-
-    useEffect(() => {
-        loadOrders();
-    }, [loadOrders]);
-
-    const getOrderImageUri = (order: any) => {
-        const rawImage =
-            order?.image ||
-            order?.product_image ||
-            order?.product?.image ||
-            "";
-
-        if (!rawImage) {
-            return "https://via.placeholder.com/150";
-        }
-
-        if (/^https?:\/\//i.test(rawImage)) {
-            return rawImage;
-        }
-
-        return getProductImageUrl(rawImage) || "https://via.placeholder.com/150";
-    };
-
     return (
-        <View style={styles.screen}>
+        <View style={[styles.screen, isDark && styles.screenDark]}>
 
             {/* Header */}
-            <View style={styles.fixedHeader}>
+            <View style={[styles.fixedHeader, isDark && styles.fixedHeaderDark]}>
                 <CartHead />
             </View>
 
@@ -200,19 +146,19 @@ function Profile() {
                 contentContainerStyle={styles.pageContent}
                 style={{ marginTop: SERVICES_PROFILE_TOP_OFFSET }}
             >
-                <View style={styles.container}>
+                <View style={[styles.container, isDark && styles.surfaceDark]}>
 
                     {/* Top Row */}
                     <View style={styles.topRow}>
 
                         {/* Left Section */}
                         <View style={styles.leftRow}>
-                            <View style={styles.avatar}>
+                            <View style={[styles.avatar, isDark && styles.avatarDark]}>
                                 <MaterialIcons name="person" size={26} color="#6C63FF" />
                             </View>
 
                             <View style={styles.nameRow}>
-                                <Text style={styles.helloText}>Hello {name}</Text>
+                                <Text style={[styles.helloText, isDark && styles.textDark]}>Hello {name}</Text>
                             </View>
                         </View>
 
@@ -234,18 +180,18 @@ function Profile() {
                             <OutlineButton title="My Orders" onPress={handleOpenOrders} />
                             <OutlineButton title="Wallet" onPress={() => navigation.navigate("WalletHistory")} />
                             {/* <OutlineButton title="Rewards" onPress={() => navigation.navigate("WalletHistory")} */}
-
+                            
                         </ScrollView>
                     </View>
 
 
                     {/* Divider */}
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, isDark && styles.dividerDark]} />
 
                     {/* Your Orders Row */}
                     <TouchableOpacity style={styles.ordersRow} onPress={handleOpenOrders} activeOpacity={0.8}>
-                        <Text style={styles.ordersText}>Your Orders</Text>
-                        <MaterialIcons name="keyboard-arrow-right" size={22} color="#444" />
+                        <Text style={[styles.ordersText, isDark && styles.textDark]}>Your Orders</Text>
+                        <MaterialIcons name="keyboard-arrow-right" size={22} color={isDark ? "#A1A1AA" : "#444"} />
                     </TouchableOpacity>
                 </View>
                 {/* <View style={styles.listWrap}>
@@ -284,12 +230,15 @@ function Profile() {
                     )}
                 </View> */}
                 {/* Profile Menu Card */}
-                <View style={styles.menuCard}>
-                    <MenuItem title="Your Notes" showArrow onPress={handleOpenNotes} />
-                    <View style={styles.menuDivider} />
+                <View style={[styles.menuCard, isDark && styles.menuCardDark]}>
+                    <DarkModeMenuItem isDark={isDark} onToggle={toggleTheme} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Address Book" showArrow onPress={OpenAddressDetails} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Your Notes" showArrow onPress={handleOpenNotes} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
+
+                    <MenuItem title="Address Book" showArrow onPress={OpenAddressDetails} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
                     {/* <MenuItem title="Settings" />
                 <View style={styles.menuDivider} /> */}
@@ -297,15 +246,15 @@ function Profile() {
                     {/* <MenuItem title="Languages" />
                 <View style={styles.menuDivider} /> */}
 
-                    <MenuItem title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Terms & Conditions" onPress={() => navigation.navigate('TermsAndConditions')} />
-                    <View style={styles.menuDivider} />
-                    <MenuItem title="Delete Account" onPress={handleDeleteAccount} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Terms & Conditions" onPress={() => navigation.navigate('TermsAndConditions')} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
+                    <MenuItem title="Delete Account" onPress={handleDeleteAccount} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Logout" onPress={handleLogoutPress} />
+                    <MenuItem title="Logout" onPress={handleLogoutPress} isDark={isDark} />
 
                 </View>
 
@@ -325,25 +274,52 @@ const MenuItem = ({
     title,
     showArrow = true,
     onPress,
+    isDark = false,
 }: {
     title: string;
     showArrow?: boolean;
     onPress?: () => void;
+    isDark?: boolean;
 }) => (
     <TouchableOpacity
         style={styles.menuItem}
         onPress={onPress}
         activeOpacity={0.8}
     >
-        <Text style={styles.menuText}>{title}</Text>
+        <Text style={[styles.menuText, isDark && styles.textDark]}>{title}</Text>
         {showArrow && (
             <MaterialCommunityIcons
                 name="chevron-right"
                 size={20}
-                color="#999"
+                color={isDark ? "#71717A" : "#999"}
             />
         )}
     </TouchableOpacity>
+);
+
+const DarkModeMenuItem = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => (
+    <View style={styles.menuItem}>
+        <View style={styles.darkModeLeft}>
+            <MaterialCommunityIcons
+                name={isDark ? "weather-night" : "white-balance-sunny"}
+                size={20}
+                color="#6366F1"
+            />
+            <View>
+                <Text style={[styles.menuText, isDark && styles.textDark]}>Dark Mode</Text>
+                <Text style={[styles.darkModeSub, isDark && styles.mutedDark]}>
+                    {isDark ? "Dark theme active" : "Light theme active"}
+                </Text>
+            </View>
+        </View>
+        <Switch
+            value={isDark}
+            onValueChange={onToggle}
+            thumbColor="#FFFFFF"
+            trackColor={{ false: "#CBD5E1", true: "#4F46E5" }}
+            ios_backgroundColor="#CBD5E1"
+        />
+    </View>
 );
 const OutlineButton = ({ title, onPress }: { title: string; onPress?: () => void }) => (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
@@ -363,6 +339,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#FFFF",
     },
+    screenDark: {
+        backgroundColor: "#09090B",
+    },
     fixedHeader: {
         position: "absolute",
         top: 0,
@@ -371,11 +350,17 @@ const styles = StyleSheet.create({
         zIndex: 50,
         backgroundColor: "#FFF",
     },
+    fixedHeaderDark: {
+        backgroundColor: "#111113",
+    },
     container: {
         backgroundColor: "#FFFFFF",
         paddingHorizontal: 16,
         paddingTop: 18,
         paddingBottom: 12,
+    },
+    surfaceDark: {
+        backgroundColor: "#111113",
     },
     pageContent: {
         paddingBottom: 28,
@@ -400,6 +385,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
+    avatarDark: {
+        backgroundColor: "#27272A",
+    },
 
     nameRow: {
         flexDirection: "row",
@@ -412,6 +400,12 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#333",
         marginRight: 4,
+    },
+    textDark: {
+        color: "#FFFFFF",
+    },
+    mutedDark: {
+        color: "#A1A1AA",
     },
 
     rightRow: {
@@ -451,6 +445,8 @@ const styles = StyleSheet.create({
     outlineBtn: {
         borderWidth: 1,
         borderColor: "#D0D0D0",
+        paddingVertical: 8,
+        paddingHorizontal: 14,
         borderRadius: 10,
     },
 
@@ -458,14 +454,15 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: "500",
         color: "#333",
-        paddingVertical: 8,
-        paddingHorizontal: 14,
     },
 
     divider: {
         height: 1,
         backgroundColor: "#FFFF",
         marginVertical: 16,
+    },
+    dividerDark: {
+        backgroundColor: "rgba(255,255,255,0.08)",
     },
 
     ordersRow: {
@@ -512,6 +509,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E5E5E5",
     },
+    menuCardDark: {
+        backgroundColor: "#111113",
+        borderColor: "rgba(255,255,255,0.08)",
+    },
 
     menuItem: {
         paddingVertical: 16,
@@ -526,6 +527,17 @@ const styles = StyleSheet.create({
         color: "#444",
         fontWeight: "500",
     },
+    darkModeLeft: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+    darkModeSub: {
+        marginTop: 2,
+        fontSize: 11,
+        color: "#777",
+        fontWeight: "500",
+    },
 
     menuDivider: {
         height: 1,
@@ -534,7 +546,8 @@ const styles = StyleSheet.create({
     },
 
     gradientBtn: {
-
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -545,7 +558,5 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "600",
         color: "#FFFFFF",
-        paddingVertical: 10,
-        paddingHorizontal: 12,
     },
 });

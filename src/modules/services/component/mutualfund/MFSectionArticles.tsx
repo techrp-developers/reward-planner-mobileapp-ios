@@ -17,6 +17,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getSectionContent, type MFArticleDetails } from '../../api/MutualFundAPI';
 import type { HomeStackParamList } from '../../navigation/type';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_GAP = 12;
@@ -26,16 +27,17 @@ const THUMB_HEIGHT = CARD_WIDTH * 0.7;
 
 type SectionArticlesRoute = RouteProp<HomeStackParamList, 'MFSectionArticles'>;
 
-// Teal for sections 10-14 (Beginners, cat5), purple for 15-17 (Informed, cat6)
+// Teal for sections 10-14 (Beginners, cat5), navy for 15-17 (Informed, cat6)
 function getAccent(sectionId: number) {
     return sectionId <= 14
         ? { accent: '#1DB890', accentLight: '#E8F5F1' }
-        : { accent: '#8665FF', accentLight: '#EDE9FF' };
+        : { accent: '#3545A3', accentLight: '#E8ECFF' };
 }
 
 function MFSectionArticles() {
     const route = useRoute<SectionArticlesRoute>();
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+    const servicesTheme = useServicesTheme();
     const { sectionId, sectionTitle } = route.params;
     const { accent, accentLight } = getAccent(sectionId);
 
@@ -51,7 +53,7 @@ function MFSectionArticles() {
 
     const renderItem = ({ item }: { item: MFArticleDetails }) => (
         <TouchableOpacity
-            style={styles.card}
+            style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
             activeOpacity={0.88}
             onPress={() => navigation.navigate('ArticleDetails', { articleId: item.id, sectionId })}
         >
@@ -63,8 +65,8 @@ function MFSectionArticles() {
                 />
             </View>
             <View style={styles.cardBody}>
-                <Text style={styles.cardTitle} numberOfLines={3}>{item.title}</Text>
-                <Text style={styles.cardExcerpt} numberOfLines={2}>{item.short_description}</Text>
+                <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
+                <Text style={[styles.cardExcerpt, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{item.short_description}</Text>
                 <View style={[styles.readMoreRow]}>
                     <Text style={[styles.readMore, { color: accent }]}>Read More</Text>
                     <Text style={[styles.readMoreArrow, { color: accent }]}> ›</Text>
@@ -74,19 +76,19 @@ function MFSectionArticles() {
     );
 
     return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+            <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
 
-            <View style={[styles.header, { borderBottomColor: accent + '22' }]}>
+            <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider, shadowColor: servicesTheme.colors.shadow }]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={styles.backBtn}
+                    style={[styles.backBtn, { backgroundColor: servicesTheme.colors.surfaceAlt }]}
                     activeOpacity={0.7}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
                     <Text style={[styles.backIcon, { color: accent }]}>‹</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle} numberOfLines={2}>{sectionTitle}</Text>
+                <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{sectionTitle}</Text>
             </View>
 
             {loading ? (
@@ -95,7 +97,7 @@ function MFSectionArticles() {
                 </View>
             ) : articles.length === 0 ? (
                 <View style={styles.center}>
-                    <Text style={styles.emptyText}>No articles found.</Text>
+                    <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No articles found.</Text>
                 </View>
             ) : (
                 <FlatList

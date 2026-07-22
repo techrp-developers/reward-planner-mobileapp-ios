@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 export interface CalculatorItem {
   id: string;
@@ -24,36 +25,39 @@ interface Props {
   onPress: () => void;
 }
 
-const CalculatorCard: React.FC<Props> = ({ item, onPress }) => (
+const CalculatorCard: React.FC<Props> = ({ item, onPress }) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
   <TouchableOpacity
     activeOpacity={0.85}
-    style={styles.card}
+    style={[styles.card, { borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
     onPress={onPress}
   >
     <LinearGradient
-      colors={['#FFFFFF', '#F7F3FF']}
+      colors={servicesTheme.isDark ? ['#18181B', '#111113'] : ['#FFFFFF', '#F7F3FF']}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.cardInner}
     >
       <View style={styles.topRow}>
-        <View style={styles.imageHalo}>
+        <View style={[styles.imageHalo, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
           <Image source={item.image} style={styles.image} resizeMode="contain" />
         </View>
-        <View style={styles.quickBadge}>
-          <MaterialCommunityIcons name="flash" size={10} color="#7C3AED" />
+        <View style={[styles.quickBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F0E9FF' }]}>
+          <MaterialCommunityIcons name="flash" size={10} color="#3545A3" />
           <Text style={styles.quickBadgeText}>Tool</Text>
         </View>
       </View>
 
-      <Text style={styles.title} numberOfLines={2}>
+      <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>
         {item.title}
       </Text>
-      <Text style={styles.description} numberOfLines={3}>
+      <Text style={[styles.description, { color: servicesTheme.colors.muted }]} numberOfLines={3}>
         {item.subtitle}
       </Text>
 
-      <View style={styles.calcRow}>
+      <View style={[styles.calcRow, { borderTopColor: servicesTheme.colors.divider }]}>
         <Text style={styles.calcText}>Calculate Now</Text>
         <View style={styles.arrowCircle}>
           <MaterialCommunityIcons name="arrow-right" size={14} color="#FFFFFF" />
@@ -61,7 +65,8 @@ const CalculatorCard: React.FC<Props> = ({ item, onPress }) => (
       </View>
     </LinearGradient>
   </TouchableOpacity>
-);
+  );
+};
 
 export default CalculatorCard;
 
@@ -75,7 +80,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(124,58,237,0.10)',
     ...Platform.select({
       ios: {
-        shadowColor: '#4C2F91',
+        shadowColor: '#080B26',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.1,
         shadowRadius: 16,
@@ -85,6 +90,7 @@ const styles = StyleSheet.create({
   },
   cardInner: {
     flex: 1,
+    padding: 14,
     justifyContent: 'space-between',
   },
   topRow: {
@@ -110,16 +116,12 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 7,
     letterSpacing: -0.2,
-    paddingHorizontal: 14,
-
   },
   description: {
     fontSize: 11,
     color: '#746B86',
     lineHeight: 16,
     flexShrink: 1,
-    paddingHorizontal: 14,
-
   },
   image: {
     width: 46,
@@ -136,7 +138,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   quickBadgeText: {
-    color: '#7C3AED',
+    color: '#3545A3',
     fontSize: 9,
     fontWeight: '900',
     textTransform: 'uppercase',
@@ -145,24 +147,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // marginTop: 14,
-    // paddingTop: 12,
+    marginTop: 14,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(124,58,237,0.10)',
   },
   calcText: {
     fontSize: 12,
     fontWeight: '900',
-    color: '#8665FF',
-    // marginTop: 14,
-    padding: 12,
-
+    color: '#3545A3',
   },
   arrowCircle: {
     width: 25,
     height: 25,
     borderRadius: 13,
-    backgroundColor: '#7C3AED',
+    backgroundColor: '#3545A3',
     alignItems: 'center',
     justifyContent: 'center',
   },

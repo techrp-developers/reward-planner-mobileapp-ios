@@ -21,6 +21,7 @@ import {
     type MFArticleSummary,
     type MFChildCategory,
 } from '../../api/MutualFundAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -42,7 +43,7 @@ interface Props {
 
 const THEME = {
     beginners: {
-        accent: '#8665FF',
+        accent: '#3545A3',
         accentLight: '#E8F5F1',
         borderBottom: '#E6F7F3',
         bgPage: '#F7FDFB',
@@ -50,8 +51,8 @@ const THEME = {
         headerSubtitle: 'Simple guides to start investing with confidence',
     },
     informed: {
-        accent: '#8665FF',
-        accentLight: '#EDE9FF',
+        accent: '#3545A3',
+        accentLight: '#E8ECFF',
         borderBottom: '#F0EEFF',
         bgPage: '#F8F7FF',
         headerTitle: 'For the Informed Investor',
@@ -66,15 +67,18 @@ const THEME = {
 const PillToggle: React.FC<{
     value: Tab;
     onChange: (v: Tab) => void;
-}> = ({ value, onChange }) => (
-    <View style={toggle.container}>
+}> = ({ value, onChange }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
+    <View style={[toggle.container, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
         {(['beginners', 'informed'] as Tab[]).map(tab => {
             const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
             const isActive = value === tab;
             return isActive ? (
                 <LinearGradient
                     key={tab}
-                    colors={['#8665FF', '#5B47A3']}
+                    colors={['#3545A3', '#080B26']}
                     start={{ x: 0, y: 0.5 }}
                     end={{ x: 1, y: 0.5 }}
                     style={toggle.activeBtn}
@@ -88,12 +92,13 @@ const PillToggle: React.FC<{
                     onPress={() => onChange(tab)}
                     activeOpacity={0.7}
                 >
-                    <Text style={toggle.inactiveText}>{label}</Text>
+                    <Text style={[toggle.inactiveText, { color: servicesTheme.colors.muted }]}>{label}</Text>
                 </TouchableOpacity>
             );
         })}
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────
 // ARTICLE CARD
@@ -103,16 +108,20 @@ const ArticleCard: React.FC<{
     item: MFArticleSummary;
     accentLight: string;
     onPress: () => void;
-}> = ({ item, accentLight, onPress }) => (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
+}> = ({ item, accentLight, onPress }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
+    <TouchableOpacity style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress} activeOpacity={0.88}>
         <View style={[styles.thumbContainer, { backgroundColor: accentLight }]}>
             <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
         </View>
         <View style={styles.cardBody}>
-            <Text style={styles.cardTitle} numberOfLines={3}>{item.title}</Text>
+            <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
         </View>
     </TouchableOpacity>
-);
+    );
+};
 
 const CardSeparator = () => <View style={styles.cardSeparator} />;
 
@@ -126,11 +135,14 @@ const SectionRow: React.FC<{
     accentLight: string;
     onArticlePress: (articleId: number, sectionId: number) => void;
     onViewAll: (sectionId: number, sectionTitle: string) => void;
-}> = ({ section, accent, accentLight, onArticlePress, onViewAll }) => (
+}> = ({ section, accent, accentLight, onArticlePress, onViewAll }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
     <View style={styles.sectionRow}>
         <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionCount}>{section.article_count} articles</Text>
+            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{section.title}</Text>
+            <Text style={[styles.sectionCount, { color: servicesTheme.colors.muted }]}>{section.article_count} articles</Text>
         </View>
 
         <FlatList
@@ -157,13 +169,15 @@ const SectionRow: React.FC<{
             <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
     </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────
 
 const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
+    const servicesTheme = useServicesTheme();
     const { categoryId } = route.params;
 
     const [activeTab, setActiveTab] = useState<Tab>(categoryId === 6 ? 'informed' : 'beginners');
@@ -180,7 +194,7 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                 setBeginnersSections(cats.find(c => c.id === 5)?.children ?? []);
                 setInformedSections(cats.find(c => c.id === 6)?.children ?? []);
             })
-            .catch(() => { })
+            .catch(() => {})
             .finally(() => setLoading(false));
     }, []);
 
@@ -193,11 +207,11 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
     };
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bgPage }]} edges={['top']}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+            <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
 
             {/* Header */}
-            <View style={[styles.header, { borderBottomColor: theme.borderBottom }]}>
+            <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider, shadowColor: servicesTheme.colors.shadow }]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -206,8 +220,8 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     <Text style={[styles.backIcon, { color: theme.accent }]}>‹</Text>
                 </TouchableOpacity>
                 <View style={styles.headerTextWrap}>
-                    <Text style={styles.headerTitle}>{theme.headerTitle}</Text>
-                    <Text style={styles.headerSubtitle}>{theme.headerSubtitle}</Text>
+                    <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{theme.headerTitle}</Text>
+                    <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{theme.headerSubtitle}</Text>
                 </View>
             </View>
 
@@ -228,7 +242,7 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     {/* Sections */}
                     {sections.length === 0 ? (
                         <View style={styles.emptyWrap}>
-                            <Text style={styles.emptyText}>No content available.</Text>
+                            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No content available.</Text>
                         </View>
                     ) : (
                         sections.map(section => (
@@ -265,14 +279,16 @@ const toggle = StyleSheet.create({
     },
     activeBtn: {
         flex: 1,
-
+        paddingVertical: 10,
+        paddingHorizontal: 8,
         borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
     },
     inactiveBtn: {
         flex: 1,
-
+        paddingVertical: 10,
+        paddingHorizontal: 8,
         borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
@@ -283,16 +299,12 @@ const toggle = StyleSheet.create({
         color: '#FFFFFF',
         letterSpacing: 0.1,
         textAlign: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 8,
     },
     inactiveText: {
         fontSize: 13,
         fontWeight: '600',
         color: '#6B7280',
         textAlign: 'center',
-        paddingVertical: 10,
-        paddingHorizontal: 8,
     },
 });
 

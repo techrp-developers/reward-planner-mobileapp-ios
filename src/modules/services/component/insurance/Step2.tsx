@@ -11,6 +11,7 @@ import {
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import GradientButton from "../../constant/GradientButton";
 import LinearGradient from "react-native-linear-gradient";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 // Image Imports
 import Husband from "../../assete/insurance/Gender (1).png";
@@ -55,6 +56,7 @@ const AgeInputDropdown: React.FC<{
   setActiveDropdown,
   gender,
 }) => {
+  const servicesTheme = useServicesTheme();
   const isOpen = activeDropdown === memberId;
 
   const getIconForMember = (memberKey: string): any => {
@@ -70,12 +72,18 @@ const AgeInputDropdown: React.FC<{
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => setActiveDropdown(isOpen ? null : memberId)}
-        style={[styles.ageCard, isOpen && styles.ageCardFocused]}
+        style={[
+          styles.ageCard,
+          { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow },
+          isOpen && styles.ageCardFocused,
+          isOpen && { backgroundColor: servicesTheme.isDark ? "#18112A" : "#F9F8FF", borderColor: servicesTheme.colors.primary },
+        ]}
       >
         <View style={styles.memberLeft}>
           <View
             style={[
               styles.iconCircle,
+              { backgroundColor: servicesTheme.colors.surfaceAlt },
               selectedAge ? styles.iconCircleActive : null,
             ]}
           >
@@ -83,17 +91,17 @@ const AgeInputDropdown: React.FC<{
           </View>
 
           <View style={styles.textContainer}>
-            <Text style={styles.memberLabel}>{memberLabel}</Text>
-            <Text style={styles.memberSubLabel}>Family Member</Text>
+            <Text style={[styles.memberLabel, { color: servicesTheme.colors.textStrong }]}>{memberLabel}</Text>
+            <Text style={[styles.memberSubLabel, { color: servicesTheme.colors.muted }]}>Family Member</Text>
           </View>
         </View>
 
         {/* Age Dropdown Trigger */}
-        <View style={[styles.ageInputBox, isOpen && styles.ageInputActive]}>
+        <View style={[styles.ageInputBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }, isOpen && styles.ageInputActive]}>
           <Text
             style={[
               styles.ageInput,
-              !selectedAge && styles.ageInputPlaceholder,
+              { color: selectedAge ? servicesTheme.colors.text : servicesTheme.colors.subtle },
             ]}
             numberOfLines={1}
           >
@@ -102,14 +110,14 @@ const AgeInputDropdown: React.FC<{
           <MaterialIcons
             name={isOpen ? "expand-less" : "expand-more"}
             size={18}
-            color="#334155"
+            color={servicesTheme.colors.muted}
           />
         </View>
       </TouchableOpacity>
 
       {/* Dropdown */}
       {isOpen && (
-        <View style={styles.dropdownContainer}>
+        <View style={[styles.dropdownContainer, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
             nestedScrollEnabled
@@ -120,7 +128,9 @@ const AgeInputDropdown: React.FC<{
                 key={item}
                 style={[
                   styles.ageListItem,
+                  { borderBottomColor: servicesTheme.colors.divider },
                   selectedAge === item && styles.ageListItemSelected,
+                  selectedAge === item && { backgroundColor: servicesTheme.isDark ? "#18112A" : "#F9F8FF" },
                 ]}
                 onPress={() => {
                   onAgeSelect(item);
@@ -130,6 +140,7 @@ const AgeInputDropdown: React.FC<{
                 <Text
                   style={[
                     styles.ageListItemText,
+                    { color: servicesTheme.colors.text },
                     selectedAge === item && styles.ageListItemTextSelected,
                   ]}
                 >
@@ -148,6 +159,7 @@ const AgeInputDropdown: React.FC<{
 };
 
 export default function Step2({ data, setData, onNext, onBack }: Props) {
+  const servicesTheme = useServicesTheme();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Expand members
@@ -181,9 +193,9 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
   const isNextDisabled = expandedMembers.some((m) => !data.ages?.[m.id]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
@@ -195,8 +207,8 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>How old are they?</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>How old are they?</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
             Age helps us find the most accurate plans for your family.
           </Text>
         </View>
@@ -219,9 +231,9 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)", borderTopColor: servicesTheme.colors.divider }]}>
         <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={onBack}>
+          <TouchableOpacity style={[styles.backBtn, { borderColor: servicesTheme.colors.border, backgroundColor: servicesTheme.colors.surface }]} onPress={onBack}>
             <MaterialIcons name="arrow-back" size={20} color="#8665FF" />
           </TouchableOpacity>
           <View style={styles.buttonWrapper}>

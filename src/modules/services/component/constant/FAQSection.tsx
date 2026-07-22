@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 // Enable LayoutAnimation for smooth expansion
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -21,6 +22,7 @@ interface FAQSectionProps {
 }
 
 const FAQItem = ({ item }: { item: FAQItemData }) => {
+    const servicesTheme = useServicesTheme();
     const [isExpanded, setIsExpanded] = useState(false);
 
     const toggle = () => {
@@ -29,20 +31,20 @@ const FAQItem = ({ item }: { item: FAQItemData }) => {
     };
 
     return (
-        <View style={styles.itemWrapper}>
+        <View style={[styles.itemWrapper, { borderBottomColor: servicesTheme.colors.divider }]}>
             <TouchableOpacity style={styles.itemHeader} onPress={toggle} activeOpacity={0.7}>
-                <Text style={styles.questionText}>{item.question}</Text>
-                <View style={[styles.toggleIconWrap, isExpanded && styles.toggleIconWrapActive]}>
+                <Text style={[styles.questionText, { color: servicesTheme.colors.text }]}>{item.question}</Text>
+                <View style={[styles.toggleIconWrap, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3EFFF' }, isExpanded && styles.toggleIconWrapActive]}>
                     <MaterialIcons
                         name={isExpanded ? 'remove' : 'add'}
                         size={16}
-                        color={isExpanded ? '#FFFFFF' : '#5B47A3'}
+                        color={isExpanded ? '#FFFFFF' : servicesTheme.colors.primary}
                     />
                 </View>
             </TouchableOpacity>
             {isExpanded && (
                 <View style={styles.answerBox}>
-                    <Text style={styles.answerText}>{item.answer}</Text>
+                    <Text style={[styles.answerText, { color: servicesTheme.colors.muted }]}>{item.answer}</Text>
                 </View>
             )}
         </View>
@@ -52,23 +54,26 @@ const FAQItem = ({ item }: { item: FAQItemData }) => {
 const FAQSection: React.FC<FAQSectionProps> = ({
     title,
     data,
-    gradientColors = ['#FFF2B2', '#FFFEFF', '#FEFDFF']
+    gradientColors = ['#FFF2B2', '#FFFEFF', '#FEFDFF'] 
 }) => {
+    const servicesTheme = useServicesTheme();
+    const headerColors = servicesTheme.isDark ? ['#18112A', '#111113', '#111113'] : gradientColors;
+
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
             <LinearGradient
-                colors={gradientColors}
+                colors={headerColors}
                 start={{ x: 0, y: 0.5 }}
                 end={{ x: 1, y: 0.5 }}
                 style={styles.headerGradient}
             >
-                <Text style={styles.headerTitle}>{title}</Text>
+                <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
                 <View style={styles.blueBubble}>
                     <MaterialIcons name="help-outline" size={20} color="#FFFFFF" />
                 </View>
             </LinearGradient>
 
-            <View style={styles.listContainer}>
+            <View style={[styles.listContainer, { backgroundColor: servicesTheme.colors.surface }]}>
                 {data.map((item, index) => (
                     <FAQItem key={index} item={item} />
                 ))}
@@ -93,7 +98,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-
+        paddingHorizontal: 20,
+        paddingVertical: 20,
         gap: 12,
     },
     headerTitle: {
@@ -102,8 +108,6 @@ const styles = StyleSheet.create({
         color: '#1F2937',
         flex: 1,
         letterSpacing: -0.2,
-        paddingHorizontal: 20,
-        paddingVertical: 20,
     },
     listContainer: {
         backgroundColor: '#FFFFFF',

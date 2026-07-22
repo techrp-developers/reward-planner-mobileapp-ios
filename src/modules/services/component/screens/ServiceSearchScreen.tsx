@@ -22,10 +22,12 @@ import {
   clearSearchHistory,
   type SearchSuggestion,
 } from '../../api/SearchAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ServiceSearch'>;
 
 export default function ServiceSearchScreen({ navigation }: Props) {
+  const servicesTheme = useServicesTheme();
   const [search, setSearch]               = useState('');
   const [loading, setLoading]             = useState(false);
   const [suggestions, setSuggestions]     = useState<SearchSuggestion[]>([]);
@@ -38,8 +40,8 @@ export default function ServiceSearchScreen({ navigation }: Props) {
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ]),
     );
     anim.start();
@@ -102,7 +104,7 @@ export default function ServiceSearchScreen({ navigation }: Props) {
   const isSearchActive = search.trim().length >= 2;
 
   return (
-    <SafeAreaView style={styles.root} edges={[ 'left', 'right', 'bottom']}>
+    <SafeAreaView style={[styles.root, { backgroundColor: servicesTheme.colors.background }]} edges={[ 'left', 'right', 'bottom']}>
 
       <ServiceHead
         showSearch
@@ -131,21 +133,27 @@ export default function ServiceSearchScreen({ navigation }: Props) {
             {!historyLoading && history.length > 0 && (
               <View style={styles.historySection}>
                 <View style={styles.historyHeader}>
-                  <Text style={styles.historyTitle}>Recent searches</Text>
+                  <Text style={[styles.historyTitle, { color: servicesTheme.colors.textStrong }]}>Recent searches</Text>
                   <TouchableOpacity onPress={handleClearHistory}>
-                    <Text style={styles.clearText}>Clear all</Text>
+                    <Text style={[styles.clearText, { color: servicesTheme.colors.primary }]}>Clear all</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.chipsRow}>
                   {history.map((keyword, idx) => (
                     <TouchableOpacity
                       key={`${keyword}-${idx}`}
-                      style={styles.chip}
+                      style={[
+                        styles.chip,
+                        {
+                          backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3EEFF',
+                          borderColor: servicesTheme.colors.border,
+                        },
+                      ]}
                       activeOpacity={0.7}
                       onPress={() => handleHistoryPress(keyword)}
                     >
-                      <MaterialCommunityIcons name="history" size={13} color="#7C3AED" style={styles.chipIcon} />
-                      <Text style={styles.chipText} numberOfLines={1}>{keyword}</Text>
+                      <MaterialCommunityIcons name="history" size={13} color={servicesTheme.colors.primary} style={styles.chipIcon} />
+                      <Text style={[styles.chipText, { color: servicesTheme.colors.primary }]} numberOfLines={1}>{keyword}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -153,7 +161,7 @@ export default function ServiceSearchScreen({ navigation }: Props) {
             )}
 
             {!historyLoading && history.length === 0 && (
-              <Text style={styles.hint}>Type at least 2 characters to search services</Text>
+              <Text style={[styles.hint, { color: servicesTheme.colors.subtle }]}>Type at least 2 characters to search services</Text>
             )}
           </>
         )}
@@ -175,7 +183,7 @@ export default function ServiceSearchScreen({ navigation }: Props) {
 
         {/* ── No results ── */}
         {isSearchActive && !loading && suggestions.length === 0 && (
-          <Text style={styles.noResult}>No services found for "{search}"</Text>
+          <Text style={[styles.noResult, { color: servicesTheme.colors.muted }]}>No services found for "{search}"</Text>
         )}
 
         {/* ── Results ── */}
@@ -183,17 +191,17 @@ export default function ServiceSearchScreen({ navigation }: Props) {
           <TouchableOpacity
             key={item.id}
             activeOpacity={0.8}
-            style={styles.row}
+            style={[styles.row, { borderBottomColor: servicesTheme.colors.divider }]}
             onPress={() => handleSuggestionPress(item)}
           >
-            <View style={styles.imgWrap}>
+            <View style={[styles.imgWrap, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.borderSoft }]}>
               <Image source={{ uri: item.image }} style={styles.img} resizeMode="contain" />
             </View>
             <View style={styles.mid}>
-              <Text style={styles.rowName} numberOfLines={1}>{item.title}</Text>
-              <Text style={styles.rowType}>{item.type}</Text>
+              <Text style={[styles.rowName, { color: servicesTheme.colors.text }]} numberOfLines={1}>{item.title}</Text>
+              <Text style={[styles.rowType, { color: servicesTheme.colors.subtle }]}>{item.type}</Text>
             </View>
-            <MaterialCommunityIcons name="arrow-top-left" size={20} color="#bbb" />
+            <MaterialCommunityIcons name="arrow-top-left" size={20} color={servicesTheme.colors.subtle} />
           </TouchableOpacity>
         ))}
       </ScrollView>

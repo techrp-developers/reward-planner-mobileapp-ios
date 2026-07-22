@@ -1,0 +1,1256 @@
+const FitnessModel = require("../models/fitnessModel");
+const db = require("../../../../config/database");
+const { notifyUser } = require("../../../common/utils/notification");
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleDateString("en-CA"); // YYYY-MM-DD
+};
+
+// [yesterday, today, tomorrow] (server-local) — any two real-world timezones
+// can differ by at most one calendar day, so this is the tolerance window
+// used both when accepting a sync's date and when resolving which date a
+// "today" read should actually look at (see resolveEffectiveDate below).
+const getDateWindow = () => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const tomorrow = new Date(now);
+  tomorrow.setDate(now.getDate() + 1);
+  return [yesterday, now, tomorrow].map(formatDate);
+};
+
+const ADJACENT_DATE_FALLBACK_MINUTES = 120;
+
+// "Today" reads (dashboard, summary, hourly stats) used to hard-code the
+// server's exact today — but syncSteps accepts a 3-day tolerance window for
+// device/server timezone differences, so a sync could save steps under
+// "tomorrow" (server-local) while these reads only ever looked at "today",
+// showing 0 even though the sync succeeded. Server-local today wins first.
+// Yesterday/tomorrow are only used when touched recently, which covers real
+// timezone drift without showing stale yesterday data as today's movement.
+const resolveEffectiveDate = async (customerId, conn) => {
+  const candidates = getDateWindow();
+  const [yesterday, today, tomorrow] = candidates;
+  const todayRow = await FitnessModel.getTodaySteps(customerId, today);
+  if (todayRow) return today;
+
+  const adjacentRow = await FitnessModel.getRecentlyUpdatedStepsForDates(
+    customerId,
+    [yesterday, tomorrow],
+    ADJACENT_DATE_FALLBACK_MINUTES,
+    conn,
+  );
+
+  return adjacentRow ? formatDate(adjacentRow.step_date) : today;
+};
+
+// 0-23 -> "12AM", "6AM", "12PM", "3PM", etc. — matches the format the
+// frontend's StatisticsGraph already parses (^(\d{1,2})(AM|PM)$).
+const formatHourLabel = (hour) => {
+  const period = hour < 12 ? "AM" : "PM";
+  const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+  return `${displayHour}${period}`;
+};
+
+// 4-week ramp toward the BMI-based recommended target, scaled to that
+// target instead of hardcoded absolute values — otherwise the ramp can
+// collide with or undercut the final target for lower BMI categories
+// (e.g. underweight's 5000 recommended_steps used to duplicate week 1).
+const buildWeeklyPlan = (recommendedSteps) => {
+  const ratios = [0.7, 0.8, 0.9, 1];
+  const steps = ratios.map((r) => Math.round((recommendedSteps * r) / 500) * 500);
+
+  for (let i = 1; i < steps.length; i++) {
+    if (steps[i] <= steps[i - 1]) steps[i] = steps[i - 1] + 500;
+  }
+
+  // Week 4 should land on the actual recommended target, not a rounded
+  // approximation, as long as that still keeps the ramp increasing.
+  steps[steps.length - 1] = Math.max(recommendedSteps, steps[steps.length - 2] + 500);
+
+  return steps.map((value, i) => ({ week: i + 1, steps: value }));
+};
+
+// Shared by both syncSteps return paths (goal achieved or not) — lifetime
+// achievement coins must be credited even when the daily goal wasn't hit.
+const creditWalletCoins = async (customerId, coins, conn) => {
+  if (coins <= 0) return;
+
+  await conn.execute(
+    `INSERT INTO customer_wallet (user_id, balance)
+      VALUES (?, 0)
+      ON DUPLICATE KEY UPDATE user_id = user_id`,
+    [customerId],
+  );
+
+  await conn.execute(
+    `UPDATE customer_wallet
+     SET balance = balance + ?
+     WHERE user_id = ?`,
+    [coins, customerId],
+  );
+
+  const EXPIRY_MONTHS = parseInt(process.env.WALLET_EXPIRY_MONTHS || "3", 10);
+  const expiryDate = new Date();
+  expiryDate.setMonth(expiryDate.getMonth() + EXPIRY_MONTHS);
+
+  await conn.execute(
+    `
+      INSERT INTO wallet_transactions
+      (
+        user_id,
+        title,
+        description,
+        transaction_type,
+        coins,
+        balance_after,
+        category,
+        expiry_date,
+        reason_code
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    [
+      customerId,
+      "Coins Credited",
+      "Fitness Goal Reward",
+      "credit",
+      coins,
+      null,
+      "steps",
+      expiryDate,
+      "ORDER_REWARD",
+    ],
+  );
+};
+
+const toFiniteNumber = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
+const assertNumberInRange = (value, label, min, max) => {
+  const number = toFiniteNumber(value);
+  if (number === null || number < min || number > max) {
+    throw new Error(`Invalid ${label}`);
+  }
+  return number;
+};
+
+// Used only if the fitness_reward_config row is missing/disabled — keeps the
+// goal reward working even if the config table is empty.
+const FALLBACK_GOAL_COINS = 5;
+
+class FitnessService {
+  async syncSteps(customerId, payload) {
+    const {
+      steps: rawSteps,
+      distance_km: rawDistance,
+      calories: rawCalories,
+      active_minutes: rawActiveMinutes,
+      date,
+    } = payload || {};
+
+    // Allow today, yesterday, or tomorrow (server-local) — any two real-world
+    // timezones can differ by at most one calendar day, so this tolerates
+    // device/server timezone mismatch instead of rejecting legitimate syncs
+    // made near midnight.
+    const now = new Date();
+    if (!date || !getDateWindow().includes(date)) {
+      throw new Error("Only today's steps can be synced");
+    }
+
+    const steps = assertNumberInRange(rawSteps, "step count", 0, 30000);
+    const distance_km = assertNumberInRange(rawDistance ?? 0, "distance", 0, 100);
+    const calories = assertNumberInRange(rawCalories ?? 0, "calories", 0, 10000);
+    const active_minutes = assertNumberInRange(
+      rawActiveMinutes ?? 0,
+      "active minutes",
+      0,
+      1440,
+    );
+
+    // -------------------------------
+    // Anti cheat
+    // -------------------------------
+    if (steps > 5000 && active_minutes < 5) {
+      throw new Error("Invalid activity pattern");
+    }
+
+    // Cross-field plausibility: distance/calories must be in the range a real
+    // device would report for this many steps (avg stride ~0.4-1.5m, ~0.02-0.08
+    // kcal/step). Catches a direct API caller sending an inflated distance or
+    // calorie count alongside a low/unrelated step count.
+    if (steps > 0) {
+      if (distance_km > 0 && (distance_km < steps * 0.0004 || distance_km > steps * 0.0015)) {
+        throw new Error("Invalid activity pattern");
+      }
+      if (calories > 0 && (calories < steps * 0.02 || calories > steps * 0.08)) {
+        throw new Error("Invalid activity pattern");
+      }
+    } else if (distance_km > 0 || calories > 0) {
+      throw new Error("Invalid activity pattern");
+    }
+
+    // -------------------------------
+    // 1. Get goal (read-only, no concurrency concern)
+    // -------------------------------
+    const goal = await FitnessModel.getGoal(customerId);
+
+    if (!goal) {
+      return { message: "No goal set" };
+    }
+
+    const [profileRows] = await db.execute(
+      `
+      SELECT goal_type
+      FROM fitness_profiles
+      WHERE user_id = ?
+    `,
+      [customerId],
+    );
+
+    const profile = profileRows[0];
+
+    // -------------------------------
+    // 2. TRANSACTION START — step save, streak update, and reward/wallet
+    //    writes all happen atomically so a failure can't leave steps saved
+    //    without their matching streak/coin credit (or vice versa). The
+    //    FOR UPDATE locks also serialize concurrent syncs for the same user
+    //    so two near-simultaneous requests can't both read a stale streak
+    //    and double-increment or double-reward.
+    // -------------------------------
+    const conn = await db.getConnection();
+    await conn.beginTransaction();
+
+    try {
+      // -------------------------------
+      // STEP DELTA VALIDATION (locked read)
+      // -------------------------------
+      const streakData = await FitnessModel.getStreakForUpdate(customerId, conn);
+      const existingSteps = await FitnessModel.getStepsByDateForUpdate(customerId, date, conn);
+      const previousSteps = existingSteps?.steps || 0;
+      const stepDiff = steps - previousSteps;
+
+      if (existingSteps) {
+        //  Case 1: Same or lower steps → ignore
+        if (steps <= previousSteps) {
+          await conn.commit();
+          return {
+            message: "No new steps to process",
+            goalAchieved: Math.max(previousSteps, steps) >= goal.daily_steps,
+            reward: 0,
+            currentStreak: streakData?.current_streak || 0,
+          };
+        }
+
+        //  Case 2: Unrealistic jump (anti-cheat)
+        if (stepDiff > 15000) {
+          throw new Error("Suspicious step increase detected");
+        }
+
+        if (stepDiff > 5000 && active_minutes < 5) {
+          throw new Error("Invalid activity pattern");
+        }
+      } else if (steps > 15000) {
+        throw new Error("Suspicious step increase detected");
+      }
+
+      // -------------------------------
+      // SAVE STEPS (ALWAYS if valid, inside the same transaction)
+      // -------------------------------
+      await FitnessModel.upsertSteps(
+        {
+          customer_id: customerId,
+          step_date: date,
+          steps,
+          distance_km,
+          calories,
+          active_minutes,
+        },
+        conn,
+      );
+
+      // Attribute this sync's new steps to the current server-hour, building
+      // a real (if approximate) hourly breakdown for getTodayHourlyStats.
+      await FitnessModel.accumulateHourlySteps(customerId, date, now.getHours(), stepDiff, conn);
+
+      // -------------------------------
+      // LIFETIME ACHIEVEMENTS — checked unconditionally, regardless of
+      // whether today's goal is hit. Lifetime step totals don't care about
+      // today's specific target, so these must unlock independent of the
+      // goalAchieved gate below (previously they were only ever checked
+      // inside that branch, meaning a milestone like "10K Lifetime Steps"
+      // couldn't unlock unless the user ALSO hit their full daily goal
+      // that same sync).
+      // -------------------------------
+      let totalReward = 0;
+      let unlockedAchievements = [];
+
+      const totalSteps = await FitnessModel.getLifetimeSteps(customerId, conn);
+      const allAchievements = await FitnessModel.getAllAchievements(conn);
+      const userAchievements = await FitnessModel.getUserAchievements(customerId, conn);
+
+      for (const achievement of allAchievements) {
+        if (userAchievements.includes(Number(achievement.achievement_id))) continue;
+        if (achievement.type !== "steps") continue; // streak-type checked below, once currentStreak is known
+        if (totalSteps < achievement.target_value) continue;
+
+        const alreadyGiven = await FitnessModel.hasReward(
+          customerId,
+          date,
+          "achievement",
+          achievement.achievement_id,
+          conn,
+        );
+        if (alreadyGiven) continue;
+
+        await FitnessModel.unlockAchievement(customerId, achievement.achievement_id, conn);
+        await FitnessModel.insertRewardLog(
+          customerId,
+          date,
+          "achievement",
+          achievement.achievement_id,
+          achievement.reward_coins,
+          conn,
+        );
+
+        totalReward += achievement.reward_coins || 0;
+        unlockedAchievements.push({
+          id: achievement.achievement_id,
+          title: achievement.title,
+          reward_coins: achievement.reward_coins,
+          type: achievement.type,
+          description: achievement.description,
+        });
+      }
+
+      // -------------------------------
+      // CHECK GOAL (AFTER SAVE)
+      // -------------------------------
+      let goalAchieved = false;
+
+      if (steps >= goal.daily_steps) {
+        goalAchieved = true;
+      } else {
+        await creditWalletCoins(customerId, totalReward, conn);
+        await conn.commit();
+
+        if (totalReward > 0) {
+          notifyUser(
+            {
+              userId: customerId,
+              module: "fitness",
+              type: "fitness_reward_earned",
+              title: "Fitness reward earned",
+              message: `You earned ${totalReward} coins from your fitness progress.`,
+              icon: "footprints",
+              reference_type: "fitness_reward",
+              reference_id: date,
+              action_url: "/fitness/wallet",
+              metadata: {
+                coins: totalReward,
+                goal_achieved: false,
+                achievements: unlockedAchievements.map((item) => item.id),
+              },
+            },
+            "fitness reward notification",
+          );
+        }
+
+        for (const achievement of unlockedAchievements) {
+          notifyUser(
+            {
+              userId: customerId,
+              module: "fitness",
+              type: "fitness_achievement_unlocked",
+              title: "Achievement unlocked",
+              message: `You unlocked ${achievement.title}.`,
+              icon: "trophy",
+              reference_type: "fitness_achievement",
+              reference_id: achievement.id,
+              action_url: "/fitness/achievements",
+              metadata: {
+                reward_coins: achievement.reward_coins,
+                achievement_type: achievement.type,
+              },
+            },
+            "fitness achievement notification",
+          );
+        }
+
+        return {
+          message: "Steps synced",
+          goalAchieved: false,
+          reward: totalReward,
+          unlockedAchievements,
+        };
+      }
+
+      // -------------------------------
+      // STREAK LOGIC
+      // -------------------------------
+      let currentStreak = 1;
+      let longestStreak = 1;
+
+      const syncDate = new Date(date);
+      const yesterday = new Date(syncDate);
+      yesterday.setDate(syncDate.getDate() - 1);
+
+      if (streakData) {
+        const lastDate = new Date(streakData.last_goal_completed_date);
+
+        const lastDateStr = formatDate(lastDate);
+        const todayStr = formatDate(syncDate);
+        const yesterdayStr = formatDate(yesterday);
+
+        if (lastDateStr === yesterdayStr) {
+          currentStreak = streakData.current_streak + 1;
+        } else if (lastDateStr === todayStr) {
+          // already processed today → don't increase
+          currentStreak = streakData.current_streak;
+        } else {
+          currentStreak = 1;
+        }
+
+        longestStreak = Math.max(streakData.longest_streak, currentStreak);
+      }
+
+      // -------------------------------
+      // Update streak INSIDE TX
+      // -------------------------------
+      await conn.execute(
+        `INSERT INTO fitness_streaks
+       (user_id, current_streak, longest_streak, last_goal_completed_date)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         current_streak = ?,
+         longest_streak = ?,
+         last_goal_completed_date = ?`,
+        [
+          customerId,
+          currentStreak,
+          longestStreak,
+          date,
+          currentStreak,
+          longestStreak,
+          date,
+        ],
+      );
+
+      // -------------------------------
+      // GOAL REWARD (once per day)
+      // -------------------------------
+      const alreadyGoalRewarded = await FitnessModel.hasReward(
+        customerId,
+        date,
+        "goal",
+        null,
+        conn,
+      );
+
+      let showGoalPopup = false;
+      if (!alreadyGoalRewarded) {
+        showGoalPopup = true;
+
+        const configuredGoalCoins = await FitnessModel.getRewardConfig("goal_daily", conn);
+        const goalCoins = configuredGoalCoins ?? FALLBACK_GOAL_COINS;
+
+        try {
+          await FitnessModel.insertRewardLog(
+            customerId,
+            date,
+            "goal",
+            null,
+            goalCoins,
+            conn,
+          );
+
+          totalReward += goalCoins;
+        } catch (err) {
+          if (err.code !== "ER_DUP_ENTRY") throw err;
+        }
+      }
+
+      // -------------------------------
+      // STREAK BONUS — milestones are config-driven (fitness_streak_bonus_config)
+      // so new milestones (e.g. day 21, 30) can be added without a deploy.
+      // -------------------------------
+      const streakBonusConfig = await FitnessModel.getStreakBonusConfig(conn);
+      const streakBonus = streakBonusConfig.find((b) => b.streak_days === currentStreak);
+
+      if (streakBonus) {
+        const alreadyStreakRewarded = await FitnessModel.hasReward(
+          customerId,
+          date,
+          "streak",
+          currentStreak,
+          conn,
+        );
+
+        if (!alreadyStreakRewarded) {
+          const streakCoins = streakBonus.coins;
+
+          await FitnessModel.insertRewardLog(
+            customerId,
+            date,
+            "streak",
+            currentStreak,
+            streakCoins,
+            conn,
+          );
+
+          totalReward += streakCoins;
+        }
+      }
+
+      // -------------------------------
+      // STREAK ACHIEVEMENTS — "steps"-type achievements were already
+      // checked unconditionally above (before the goal gate); this pass
+      // only covers "streak"-type achievements, which genuinely do depend
+      // on currentStreak and so can only be evaluated here. Currently a
+      // no-op (no streak-type rows exist — superseded by
+      // fitness_streak_bonus_config), kept for forward-compatibility.
+      // -------------------------------
+      for (const achievement of allAchievements) {
+        if (userAchievements.includes(Number(achievement.achievement_id))) continue;
+        if (achievement.type !== "streak") continue;
+        if (currentStreak < achievement.target_value) continue;
+
+        const alreadyGiven = await FitnessModel.hasReward(
+          customerId,
+          date,
+          "achievement",
+          achievement.achievement_id,
+          conn,
+        );
+        if (alreadyGiven) continue;
+
+        await FitnessModel.unlockAchievement(customerId, achievement.achievement_id, conn);
+        await FitnessModel.insertRewardLog(
+          customerId,
+          date,
+          "achievement",
+          achievement.achievement_id,
+          achievement.reward_coins,
+          conn,
+        );
+
+        totalReward += achievement.reward_coins || 0;
+        unlockedAchievements.push({
+          id: achievement.achievement_id,
+          title: achievement.title,
+          reward_coins: achievement.reward_coins,
+          type: achievement.type,
+          description: achievement.description,
+        });
+      }
+
+      // -------------------------------
+      // WALLET UPDATE
+      // -------------------------------
+      await creditWalletCoins(customerId, totalReward, conn);
+
+      // -------------------------------
+      // COMMIT
+      // -------------------------------
+      await conn.commit();
+
+      if (totalReward > 0) {
+        notifyUser(
+          {
+            userId: customerId,
+            module: "fitness",
+            type: "fitness_reward_earned",
+            title: "Fitness reward earned",
+            message: `You earned ${totalReward} coins from your fitness progress.`,
+            icon: "footprints",
+            reference_type: "fitness_reward",
+            reference_id: date,
+            action_url: "/fitness/wallet",
+            metadata: {
+              coins: totalReward,
+              goal_achieved: goalAchieved,
+              achievements: unlockedAchievements.map((item) => item.id),
+            },
+          },
+          "fitness reward notification",
+        );
+      }
+
+      for (const achievement of unlockedAchievements) {
+        notifyUser(
+          {
+            userId: customerId,
+            module: "fitness",
+            type: "fitness_achievement_unlocked",
+            title: "Achievement unlocked",
+            message: `You unlocked ${achievement.title}.`,
+            icon: "trophy",
+            reference_type: "fitness_achievement",
+            reference_id: achievement.id,
+            action_url: "/fitness/achievements",
+            metadata: {
+              reward_coins: achievement.reward_coins,
+              achievement_type: achievement.type,
+            },
+          },
+          "fitness achievement notification",
+        );
+      }
+
+      const goalMap = {
+        weight_loss: "Weight Loss",
+        weight_gain: "Weight Gain",
+        stay_healthy: "Stay Healthy",
+      };
+
+      const goalLabel = goalMap[profile?.goal_type] || "Stay Healthy";
+
+      return {
+        message: "Steps synced",
+        goalAchieved,
+        reward: totalReward,
+        currentStreak,
+        unlockedAchievements,
+        showGoalPopup,
+        planOverview: {
+          plan_type: goalLabel,
+          total_duration_days: 30,
+          current_day: currentStreak,
+          daily_target: goal.daily_steps,
+        },
+
+        overallSummary: {
+          steps,
+          calories,
+          distance_km,
+          active_minutes,
+        },
+      };
+    } catch (err) {
+      await conn.rollback();
+      throw err;
+    } finally {
+      conn.release();
+    }
+  }
+
+  // Dashboard
+  async getDashboard(customerId) {
+    const effectiveDate = await resolveEffectiveDate(customerId);
+
+    const steps = await FitnessModel.getTodaySteps(customerId, effectiveDate);
+    const goal = await FitnessModel.getGoal(customerId);
+
+    return {
+      today_steps: steps?.steps || 0,
+      goal_steps: goal?.daily_steps || 0,
+    };
+  }
+
+  // select goal
+  async selectGoal(customerId, daily_steps) {
+    const dailySteps = assertNumberInRange(daily_steps, "daily steps", 1000, 30000);
+
+    await db.execute(
+      `INSERT INTO fitness_goals (user_id, daily_steps, start_date)
+       VALUES (?, ?, CURDATE())`,
+      [customerId, dailySteps],
+    );
+
+    await db.execute(
+      `UPDATE customer SET fitness_onboarding_done = 1 WHERE user_id = ?`,
+      [customerId],
+    );
+
+    notifyUser(
+      {
+        userId: customerId,
+        module: "fitness",
+        type: "fitness_goal_set",
+        title: "Fitness goal set",
+        message: `Your daily goal is set to ${dailySteps} steps.`,
+        icon: "target",
+        reference_type: "fitness_goal",
+        reference_id: customerId,
+        action_url: "/fitness",
+        metadata: { daily_steps: dailySteps },
+      },
+      "fitness goal notification",
+    );
+  }
+
+  // basic profiles
+  async saveBasicProfile(customerId, gender, age, goal_type) {
+    const validGenders = ["male", "female", "other"];
+    const validGoals = ["weight_loss", "weight_gain", "stay_healthy"];
+    const normalizedGender = String(gender || "").trim().toLowerCase();
+    const normalizedGoalType = String(goal_type || "").trim();
+    const profileAge = assertNumberInRange(age, "age", 13, 120);
+
+    if (!validGenders.includes(normalizedGender)) {
+      throw new Error("Invalid gender");
+    }
+
+    if (!validGoals.includes(normalizedGoalType)) {
+      throw new Error("Invalid goal type");
+    }
+
+    await db.execute(
+      `INSERT INTO fitness_profiles (user_id, gender, age, goal_type)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE gender=?, age=?, goal_type=?`,
+      [
+        customerId,
+        normalizedGender,
+        profileAge,
+        normalizedGoalType,
+        normalizedGender,
+        profileAge,
+        normalizedGoalType,
+      ],
+    );
+  }
+
+  // set profile
+  async saveBodyProfile(customerId, height, weight) {
+    const heightCm = assertNumberInRange(height, "height", 80, 250);
+    const weightKg = assertNumberInRange(weight, "weight", 20, 300);
+    const bmi = weightKg / ((heightCm / 100) * (heightCm / 100));
+
+    await db.execute(
+      `UPDATE fitness_profiles
+       SET height_cm=?, weight_kg=?, bmi=?
+       WHERE user_id=?`,
+      [heightCm, weightKg, bmi, customerId],
+    );
+  }
+
+  /* ------------------------------------------
+     WALLET HISTORY
+  ------------------------------------------ */
+  async getWalletHistory(customerId) {
+    const [rows] = await db.execute(
+      `
+    SELECT 
+      transaction_id,
+      title,
+      description,
+      transaction_type,
+      coins,
+      balance_after,
+      category,
+      expiry_date,
+      created_at
+    FROM wallet_transactions
+    WHERE user_id = ?
+    AND category = 'steps'
+    ORDER BY created_at DESC
+    `,
+      [customerId],
+    );
+
+    return rows.map((row) => ({
+      id: row.transaction_id,
+      title: row.title,
+      description: row.description,
+      type: row.transaction_type,
+      coins: row.coins,
+      balance_after: row.balance_after,
+      category: row.category,
+      expiry_date: row.expiry_date,
+      date: new Date(row.created_at).toLocaleDateString("en-CA"),
+    }));
+  }
+
+  async getWalletSummary(customerId) {
+    // -------------------------------
+    // Wallet balance (steps only)
+    // -------------------------------
+    const [balanceRows] = await db.execute(
+      `
+    SELECT 
+      COALESCE(
+        SUM(
+          CASE 
+            WHEN transaction_type = 'credit' THEN coins
+            WHEN transaction_type = 'debit' THEN -coins
+            ELSE 0
+          END
+        ),
+      0) AS balance
+    FROM wallet_transactions
+    WHERE user_id = ?
+    AND category = 'steps'
+    `,
+      [customerId],
+    );
+
+    const balance = balanceRows[0]?.balance || 0;
+
+    // -------------------------------
+    // Expiring coins (steps only)
+    // -------------------------------
+    const [expiryRows] = await db.execute(
+      `
+    SELECT 
+      COALESCE(SUM(coins), 0) AS expiring_coins,
+      MIN(expiry_date) AS nearest_expiry
+    FROM wallet_transactions
+    WHERE user_id = ?
+    AND category = 'steps'
+    AND transaction_type = 'credit'
+    AND expiry_date IS NOT NULL
+    AND expiry_date > NOW()
+    `,
+      [customerId],
+    );
+
+    return {
+      balance,
+      expiring_coins: expiryRows[0]?.expiring_coins || 0,
+      expiry_date: expiryRows[0]?.nearest_expiry || null,
+    };
+  }
+
+  /* ------------------------------------------
+     PLAN (BMI + recommendation)
+  ------------------------------------------ */
+  async getPlan(customerId) {
+    const [rows] = await db.execute(
+      `SELECT height_cm, weight_kg, bmi, goal_type
+       FROM fitness_profiles
+       WHERE user_id = ?`,
+      [customerId],
+    );
+
+    const profile = rows[0];
+
+    if (!profile) {
+      throw new Error("Profile not found");
+    }
+
+    let category = "";
+    let recommended_steps = 6000;
+    let recommended_minutes = 45;
+
+    const bmi = profile.bmi;
+    const goal = profile.goal_type;
+    const goalMap = {
+      weight_loss: "Weight Loss",
+      weight_gain: "Weight Gain",
+      stay_healthy: "Stay Healthy",
+    };
+
+    const goalLabel = goalMap[goal] || "Stay Healthy";
+
+    if (bmi < 18.5) {
+      category = "underweight";
+      recommended_steps = 5000;
+    } else if (bmi < 25) {
+      category = "normal";
+      recommended_steps = 7000;
+    } else if (bmi < 30) {
+      category = "overweight";
+      recommended_steps = 8000;
+    } else {
+      category = "obese";
+      recommended_steps = 9000;
+    }
+
+    const dailyRewardCoins = (await FitnessModel.getRewardConfig("goal_daily")) ?? FALLBACK_GOAL_COINS;
+
+    // The actually-saved goal (if any), distinct from the BMI-based
+    // recommendation above — these can differ if the user's weight changed
+    // since they last picked a target. Lets the UI show "your current plan"
+    // separately from "here's what we'd recommend now".
+    const existingGoal = await FitnessModel.getGoal(customerId);
+
+    return {
+      bmi,
+      category,
+      recommended_steps,
+      recommended_minutes,
+      goal: goalLabel,
+      current_goal: existingGoal
+        ? { daily_steps: existingGoal.daily_steps, start_date: formatDate(existingGoal.start_date) }
+        : null,
+      // Flat regardless of which weekly_plan option is chosen — the actual
+      // syncSteps reward (fitness_reward_config.goal_daily) doesn't scale
+      // with the step target, so the preview shouldn't invent a number that
+      // doesn't match what the user will actually receive.
+      daily_reward_coins: dailyRewardCoins,
+      weekly_plan: buildWeeklyPlan(recommended_steps),
+    };
+  }
+
+  /* ------------------------------------------
+     ACHIEVEMENTS
+  ------------------------------------------ */
+  async getAchievements(customerId) {
+    const [rows] = await db.execute(
+      `
+    SELECT 
+      a.achievement_id,
+      a.title,
+      a.description,
+      a.target_value,
+      a.type,
+      a.reward_coins,
+      a.icon,
+      a.group_id,
+
+      g.group_key,
+      g.title AS group_title,
+      g.description AS group_description,
+      g.icon AS group_icon,
+      g.display_order,
+
+      IF(ua.achievement_id IS NOT NULL, 1, 0) AS achieved
+
+    FROM fitness_achievements a
+
+    LEFT JOIN fitness_achievement_groups g
+      ON a.group_id = g.group_id
+
+    LEFT JOIN fitness_user_achievements ua
+      ON a.achievement_id = ua.achievement_id
+      AND ua.user_id = ?
+
+    ORDER BY g.display_order ASC, a.target_value ASC
+    `,
+      [customerId],
+    );
+
+    // -------------------------------
+    // Group achievements
+    // -------------------------------
+    const grouped = {};
+
+    rows.forEach((row) => {
+      if (!grouped[row.group_id]) {
+        grouped[row.group_id] = {
+          group_id: row.group_id,
+          group_key: row.group_key,
+          title: row.group_title,
+          description: row.group_description,
+          icon: row.group_icon,
+          milestones: [],
+        };
+      }
+
+      grouped[row.group_id].milestones.push({
+        achievement_id: row.achievement_id,
+        title: row.title,
+        description: row.description,
+        target_value: row.target_value,
+        reward_coins: row.reward_coins,
+        type: row.type,
+        icon: row.icon,
+        achieved: !!row.achieved,
+      });
+    });
+
+    return Object.values(grouped);
+  }
+
+  async getCalendar(customerId, month) {
+    // -------------------------------
+    // Get DB data
+    // -------------------------------
+    const [rows] = await db.execute(
+      `
+    SELECT step_date, steps, distance_km, calories, active_minutes
+    FROM fitness_steps
+    WHERE user_id = ?
+    AND DATE_FORMAT(step_date, '%Y-%m') = ?
+    `,
+      [customerId, month],
+    );
+
+    const goal = await FitnessModel.getGoal(customerId);
+
+    // -------------------------------
+    // Map DB data
+    // -------------------------------
+    const dataMap = {};
+
+    rows.forEach((row) => {
+      const dateStr = new Date(row.step_date).toLocaleDateString("en-CA");
+
+      dataMap[dateStr] = {
+        steps: row.steps,
+        distance_km: Number(row.distance_km),
+        calories: Number(row.calories),
+        active_minutes: row.active_minutes,
+      };
+    });
+
+    // -------------------------------
+    // Month calculations
+    // -------------------------------
+    const [year, mon] = month.split("-");
+    const daysInMonth = new Date(year, mon, 0).getDate();
+
+    const calendar = {};
+
+    // -------------------------------
+    // Summary counters
+    // -------------------------------
+    let completedDays = 0;
+    let missedDays = 0;
+
+    let totalSteps = 0;
+    let totalCalories = 0;
+    let totalDistance = 0;
+    let totalMinutes = 0;
+
+    // -------------------------------
+    // Build calendar
+    // -------------------------------
+    for (let day = 1; day <= daysInMonth; day++) {
+      const d = new Date(year, mon - 1, day);
+      const dateStr = d.toLocaleDateString("en-CA");
+
+      const dayData = dataMap[dateStr] || {
+        steps: 0,
+        distance_km: 0,
+        calories: 0,
+        active_minutes: 0,
+      };
+
+      const isCompleted = goal && dayData.steps >= goal.daily_steps;
+
+      // count days
+      if (isCompleted) {
+        completedDays++;
+      } else {
+        missedDays++;
+      }
+
+      // totals
+      totalSteps += dayData.steps;
+      totalCalories += dayData.calories;
+      totalDistance += dayData.distance_km;
+      totalMinutes += dayData.active_minutes;
+
+      // calendar entry
+      calendar[dateStr] = {
+        status: isCompleted ? "completed" : "missed",
+        steps: dayData.steps,
+        goal_steps: goal?.daily_steps || 0,
+        distance_km: dayData.distance_km,
+        calories: dayData.calories,
+        active_minutes: dayData.active_minutes,
+        progress_percent: goal
+          ? Math.min((dayData.steps / goal.daily_steps) * 100, 100)
+          : 0,
+      };
+    }
+
+    // -------------------------------
+    // Month label (for UI)
+    // -------------------------------
+    const monthName = new Date(year, mon - 1).toLocaleString("default", {
+      month: "long",
+    });
+
+    // -------------------------------
+    // Final response
+    // -------------------------------
+    return {
+      month,
+      month_label: `${monthName} ${year}`,
+
+      summary: {
+        completed_days: completedDays,
+        missed_days: missedDays,
+        total_steps: totalSteps,
+        total_calories: Number(totalCalories.toFixed(2)),
+        total_distance_km: Number(totalDistance.toFixed(2)),
+        total_active_minutes: totalMinutes,
+      },
+
+      calendar,
+    };
+  }
+
+  /* ------------------------------------------
+     STATS (Graph Data)
+  ------------------------------------------ */
+  async getStats(customerId, range) {
+    let days = range === "30days" ? 30 : 7;
+
+    const [rows] = await db.execute(
+      `
+    SELECT 
+      step_date,
+      steps,
+      distance_km,
+      calories
+    FROM fitness_steps
+    WHERE user_id = ?
+    AND step_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+    `,
+      [customerId, days],
+    );
+
+    // -------------------------------
+    // Convert DB rows → map
+    // -------------------------------
+    const dataMap = {};
+
+    rows.forEach((row) => {
+      const dateStr = new Date(row.step_date).toLocaleDateString("en-CA");
+
+      dataMap[dateStr] = {
+        steps: row.steps,
+        distance_km: row.distance_km,
+        calories: row.calories,
+      };
+    });
+
+    // -------------------------------
+    // Fill missing dates
+    // -------------------------------
+    const result = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const dateStr = d.toLocaleDateString("en-CA");
+
+      result.push({
+        date: dateStr,
+        steps: dataMap[dateStr]?.steps || 0,
+        distance_km: dataMap[dateStr]?.distance_km || 0,
+        calories: dataMap[dateStr]?.calories || 0,
+      });
+    }
+
+    return result;
+  }
+
+  // Get todays summary (for dashboard)
+  async getTodaySummary(customerId) {
+    const effectiveDate = await resolveEffectiveDate(customerId);
+
+    const stepsData = await FitnessModel.getStepsByDate(customerId, effectiveDate);
+    const goal = await FitnessModel.getGoal(customerId);
+
+    const steps = stepsData?.steps || 0;
+    const activeMinutes = stepsData?.active_minutes || 0;
+
+    return {
+      steps,
+      goal_steps: goal?.daily_steps || 0,
+      progress_percent: goal
+        ? Math.min((steps / goal.daily_steps) * 100, 100)
+        : 0,
+      distance_km: stepsData?.distance_km || 0,
+      calories: stepsData?.calories || 0,
+      active_minutes: activeMinutes,
+    };
+  }
+
+  // Weekly progress
+  async getWeeklyProgress(customerId) {
+    const formatDate = (date) => new Date(date).toLocaleDateString("en-CA"); // YYYY-MM-DD
+
+    const days = 7;
+
+    const [rows] = await db.execute(
+      `
+    SELECT step_date, steps
+    FROM fitness_steps
+    WHERE user_id = ?
+    AND step_date >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
+    `,
+      [customerId, days],
+    );
+
+    // -------------------------------
+    // Convert DB rows → map
+    // -------------------------------
+    const dataMap = {};
+
+    rows.forEach((row) => {
+      const dateStr = formatDate(row.step_date);
+      dataMap[dateStr] = row.steps;
+    });
+
+    // -------------------------------
+    // Fill missing days
+    // -------------------------------
+    const result = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const dateStr = formatDate(d);
+
+      result.push({
+        date: dateStr,
+        steps: dataMap[dateStr] || 0,
+      });
+    }
+
+    return result;
+  }
+
+  async getStreak(customerId) {
+    const [rows] = await db.execute(
+      `SELECT current_streak, longest_streak
+     FROM fitness_streaks
+     WHERE user_id = ?`,
+      [customerId],
+    );
+
+    return (
+      rows[0] || {
+        current_streak: 0,
+        longest_streak: 0,
+      }
+    );
+  }
+
+  async getGoal(customerId) {
+    const [rows] = await db.execute(
+      `SELECT daily_steps, daily_active_minutes
+     FROM fitness_goals
+     WHERE user_id = ?
+     ORDER BY goal_id DESC
+     LIMIT 1`,
+      [customerId],
+    );
+
+    return rows[0] || null;
+  }
+
+  async getOnboardingStatus(customerId) {
+    const [rows] = await db.execute(
+      `SELECT fitness_onboarding_done 
+     FROM customer 
+     WHERE user_id = ?`,
+      [customerId],
+    );
+
+    return rows[0]?.fitness_onboarding_done === 1;
+  }
+
+  async getTodayHourlyStats(customerId) {
+    const effectiveDate = await resolveEffectiveDate(customerId);
+
+    const rows = await FitnessModel.getHourlySteps(customerId, effectiveDate);
+
+    return rows.map((r) => ({
+      time: formatHourLabel(r.hour),
+      steps: r.steps,
+    }));
+  }
+}
+
+module.exports = new FitnessService();

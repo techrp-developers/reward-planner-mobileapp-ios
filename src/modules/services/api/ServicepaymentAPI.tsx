@@ -1,10 +1,4 @@
-import axios from "axios";
-import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
-import { BASE_API_URL } from "./api";
-
-const SERVICE_API_BASE = BASE_API_URL.includes("/v1")
-  ? BASE_API_URL
-  : `${BASE_API_URL.replace(/\/$/, "")}/v1`;
+import api from "../../common/auth/api/axios";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,14 +46,13 @@ export const getServicePaymentError = (err: any, fallback: string): string =>
 
 export const isServicePaymentVerified = (res: any): boolean => {
   const status = String(res?.payment_status ?? res?.status ?? "").toLowerCase();
-  return (
-    res?.success === true ||
-    res?.verified === true ||
-    status === "paid" ||
+  if (status) {
+    return status === "paid" ||
     status === "captured" ||
     status === "success" ||
-    status === "verified"
-  );
+    status === "verified";
+  }
+  return res?.success === true || res?.verified === true;
 };
 
 // ─── 1. Create Razorpay Order ─────────────────────────────────────────────────
@@ -71,11 +64,7 @@ export const isServicePaymentVerified = (res: any): boolean => {
 export const createServicePaymentOrder = async (
   parent_order_id: string
 ): Promise<CreateServicePaymentOrderResponse> => {
-  const headers = await getAuthHeaders();
-  const url = `${SERVICE_API_BASE}/service-orders/create-order`;
-  console.log("💳 createServicePaymentOrder →", url, { parent_order_id });
-
-  const res = await axios.post(url, { parent_order_id }, { headers });
+  const res = await api.post("/v1/service-orders/create-order", { parent_order_id });
   return res.data;
 };
 
@@ -88,14 +77,12 @@ export const createServicePaymentOrder = async (
 export const verifyServicePayment = async (
   payload: VerifyServicePaymentPayload
 ): Promise<VerifyServicePaymentResponse> => {
-  const headers = await getAuthHeaders();
-  const url = `${SERVICE_API_BASE}/service-orders/verify-payment`;
-  console.log("🔐 verifyServicePayment →", url, {
+  __DEV__ && console.log("🔐 verifyServicePayment", {
     razorpay_order_id: payload.razorpay_order_id,
   });
 
   try {
-    const res = await axios.post(url, payload, { headers });
+    const res = await api.post("/v1/service-orders/verify-payment", payload);
     return res.data;
   } catch (err: any) {
     const status = Number(err?.response?.status ?? 0);
@@ -114,10 +101,6 @@ export const verifyServicePayment = async (
 export const checkServicePaymentStatus = async (
   parent_order_id: string
 ): Promise<CheckServicePaymentStatusResponse> => {
-  const headers = await getAuthHeaders();
-  const url = `${SERVICE_API_BASE}/service-orders/payment-status/${parent_order_id}`;
-  console.log("📊 checkServicePaymentStatus →", url);
-
-  const res = await axios.get(url, { headers });
+  const res = await api.get(`/v1/service-orders/payment-status/${encodeURIComponent(parent_order_id)}`);
   return res.data;
 };

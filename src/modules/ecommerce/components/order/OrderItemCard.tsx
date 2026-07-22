@@ -10,6 +10,7 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -51,6 +52,7 @@ export default function OrderItemCard({
   onPress,
 }: Props) {
   const navigation = useNavigation<Nav>();
+  const { isDark, theme } = useAppTheme();
 
   const handleOpenOrders = () => {
     if (onPress) {
@@ -62,10 +64,10 @@ export default function OrderItemCard({
 
   return (
     <TouchableOpacity activeOpacity={0.8} onPress={handleOpenOrders}>
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.card }]}>
         {/* Left Image */}
         {typeof image === "string" ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image source={{ uri: image }} style={[styles.image, { backgroundColor: isDark ? "#111827" : "#F9FAFB" }]} />
         ) : (
           image
         )}
@@ -77,10 +79,10 @@ export default function OrderItemCard({
           </Text>
 
           <View style={styles.textContainer}>
-            <Text style={styles.brandText} numberOfLines={1}>
+            <Text style={[styles.brandText, { color: theme.text }]} numberOfLines={1}>
               {brand || "Brand"}
             </Text>
-            <Text style={styles.productText} numberOfLines={1}>
+            <Text style={[styles.productText, { color: theme.secondaryText }]} numberOfLines={1}>
               {title || "Product"}
             </Text>
           </View>
@@ -88,12 +90,12 @@ export default function OrderItemCard({
           {(orderRef || orderedOn || itemCount) ? (
             <View style={styles.metaWrap}>
               {orderRef ? (
-                <Text style={styles.metaText} numberOfLines={1}>
+                <Text style={[styles.metaText, { color: theme.secondaryText }]} numberOfLines={1}>
                   Order ID: {orderRef}
                 </Text>
               ) : null}
               {(orderedOn || itemCount) ? (
-                <Text style={styles.metaText} numberOfLines={1}>
+                <Text style={[styles.metaText, { color: theme.secondaryText }]} numberOfLines={1}>
                   {[orderedOn, itemCount ? `${itemCount} ${itemCount === 1 ? "item" : "items"}` : ""]
                     .filter(Boolean)
                     .join(" | ")}
@@ -118,17 +120,17 @@ export default function OrderItemCard({
           {(courierName || awbNumber || logisticsStatus) ? (
             <View style={styles.logisticsWrap}>
               {logisticsStatus ? (
-                <Text style={styles.logisticsText} numberOfLines={1}>
+                <Text style={[styles.logisticsText, { color: theme.secondaryText }]} numberOfLines={1}>
                   Status: {logisticsStatus}
                 </Text>
               ) : null}
               {courierName ? (
-                <Text style={styles.logisticsText} numberOfLines={1}>
+                <Text style={[styles.logisticsText, { color: theme.secondaryText }]} numberOfLines={1}>
                   Courier: {courierName}
                 </Text>
               ) : null}
               {awbNumber ? (
-                <Text style={styles.logisticsText} numberOfLines={1}>
+                <Text style={[styles.logisticsText, { color: theme.secondaryText }]} numberOfLines={1}>
                   AWB: {awbNumber}
                 </Text>
               ) : null}
@@ -145,11 +147,11 @@ export default function OrderItemCard({
             ) : null}
           </View>
 
-          <MaterialIcons name="chevron-right" size={26} color="#9CA3AF" />
+          <MaterialIcons name="chevron-right" size={26} color={theme.secondaryText} />
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
     </TouchableOpacity>
   );
 }

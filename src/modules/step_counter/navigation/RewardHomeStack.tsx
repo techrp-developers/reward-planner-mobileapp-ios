@@ -33,6 +33,7 @@ export default function RewardHomeStack() {
         headerShown: false,
         animation: 'slide_from_right',
         gestureEnabled: true,
+        freezeOnBlur: true,
       }}
     >
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -6,31 +6,34 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
 
-import LinearGradient from "react-native-linear-gradient";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import LinearGradient from 'react-native-linear-gradient';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import {
   createSupportTicket,
   fetchSupportCategories,
   SupportCategory,
-} from "../../api/SupportApi";
+} from '../../api/SupportApi';
 
-import { useAlert } from "../../components/alerts";
-import type { AppStackParamList } from "../../../../navigation/RootNavigator";
+import { useAlert } from '../../components/alerts';
+import type { AppStackParamList } from '../../../../navigation/RootNavigator';
+import { useAppTheme } from '../../../../theme/ThemeContext';
 
-type HelpFormProps = NativeStackScreenProps<AppStackParamList, "HelpForm">;
+type HelpFormProps = NativeStackScreenProps<AppStackParamList, 'HelpForm'>;
 
 export default function HelpForm({ navigation }: HelpFormProps) {
   const alert = useAlert();
+  const { isDark, theme } = useAppTheme();
 
   const [categories, setCategories] = useState<SupportCategory[]>([]);
   const [selectedCategory, setSelectedCategory] =
@@ -43,11 +46,15 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const [subject, setSubject] = useState("");
-  const [description, setDescription] = useState("");
+  const [subject, setSubject] = useState('');
+  const [description, setDescription] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
+
+  const handleHistoryPress = useCallback(() => {
+    navigation.navigate('MyTickets');
+  }, [navigation]);
 
   // ============================ LOAD CATEGORIES ============================
 
@@ -61,7 +68,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
         setCategories(res.data || []);
       }
     } catch (error) {
-      console.log("Category load failed", error);
+      __DEV__ && console.log('Category load failed', error);
     } finally {
       setCategoryLoading(false);
     }
@@ -124,22 +131,19 @@ export default function HelpForm({ navigation }: HelpFormProps) {
   const handleCreateTicket = useCallback(async () => {
     try {
       if (!selectedCategory?.category_id) {
-        alert.error("Validation Error", "Please select category");
+        alert.error('Validation Error', 'Please select category');
         return;
       }
 
       if (subject.trim().length < 3) {
-        alert.error(
-          "Validation Error",
-          "Subject must be minimum 3 characters"
-        );
+        alert.error('Validation Error', 'Subject must be minimum 3 characters');
         return;
       }
 
       if (description.trim().length < 10) {
         alert.error(
-          "Validation Error",
-          "Description must be minimum 10 characters"
+          'Validation Error',
+          'Description must be minimum 10 characters',
         );
         return;
       }
@@ -154,28 +158,28 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
       if (res.success) {
         alert.success(
-          "Ticket Created",
-          res.message || "Support ticket created successfully"
+          'Ticket Created',
+          res.message || 'Support ticket created successfully',
         );
 
-        setSubject("");
-        setDescription("");
+        setSubject('');
+        setDescription('');
         setSelectedCategory(null);
 
         showSuccessCard();
         return;
       }
 
-      alert.error("Ticket Error", res.message);
+      alert.error('Ticket Error', res.message);
     } catch (error: any) {
       alert.error(
-        "Ticket Error",
-        error?.message || "Failed to create support ticket"
+        'Ticket Error',
+        error?.message || 'Failed to create support ticket',
       );
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, subject, description, alert, navigation, showSuccessCard]);
+  }, [selectedCategory, subject, description, alert, showSuccessCard]);
 
   useEffect(() => {
     return () => {
@@ -186,10 +190,17 @@ export default function HelpForm({ navigation }: HelpFormProps) {
   }, []);
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView
+      style={[styles.screen, isDark && darkStyles.screen]}
+      edges={['top']}
+    >
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={isDark ? '#09090B' : '#F5F0FF'}
+      />
       <KeyboardAvoidingView
         style={styles.keyboardWrap}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
           keyboardShouldPersistTaps="handled"
@@ -199,64 +210,97 @@ export default function HelpForm({ navigation }: HelpFormProps) {
           {/* HEADER */}
 
           <View style={styles.headerWrap}>
-            <Text style={styles.headerTitle}>Support Ticket</Text>
+            <View style={styles.headerRow}>
+              <Text
+                style={[styles.headerTitle, isDark && darkStyles.primaryText]}
+              >
+                Support Ticket
+              </Text>
 
-            <Text style={styles.headerSub}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                style={[styles.historyBtn, isDark && darkStyles.historyBtn]}
+                onPress={handleHistoryPress}
+              >
+                <Text
+                  style={[
+                    styles.historyBtnText,
+                    isDark && darkStyles.historyBtnText,
+                  ]}
+                >
+                  History
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={[styles.headerSub, isDark && darkStyles.mutedText]}>
               Raise your issue and our team will help you.
             </Text>
           </View>
 
           {/* CARD */}
 
-          <View style={styles.card}>
+          <View style={[styles.card, isDark && darkStyles.card]}>
             {/* CATEGORY */}
 
-            <Text style={styles.label}>Category</Text>
+            <Text style={[styles.label, isDark && darkStyles.primaryText]}>
+              Category
+            </Text>
 
             <TouchableOpacity
               activeOpacity={0.85}
-              style={styles.inputWrap}
-              onPress={() => setShowDropdown((prev) => !prev)}
+              style={[styles.inputWrap, isDark && darkStyles.inputWrap]}
+              onPress={() => setShowDropdown(prev => !prev)}
             >
               <MaterialCommunityIcons
                 name="shape-outline"
                 size={18}
-                color="#999"
+                color={isDark ? '#A1A1AA' : '#999'}
                 style={styles.inputIcon}
               />
 
               <Text
                 style={[
                   styles.dropdownText,
+                  isDark && darkStyles.inputText,
                   !selectedCategory && styles.placeholderText,
+                  !selectedCategory && isDark && darkStyles.placeholderText,
                 ]}
               >
-                {selectedCategory?.name || "Select Category"}
+                {selectedCategory?.name || 'Select Category'}
               </Text>
 
               <MaterialCommunityIcons
-                name={showDropdown ? "chevron-up" : "chevron-down"}
+                name={showDropdown ? 'chevron-up' : 'chevron-down'}
                 size={20}
-                color="#A654CD"
+                color={theme.primary}
               />
             </TouchableOpacity>
 
             {showDropdown && (
-              <View style={styles.dropdown}>
+              <View style={[styles.dropdown, isDark && darkStyles.dropdown]}>
                 {categoryLoading ? (
-                  <ActivityIndicator color="#852BAF" />
+                  <ActivityIndicator color={theme.primary} />
                 ) : (
-                  categories.map((item) => (
+                  categories.map(item => (
                     <TouchableOpacity
                       key={item.category_id}
-                      style={styles.dropdownItem}
+                      style={[
+                        styles.dropdownItem,
+                        isDark && darkStyles.dropdownItem,
+                      ]}
                       activeOpacity={0.8}
                       onPress={() => {
                         setSelectedCategory(item);
                         setShowDropdown(false);
                       }}
                     >
-                      <Text style={styles.dropdownItemText}>
+                      <Text
+                        style={[
+                          styles.dropdownItemText,
+                          isDark && darkStyles.inputText,
+                        ]}
+                      >
                         {item.name}
                       </Text>
                     </TouchableOpacity>
@@ -267,20 +311,23 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
             {/* SUBJECT */}
 
-            <Text style={styles.label}>Subject</Text>
+            <Text style={[styles.label, isDark && darkStyles.primaryText]}>
+              Subject
+            </Text>
 
-            <View style={styles.inputWrap}>
+            <View style={[styles.inputWrap, isDark && darkStyles.inputWrap]}>
               <MaterialCommunityIcons
                 name="text-box-outline"
                 size={18}
-                color="#999"
+                color={isDark ? '#A1A1AA' : '#999'}
                 style={styles.inputIcon}
               />
 
               <TextInput
                 placeholder="Enter Subject"
-                placeholderTextColor="#999"
-                style={styles.input}
+                placeholderTextColor={isDark ? '#71717A' : '#999'}
+                selectionColor={theme.primary}
+                style={[styles.input, isDark && darkStyles.inputText]}
                 value={subject}
                 onChangeText={setSubject}
               />
@@ -288,15 +335,18 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
             {/* DESCRIPTION */}
 
-            <Text style={styles.label}>Description</Text>
+            <Text style={[styles.label, isDark && darkStyles.primaryText]}>
+              Description
+            </Text>
 
-            <View style={styles.textAreaWrap}>
+            <View style={[styles.textAreaWrap, isDark && darkStyles.inputWrap]}>
               <TextInput
                 placeholder="Describe your issue..."
-                placeholderTextColor="#999"
+                placeholderTextColor={isDark ? '#71717A' : '#999'}
+                selectionColor={theme.primary}
                 multiline
                 textAlignVertical="top"
-                style={styles.textArea}
+                style={[styles.textArea, isDark && darkStyles.inputText]}
                 value={description}
                 onChangeText={setDescription}
               />
@@ -310,7 +360,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
               disabled={loading}
             >
               <LinearGradient
-                colors={["#FC8BAD", "#A654CD"]}
+                colors={['#FC8BAD', '#A654CD']}
                 start={{ x: 1, y: 0 }}
                 end={{ x: 0, y: 0 }}
                 style={styles.submitBtn}
@@ -330,6 +380,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
             <Animated.View
               style={[
                 styles.successCard,
+                isDark && darkStyles.successCard,
                 {
                   opacity: successOpacity,
                   transform: [{ translateY: successTranslateY }],
@@ -338,7 +389,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
             >
               <View style={styles.successIconWrap}>
                 <LinearGradient
-                  colors={["#FC8BAD", "#A654CD"]}
+                  colors={['#FC8BAD', '#A654CD']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.successIconBackground}
@@ -350,9 +401,19 @@ export default function HelpForm({ navigation }: HelpFormProps) {
                   />
                 </LinearGradient>
               </View>
-              <Text style={styles.successTitle}>Thank You ✨</Text>
-              <Text style={styles.successDescription}>
-                Our support team received your request and will get back to you shortly.
+              <Text
+                style={[styles.successTitle, isDark && darkStyles.successTitle]}
+              >
+                Thank You{' '}
+              </Text>
+              <Text
+                style={[
+                  styles.successDescription,
+                  isDark && darkStyles.mutedText,
+                ]}
+              >
+                Our support team received your request and will get back to you
+                shortly.
               </Text>
             </Animated.View>
           </View>
@@ -365,7 +426,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F5F0FF",
+    backgroundColor: '#F5F0FF',
   },
 
   keyboardWrap: {
@@ -383,42 +444,67 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: 12,
+  },
+
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#852BAF",
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#852BAF',
+    flex: 1,
+  },
+
+  historyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#D9B7EA',
+    backgroundColor: '#FFFFFF',
+  },
+
+  historyBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#852BAF',
   },
 
   headerSub: {
     marginTop: 8,
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     lineHeight: 22,
   },
 
   card: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
     paddingTop: 30,
     paddingBottom: 40,
-    minHeight: "100%",
+    minHeight: '100%',
   },
 
   label: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#852BAF",
+    fontWeight: '600',
+    color: '#852BAF',
     marginBottom: 10,
   },
 
   inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F8F8F8",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8F8F8',
     borderWidth: 1,
-    borderColor: "#EEE",
+    borderColor: '#EEE',
     borderRadius: 10,
     paddingHorizontal: 12,
     marginBottom: 18,
@@ -432,45 +518,45 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: "#333",
+    color: '#333',
   },
 
   dropdownText: {
     flex: 1,
     fontSize: 14,
-    color: "#333",
+    color: '#333',
   },
 
   placeholderText: {
-    color: "#999",
+    color: '#999',
   },
 
   dropdown: {
-    backgroundColor: "#FFF",
+    backgroundColor: '#FFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#EEE",
+    borderColor: '#EEE',
     marginTop: -10,
     marginBottom: 18,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
 
   dropdownItem: {
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F1F1",
+    borderBottomColor: '#F1F1F1',
   },
 
   dropdownItemText: {
     fontSize: 14,
-    color: "#333",
+    color: '#333',
   },
 
   textAreaWrap: {
-    backgroundColor: "#F8F8F8",
+    backgroundColor: '#F8F8F8',
     borderWidth: 1,
-    borderColor: "#EEE",
+    borderColor: '#EEE',
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingTop: 14,
@@ -480,41 +566,41 @@ const styles = StyleSheet.create({
 
   textArea: {
     fontSize: 14,
-    color: "#333",
+    color: '#333',
     minHeight: 120,
   },
 
   submitBtn: {
     height: 54,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   submitText: {
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   successWrapper: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    alignItems: "center",
+    justifyContent: 'flex-end',
+    alignItems: 'center',
     paddingBottom: 40,
-    backgroundColor: "rgba(0, 0, 0, 0.12)",
+    backgroundColor: 'rgba(0, 0, 0, 0.12)',
   },
 
   successCard: {
-    width: "92%",
+    width: '92%',
     maxWidth: 420,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     borderRadius: 28,
     paddingHorizontal: 28,
     paddingTop: 28,
     paddingBottom: 30,
-    alignItems: "center",
-    shadowColor: "#000",
+    alignItems: 'center',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.12,
     shadowRadius: 24,
@@ -529,22 +615,51 @@ const styles = StyleSheet.create({
     width: 90,
     height: 90,
     borderRadius: 50,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   successTitle: {
     fontSize: 22,
-    fontWeight: "800",
-    color: "#1F1F35",
-    textAlign: "center",
+    fontWeight: '800',
+    color: '#1F1F35',
+    textAlign: 'center',
     marginBottom: 10,
   },
 
   successDescription: {
     fontSize: 15,
-    color: "#4B5268",
-    textAlign: "center",
+    color: '#4B5268',
+    textAlign: 'center',
     lineHeight: 22,
   },
+});
+
+const darkStyles = StyleSheet.create({
+  screen: { backgroundColor: '#09090B' },
+  card: { backgroundColor: '#18181B' },
+  primaryText: { color: '#C4B5FD' },
+  mutedText: { color: '#A1A1AA' },
+  inputWrap: {
+    backgroundColor: '#27272A',
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  inputText: { color: '#F4F4F5' },
+  placeholderText: { color: '#71717A' },
+  dropdown: {
+    backgroundColor: '#27272A',
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  dropdownItem: { borderBottomColor: 'rgba(255,255,255,0.12)' },
+  historyBtn: {
+    backgroundColor: '#27272A',
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  historyBtnText: { color: '#C4B5FD' },
+  successCard: {
+    backgroundColor: '#18181B',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.20)',
+  },
+  successTitle: { color: '#FFFFFF' },
 });

@@ -806,7 +806,6 @@ const styles = StyleSheet.create({
   loadingPlans: { padding: 24, alignItems: 'center' },
   loadingText: { color: '#6B7280', marginTop: 8 },
   skeletonGapSm: { marginTop: 8 },
-
 });
 
 export default RechargeSection;

@@ -66,14 +66,7 @@ const ArticleCard: React.FC<{
   const grad = GRADIENTS[index % GRADIENTS.length];
 
   return (
-    <TouchableOpacity
-      style={[styles.articleCard, {
-        backgroundColor: servicesTheme.colors.surface,
-        shadowColor: servicesTheme.colors.shadow,
-      }]}
-      activeOpacity={0.82}
-      onPress={onPress}
-    >
+    <TouchableOpacity style={[styles.articleCard, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]} activeOpacity={0.82} onPress={onPress}>
       {/* Thumbnail */}
       <View style={styles.thumbContainer}>
         <LinearGradient
@@ -91,16 +84,8 @@ const ArticleCard: React.FC<{
 
       {/* Content */}
       <View style={styles.articleContent}>
-        <Text
-          style={[styles.articleTitle, { color: servicesTheme.colors.primary }]}
-          numberOfLines={2}
-        >
-          {item.title}
-        </Text>
-        <Text
-          style={[styles.articleSnippet, { color: servicesTheme.colors.muted }]}
-          numberOfLines={2}
-        >
+        <Text style={[styles.articleTitle, { color: servicesTheme.colors.primary }]} numberOfLines={2}>{item.title}</Text>
+        <Text style={[styles.articleSnippet, { color: servicesTheme.colors.muted }]} numberOfLines={2}>
           {item.short_description}
         </Text>
 
@@ -188,10 +173,7 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}
-      edges={['top']}
-    >
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor="#080B26" />
 
       {/* ── Header ─────────────────────────────────────────── */}
@@ -243,9 +225,7 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
           }
           ListHeaderComponent={
             <View style={styles.listHeader}>
-              <Text style={[styles.listHeaderTitle, { color: servicesTheme.colors.textStrong }]}>
-                {sectionTitle}
-              </Text>
+              <Text style={[styles.listHeaderTitle, { color: servicesTheme.colors.textStrong }]}>{sectionTitle}</Text>
               <Text style={[styles.listHeaderSub, { color: servicesTheme.colors.muted }]}>
                 {articles.length > 0
                   ? `${articles.length} articles · Tap any to read`
@@ -266,178 +246,147 @@ export default FAQListingScreen;
 // ─── Styles ───────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-  },
+  safe: { flex: 1, backgroundColor: '#F7F8FA' },
 
-  // ── Header ──────────────────────────────────────────────────────
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 22,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
     gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#080B26',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.28,
+        shadowRadius: 12,
+      },
+      android: { elevation: 8 },
+    }),
   },
   backBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: 0,
   },
-  backIcon: {
-    fontSize: 22,
-    color: '#FFFFFF',
-    lineHeight: 26,
-  },
-  headerTextBlock: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
+  backIcon: { fontSize: 26, color: '#fff', lineHeight: 30, marginTop: -2 },
+  headerTextBlock: { flex: 1 },
   headerCategory: {
     fontSize: 10,
     fontWeight: '600',
-    color: 'rgba(255,255,255,0.6)',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 3,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  headerBadge: {
-    backgroundColor: 'rgba(255,255,255,0.14)',
-    borderRadius: 10,
-
-    alignItems: 'center',
-    minWidth: 48,
-    flexShrink: 0,
-  },
-  headerBadgeNum: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    lineHeight: 21,
-  },
-  headerBadgeLabel: {
-    fontSize: 9,
-    fontWeight: '700',
     color: 'rgba(255,255,255,0.7)',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    marginBottom: 2,
+  },
+  headerTitle: { fontSize: 17, fontWeight: '800', color: '#fff', letterSpacing: -0.2 },
+  headerBadge: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 6,
+    alignItems: 'center',
+    minWidth: 50,
   },
+  headerBadgeNum: { fontSize: 18, fontWeight: '800', color: '#fff', lineHeight: 22 },
+  headerBadgeLabel: { fontSize: 9, fontWeight: '600', color: 'rgba(255,255,255,0.8)' },
 
-  // ── List ────────────────────────────────────────────────────────
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-  },
-  listHeader: {
-    paddingTop: 16,
-    paddingBottom: 10,
-  },
+  listContent: { paddingHorizontal: 16, paddingBottom: 20 },
+  listHeader: { paddingTop: 20, paddingBottom: 16 },
   listHeaderTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
-    letterSpacing: -0.3,
-    marginBottom: 4,
+    color: '#1F2937',
+    letterSpacing: -0.4,
   },
-  listHeaderSub: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
+  listHeaderSub: { fontSize: 13, color: '#9CA3AF', marginTop: 4 },
 
-  // ── Skeleton ────────────────────────────────────────────────────
-  pad: {
-    padding: 16,
-    gap: 14,
-  },
-  skeletonCard: {
-    flexDirection: 'row',
-    borderRadius: 16,
-    overflow: 'hidden',
-    gap: 12,
-  },
-  skeletonContent: {
-    flex: 1,
-    paddingVertical: 12,
-  },
-  skeletonFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 12,
-  },
-
-  // ── Article Card ────────────────────────────────────────────────
   articleCard: {
-    flexDirection: 'row',
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 16,
+        shadowColor: '#080B26',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.09,
+        shadowRadius: 10,
       },
       android: { elevation: 4 },
     }),
   },
   thumbContainer: {
-    width: 96,
-    alignSelf: 'stretch',
+    width: '100%',
+    height: 150,
+    position: 'relative',
     overflow: 'hidden',
-    flexShrink: 0,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    backgroundColor: '#F1EEFF',
+    padding: 6,
   },
-  thumbGradient: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+  thumbGradient: { ...StyleSheet.absoluteFillObject, opacity: 0.5 },
   thumbImage: {
-    width: 72,
-    height: 72,
-    margin: 12,
+    width: '100%',
+    height: '100%',
   },
-  articleContent: {
-    flex: 1,
-    padding: 12,
-    paddingLeft: 14,
-  },
+  articleContent: { padding: 14 },
   articleTitle: {
     fontSize: 14,
     fontWeight: '700',
+    color: '#3545A3',
     lineHeight: 20,
-    marginBottom: 6,
   },
   articleSnippet: {
     fontSize: 12,
+    color: '#6B7280',
     lineHeight: 17,
+    marginTop: 6,
+    flexShrink: 1,
   },
   articleFooter: {
-    marginTop: 10,
-  },
-  readBtn: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    marginTop: 12,
   },
+  readBtn: { flexDirection: 'row', alignItems: 'center' },
   readBtnText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#3545A3',
+    color: '#171F59',
+    textDecorationLine: 'underline',
   },
-  readBtnArrow: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#3545A3',
-    lineHeight: 18,
+  readBtnArrow: { fontSize: 15, color: '#171F59', fontWeight: '700', marginTop: -1 },
+
+  pad: { padding: 16, paddingTop: 20 },
+  skeletonCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    flexDirection: 'row',
+    padding: 14,
+    marginBottom: 14,
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  skeletonContent: { flex: 1, justifyContent: 'center' },
+  skeletonFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
   },
 });

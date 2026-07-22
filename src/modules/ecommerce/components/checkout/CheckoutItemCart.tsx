@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { getProductImageUrl } from "../../api/ProductApi";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Props = {
   item: any;
@@ -42,6 +43,7 @@ export default function CheckoutItemCart({
   onRemove,
   onPress,
 }: Props) {
+  const { isDark, theme } = useAppTheme();
   // Delivery date: use API value if available, fallback to +5 days
   const deliveryText = useMemo(() => {
     const formatted = formatDeliveryDate(item?.estimated_delivery_date);
@@ -89,23 +91,23 @@ export default function CheckoutItemCart({
     "";
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.topRow}>
 
         {/* Left: image + qty stepper */}
         <TouchableOpacity style={styles.leftCol} activeOpacity={0.85} onPress={onPress}>
-          <View style={styles.imageWrapper}>
+          <View style={[styles.imageWrapper, { backgroundColor: isDark ? "#111827" : "#F9FAFB", borderColor: theme.border }]}>
             <Image
               source={{ uri: getProductImageUrl(item.image) }}
               style={styles.image}
               resizeMode="contain"
             />
           </View>
-          <View style={styles.qtyPill}>
+          <View style={[styles.qtyPill, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <TouchableOpacity onPress={onDecrease} style={styles.qtyBtn}>
               <Text style={styles.qtySymbol}>−</Text>
             </TouchableOpacity>
-            <Text style={styles.qtyValue}>{item.quantity || 1}</Text>
+            <Text style={[styles.qtyValue, { color: theme.text }]}>{item.quantity || 1}</Text>
             <TouchableOpacity onPress={onIncrease} style={styles.qtyBtn}>
               <Text style={styles.qtySymbol}>+</Text>
             </TouchableOpacity>
@@ -114,14 +116,14 @@ export default function CheckoutItemCart({
 
         {/* Right: product info */}
         <TouchableOpacity style={styles.info} activeOpacity={0.85} onPress={onPress}>
-          <Text style={styles.title} numberOfLines={2}>{productTitle}</Text>
+          <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>{productTitle}</Text>
           {!!productSubtitle && (
-            <Text style={styles.subTitle} numberOfLines={1}>{productSubtitle}</Text>
+            <Text style={[styles.subTitle, { color: theme.secondaryText }]} numberOfLines={1}>{productSubtitle}</Text>
           )}
 
           {/* Price — sale price + strikethrough MRP + discount badge */}
           <View style={styles.priceRow}>
-            <Text style={styles.salePrice}>₹{salePrice.toLocaleString("en-IN")}</Text>
+            <Text style={[styles.salePrice, { color: theme.text }]}>₹{salePrice.toLocaleString("en-IN")}</Text>
             {discountPct > 0 && (
               <>
                 <Text style={styles.mrpText}>₹{mrp.toLocaleString("en-IN")}</Text>
@@ -147,10 +149,10 @@ export default function CheckoutItemCart({
         {/* Close button */}
         <TouchableOpacity
           onPress={onRemove}
-          style={styles.closeBtn}
+          style={[styles.closeBtn, { backgroundColor: isDark ? "#111827" : "#F3F4F6" }]}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
-          <MaterialCommunityIcons name="close" size={14} color="#6B7280" />
+          <MaterialCommunityIcons name="close" size={14} color={theme.secondaryText} />
         </TouchableOpacity>
       </View>
     </View>

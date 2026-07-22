@@ -18,8 +18,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import OrderItemCard from '../../../../modules/common/order/OrderItemCard';
 import { submitServiceFeedback } from '../../api/OrderAPI';
 import type { HomeStackParamList } from '../../navigation/type';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceFeedback'>;
@@ -30,18 +32,24 @@ const TRACK_STEPS = [1, 2, 3, 4, 5];
 const EXPERIENCE_LABELS = ['Very Poor', 'Poor', 'Average', 'Good', 'Excellent'];
 const EASE_LABELS = ['Very Difficult', 'Difficult', 'Neutral', 'Easy', 'Very Easy'];
 const EXPERT_LABELS = ['Very Poor', 'Poor', 'Neutral', 'Good', 'Excellent'];
-const EMOJIS = ['😖', '☹️', '😐', '🙂', '😍'];
+const SCALE_ICONS = [
+  'alert-circle-outline',
+  'minus-circle-outline',
+  'circle-outline',
+  'check-circle-outline',
+  'check-decagram-outline',
+];
 
 const COMPLETION_OPTIONS = [
-  { label: 'Faster than expected', value: 'faster_than_expected' },
+  { label: 'Faster than expected', value: 'fast' },
   { label: 'On time', value: 'on_time' },
   { label: 'Delayed', value: 'delayed' },
 ];
 
 const CONFIDENCE_OPTIONS = [
-  { label: 'Yes, completely', value: 'yes_completely' },
-  { label: 'Mostly', value: 'mostly' },
-  { label: 'Not really', value: 'not_really' },
+  { label: 'Yes, completely', value: 'high' },
+  { label: 'Mostly', value: 'medium' },
+  { label: 'Not really', value: 'low' },
 ];
 
 const REUSE_OPTIONS = [
@@ -52,6 +60,7 @@ const REUSE_OPTIONS = [
 
 export default function ServiceFeedback() {
   const navigation = useNavigation<Nav>();
+  const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
   const {
     service_order_id,
@@ -111,7 +120,7 @@ export default function ServiceFeedback() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
       <Header
         title="Service Feedback"
         onBack={() => navigation.goBack()}
@@ -121,11 +130,17 @@ export default function ServiceFeedback() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        <ServiceSummaryCard
-          serviceName={service_name}
-          variantName={variant_name}
-          orderRef={order_ref}
-          imageUrl={image_url}
+        <OrderItemCard
+          image={
+            image_url ? (
+              <Image source={{ uri: image_url }} style={styles.productImage} />
+            ) : (
+              <MaterialCommunityIcons name="file-document-outline" size={34} color={PURPLE} />
+            )
+          }
+          title={service_name || 'Service'}
+          weight={variant_name || 'Tell us about your completed service'}
+          orderId={order_ref}
         />
 
         <StarRatingCard
@@ -134,14 +149,14 @@ export default function ServiceFeedback() {
           onChange={setRating}
         />
 
-        <EmojiScaleCard
+        <IconScaleCard
           title="How easy was it to complete this service on our app?"
           value={easeRating}
           labels={EASE_LABELS}
           onChange={setEaseRating}
         />
 
-        <EmojiScaleCard
+        <IconScaleCard
           title="How was your experience with our Service Expert?"
           value={expertRating}
           labels={EXPERT_LABELS}
@@ -169,16 +184,16 @@ export default function ServiceFeedback() {
           onChange={setReuseIntent}
         />
 
-        <View style={styles.commentSection}>
-          <Text style={styles.commentTitle}>Anything you’d like us to improve?</Text>
+        <View style={[styles.commentSection, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+          <Text style={[styles.commentTitle, { color: servicesTheme.colors.textStrong }]}>Anything you’d like us to improve?</Text>
           <TextInput
             value={comment}
             onChangeText={setComment}
             placeholder="Type here"
-            placeholderTextColor="#B8B2C4"
+            placeholderTextColor={servicesTheme.colors.subtle}
             multiline
             textAlignVertical="top"
-            style={styles.commentInput}
+            style={[styles.commentInput, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border, color: servicesTheme.colors.text }]}
           />
         </View>
 
@@ -188,7 +203,7 @@ export default function ServiceFeedback() {
           onPress={handleSubmit}
         >
           <LinearGradient
-            colors={['#8665FF', '#5B47A3']}
+            colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.submitButton, submitDisabled && styles.submitButtonDisabled]}
@@ -212,60 +227,18 @@ function Header({
   title: string;
   onBack: () => void;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <LinearGradient
-      colors={['#30205F', '#5B3CB4', '#7C3AED']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.header}
-    >
+    <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider }]}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={onBack}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <MaterialCommunityIcons name="arrow-left" size={21} color="#FFF" />
+        <MaterialCommunityIcons name="chevron-left" size={30} color={servicesTheme.colors.text} />
       </TouchableOpacity>
-
-      <View style={styles.headerCopy}>
-        <Text style={styles.headerEyebrow}>COMPLETED SERVICE</Text>
-        <Text style={styles.headerTitle}>{title}</Text>
-      </View>
-    </LinearGradient>
-  );
-}
-
-function ServiceSummaryCard({
-  serviceName,
-  variantName,
-  orderRef,
-  imageUrl,
-}: {
-  serviceName: string;
-  variantName?: string;
-  orderRef: string;
-  imageUrl?: string | null;
-}) {
-  return (
-    <View style={styles.summaryCard}>
-      <View style={styles.imageWrap}>
-        {imageUrl ? (
-          <Image source={{ uri: imageUrl }} style={styles.serviceImage} resizeMode="cover" />
-        ) : (
-          <MaterialCommunityIcons name="file-document-outline" size={32} color={PURPLE} />
-        )}
-      </View>
-
-      <View style={styles.summaryCopy}>
-        <Text style={styles.serviceName} numberOfLines={2}>{serviceName}</Text>
-        <Text style={styles.variantName} numberOfLines={2}>
-          {variantName || 'Tell us about your completed service'}
-        </Text>
-        <View style={styles.orderRefRow}>
-          <Text style={styles.orderRef}>Order ID - #{orderRef}</Text>
-          <MaterialCommunityIcons name="content-copy" size={16} color="#4F46E5" />
-        </View>
-      </View>
+      <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
     </View>
   );
 }
@@ -279,9 +252,11 @@ function StarRatingCard({
   rating: number;
   onChange: (value: number) => void;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
+    <View style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
       <View style={styles.starRow}>
         {[1, 2, 3, 4, 5].map(value => (
           <TouchableOpacity
@@ -292,10 +267,10 @@ function StarRatingCard({
           >
             <MaterialCommunityIcons
               name={value <= rating ? 'star' : 'star-outline'}
-              size={40}
-              color="#E879D6"
+              size={28}
+              color={value <= rating ? '#F59E0B' : '#CBD5E1'}
             />
-            <Text style={[styles.starLabel, value === rating && styles.selectedLabel]}>
+            <Text style={[styles.starLabel, { color: servicesTheme.colors.muted }, value === rating && styles.selectedLabel, value === rating && { color: servicesTheme.colors.primary }]}>
               {EXPERIENCE_LABELS[value - 1]}
             </Text>
           </TouchableOpacity>
@@ -305,7 +280,7 @@ function StarRatingCard({
   );
 }
 
-function EmojiScaleCard({
+function IconScaleCard({
   title,
   value,
   labels,
@@ -316,6 +291,7 @@ function EmojiScaleCard({
   labels: string[];
   onChange: (value: number) => void;
 }) {
+  const servicesTheme = useServicesTheme();
   const [trackWidth, setTrackWidth] = useState(0);
   const selectedValue = value || 1;
 
@@ -331,22 +307,26 @@ function EmojiScaleCard({
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <View style={styles.emojiRow}>
+    <View style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
+      <View style={styles.scaleOptionRow}>
         {TRACK_STEPS.map(option => {
           const selected = option === value;
           return (
             <TouchableOpacity
               key={option}
-              style={styles.emojiItem}
+              style={styles.scaleOptionItem}
               activeOpacity={0.75}
               onPress={() => onChange(option)}
             >
-              <Text style={[styles.emoji, !selected && styles.emojiMuted]}>
-                {EMOJIS[option - 1]}
-              </Text>
-              <Text style={[styles.emojiLabel, selected && styles.selectedLabel]}>
+              <View style={[styles.scaleIconWrap, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }, selected && styles.scaleIconWrapActive]}>
+                <MaterialCommunityIcons
+                  name={SCALE_ICONS[option - 1]}
+                  size={20}
+                  color={selected ? servicesTheme.colors.primary : servicesTheme.colors.subtle}
+                />
+              </View>
+              <Text style={[styles.scaleOptionLabel, { color: servicesTheme.colors.muted }, selected && styles.selectedLabel, selected && { color: servicesTheme.colors.primary }]}>
                 {labels[option - 1]}
               </Text>
             </TouchableOpacity>
@@ -361,8 +341,8 @@ function EmojiScaleCard({
         onResponderMove={updateFromTrack}
         style={styles.scaleTrackTouch}
       >
-        <View style={styles.scaleTrack}>
-          <View style={[styles.scaleFill, { width: `${selectedValue * 20}%` }]} />
+        <View style={[styles.scaleTrack, { backgroundColor: servicesTheme.colors.divider }]}>
+          <View style={[styles.scaleFill, { width: `${selectedValue * 20}%`, backgroundColor: servicesTheme.colors.primary }]} />
           <View style={[styles.scaleThumb, { left: `${(selectedValue - 1) * 25}%` }]} />
         </View>
       </View>
@@ -381,9 +361,11 @@ function OptionCard({
   value: string;
   onChange: (value: string) => void;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>{title}</Text>
+    <View style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
       <View style={styles.optionList}>
         {options.map(option => {
           const selected = option.value === value;
@@ -397,7 +379,7 @@ function OptionCard({
               <View style={[styles.radio, selected && styles.radioActive]}>
                 {selected ? <View style={styles.radioInner} /> : null}
               </View>
-              <Text style={styles.optionText}>{option.label}</Text>
+              <Text style={[styles.optionText, { color: servicesTheme.colors.text }]}>{option.label}</Text>
             </TouchableOpacity>
           );
         })}
@@ -407,120 +389,52 @@ function OptionCard({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F6F5FB' },
+  safe: { flex: 1, backgroundColor: '#FFFFFF' },
   header: {
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E4E4E4',
+    backgroundColor: '#FFFFFF',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
-  },
-  headerCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  headerEyebrow: {
-    color: 'rgba(255,255,255,0.64)',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.2,
   },
   headerTitle: {
-    fontSize: 22,
-    color: '#FFF',
-    fontWeight: '900',
-    marginTop: 1,
-    letterSpacing: -0.3,
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#374151',
+    fontWeight: '600',
   },
   scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 18,
+    padding: 16,
     paddingBottom: 34,
     gap: 12,
   },
-  summaryCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 22,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#ECE8F3',
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
-    elevation: 3,
-  },
-  imageWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F0ECFF',
-    overflow: 'hidden',
-  },
-  serviceImage: {
-    width: '100%',
-    height: '100%',
-  },
-  summaryCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  serviceName: {
-    fontSize: 16,
-    color: '#4B4658',
-    fontWeight: '900',
-    lineHeight: 21,
-  },
-  variantName: {
-    fontSize: 13,
-    color: '#5F5A69',
-    marginTop: 5,
-    lineHeight: 18,
-  },
-  orderRefRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 10,
-  },
-  orderRef: {
-    fontSize: 13,
-    color: '#6B6475',
-    fontWeight: '700',
+  productImage: {
+    width: 48,
+    height: 48,
+    resizeMode: 'contain',
   },
   card: {
     backgroundColor: '#FFF',
-    borderRadius: 20,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ECE8F3',
-    padding: 16,
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
+    borderColor: '#E5E7EB',
+    padding: 14,
   },
   cardTitle: {
-    fontSize: 15,
-    color: '#4B4658',
-    fontWeight: '900',
-    textAlign: 'center',
-    lineHeight: 21,
-    marginBottom: 16,
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '700',
+    lineHeight: 20,
+    marginBottom: 14,
   },
   starRow: {
     flexDirection: 'row',
@@ -531,31 +445,39 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   starLabel: {
-    marginTop: 8,
-    fontSize: 11,
-    color: '#6B6475',
-    fontWeight: '700',
+    marginTop: 6,
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '600',
     textAlign: 'center',
   },
-  emojiRow: {
+  scaleOptionRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  emojiItem: {
+  scaleOptionItem: {
     flex: 1,
     alignItems: 'center',
   },
-  emoji: {
-    fontSize: 25,
+  scaleIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
     marginBottom: 6,
   },
-  emojiMuted: {
-    opacity: 0.38,
+  scaleIconWrapActive: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
   },
-  emojiLabel: {
-    fontSize: 11,
-    color: '#6B6475',
-    fontWeight: '700',
+  scaleOptionLabel: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '600',
     textAlign: 'center',
   },
   selectedLabel: {
@@ -563,12 +485,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   scaleTrackTouch: {
-    paddingVertical: 12,
+    paddingVertical: 10,
     marginTop: 6,
   },
   scaleTrack: {
     height: 5,
-    backgroundColor: '#D9C7FF',
+    backgroundColor: '#E5E7EB',
     borderRadius: 99,
   },
   scaleFill: {
@@ -587,7 +509,7 @@ const styles = StyleSheet.create({
     borderColor: '#9A78FF',
   },
   optionList: {
-    gap: 13,
+    gap: 12,
   },
   optionRow: {
     flexDirection: 'row',
@@ -598,7 +520,7 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 2,
-    borderColor: '#333',
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 13,
@@ -613,47 +535,46 @@ const styles = StyleSheet.create({
     backgroundColor: PURPLE,
   },
   optionText: {
-    fontSize: 14,
-    color: '#5F5A69',
-    fontWeight: '700',
+    fontSize: 13,
+    color: '#374151',
+    fontWeight: '600',
   },
   commentSection: {
-    marginTop: 2,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
   },
   commentTitle: {
-    fontSize: 15,
-    color: '#4B4658',
-    fontWeight: '900',
+    fontSize: 14,
+    color: '#111827',
+    fontWeight: '700',
     marginBottom: 10,
   },
   commentInput: {
-    minHeight: 132,
+    minHeight: 112,
     borderWidth: 1,
-    borderColor: '#D9E5E5',
-    borderRadius: 14,
-    padding: 14,
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    padding: 12,
     color: '#111827',
-    fontSize: 14,
+    fontSize: 13,
     backgroundColor: '#FFF',
   },
   submitButton: {
-    height: 54,
-    borderRadius: 16,
+    height: 52,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 22,
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 4,
   },
   submitButtonDisabled: {
     opacity: 0.5,
   },
   submitText: {
     color: '#FFF',
-    fontSize: 17,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

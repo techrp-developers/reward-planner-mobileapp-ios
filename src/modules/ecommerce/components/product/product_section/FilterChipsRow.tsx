@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useAppTheme } from "../../../../../theme/ThemeContext";
 
 type Chip = {
   id: string;
@@ -14,10 +15,9 @@ export default function FilterChipsRow({
 }: {
   onSelect?: (chip: Chip) => void;
 }) {
+  const { theme } = useAppTheme();
 
   const chips = useMemo<Chip[]>(() => [
-    { id: "filter", label: "", icon: "tune" },
-
     { id: "rating", label: "4+ Stars", icon: "star", query: "ratingMin=4" },
 
     { id: "new", label: "New Arrivals", query: "sortBy=created_at&sortOrder=DESC" },
@@ -38,7 +38,7 @@ export default function FilterChipsRow({
   const [activeId, setActiveId] = useState<string>("");
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { backgroundColor: theme.background }]}>
       <FlatList
         data={chips}
         horizontal
@@ -52,7 +52,10 @@ export default function FilterChipsRow({
           return (
             <TouchableOpacity
               activeOpacity={0.85}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[
+                styles.chip,
+                { backgroundColor: theme.card, borderColor: active ? theme.primary : theme.border },
+              ]}
               onPress={() => {
                 setActiveId(item.id);
                 onSelect?.(item);
@@ -60,11 +63,11 @@ export default function FilterChipsRow({
             >
 
               {item.icon && (
-                <MaterialIcons name={item.icon as any} size={18} color="#111827" />
+                <MaterialIcons name={item.icon as any} size={18} color={theme.text} />
               )}
 
               {item.label !== "" && (
-                <Text style={styles.chipText}>{item.label}</Text>
+                <Text style={[styles.chipText, { color: theme.text }]}>{item.label}</Text>
               )}
 
               {item.id === "rating" && (
@@ -76,7 +79,7 @@ export default function FilterChipsRow({
         }}
       />
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
     </View>
   );
 }

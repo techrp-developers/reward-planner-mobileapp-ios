@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ProductHead from '../constants/heading/Product_Head_Img';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, useWindowDimensions, Alert, ScrollView } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, useWindowDimensions, Alert, ScrollView, Switch } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import OrderItemCard from '../../common/order/OrderItemCard';
@@ -16,6 +16,7 @@ import { useAuth } from '../../common/auth/context/AuthContext';
 import { useCart } from '../context/CartContext';
 import LinearGradient from 'react-native-linear-gradient';
 import { LogoutConfirmationModal } from '../../common/auth/screens/LogoutConfirmationModal';
+import { useAppTheme } from '../../../theme/ThemeContext';
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -23,12 +24,15 @@ function Profile() {
     const navigation = useNavigation<Nav>();
     const rootNavigation = navigation.getParent() as RootNav | undefined;
     const { isAuthenticated, user, logout } = useAuth();
+    const { isDark, toggleTheme } = useAppTheme();
     const { totalQuantity } = useCart();
     const { width } = useWindowDimensions();
     const HEADER_HEIGHT = Math.round(width * 0.25);
     const [name, setName] = useState("User");
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
     const [orders, setOrders] = useState<any[]>([]);
     const [ordersLoading, setOrdersLoading] = useState(false);
 
@@ -48,7 +52,7 @@ function Profile() {
     };
     const OpenAddressDetails = () => {
         // direct app-level navigation (AddAddressMap is now in AppStack)
-        navigation.navigate("AddressSelect");
+        navigation.navigate("AddressSelect", { manageOnly: true });
     };
 
 
@@ -74,37 +78,29 @@ function Profile() {
     };
 
     const handleDeleteAccount = async () => {
-        Alert.alert(
-            'Delete Account',
-            'Are you sure you want to permanently delete your account? This cannot be undone.',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            setLogoutLoading(true);
-                            const res = await deleteCustomer();
-                            if (res?.success || res?.status === 'ok' || res?.data) {
-                                await logout();
-                                rootNavigation?.reset({
-                                    index: 0,
-                                    routes: [{ name: 'Auth' }],
-                                });
-                            } else {
-                                Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
-                            }
-                        } catch (error) {
-                            console.error('Delete account failed', error);
-                            Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
-                        } finally {
-                            setLogoutLoading(false);
-                        }
-                    },
-                },
-            ]
-        );
+        setDeleteModalVisible(true);
+    };
+
+    const handleDeleteAccountConfirm = async () => {
+        try {
+            setDeleteLoading(true);
+            const res = await deleteCustomer();
+            if (res?.success || res?.status === 'ok' || res?.data) {
+                await logout();
+                setDeleteModalVisible(false);
+                rootNavigation?.reset({
+                    index: 0,
+                    routes: [{ name: 'Auth' }],
+                });
+            } else {
+                Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
+            }
+        } catch (error) {
+            console.error('Delete account failed', error);
+            Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
+        } finally {
+            setDeleteLoading(false);
+        }
     };
 
     const loadUser = useCallback(async () => {
@@ -135,7 +131,7 @@ function Profile() {
 
             setName(userName);
         } catch (error) {
-            console.log("Failed to load user", error);
+            __DEV__ && console.log("Failed to load user", error);
         }
     }, [isAuthenticated, user]);
 
@@ -191,10 +187,10 @@ function Profile() {
     };
 
     return (
-        <View style={styles.screen}>
+        <View style={[styles.screen, isDark && styles.screenDark]}>
 
             {/* Header */}
-            <View style={[styles.fixedHeader, { height: HEADER_HEIGHT }]}>
+            <View style={[styles.fixedHeader, { height: HEADER_HEIGHT }, isDark && styles.fixedHeaderDark]}>
                 <ProductHead headerHeight={HEADER_HEIGHT} cartCount={totalQuantity} />
             </View>
 
@@ -203,19 +199,19 @@ function Profile() {
                 contentContainerStyle={styles.pageContent}
                 style={{ marginTop: HEADER_HEIGHT }}
             >
-                <View style={styles.container}>
+                <View style={[styles.container, isDark && styles.surfaceDark]}>
 
                     {/* Top Row */}
                     <View style={styles.topRow}>
 
                         {/* Left Section */}
                         <View style={styles.leftRow}>
-                            <View style={styles.avatar}>
+                            <View style={[styles.avatar, isDark && styles.avatarDark]}>
                                 <MaterialIcons name="person" size={26} color="#6C63FF" />
                             </View>
 
                             <View style={styles.nameRow}>
-                                <Text style={styles.helloText}>Hello {name}</Text>
+                                <Text style={[styles.helloText, isDark && styles.textDark]}>Hello {name}</Text>
                             </View>
                         </View>
 
@@ -244,12 +240,12 @@ function Profile() {
 
 
                     {/* Divider */}
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, isDark && styles.dividerDark]} />
 
                     {/* Your Orders Row */}
                     <TouchableOpacity style={styles.ordersRow} onPress={handleOpenOrders} activeOpacity={0.8}>
-                        <Text style={styles.ordersText}>Your Orders</Text>
-                        <MaterialIcons name="keyboard-arrow-right" size={22} color="#444" />
+                        <Text style={[styles.ordersText, isDark && styles.textDark]}>Your Orders</Text>
+                        <MaterialIcons name="keyboard-arrow-right" size={22} color={isDark ? "#A1A1AA" : "#444"} />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.listWrap}>
@@ -288,12 +284,15 @@ function Profile() {
                     )}
                 </View>
                 {/* Profile Menu Card */}
-                <View style={styles.menuCard}>
-                    <MenuItem title="Your Notes" showArrow onPress={handleOpenNotes} />
-                    <View style={styles.menuDivider} />
+                <View style={[styles.menuCard, isDark && styles.menuCardDark]}>
+                    <DarkModeMenuItem isDark={isDark} onToggle={toggleTheme} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Address Book" showArrow onPress={OpenAddressDetails} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Your Notes" showArrow onPress={handleOpenNotes} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
+
+                    <MenuItem title="Address Book" showArrow onPress={OpenAddressDetails} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
                     {/* <MenuItem title="Settings" />
                 <View style={styles.menuDivider} /> */}
@@ -301,15 +300,15 @@ function Profile() {
                     {/* <MenuItem title="Languages" />
                 <View style={styles.menuDivider} /> */}
 
-                    <MenuItem title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Terms & Conditions" onPress={() => navigation.navigate('TermsAndConditions')} />
-                    <View style={styles.menuDivider} />
-                    <MenuItem title="Delete Account" onPress={handleDeleteAccount} />
-                    <View style={styles.menuDivider} />
+                    <MenuItem title="Terms & Conditions" onPress={() => navigation.navigate('TermsAndConditions')} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
+                    <MenuItem title="Delete Account" onPress={handleDeleteAccount} isDark={isDark} />
+                    <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Logout" onPress={handleLogoutPress} />
+                    <MenuItem title="Logout" onPress={handleLogoutPress} isDark={isDark} />
 
                 </View>
 
@@ -319,6 +318,21 @@ function Profile() {
                     onConfirm={handleLogoutConfirm}
                     onCancel={handleLogoutCancel}
                     isLoading={logoutLoading}
+                    isDark={isDark}
+                />
+                <LogoutConfirmationModal
+                    visible={deleteModalVisible}
+                    onConfirm={handleDeleteAccountConfirm}
+                    onCancel={() => setDeleteModalVisible(false)}
+                    isLoading={deleteLoading}
+                    isDark={isDark}
+                    danger
+                    icon="delete-outline"
+                    title="Delete Account"
+                    description="Are you sure you want to permanently delete your account?"
+                    subText="This action cannot be undone."
+                    confirmText="Delete Account"
+                    loadingText="Deleting..."
                 />
             </ScrollView>
         </View>
@@ -329,25 +343,52 @@ const MenuItem = ({
     title,
     showArrow = true,
     onPress,
+    isDark = false,
 }: {
     title: string;
     showArrow?: boolean;
     onPress?: () => void;
+    isDark?: boolean;
 }) => (
     <TouchableOpacity
         style={styles.menuItem}
         onPress={onPress}
         activeOpacity={0.8}
     >
-        <Text style={styles.menuText}>{title}</Text>
+        <Text style={[styles.menuText, isDark && styles.textDark]}>{title}</Text>
         {showArrow && (
             <MaterialCommunityIcons
                 name="chevron-right"
                 size={20}
-                color="#999"
+                color={isDark ? "#71717A" : "#999"}
             />
         )}
     </TouchableOpacity>
+);
+
+const DarkModeMenuItem = ({ isDark, onToggle }: { isDark: boolean; onToggle: () => void }) => (
+    <View style={styles.menuItem}>
+        <View style={styles.darkModeLeft}>
+            <MaterialCommunityIcons
+                name={isDark ? "weather-night" : "white-balance-sunny"}
+                size={20}
+                color="#6366F1"
+            />
+            <View>
+                <Text style={[styles.menuText, isDark && styles.textDark]}>Dark Mode</Text>
+                <Text style={[styles.darkModeSub, isDark && styles.mutedDark]}>
+                    {isDark ? "Dark theme active" : "Light theme active"}
+                </Text>
+            </View>
+        </View>
+        <Switch
+            value={isDark}
+            onValueChange={onToggle}
+            thumbColor="#FFFFFF"
+            trackColor={{ false: "#CBD5E1", true: "#4F46E5" }}
+            ios_backgroundColor="#CBD5E1"
+        />
+    </View>
 );
 const OutlineButton = ({ title, onPress }: { title: string; onPress?: () => void }) => (
     <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
@@ -367,6 +408,9 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#FFFF",
     },
+    screenDark: {
+        backgroundColor: "#09090B",
+    },
     fixedHeader: {
         position: "absolute",
         top: 0,
@@ -375,11 +419,17 @@ const styles = StyleSheet.create({
         zIndex: 50,
         backgroundColor: "#FFF",
     },
+    fixedHeaderDark: {
+        backgroundColor: "#111113",
+    },
     container: {
         backgroundColor: "#FFFFFF",
         paddingHorizontal: 16,
         paddingTop: 18,
         paddingBottom: 12,
+    },
+    surfaceDark: {
+        backgroundColor: "#111113",
     },
     pageContent: {
         paddingBottom: 28,
@@ -404,6 +454,9 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
+    avatarDark: {
+        backgroundColor: "#27272A",
+    },
 
     nameRow: {
         flexDirection: "row",
@@ -416,6 +469,12 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#333",
         marginRight: 4,
+    },
+    textDark: {
+        color: "#FFFFFF",
+    },
+    mutedDark: {
+        color: "#A1A1AA",
     },
 
     rightRow: {
@@ -471,6 +530,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFFF",
         marginVertical: 16,
     },
+    dividerDark: {
+        backgroundColor: "rgba(255,255,255,0.08)",
+    },
 
     ordersRow: {
         flexDirection: "row",
@@ -516,6 +578,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E5E5E5",
     },
+    menuCardDark: {
+        backgroundColor: "#111113",
+        borderColor: "rgba(255,255,255,0.08)",
+    },
 
     menuItem: {
         paddingVertical: 16,
@@ -530,6 +596,17 @@ const styles = StyleSheet.create({
         color: "#444",
         fontWeight: "500",
     },
+    darkModeLeft: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+    darkModeSub: {
+        marginTop: 2,
+        fontSize: 11,
+        color: "#777",
+        fontWeight: "500",
+    },
 
     menuDivider: {
         height: 1,
@@ -538,7 +615,8 @@ const styles = StyleSheet.create({
     },
 
     gradientBtn: {
-
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
@@ -549,7 +627,5 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "600",
         color: "#FFFFFF",
-        paddingVertical: 10,
-        paddingHorizontal: 12,
     },
 });

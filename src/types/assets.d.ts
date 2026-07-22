@@ -1,8 +1,3 @@
-declare module "*.css" {
-  const content: Record<string, string>;
-  export default content;
-}
-
 declare module "*.svg" {
   import React from "react";
   import { SvgProps } from "react-native-svg";

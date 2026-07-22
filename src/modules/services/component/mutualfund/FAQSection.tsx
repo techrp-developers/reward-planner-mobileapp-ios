@@ -11,13 +11,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../navigation/type';
-import { getMutualFundCategories } from '../../api/MutualFundAPI';
+import { getMutualFundCategories, type MFCategory } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
-
-interface FAQItem {
-    id: string;
-    title: string;
-}
 
 interface Props {
     navigation: NativeStackNavigationProp<HomeStackParamList>;
@@ -25,38 +20,29 @@ interface Props {
 
 const FAQSection: React.FC<Props> = ({ navigation }) => {
     const servicesTheme = useServicesTheme();
-    const [sections, setSections] = useState<FAQItem[]>([]);
+    const [categories, setCategories] = useState<MFCategory[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         getMutualFundCategories()
             .then(cats => {
-                // If a category has children, its children are the navigable sections.
-                // If it has no children, the category itself is the section.
-                const items: FAQItem[] = cats.flatMap(c =>
-                    c.has_children
-                        ? c.children.map(ch => ({ id: ch.id.toString(), title: ch.title }))
-                        : [{ id: c.id.toString(), title: c.title }]
-                );
-                setSections(items);
+                const faqCats = cats.filter(c => !c.has_children);
+                setCategories(faqCats);
             })
             .catch(err => {
                 console.error('[FAQSection] fetch error:', err);
-                setSections([]);
+                setCategories([]);
             })
             .finally(() => setLoading(false));
     }, []);
 
-    const renderCard = ({ item }: { item: FAQItem }) => (
+    const renderCard = ({ item }: { item: MFCategory }) => (
         <TouchableOpacity
-            style={[styles.card, {
-                borderColor: servicesTheme.colors.border,
-                shadowColor: servicesTheme.colors.shadow,
-            }]}
+            style={[styles.card, { borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
             activeOpacity={0.82}
             onPress={() =>
                 navigation.navigate('FAQListing', {
-                    categoryId: item.id,
+                    categoryId: item.id.toString(),
                     categoryTitle: item.title,
                 })
             }
@@ -71,9 +57,7 @@ const FAQSection: React.FC<Props> = ({ navigation }) => {
                     <Text style={[styles.cardText, { color: servicesTheme.colors.text }]}>
                         {item.title}
                     </Text>
-                    <View style={[styles.chevronContainer, {
-                        backgroundColor: servicesTheme.isDark ? '#18112A' : 'rgba(134,101,255,0.08)',
-                    }]}>
+                    <View style={[styles.chevronContainer, { backgroundColor: servicesTheme.isDark ? '#18112A' : 'rgba(134,101,255,0.08)' }]}>
                         <MaterialCommunityIcons name="chevron-right" size={18} color="#3545A3" />
                     </View>
                 </View>
@@ -88,10 +72,7 @@ const FAQSection: React.FC<Props> = ({ navigation }) => {
                     <Text style={[styles.eyebrow, { color: servicesTheme.colors.primary }]}>QUICK CLARITY</Text>
                     <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Commonly Asked Questions</Text>
                 </View>
-                <View style={[styles.headingIcon, {
-                    backgroundColor: servicesTheme.colors.surface,
-                    borderColor: servicesTheme.colors.border,
-                }]}>
+                <View style={[styles.headingIcon, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
                     <MaterialCommunityIcons name="lightbulb-on-outline" size={18} color="#3545A3" />
                 </View>
             </View>
@@ -104,9 +85,9 @@ const FAQSection: React.FC<Props> = ({ navigation }) => {
                 />
             ) : (
                 <FlatList
-                    data={sections}
+                    data={categories}
                     renderItem={renderCard}
-                    keyExtractor={item => item.id}
+                    keyExtractor={item => item.id.toString()}
                     numColumns={2}
                     columnWrapperStyle={styles.row}
                     scrollEnabled={false}
@@ -120,7 +101,7 @@ export default FAQSection;
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 24,
+        paddingBottom: 24,
     },
 
     headingRow: {
@@ -133,7 +114,7 @@ const styles = StyleSheet.create({
     eyebrow: {
         fontSize: 10,
         fontWeight: '900',
-        color: '#8B5CF6',
+        color: '#3545A3',
         letterSpacing: 1.1,
         marginBottom: 3,
     },
@@ -171,7 +152,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(134,101,255,0.12)',
         overflow: 'hidden',
-        shadowColor: '#8665FF',
+        shadowColor: '#080B26',
         shadowOffset: {
             width: 0,
             height: 4,
@@ -182,7 +163,8 @@ const styles = StyleSheet.create({
     },
 
     cardGradient: {
-
+        paddingHorizontal: 13,
+        paddingVertical: 14,
         minHeight: 88,
         justifyContent: 'center',
     },
@@ -193,8 +175,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         minHeight: 52,
         gap: 8,
-        paddingHorizontal: 13,
-        paddingVertical: 14,
     },
 
     cardText: {

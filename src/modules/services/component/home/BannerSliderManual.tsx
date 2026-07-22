@@ -65,7 +65,7 @@ export default function BannerSliderManual() {
       });
     } else if (redirect_type === 'url' && redirect_url) {
       // Handle external URL if needed (e.g., WebView navigation)
-      console.log('Opening URL:', redirect_url);
+      __DEV__ && console.log('Opening URL:', redirect_url);
     }
   };
 

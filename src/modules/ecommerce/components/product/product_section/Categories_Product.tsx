@@ -13,11 +13,13 @@ import {
 import { useInfiniteQuery } from "@tanstack/react-query";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { RouteProp, useRoute } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ProductCard from "../../../constants/product_cart/ProductCard";
 import ProductHead from "../../../constants/heading/Product_Head_Img";
 import FilterChipsRow from "./FilterChipsRow";
 import AllIcons from "../../../../../assets/menu/AllCategories.svg";
+import { useAppTheme } from "../../../../../theme/ThemeContext";
 
 import {
   fetchCategoriesByID,
@@ -57,24 +59,65 @@ type CategoryProductsPage = {
 const SIDEBAR_WIDTH = 104;
 const CONTENT_PADDING = 10;
 const PAGE_LIMIT = 10;
+const CATEGORY_CACHE_TTL_MS = 10 * 60 * 1000;
+
+let cachedCategoryTree: CategoryWithSubcategories[] = [];
 
 type CategoryRouteProp = RouteProp<HomeStackParamList, "Category">;
+
+const resolveInitialSelection = (
+  allCategories: CategoryWithSubcategories[],
+  categoryId?: string | number,
+  subcategoryId?: string | number,
+) => {
+  if (allCategories.length === 0) {
+    return { category: null, subcategory: null };
+  }
+
+  const matchedCategory = allCategories.find(
+    (cat) => String(cat.id) === String(categoryId)
+  );
+  const category = matchedCategory || allCategories[0];
+  const matchedSubcategory =
+    subcategoryId !== undefined && subcategoryId !== null
+      ? (category.subcategories || []).find(
+          (sub) => String(sub.id) === String(subcategoryId)
+        )
+      : undefined;
+
+  return {
+    category: category.id,
+    subcategory: matchedSubcategory ? matchedSubcategory.id : null,
+  };
+};
 
 export default function Categories_Product() {
   const route = useRoute<CategoryRouteProp>();
   const { categoryId, title, subcategoryId } = route.params;
   const { width } = useWindowDimensions();
-  const HEADER_HEIGHT = Math.round(width * 0.25);
+  const insets = useSafeAreaInsets();
+  const topSpacing = Math.max(insets.top, 8);
+  const HEADER_HEIGHT = Math.round(width * 0.25) + topSpacing;
 
-  const [categories, setCategories] = useState<CategoryWithSubcategories[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | null>(null);
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | number | null>(null);
+  const [categories, setCategories] = useState<CategoryWithSubcategories[]>(() => cachedCategoryTree);
+  const initialSelection = useMemo(
+    () => resolveInitialSelection(cachedCategoryTree, categoryId, subcategoryId),
+    [categoryId, subcategoryId],
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | number | null>(
+    () => initialSelection.category,
+  );
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | number | null>(
+    () => initialSelection.subcategory,
+  );
   const [filterQuery, setFilterQuery] = useState<string>("");
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(() => cachedCategoryTree.length === 0);
+  const { isDark, theme } = useAppTheme();
 
   const numColumns = 2;
   const cardWidth = useMemo(() => {
-    const availableWidth = width - SIDEBAR_WIDTH - CONTENT_PADDING * 2;
+    const availableWidth = width - CONTENT_PADDING * 2;
     return Math.floor((availableWidth - PROMO_CARD_GAP * (numColumns - 1)) / numColumns);
   }, [width, numColumns]);
 
@@ -103,30 +146,12 @@ export default function Categories_Product() {
       res?.result,
     ];
 
-    for (const candidate of candidates) {
-      if (Array.isArray(candidate) && candidate.length > 0) {
-        if (__DEV__) {
-          const sample = candidate[0];
-          console.log("[Categories] extractProducts found items:", {
-            count: candidate.length,
-            sampleKeys: Object.keys(sample ?? {}),
-            rewardCoins: sample?.rewardCoins,
-            reward_coins: sample?.reward_coins,
-            redeem_coins: sample?.redeem_coins,
-            reward: sample?.reward,
-            points: sample?.points,
-          });
-        }
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate) && candidate.length > 0) {
         return candidate;
       }
     }
 
-    if (__DEV__) {
-      console.warn(
-        "[Categories] extractProducts: no valid array found in response",
-        Object.keys(res ?? {})
-      );
-    }
     return [];
   }, []);
 
@@ -153,9 +178,6 @@ export default function Categories_Product() {
     initialPageParam: 1,
     queryFn: async ({ pageParam }) => {
       const page = Number(pageParam) || 1;
-      console.log(
-        `[Pagination] Requesting page: ${page} | categoryId: ${selectedCategoryId} | subcategoryId: ${selectedSubcategoryId}`
-      );
 
       const queryOptions = {
         page,
@@ -167,39 +189,9 @@ export default function Categories_Product() {
         ? await fetchProductsBySubcategoryId(selectedSubcategoryId, queryOptions)
         : await fetchCategoriesByID(selectedCategoryId as string | number, queryOptions);
 
-      if (__DEV__) {
-        console.log("[Categories] raw API response shape:", {
-          keys: Object.keys(res ?? {}),
-          hasProducts: Array.isArray(res?.products),
-          hasDataProducts: Array.isArray(res?.data?.products),
-          hasItems: Array.isArray(res?.items),
-          hasDataItems: Array.isArray(res?.data?.items),
-          hasData: Array.isArray(res?.data),
-          productsLength: res?.products?.length,
-        });
-      }
-
-      console.log("[Pagination] API Response:", {
-        currentPage: res?.currentPage,
-        totalPages: res?.totalPages,
-        hasMore: res?.hasMore,
-        productsCount: res?.products?.length,
-      });
-
       const rawProducts = extractProducts(res);
       const normalized = rawProducts.map((raw: any) => {
         const n = normalizeProduct(raw);
-
-        if (__DEV__ && n.rewardCoins === 0 && n.redeem_coins === 0) {
-          console.warn("[Categories] Product has 0 coins after normalize:", {
-            id: raw?.id ?? raw?.product_id,
-            rewardCoins: raw?.rewardCoins,
-            reward_coins: raw?.reward_coins,
-            reward: raw?.reward,
-            points: raw?.points,
-            redeem_coins: raw?.redeem_coins,
-          });
-        }
 
         return {
           ...n,
@@ -214,8 +206,6 @@ export default function Categories_Product() {
       const nextPage =
         hasMore && currentPage < totalPages ? currentPage + 1 : undefined;
 
-      console.log(`[Pagination] Next page value: ${nextPage ?? "none (last page)"}`);
-
       return { products: normalized, nextPage, currentPage, totalPages, hasMore };
     },
     // Uses currentPage, totalPages, and hasMore — all three fields as required
@@ -225,8 +215,10 @@ export default function Categories_Product() {
       }
       return lastPage.nextPage;
     },
-    staleTime: 30 * 1000,
+    staleTime: CATEGORY_CACHE_TTL_MS,
     gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     retry: 3,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
   });
@@ -239,7 +231,6 @@ export default function Categories_Product() {
 
   const handleLoadMore = useCallback(() => {
     if (!hasNextPage || isFetchingNextPage) return;
-    console.log("[Pagination] fetchNextPage() triggered");
     fetchNextPage();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
@@ -249,12 +240,15 @@ export default function Categories_Product() {
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<any> }) => {
-      const next = new Set<string>();
+      let didChange = false;
       viewableItems.forEach((entry) => {
         const key = String(entry.item?.id ?? entry.item?.product_id ?? "");
-        if (key) next.add(key);
+        if (key && !visibleIdsRef.current.has(key)) {
+          visibleIdsRef.current.add(key);
+          didChange = true;
+        }
       });
-      visibleIdsRef.current = next;
+      if (!didChange) return;
       forceVisibleTick((p) => p + 1);
     }
   ).current;
@@ -267,9 +261,19 @@ export default function Categories_Product() {
   // ── Category Loading ────────────────────────────────────────────────────────
   const loadCategories = useCallback(async () => {
     try {
-      setLoadingCategories(true);
+      if (cachedCategoryTree.length > 0) {
+        setCategories(cachedCategoryTree);
+        const cachedSelection = resolveInitialSelection(cachedCategoryTree, categoryId, subcategoryId);
+        setSelectedCategoryId(cachedSelection.category);
+        setSelectedSubcategoryId(cachedSelection.subcategory);
+        setLoadingCategories(false);
+      } else {
+        setLoadingCategories(true);
+      }
+
       const res = await fetchCategoriesScreenAll();
       const allCategories = Array.isArray(res?.data) ? res.data : [];
+      cachedCategoryTree = allCategories;
       setCategories(allCategories);
 
       if (allCategories.length === 0) {
@@ -278,20 +282,9 @@ export default function Categories_Product() {
         return;
       }
 
-      const matchedCategory = allCategories.find(
-        (cat: CategoryWithSubcategories) => String(cat.id) === String(categoryId)
-      );
-
-      const initialCategory = matchedCategory || allCategories[0];
-      const initialSubcategory =
-        subcategoryId !== undefined && subcategoryId !== null
-          ? (initialCategory.subcategories || []).find(
-              (sub) => String(sub.id) === String(subcategoryId)
-            )
-          : undefined;
-
-      setSelectedCategoryId(initialCategory.id);
-      setSelectedSubcategoryId(initialSubcategory ? initialSubcategory.id : null);
+      const selection = resolveInitialSelection(allCategories, categoryId, subcategoryId);
+      setSelectedCategoryId(selection.category);
+      setSelectedSubcategoryId(selection.subcategory);
       // useInfiniteQuery auto-fetches once selectedCategoryId is non-null
     } catch (e) {
       console.error("Category load error", e);
@@ -312,122 +305,123 @@ export default function Categories_Product() {
 
   if (loadingCategories) {
     return (
-      <View style={styles.loaderScreen}>
-        <ActivityIndicator size="large" color="#16A34A" />
+      <View style={[styles.loaderScreen, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={[styles.fixedHeader, { height: HEADER_HEIGHT }]}>
-        <ProductHead headerHeight={HEADER_HEIGHT} />
+        <ProductHead headerHeight={HEADER_HEIGHT} topSpacing={topSpacing} />
       </View>
 
-      <View style={[styles.mainContainer, { marginTop: HEADER_HEIGHT }]}>
-        <View style={styles.sidebar}>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.sidebarScrollContent}
-          >
-            <TouchableOpacity
-              onPress={() => onSubcategoryPress(null)}
-              activeOpacity={0.85}
-              style={styles.sidebarItemTouch}
-            >
-              {selectedSubcategoryId === null && (
-                <View style={styles.activeAccent} />
-              )}
-              <View style={
-                selectedSubcategoryId === null
-                  ? styles.sidebarItemActive
-                  : styles.sidebarItem
-              }>
-                <View style={[
-                  styles.iconContainer,
-                  selectedSubcategoryId === null && styles.iconContainerActive,
-                ]}>
-                  <AllIcons width={26} height={26} />
-                </View>
-                <Text
-                  style={
-                    selectedSubcategoryId === null
-                      ? styles.sidebarTextActive
-                      : styles.sidebarText
-                  }
-                  numberOfLines={2}
-                >
-                  All
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            {subcategories.map((subcategory) => {
-              const isActive = String(selectedSubcategoryId) === String(subcategory.id);
-              return (
-                <TouchableOpacity
-                  key={String(subcategory.id)}
-                  onPress={() => onSubcategoryPress(subcategory.id)}
-                  activeOpacity={0.85}
-                  style={styles.sidebarItemTouch}
-                >
-                  {isActive && <View style={styles.activeAccent} />}
-                  <View style={isActive ? styles.sidebarItemActive : styles.sidebarItem}>
-                    <View style={[
-                      styles.iconContainer,
-                      isActive && styles.iconContainerActive,
-                    ]}>
-                      {subcategory.image ? (
-                        <Image
-                          source={{ uri: resolveImageUri(subcategory.image) }}
-                          style={styles.categoryIcon}
-                        />
-                      ) : (
-                        <View style={styles.placeholderIcon} />
-                      )}
-                    </View>
-                    <Text
-                      style={isActive ? styles.sidebarTextActive : styles.sidebarText}
-                      numberOfLines={2}
-                    >
-                      {subcategory.name?.trim()}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        <View style={styles.contentArea}>
+      <View style={[styles.mainContainer, { marginTop: HEADER_HEIGHT, backgroundColor: theme.background }]}>
+        <View style={[styles.contentArea, { backgroundColor: theme.background }]}>
           <FlatList
             key={`products-${numColumns}`}
             data={products}
             keyExtractor={(item, index) => String(item?.id ?? index)}
             numColumns={numColumns}
             columnWrapperStyle={styles.row}
-            style={styles.list}
-            contentContainerStyle={styles.listContent}
+            style={[styles.list, { backgroundColor: theme.background }]}
+            contentContainerStyle={[styles.listContent, { backgroundColor: theme.background }]}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.4}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={viewabilityConfig}
             ListHeaderComponent={
               <View>
-                <View style={styles.categoryRow}>
-                  <MaterialIcons name="category" size={20} color="#16A34A" />
-                  <Text style={styles.categoryText} numberOfLines={1}>
+                <View style={styles.categoryHeaderRow}>
+                  <View style={styles.categoryTitleRow}>
+                  <MaterialIcons name="category" size={20} color={isDark ? "#FACC15" : "#D69A33"} />
+                  <Text style={[styles.categoryText, { color: theme.text }]} numberOfLines={1}>
                     {selectedCategory?.name || title}
                   </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.filterButton, { backgroundColor: theme.card, borderColor: theme.border }]}
+                    activeOpacity={0.85}
+                    onPress={() => setFiltersOpen((prev) => !prev)}
+                  >
+                    <MaterialIcons name="tune" size={20} color={theme.text} />
+                  </TouchableOpacity>
                 </View>
 
-                <View style={styles.line} />
-                <FilterChipsRow
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.categorySliderRow}
+                >
+                  <TouchableOpacity
+                    onPress={() => onSubcategoryPress(null)}
+                    activeOpacity={0.85}
+                    style={[
+                      styles.sliderPill,
+                      {
+                        backgroundColor: selectedSubcategoryId === null ? "#FACC15" : theme.card,
+                        borderColor: selectedSubcategoryId === null ? "#111827" : theme.border,
+                      },
+                    ]}
+                  >
+                    <View style={[styles.sliderPillIconWrap, { backgroundColor: selectedSubcategoryId === null ? "rgba(17,24,39,0.12)" : theme.background }]}>
+                      <AllIcons width={18} height={18} />
+                    </View>
+                    <Text
+                      style={[
+                        styles.sliderPillText,
+                        { color: selectedSubcategoryId === null ? "#111827" : theme.text },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      All
+                    </Text>
+                  </TouchableOpacity>
+
+                  {subcategories.map((subcategory) => {
+                    const isActive = String(selectedSubcategoryId) === String(subcategory.id);
+                    return (
+                      <TouchableOpacity
+                        key={String(subcategory.id)}
+                        onPress={() => onSubcategoryPress(subcategory.id)}
+                        activeOpacity={0.85}
+                        style={[
+                          styles.sliderPill,
+                          {
+                            backgroundColor: isActive ? "#FACC15" : theme.card,
+                            borderColor: isActive ? "#111827" : theme.border,
+                          },
+                        ]}
+                      >
+                        {subcategory.image ? (
+                          <Image
+                            source={{ uri: resolveImageUri(subcategory.image) }}
+                            style={styles.sliderPillImage}
+                          />
+                        ) : (
+                          <View style={[styles.sliderPillPlaceholder, { backgroundColor: isActive ? "rgba(17,24,39,0.18)" : theme.border }]} />
+                        )}
+                        <Text
+                          style={[
+                            styles.sliderPillText,
+                            { color: isActive ? "#111827" : theme.text },
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {subcategory.name?.trim()}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+
+                {filtersOpen && <FilterChipsRow
                   onSelect={(chip) => {
                     setFilterQuery(chip.query || "");
                     // queryKey includes filterQuery → useInfiniteQuery reruns automatically
                   }}
-                />
+                />}
               </View>
             }
             renderItem={({ item }) => {
@@ -447,14 +441,14 @@ export default function Categories_Product() {
             ListEmptyComponent={
               !isProductsLoading ? (
                 <View style={styles.emptyWrap}>
-                  <Text style={styles.emptyText}>No products found in this category.</Text>
+                  <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No products found in this category.</Text>
                 </View>
               ) : null
             }
             ListFooterComponent={
               isFetchingNextPage ? (
                 <View style={styles.footerLoader}>
-                  <ActivityIndicator size="small" color="#16A34A" />
+                  <ActivityIndicator size="small" color={theme.primary} />
                 </View>
               ) : null
             }
@@ -463,7 +457,7 @@ export default function Categories_Product() {
       </View>
 
       {isProductsLoading && !isFetchingNextPage && (
-        <ActivityIndicator style={styles.loadingIndicator} color="#16A34A" />
+        <ActivityIndicator style={styles.loadingIndicator} color={theme.primary} />
       )}
     </View>
   );
@@ -489,7 +483,6 @@ const styles = StyleSheet.create({
 
   mainContainer: {
     flex: 1,
-    flexDirection: "row",
     backgroundColor: "#FFFFFF",
   },
 
@@ -497,8 +490,8 @@ const styles = StyleSheet.create({
     width: SIDEBAR_WIDTH,
     backgroundColor: "#F8F7FF",
     borderRightWidth: 1,
-    borderRightColor: "#EDE9FE",
-    shadowColor: "#8665FF",
+    borderRightColor: "#F6D58B",
+    shadowColor: "#D69A33",
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -525,7 +518,7 @@ const styles = StyleSheet.create({
     bottom: 10,
     width: 3,
     borderRadius: 2,
-    backgroundColor: "#8665FF",
+    backgroundColor: "#FACC15",
     zIndex: 1,
   },
 
@@ -542,7 +535,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: 14,
-    backgroundColor: "#EDE9FE",
+    backgroundColor: "#FFF3B0",
   },
 
   iconContainer: {
@@ -563,9 +556,9 @@ const styles = StyleSheet.create({
   },
 
   iconContainerActive: {
-    backgroundColor: "#8665FF",
-    borderColor: "#8665FF",
-    shadowColor: "#8665FF",
+    backgroundColor: "#FACC15",
+    borderColor: "#111827",
+    shadowColor: "#D69A33",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
@@ -596,7 +589,7 @@ const styles = StyleSheet.create({
 
   sidebarTextActive: {
     fontSize: 11,
-    color: "#5B47A3",
+    color: "#111827",
     fontWeight: "700",
     textAlign: "center",
     lineHeight: 14,
@@ -610,7 +603,7 @@ const styles = StyleSheet.create({
   list: { flex: 1, backgroundColor: "#fff" },
 
   listContent: {
-    paddingTop: 8,
+    paddingTop: 10,
     paddingHorizontal: CONTENT_PADDING,
     paddingBottom: 100,
   },
@@ -629,6 +622,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
+  categoryHeaderRow: {
+    minHeight: 44,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 6,
+    gap: 10,
+  },
+
+  categoryTitleRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  filterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   categoryText: {
     flex: 1,
     fontSize: 14,
@@ -637,8 +656,51 @@ const styles = StyleSheet.create({
   },
 
   categorySliderRow: {
-    paddingVertical: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
     gap: 10,
+  },
+
+  sliderPill: {
+    height: 38,
+    maxWidth: 180,
+    paddingHorizontal: 16,
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  sliderPillText: {
+    flexShrink: 1,
+    fontSize: 13,
+    fontWeight: "700",
+  },
+
+  sliderPillIconWrap: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+
+  sliderPillImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
+    resizeMode: "cover",
+  },
+
+  sliderPillPlaceholder: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
   },
 
   sliderItem: {

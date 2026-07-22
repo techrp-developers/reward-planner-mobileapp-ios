@@ -22,11 +22,15 @@ import {
     PROMO_CARD_GAP,
     PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
-// import { queryClient } from "../../../../query/queryClient";
+import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
+import { queryClient } from "../../../../query/queryClient";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const recentQueryKey = (userId?: string | number) =>
+    ["ecommerce", "promotion", "recent", userId ?? "guest"] as const;
 
 const fetchRecentProductsData = async () => {
     const res = await getRecentProducts();
@@ -47,7 +51,8 @@ const fetchRecentProductsData = async () => {
 const RecentProduct = () => {
     const navigation = useNavigation<Nav>();
     const { user, isAuthenticated } = useAuth();
-    const RECENT_QUERY_KEY = ["ecommerce", "promotion", "recent", user?.user_id ?? "guest"] as const;
+    const { isDark, theme } = useAppTheme();
+    const RECENT_QUERY_KEY = recentQueryKey(user?.user_id);
 
     const { data: products = [], isLoading } = useQuery({
         queryKey: RECENT_QUERY_KEY,
@@ -58,7 +63,7 @@ const RecentProduct = () => {
     });
 
     const handlePressAll = React.useCallback(() => {
-        navigation.navigate("ProductScreen");
+        navigation.navigate("ProductScreen", { source: "recent" });
     }, [navigation]);
 
     const renderCard = React.useCallback(
@@ -72,20 +77,31 @@ const RecentProduct = () => {
         []
     );
 
-    if (!isAuthenticated || (isLoading && products.length === 0) || products.length === 0) return null;
+    if (isAuthenticated && isLoading && products.length === 0) {
+        return <HomeSectionSkeleton height={350} backgroundColor={theme.background} />;
+    }
+
+    if (!isAuthenticated || products.length === 0) return null;
 
     return (
-        <View style={styles.sectionWrapper}>
+        <View style={[styles.sectionWrapper, { backgroundColor: theme.background }]}>
             <LinearGradient
-                colors={['#BCC5FF', '#F9E1FF', '#FFB6D9']} 
+                colors={isDark ? ["#09090B", "#18120D", "#2A1A0C"] : ["#F6D58B", "#D69A33", "#8A531F"]} 
                 start={{ x: 0, y: 0 }} 
                 end={{ x: 1, y: 1 }}  
                 style={styles.gradientSection}
             >
                 <View style={styles.headerRow}>
-                    <Text style={styles.heading}>Recently Viewed</Text>
-                    <TouchableOpacity activeOpacity={0.8} onPress={handlePressAll} style={styles.viewAllBtn}>
-                        <Text style={styles.viewAllText}>View All</Text>
+                    <Text style={[styles.heading, { color: theme.text }]}>Recently Viewed</Text>
+                    <TouchableOpacity
+                        activeOpacity={0.8}
+                        onPress={handlePressAll}
+                        style={[
+                            styles.viewAllBtn,
+                            { backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.45)" },
+                        ]}
+                    >
+                        <Text style={[styles.viewAllText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -103,7 +119,12 @@ const RecentProduct = () => {
     );
 };
 
-// ... prefetchRecentProductSection remains the same ...
+export const prefetchRecentProductSection = (userId?: string | number) =>
+    queryClient.prefetchQuery({
+        queryKey: recentQueryKey(userId),
+        queryFn: fetchRecentProductsData,
+        staleTime: CACHE_TTL_MS,
+    });
 
 const styles = StyleSheet.create({
     sectionWrapper: {
@@ -114,6 +135,7 @@ const styles = StyleSheet.create({
         width: '100%',
         paddingTop: 18,
         paddingBottom: 20,
+        marginTop: 12,
         // Ensure height is not fixed so flexible cards don't get cut off
     },
     headerRow: {

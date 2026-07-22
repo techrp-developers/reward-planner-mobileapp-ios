@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Plan = {
   id: string;
@@ -28,11 +29,13 @@ export default function PlanCard({
   selectedId,
   onSelect,
 }: Props) {
+  const servicesTheme = useServicesTheme();
+
   return (
     <View>
       {/* TOP GRADIENT HEADER */}
       <LinearGradient
-        colors={['#A654CD', '#FC8BAD']}
+        colors={servicesTheme.gradients.brand}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -52,12 +55,16 @@ export default function PlanCard({
               onPress={() => onSelect(plan.id)}
               style={[
                 styles.card,
+                {
+                  backgroundColor: servicesTheme.colors.surface,
+                  borderColor: servicesTheme.colors.border,
+                },
                 isActive && styles.activeCard,
               ]}
             >
               {isActive && (
                 <LinearGradient
-                  colors={['#A654CD', '#FC8BAD']}
+                  colors={servicesTheme.gradients.brand}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={StyleSheet.absoluteFill}
@@ -68,6 +75,7 @@ export default function PlanCard({
                 <Text
                   style={[
                     styles.planTitle,
+                    { color: servicesTheme.colors.textStrong },
                     isActive && styles.activeText,
                   ]}
                 >
@@ -77,6 +85,7 @@ export default function PlanCard({
                 <Text
                   style={[
                     styles.desc,
+                    { color: servicesTheme.colors.muted },
                     isActive && styles.activeText,
                   ]}
                 >
@@ -86,12 +95,13 @@ export default function PlanCard({
                 <Text
                   style={[
                     styles.price,
+                    { color: servicesTheme.colors.primary },
                     isActive && styles.activeText,
                   ]}
                 >
                   {plan.price}{' '}
                   {plan.oldPrice && (
-                    <Text style={styles.oldPrice}>
+                    <Text style={[styles.oldPrice, { color: isActive ? 'rgba(255,255,255,0.75)' : servicesTheme.colors.subtle }]}>
                       {plan.oldPrice}
                     </Text>
                   )}

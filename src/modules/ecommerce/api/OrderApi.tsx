@@ -421,7 +421,7 @@ export const fetchBuyAgainOrders = async (
 
     return res.data;
   } catch (error) {
-    console.log("Fetch Buy Again Error:", error);
+    __DEV__ && console.log("Fetch Buy Again Error:", error);
     throw error;
   }
 };

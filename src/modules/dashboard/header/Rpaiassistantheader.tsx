@@ -108,7 +108,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onToggle }) => {
       easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start();
-  }, [value]);
+  }, [translateX, value]);
 
   return (
     <TouchableOpacity
@@ -162,10 +162,18 @@ const RPAIAssistantHeader: React.FC = () => {
 
       {/* Nav Row */}
       <View style={styles.navRow}>
-        <TouchableOpacity activeOpacity={0.7} style={styles.iconButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.iconButton}
+          onPress={() => navigation.goBack()}
+        >
           <HamburgerIcon />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7} style={styles.profileButton}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('Profile', { context: 'dashboard' })}
+        >
           <ProfileIcon />
         </TouchableOpacity>
       </View>

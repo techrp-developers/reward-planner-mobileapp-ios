@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 export type ServiceTimelineStep = {
   status: string;
@@ -12,6 +13,8 @@ type Props = {
 };
 
 export default function ServiceTimelineCard({ steps }: Props) {
+  const servicesTheme = useServicesTheme();
+
   if (steps.length === 0) return null;
 
   return (
@@ -21,16 +24,23 @@ export default function ServiceTimelineCard({ steps }: Props) {
         return (
           <View key={i} style={styles.row}>
             <View style={styles.rail}>
-              <View style={[styles.dot, step.completed && styles.dotDone]}>
+              <View
+                style={[
+                  styles.dot,
+                  { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.divider },
+                  step.completed && styles.dotDone,
+                  step.completed && { backgroundColor: servicesTheme.colors.primary, borderColor: servicesTheme.colors.primary },
+                ]}
+              >
                 {step.completed && (
                   <MaterialCommunityIcons name="check" size={9} color="#FFF" />
                 )}
               </View>
               {!isLast && (
-                <View style={[styles.connector, step.completed && styles.connectorDone]} />
+                <View style={[styles.connector, { backgroundColor: servicesTheme.colors.divider }, step.completed && styles.connectorDone, step.completed && { backgroundColor: servicesTheme.colors.primary }]} />
               )}
             </View>
-            <Text style={[styles.label, step.completed && styles.labelDone]}>
+            <Text style={[styles.label, { color: servicesTheme.colors.subtle }, step.completed && styles.labelDone, step.completed && { color: servicesTheme.colors.text }]}>
               {step.status}
             </Text>
           </View>

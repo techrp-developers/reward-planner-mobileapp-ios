@@ -11,7 +11,9 @@ import {
 } from "react-native";
 
 import LinearGradient from "react-native-linear-gradient";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { TAB_BAR_HEIGHT } from "../../../bottombar/BottomTabs";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 import {
   fetchTermsStatus,
@@ -46,17 +48,26 @@ const T = {
 // TERM CARD
 // ─────────────────────────────────────────────────────────────
 
-type TermCardProps = { title: string; content: string; iconText: string };
+type TermCardProps = {
+  title: string;
+  content: string;
+  iconText: string;
+  isDark: boolean;
+};
 
-const TermCard = ({ title, content, iconText }: TermCardProps) => (
-  <View style={styles.card}>
+const TermCard = ({ title, content, iconText, isDark }: TermCardProps) => (
+  <View style={[styles.card, isDark && darkStyles.card]}>
     <View style={styles.cardHeader}>
       <View style={styles.iconCircle}>
         <Text style={styles.iconText}>{iconText}</Text>
       </View>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      <Text style={[styles.sectionTitle, isDark && darkStyles.primaryText]}>
+        {title}
+      </Text>
     </View>
-    <Text style={styles.sectionContent}>{content}</Text>
+    <Text style={[styles.sectionContent, isDark && darkStyles.bodyText]}>
+      {content}
+    </Text>
   </View>
 );
 
@@ -66,6 +77,7 @@ const TermCard = ({ title, content, iconText }: TermCardProps) => (
 
 const TermsAndConditionsScreen = () => {
   const alert = useAlert();
+  const { isDark, theme } = useAppTheme();
 
   // Whether the user has already accepted (from API)
   const [alreadyAccepted, setAlreadyAccepted] = useState(false);
@@ -154,11 +166,14 @@ const TermsAndConditionsScreen = () => {
   // ─────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F0FF" />
+    <View style={[styles.root, isDark && darkStyles.root]}>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? "#09090B" : "#F5F0FF"}
+      />
 
       <LinearGradient
-        colors={[...T.gradient]}
+        colors={isDark ? ["#09090B", "#18181B"] : [...T.gradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -168,19 +183,19 @@ const TermsAndConditionsScreen = () => {
           {/* ── HEADER ───────────────────────────────────── */}
           <View style={styles.header}>
             <View>
-              <Text style={styles.mainTitle}>Terms &</Text>
-              <Text style={styles.mainTitleBold}>Conditions</Text>
+              <Text style={[styles.mainTitle, isDark && darkStyles.primaryText]}>Terms &</Text>
+              <Text style={[styles.mainTitleBold, isDark && darkStyles.primaryText]}>Conditions</Text>
             </View>
-            <View style={styles.dateBadge}>
-              <Text style={styles.dateText}>v1.2 • MAR 2026</Text>
+            <View style={[styles.dateBadge, isDark && darkStyles.badge]}>
+              <Text style={[styles.dateText, isDark && darkStyles.primaryText]}>v1.2 • MAR 2026</Text>
             </View>
           </View>
 
           {/* ── BODY ─────────────────────────────────────── */}
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={T.primary} />
-              <Text style={styles.loadingText}>Loading…</Text>
+              <ActivityIndicator size="large" color={theme.primary} />
+              <Text style={[styles.loadingText, isDark && darkStyles.mutedText]}>Loading…</Text>
             </View>
           ) : (
             <ScrollView
@@ -192,7 +207,7 @@ const TermsAndConditionsScreen = () => {
             >
               {/* INTRO */}
               <View style={styles.introBox}>
-                <Text style={styles.introText}>
+                <Text style={[styles.introText, isDark && darkStyles.mutedText]}>
                   By accessing our services, you agree to be bound by these
                   terms. Please read them carefully to understand your rights
                   and obligations.
@@ -206,19 +221,18 @@ const TermsAndConditionsScreen = () => {
                   iconText={item.term_no}
                   title={item.title}
                   content={item.content}
+                  isDark={isDark}
                 />
               ))}
 
               {/* ── ALREADY ACCEPTED ─────────────────────── */}
               {alreadyAccepted ? (
-                <View style={styles.acceptedPill}>
+                <View style={[styles.acceptedPill, isDark && darkStyles.acceptedPill]}>
                   <View style={styles.acceptedPillIcon}>
-                    <Text style={styles.acceptedPillCheck}>
-                      ✓
-                    </Text>
+                    <MaterialCommunityIcons name="check" size={17} color="#FFFFFF" />
                   </View>
 
-                  <Text style={styles.acceptedPillText}>
+                  <Text style={[styles.acceptedPillText, isDark && darkStyles.acceptedPillText]}>
                     Terms & Conditions Accepted
                   </Text>
                 </View>
@@ -233,17 +247,23 @@ const TermsAndConditionsScreen = () => {
                     disabled={saving}
                     onPress={() => setChecked(v => !v)}
                   >
-                    <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-                      {checked && <Text style={styles.checkIcon}>✓</Text>}
+                    <View style={[
+                      styles.checkbox,
+                      isDark && darkStyles.checkbox,
+                      checked && styles.checkboxChecked,
+                    ]}>
+                      {checked && (
+                        <MaterialCommunityIcons name="check" size={17} color="#FFFFFF" />
+                      )}
                     </View>
-                    <Text style={styles.checkboxText}>
+                    <Text style={[styles.checkboxText, isDark && darkStyles.bodyText]}>
                       I have read and agree to the{" "}
-                      <Text style={styles.checkboxBold}>Terms & Conditions</Text>
+                      <Text style={[styles.checkboxBold, isDark && darkStyles.primaryText]}>Terms & Conditions</Text>
                     </Text>
                   </TouchableOpacity>
 
                   {/* FOOTER NOTE */}
-                  <Text style={styles.footerNote}>
+                  <Text style={[styles.footerNote, isDark && darkStyles.mutedText]}>
                     By continuing, you confirm that you understand and accept
                     our policies, terms of use, and privacy guidelines.
                   </Text>
@@ -433,10 +453,10 @@ const styles = StyleSheet.create({
   },
 
   acceptedPillIcon: {
-    width: 24,
-    height: 24,
+    width: 28,
+    height: 28,
 
-    borderRadius: 12,
+    borderRadius: 14,
 
     backgroundColor: "#16A34A",
 
@@ -444,12 +464,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
 
     marginRight: 10,
-  },
-
-  acceptedPillCheck: {
-    color: "#FFF",
-    fontSize: 13,
-    fontWeight: "900",
   },
 
   acceptedPillText: {
@@ -483,11 +497,6 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: {
     backgroundColor: T.accent,
-  },
-  checkIcon: {
-    color: "#FFF",
-    fontSize: 14,
-    fontWeight: "900",
   },
   checkboxText: {
     flex: 1,
@@ -527,6 +536,25 @@ const styles = StyleSheet.create({
   },
 
   bottomSpacer: { height: 80 },
+});
+
+const darkStyles = StyleSheet.create({
+  root: { backgroundColor: "#09090B" },
+  card: {
+    backgroundColor: "#18181B",
+    borderColor: "rgba(255,255,255,0.20)",
+    shadowColor: "#000000",
+  },
+  primaryText: { color: "#C4B5FD" },
+  bodyText: { color: "#E4E4E7" },
+  mutedText: { color: "#A1A1AA" },
+  badge: { backgroundColor: "#27233A" },
+  acceptedPill: {
+    backgroundColor: "#052E16",
+    borderColor: "#166534",
+  },
+  acceptedPillText: { color: "#86EFAC" },
+  checkbox: { backgroundColor: "#18181B" },
 });
 
 export default TermsAndConditionsScreen;

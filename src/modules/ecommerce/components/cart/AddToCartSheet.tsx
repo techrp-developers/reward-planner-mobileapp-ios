@@ -11,17 +11,22 @@ import {
   Pressable,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ProductGrid from "../home/productgrid";
 import {
   getCustomersAlsoBought,
   getSimilarProducts,
 } from "../../api/PromotionalApi";
+import type { HomeStackParamList } from "../../navigation/types";
 
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.62;
 const OPEN_DURATION = 300;
 
 type Source = "also-bought" | "similar";
+type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 type Props = {
   visible: boolean;
@@ -57,6 +62,7 @@ function resolveNumericProductId(value: unknown): number {
 }
 
 export default function AddToCartSheet({ visible, onClose, productId }: Props) {
+  const navigation = useNavigation<Nav>();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
   const [products, setProducts] = useState<any[]>([]);
@@ -196,6 +202,16 @@ export default function AddToCartSheet({ visible, onClose, productId }: Props) {
   const sectionTitle =
     source === "also-bought" ? "Customers Also Bought" : "Similar Products";
 
+  const handleProductPress = useCallback(
+    (nextProductId: string | number) => {
+      onClose();
+      requestAnimationFrame(() => {
+        navigation.navigate("ProductDescription", { productId: nextProductId });
+      });
+    },
+    [navigation, onClose]
+  );
+
   const footerComponent = useMemo(
     () =>
       hasMore || loadingMore ? (
@@ -228,9 +244,15 @@ export default function AddToCartSheet({ visible, onClose, productId }: Props) {
             <View style={styles.handle} />
 
             <View style={styles.header}>
-              <Text style={styles.successText}>
+              <View style={styles.successRow}>
+                <View style={styles.successIcon}>
+                  <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" />
+                </View>
+                <Text style={styles.successText}>Product Added to Cart Successfully</Text>
+              <Text style={styles.successTextHidden}>
                 ✔ Product Added to Cart Successfully
               </Text>
+              </View>
               <TouchableOpacity onPress={onClose} hitSlop={8}>
                 <MaterialIcons name="close" size={22} color="#444" />
               </TouchableOpacity>
@@ -251,6 +273,7 @@ export default function AddToCartSheet({ visible, onClose, productId }: Props) {
                 hasNextPage={hasMore}
                 loadingMore={loadingMore}
                 ListFooterComponent={footerComponent}
+                onProductPress={handleProductPress}
               />
             )}
           </View>
@@ -305,6 +328,23 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     fontSize: 14,
     flexShrink: 1,
+  },
+  successTextHidden: {
+    display: "none",
+  },
+  successRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
+  successIcon: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#16A34A",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
   },
   sectionTitle: {

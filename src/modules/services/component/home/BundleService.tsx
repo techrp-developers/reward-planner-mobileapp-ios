@@ -13,6 +13,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { HomeStackParamList } from '../../navigation/type';
 import { useServiceBundles } from '../../hooks/useServiceBundles';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const fallbackImage = require('../../assete/service/PackBanner.png');
 
@@ -31,21 +32,22 @@ interface BundleCardProps {
   oldPrice: string;
   imageUrl?: string;
   onPress: () => void;
+  servicesTheme: ReturnType<typeof useServicesTheme>;
 }
 
-function BundleCard({ title, description, price, oldPrice, imageUrl, onPress }: BundleCardProps) {
+function BundleCard({ title, description, price, oldPrice, imageUrl, onPress, servicesTheme }: BundleCardProps) {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <LinearGradient colors={['#EDE8FF', '#C2B2FF']} style={styles.card}>
+    <LinearGradient colors={servicesTheme.isDark ? ['#18112A', '#27272A'] : ['#EDE8FF', '#C2B2FF']} style={styles.card}>
       <View style={styles.textContainer}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardDesc}>{description}</Text>
+        <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
+        <Text style={[styles.cardDesc, { color: servicesTheme.colors.muted }]}>{description}</Text>
       </View>
 
       <TouchableOpacity activeOpacity={0.8} style={styles.buttonWrapper} onPress={onPress}>
         <LinearGradient
-          colors={['#8665FF', '#5B47A3']}
+          colors={servicesTheme.gradients.primary}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.cta}
@@ -62,7 +64,7 @@ function BundleCard({ title, description, price, oldPrice, imageUrl, onPress }: 
           source={!imgError && imageUrl ? { uri: imageUrl } : fallbackImage}
           style={styles.bundleImage}
           onError={e => {
-            console.log('BundleCard image error:', e.nativeEvent.error, 'url:', imageUrl);
+            __DEV__ && console.log('BundleCard image error:', e.nativeEvent.error, 'url:', imageUrl);
             setImgError(true);
           }}
         />
@@ -73,13 +75,14 @@ function BundleCard({ title, description, price, oldPrice, imageUrl, onPress }: 
 
 export default function BundleService() {
   const navigation = useNavigation<NavProp>();
+  const servicesTheme = useServicesTheme();
   const { data, isLoading } = useServiceBundles();
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.mainHeading}>Bundle Services</Text>
-        <ActivityIndicator size="large" color="#8665FF" style={styles.loader} />
+      <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
+        <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>Bundle Services</Text>
+        <ActivityIndicator size="large" color={servicesTheme.colors.primary} style={styles.loader} />
       </View>
     );
   }
@@ -87,8 +90,8 @@ export default function BundleService() {
   if (!data || data.length === 0) return null;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.mainHeading}>Bundle Services</Text>
+    <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
+      <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>Bundle Services</Text>
 
       {data.map(item => (
         <BundleCard
@@ -98,6 +101,7 @@ export default function BundleService() {
           price={item.bundle_price}
           oldPrice={item.original_price}
           imageUrl={item.banner_image || undefined}
+          servicesTheme={servicesTheme}
           onPress={() =>
             navigation.navigate('PackScreen', {
               packType: PACK_TYPE_MAP[item.id] ?? 'home',
@@ -155,13 +159,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-
   },
   ctaText: {
     color: '#fff',
     fontSize: 13,
     fontWeight: '700',
     paddingVertical: 12,
+
   },
   oldPriceText: {
     textDecorationLine: 'line-through',

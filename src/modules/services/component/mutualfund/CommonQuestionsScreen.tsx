@@ -17,6 +17,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../navigation/type';
 import SkeletonBox from '../constant/SkeletonBox';
 import { getMutualFundCategories, type MFCategory } from '../../api/MutualFundAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width } = Dimensions.get('window');
 const CARD_GAP = 12;
@@ -25,10 +26,10 @@ const CARD_WIDTH = (width - H_PAD * 2 - CARD_GAP) / 2;
 
 // Cycling emoji + gradient pairs
 const CARD_THEMES = [
-  { icon: '📚', gradientColors: ['#8665FF', '#7253EE'] as [string, string] },
-  { icon: '💡', gradientColors: ['#9B7BFF', '#5B47A3'] as [string, string] },
-  { icon: '🎯', gradientColors: ['#7C5FEE', '#6B4FDD'] as [string, string] },
-  { icon: '📈', gradientColors: ['#6B4FDD', '#5B47A3'] as [string, string] },
+  { icon: '📚', gradientColors: ['#3545A3', '#202B72'] as [string, string] },
+  { icon: '💡', gradientColors: ['#2D3B91', '#171F59'] as [string, string] },
+  { icon: '🎯', gradientColors: ['#3545A3', '#202B72'] as [string, string] },
+  { icon: '📈', gradientColors: ['#171F59', '#080B26'] as [string, string] },
   { icon: '🌱', gradientColors: ['#1DB890', '#0E9E7A'] as [string, string] },
   { icon: '🏦', gradientColors: ['#5B7CFF', '#3B5BDB'] as [string, string] },
   { icon: '📊', gradientColors: ['#FF6B9D', '#E84393'] as [string, string] },
@@ -69,8 +70,11 @@ const CategoryCard: React.FC<{
   theme: typeof CARD_THEMES[0];
   articleCount: number;
   onPress: () => void;
-}> = ({ item, theme, articleCount, onPress }) => (
-  <TouchableOpacity activeOpacity={0.82} style={styles.card} onPress={onPress}>
+}> = ({ item, theme, articleCount, onPress }) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
+  <TouchableOpacity activeOpacity={0.82} style={[styles.card, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress}>
     <View style={styles.cardTop}>
       <LinearGradient
         colors={theme.gradientColors}
@@ -82,25 +86,27 @@ const CategoryCard: React.FC<{
       </LinearGradient>
 
       {articleCount > 0 && (
-        <View style={styles.countBadge}>
+        <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3F0FF' }]}>
           <Text style={styles.countText}>{articleCount}</Text>
           <Text style={styles.countLabel}> articles</Text>
         </View>
       )}
     </View>
 
-    <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
+    <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{item.title}</Text>
 
     <View style={styles.cardCta}>
       <Text style={[styles.ctaText, { color: theme.gradientColors[0] }]}>View All</Text>
       <Text style={[styles.ctaArrow, { color: theme.gradientColors[0] }]}>{' '}›</Text>
     </View>
   </TouchableOpacity>
-);
+  );
+};
 
 // ─── Screen ────────────────────────────────────────────────────────
 
 const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
+  const servicesTheme = useServicesTheme();
   const [categories, setCategories] = useState<MFCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const pulse = useRef(new Animated.Value(0)).current;
@@ -108,8 +114,8 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ]),
     );
     anim.start();
@@ -129,27 +135,29 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
     const theme = CARD_THEMES[index % CARD_THEMES.length];
     return (
       <View style={styles.cardWrapper}>
-        <CategoryCard
-          item={item}
-          theme={theme}
-          articleCount={totalArticleCount(item)}
-          onPress={() =>
-            navigation.navigate('FAQListing', {
-              categoryId: item.id.toString(),
-              categoryTitle: item.title,
-            })
-          }
-        />
+        <View style={[styles.themedCardWrap, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
+          <CategoryCard
+            item={item}
+            theme={theme}
+            articleCount={totalArticleCount(item)}
+            onPress={() =>
+              navigation.navigate('FAQListing', {
+                categoryId: item.id.toString(),
+                categoryTitle: item.title,
+              })
+            }
+          />
+        </View>
       </View>
     );
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor="#8665FF" />
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+      <StatusBar barStyle="light-content" backgroundColor="#080B26" />
 
       <LinearGradient
-        colors={['#8665FF', '#5B47A3']}
+        colors={['#3545A3', '#080B26']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={styles.header}
@@ -170,7 +178,7 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
 
       {loading ? (
         <View style={styles.scrollPad}>
-          <Text style={styles.sectionLabel}>Browse by Topic</Text>
+          <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Browse by Topic</Text>
           <SkeletonGrid pulse={pulse} />
         </View>
       ) : (
@@ -183,7 +191,7 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            <Text style={styles.sectionLabel}>Browse by Topic</Text>
+            <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Browse by Topic</Text>
           }
           ListFooterComponent={<View style={styles.listFooter} />}
         />
@@ -210,7 +218,7 @@ const styles = StyleSheet.create({
     gap: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#5B47A3',
+        shadowColor: '#080B26',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.28,
         shadowRadius: 12,
@@ -245,6 +253,10 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: H_PAD, paddingBottom: 20 },
   columnWrapper: { gap: CARD_GAP, marginBottom: CARD_GAP, alignItems: 'stretch' },
   cardWrapper: { width: CARD_WIDTH },
+  themedCardWrap: {
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
 
   card: {
     flex: 1,
@@ -255,7 +267,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     ...Platform.select({
       ios: {
-        shadowColor: '#5B47A3',
+        shadowColor: '#080B26',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
@@ -286,8 +298,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  countText: { fontSize: 12, fontWeight: '800', color: '#8665FF' },
-  countLabel: { fontSize: 10, color: '#8665FF', fontWeight: '600' },
+  countText: { fontSize: 12, fontWeight: '800', color: '#3545A3' },
+  countLabel: { fontSize: 10, color: '#3545A3', fontWeight: '600' },
   cardTitle: {
     fontSize: 13,
     fontWeight: '800',

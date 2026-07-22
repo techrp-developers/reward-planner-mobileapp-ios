@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import GradientButton from "../../constant/GradientButton";
@@ -34,6 +34,7 @@ import {
   getAuthHeaders,
   isAuthenticated,
 } from "../../../common/auth/api/AuthAPI";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 type FormData = {
   gender: string;
@@ -80,7 +81,7 @@ const getCategoryFromWork = (selectedWork?: string): number | null => {
 };
 
 export default function Step3PA({ data, setData, onBack, onShowResults }: Props) {
-  const insets = useSafeAreaInsets();
+  const servicesTheme = useServicesTheme();
   const [dropdownVisibleFor, setDropdownVisibleFor] = useState<string | null>(
     null
   );
@@ -149,7 +150,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
     onSelect: (value: string) => void
   ) => (
     <TouchableOpacity
-      style={styles.modalItem}
+      style={[styles.modalItem, { borderBottomColor: servicesTheme.colors.divider }]}
       onPress={() => {
         onSelect(item.label);
         setDropdownVisibleFor(null);
@@ -157,13 +158,13 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
       activeOpacity={0.85}
     >
       <View style={styles.modalTextContainer}>
-        <Text style={styles.modalItemText}>{item.label}</Text>
+        <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
         {typeof item.category === "number" && (
-          <Text style={styles.modalItemMeta}>{`Category ${item.category}`}</Text>
+          <Text style={[styles.modalItemMeta, { color: servicesTheme.colors.muted }]}>{`Category ${item.category}`}</Text>
         )}
       </View>
       {selectedValue === item.label && (
-        <MaterialIcons name="check-circle" size={20} color="#8665FF" />
+        <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />
       )}
     </TouchableOpacity>
   );
@@ -229,11 +230,11 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
         plans = normalizeQuotesForUi(quotesResponse);
       }
 
-      console.log(`[PA] ✅ getQuotes returned ${plans.length} plans for enquiry: ${enquiryId}`);
+      __DEV__ && console.log(`[PA] ✅ getQuotes returned ${plans.length} plans for enquiry: ${enquiryId}`);
 
       if (plans.some((p: any) => p.success)) {
         const enquiryData = buildPersonalAccidentEnquiryData(data, coverAmountValue);
-        console.log("[Firebase][PersonalAccident] enquiry_data:", enquiryData);
+        __DEV__ && console.log("[Firebase][PersonalAccident] enquiry_data:", enquiryData);
 
         await createFirebaseEnquiry({
           service_id: 3,
@@ -263,16 +264,16 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
   if (checking) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
         <LinearGradient
-          colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+          colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.backgroundGradient}
         >
         <View style={styles.centerContainer}>
-          <MaterialIcons name="lock-outline" size={50} color="#8665FF" />
-          <Text style={styles.loadingText}>Verifying authentication...</Text>
+          <MaterialIcons name="lock-outline" size={50} color={servicesTheme.colors.primary} />
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
         </View>
         </LinearGradient>
       </SafeAreaView>
@@ -280,9 +281,9 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
@@ -296,8 +297,8 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Additional Details</Text>
-            <Text style={styles.headerSubtitle}>
+            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Additional Details</Text>
+            <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
               Help us classify risk and fetch Personal Accident quotes.
             </Text>
           </View>
@@ -305,85 +306,85 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           <View style={styles.formContainer}>
             {/* Occupation */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Occupation of Insured *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Occupation of Insured *</Text>
               <TouchableOpacity
-                style={styles.dropdownField}
+                style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("occupation")}
                 activeOpacity={0.85}
               >
                 <View style={styles.dropdownLeft}>
-                  <View style={styles.iconCircle}>
-                    <MaterialIcons name="work-outline" size={20} color="#8665FF" />
+                  <View style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+                    <MaterialIcons name="work-outline" size={20} color={servicesTheme.colors.primary} />
                   </View>
                   <Text
                     style={[
                       styles.valueText,
-                      !data.details.occupation && styles.placeholderText,
+                      { color: data.details.occupation ? servicesTheme.colors.text : servicesTheme.colors.subtle },
                     ]}
                     numberOfLines={1}
                   >
                     {data.details.occupation || "Select Occupation"}
                   </Text>
                 </View>
-                <MaterialIcons name="expand-more" size={22} color="#334155" />
+                <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
               </TouchableOpacity>
             </View>
 
             {/* Annual Income */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Annual Income Range *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Annual Income Range *</Text>
               <TouchableOpacity
-                style={styles.dropdownField}
+                style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("income")}
                 activeOpacity={0.85}
               >
                 <View style={styles.dropdownLeft}>
-                  <View style={styles.iconCircle}>
-                    <MaterialIcons name="currency-rupee" size={20} color="#8665FF" />
+                  <View style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+                    <MaterialIcons name="currency-rupee" size={20} color={servicesTheme.colors.primary} />
                   </View>
                   <Text
                     style={[
                       styles.valueText,
-                      !data.details.annualIncomeRange && styles.placeholderText,
+                      { color: data.details.annualIncomeRange ? servicesTheme.colors.text : servicesTheme.colors.subtle },
                     ]}
                     numberOfLines={1}
                   >
                     {data.details.annualIncomeRange || "Select Income Range"}
                   </Text>
                 </View>
-                <MaterialIcons name="expand-more" size={22} color="#334155" />
+                <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
               </TouchableOpacity>
             </View>
 
             {/* Nature of Work */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Nature of Work / Designation *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Nature of Work / Designation *</Text>
               <TouchableOpacity
-                style={styles.dropdownField}
+                style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("natureOfWork")}
                 activeOpacity={0.85}
               >
                 <View style={styles.dropdownLeft}>
-                  <View style={styles.iconCircle}>
-                    <MaterialIcons name="badge" size={20} color="#8665FF" />
+                  <View style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+                    <MaterialIcons name="badge" size={20} color={servicesTheme.colors.primary} />
                   </View>
                   <Text
                     style={[
                       styles.valueText,
-                      !data.details.natureOfWork && styles.placeholderText,
+                      { color: data.details.natureOfWork ? servicesTheme.colors.text : servicesTheme.colors.subtle },
                     ]}
                     numberOfLines={1}
                   >
                     {data.details.natureOfWork || "Select Nature of Work / Designation"}
                   </Text>
                 </View>
-                <MaterialIcons name="expand-more" size={22} color="#334155" />
+                <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
               </TouchableOpacity>
 
               {!!selectedCategory && (
-                <View style={styles.categoryPill}>
-                  <MaterialIcons name="verified" size={16} color="#8665FF" />
-                  <Text style={styles.categoryPillText}>
+                <View style={[styles.categoryPill, { backgroundColor: servicesTheme.isDark ? "#18112A" : "#F8F7FF", borderColor: servicesTheme.colors.border }]}>
+                  <MaterialIcons name="verified" size={16} color={servicesTheme.colors.primary} />
+                  <Text style={[styles.categoryPillText, { color: servicesTheme.colors.primary }]}>
                     {`Mapped to Category ${selectedCategory}`}
                   </Text>
                 </View>
@@ -392,27 +393,27 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
             {/* Cover Amount */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Cover Amount *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Cover Amount *</Text>
               <TouchableOpacity
-                style={styles.dropdownField}
+                style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("coverAmount")}
                 activeOpacity={0.85}
               >
                 <View style={styles.dropdownLeft}>
-                  <View style={styles.iconCircle}>
-                    <MaterialIcons name="health-and-safety" size={20} color="#8665FF" />
+                  <View style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+                    <MaterialIcons name="health-and-safety" size={20} color={servicesTheme.colors.primary} />
                   </View>
                   <Text
                     style={[
                       styles.valueText,
-                      !data.details.coverAmount && styles.placeholderText,
+                      { color: data.details.coverAmount ? servicesTheme.colors.text : servicesTheme.colors.subtle },
                     ]}
                     numberOfLines={1}
                   >
                     {data.details.coverAmount || "Select Cover Amount"}
                   </Text>
                 </View>
-                <MaterialIcons name="expand-more" size={22} color="#334155" />
+                <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
               </TouchableOpacity>
             </View>
 
@@ -427,6 +428,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
               <View
                 style={[
                   styles.customCheckbox,
+                  { borderColor: servicesTheme.colors.border },
                   data.details.agreeToTerms && styles.checkboxChecked,
                 ]}
               >
@@ -434,7 +436,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                   <MaterialIcons name="check" size={14} color="#FFF" />
                 )}
               </View>
-              <Text style={styles.termsLabel}>
+              <Text style={[styles.termsLabel, { color: servicesTheme.colors.muted }]}>
                 I agree to the <Text style={styles.boldLink}>Terms & Conditions</Text>{" "}
                 and <Text style={styles.boldLink}>Privacy Policy</Text>
               </Text>
@@ -444,10 +446,16 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
       </KeyboardAvoidingView>
 
       {/* Footer */}
-      <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
+      <View style={[
+        styles.footer,
+        {
+          backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)",
+          borderTopColor: servicesTheme.colors.divider,
+        },
+      ]}>
         <View style={styles.footerRow}>
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <MaterialIcons name="keyboard-backspace" size={24} color="#8665FF" />
+          <TouchableOpacity style={[styles.backButton, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]} onPress={onBack}>
+            <MaterialIcons name="keyboard-backspace" size={24} color={servicesTheme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.footerButtonWrapper}>
             <GradientButton
@@ -467,8 +475,8 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           onPress={() => setDropdownVisibleFor(null)}
           activeOpacity={1}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalBar} />
+          <View style={[styles.modalContent, { backgroundColor: servicesTheme.colors.surface }]}>
+            <View style={[styles.modalBar, { backgroundColor: servicesTheme.colors.divider }]} />
 
             {dropdownVisibleFor === "occupation" && (
               <FlatList
@@ -510,16 +518,16 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                 keyExtractor={(item) => item.label}
                 renderItem={({ item }: { item: CoverAmount }) => (
                   <TouchableOpacity
-                    style={styles.modalItem}
+                    style={[styles.modalItem, { borderBottomColor: servicesTheme.colors.divider }]}
                     onPress={() => {
                       updateDetails("coverAmount", item.label);
                       setDropdownVisibleFor(null);
                     }}
                     activeOpacity={0.85}
                   >
-                    <Text style={styles.modalItemText}>{item.label}</Text>
+                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
                     {data.details.coverAmount === item.label && (
-                      <MaterialIcons name="check-circle" size={20} color="#8665FF" />
+                      <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />
                     )}
                   </TouchableOpacity>
                 )}
@@ -617,8 +625,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingTop: 16,
-    paddingHorizontal: 20,
+    padding: 20,
     backgroundColor: "rgba(255,255,255,0.95)",
     borderTopWidth: 1,
     borderTopColor: "#F1F5F9",

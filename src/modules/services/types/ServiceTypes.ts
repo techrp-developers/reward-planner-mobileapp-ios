@@ -53,6 +53,18 @@ export interface ServiceVariantRaw {
   paragraphs?: Paragraph[];
   when_required?: WhenRequiredItem[];
   journey?: JourneyItem[];
+  rewards?: ServiceRewards;
+}
+
+export interface ServiceRewards {
+  can_earn: boolean;
+  earn_coins: number;
+  earn_type: string | null;
+  earn_value: number;
+  can_redeem: boolean;
+  max_redeem_coins: number;
+  redemption_type: string | null;
+  redemption_value: number;
 }
 
 export type FieldType = 'text' | 'number' | 'textarea' | 'select' | string;
@@ -110,6 +122,7 @@ export interface NormalizedVariant {
   paragraphs: Paragraph[];
   when_required: WhenRequiredItem[];
   journey: JourneyItem[];
+  rewards: ServiceRewards;
 }
 
 export interface NormalizedDocument {

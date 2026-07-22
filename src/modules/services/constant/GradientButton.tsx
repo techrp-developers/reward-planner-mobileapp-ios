@@ -58,7 +58,6 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 10,
     alignItems: "center",
-    marginTop: 20,
   },
   disabledButton: {
     opacity: 0.5,
@@ -68,6 +67,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
     padding: 14,
+    marginTop: 20,
 
   },
 });

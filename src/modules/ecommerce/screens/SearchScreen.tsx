@@ -8,6 +8,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/types";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type SearchSuggestion = {
     id: number;
@@ -23,6 +24,7 @@ const BRAND_PURPLE_LIGHT = "#A654CD";
 
 function SearchScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+    const { isDark, theme } = useAppTheme();
     const [search, setSearch] = useState("");
     const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
     const [history, setHistory] = useState<string[]>([]);
@@ -34,8 +36,8 @@ function SearchScreen() {
     useEffect(() => {
         const animation = Animated.loop(
             Animated.sequence([
-                Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-                Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+                Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+                Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
             ])
         );
 
@@ -128,7 +130,7 @@ function SearchScreen() {
     }, [search]);
 
     return (
-        <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["left", "right", "bottom"]}>
             <LoginHead
                 showSearch
                 search={search}
@@ -137,7 +139,7 @@ function SearchScreen() {
             />
 
             {showSuggest ? (
-                <View style={styles.suggestionWrapper}>
+                <View style={[styles.suggestionWrapper, { backgroundColor: theme.background }]}>
                     <ScrollView
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator={false}
@@ -157,11 +159,11 @@ function SearchScreen() {
                             </View>
                         ) : suggestions.length === 0 ? (
                             <View style={styles.emptyStateWrap}>
-                                <View style={styles.emptyIconCircle}>
+                                <View style={[styles.emptyIconCircle, { backgroundColor: isDark ? "#2D2148" : "#F3E9FB" }]}>
                                     <MaterialCommunityIcons name="text-search" size={26} color={BRAND_PURPLE_LIGHT} />
                                 </View>
-                                <Text style={styles.noResultText}>No product found</Text>
-                                <Text style={styles.emptySubText}>Try a different keyword</Text>
+                                <Text style={[styles.noResultText, { color: theme.text }]}>No product found</Text>
+                                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>Try a different keyword</Text>
                             </View>
                         ) : (
                             suggestions.map((item) => {
@@ -170,17 +172,17 @@ function SearchScreen() {
                                     <TouchableOpacity
                                         key={item.id}
                                         activeOpacity={0.75}
-                                        style={styles.item}
+                                        style={[styles.item, { backgroundColor: theme.card, shadowColor: isDark ? "#000000" : "#5B1E7A" }]}
                                         onPress={() => handleSelectSuggestion(item)}
                                     >
-                                        <View style={styles.imageContainer}>
+                                        <View style={[styles.imageContainer, { backgroundColor: isDark ? "#111827" : "#F8F7FB" }]}>
                                             <Image
                                                 source={{ uri: getProductImageUrl(item.image) }}
                                                 style={styles.img}
                                             />
                                         </View>
                                         <View style={styles.textContainer}>
-                                            <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
+                                            <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>{item.title}</Text>
                                             <View style={[styles.tagPill, isCategory ? styles.tagPillCategory : styles.tagPillProduct]}>
                                                 <Text style={[styles.categoryTag, isCategory && styles.categoryTagCategory]}>
                                                     {isCategory ? "Category" : "Product"}
@@ -199,7 +201,7 @@ function SearchScreen() {
             ) : (
                 <View style={styles.content}>
                     <View style={styles.historyHeader}>
-                        <Text style={styles.historyTitle}>Past Searches</Text>
+                                <Text style={[styles.historyTitle, { color: theme.text }]}>Past Searches</Text>
                         <View style={styles.historyActions}>
                           <TouchableOpacity onPress={loadHistory} style={styles.actionButton} activeOpacity={0.75}>
                             <MaterialCommunityIcons name="refresh" size={17} color={BRAND_PURPLE_LIGHT} />
@@ -245,19 +247,19 @@ function SearchScreen() {
                             {history.length > 0 ? history.map((item, index) => (
                                 <TouchableOpacity
                                     key={index}
-                                    style={styles.chip}
+                                    style={[styles.chip, { backgroundColor: theme.card, borderColor: theme.border }]}
                                     activeOpacity={0.75}
                                     onPress={() => handleHistoryPress(item)}
                                 >
                                     <MaterialCommunityIcons name="magnify" size={14} color={BRAND_PURPLE_LIGHT} />
-                                    <Text style={styles.chipText}>{item}</Text>
+                                    <Text style={[styles.chipText, { color: theme.text }]}>{item}</Text>
                                 </TouchableOpacity>
                             )) : (
                                 <View style={styles.emptyStateWrap}>
-                                    <View style={styles.emptyIconCircle}>
+                                    <View style={[styles.emptyIconCircle, { backgroundColor: isDark ? "#2D2148" : "#F3E9FB" }]}>
                                         <MaterialCommunityIcons name="clock-outline" size={26} color={BRAND_PURPLE_LIGHT} />
                                     </View>
-                                    <Text style={styles.emptyText}>No recent searches</Text>
+                                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No recent searches</Text>
                                 </View>
                             )}
                         </View>

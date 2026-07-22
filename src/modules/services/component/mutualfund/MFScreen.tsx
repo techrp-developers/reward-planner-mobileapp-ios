@@ -29,6 +29,7 @@ import type { HomeStackParamList } from '../../navigation/type';
 import FAQSection from './FAQSection';
 import MFBeginners from './MFBeginners';
 import MFInformedInvestors from './MFInformedInvestors';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 import SIP_Calculator from '../../assete/mutualfund/SIPCalculator.png';
 import Goal_SIP_Calculator from '../../assete/mutualfund/Goal_SIP_Calculator.png';
@@ -135,35 +136,59 @@ interface FooterProps extends Props {
 // LIST HEADER
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ListHeader = memo<Props>(({ navigation }) => (
-  <>
-    <View style={styles.heroSectionShadow}>
+const ListHeader = memo<Props>(({ navigation }) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
+    <>
       <LinearGradient
-        colors={['#8665FF', '#5B47A3']}
+        colors={['#080B26', '#171F59', '#3545A3']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.heroSection}
       >
+        <View style={styles.heroGlowOne} />
+        <View style={styles.heroGlowTwo} />
+        <View style={styles.heroBadge}>
+          <MaterialCommunityIcons name="chart-timeline-variant-shimmer" size={14} color="#FFFFFF" />
+          <Text style={styles.heroBadgeText}>SMART WEALTH TOOLS</Text>
+        </View>
         <Text style={styles.heroTitle}>Smart Investment{'\n'}Planner</Text>
         <Text style={styles.heroSubtitle}>
           Calculate returns, learn the basics, and track your financial future.
         </Text>
+        <View style={styles.heroStatsRow}>
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>{CALCULATORS.length}</Text>
+            <Text style={styles.heroStatLabel}>Calculators</Text>
+          </View>
+          <View style={styles.heroStatDivider} />
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>FAQ</Text>
+            <Text style={styles.heroStatLabel}>Guides</Text>
+          </View>
+          <View style={styles.heroStatDivider} />
+          <View style={styles.heroStat}>
+            <Text style={styles.heroStatValue}>MF</Text>
+            <Text style={styles.heroStatLabel}>Learning</Text>
+          </View>
+        </View>
       </LinearGradient>
-    </View>
 
-    <FAQSection navigation={navigation} />
+      <FAQSection navigation={navigation} />
 
-    <View style={styles.sectionHeadingRow}>
-      <View style={styles.sectionHeadingLeft}>
-        <MaterialCommunityIcons name="calculator-variant-outline" size={18} color="#8665FF" />
-        <Text style={styles.sectionHeading}>MF Calculators</Text>
+      <View style={styles.sectionHeadingRow}>
+        <View style={styles.sectionHeadingLeft}>
+          <MaterialCommunityIcons name="calculator-variant-outline" size={18} color="#3545A3" />
+          <Text style={[styles.sectionHeading, { color: servicesTheme.colors.textStrong }]}>MF Calculators</Text>
+        </View>
+        <View style={[styles.sectionBadge, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+          <Text style={[styles.sectionBadgeText, { color: servicesTheme.colors.primary }]}>{CALCULATORS.length} tools</Text>
+        </View>
       </View>
-      <View style={styles.sectionBadge}>
-        <Text style={styles.sectionBadgeText}>{CALCULATORS.length} tools</Text>
-      </View>
-    </View>
-  </>
-));
+    </>
+  );
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LIST FOOTER
@@ -179,7 +204,7 @@ const ListFooter = memo<FooterProps>(
         style={styles.viewMoreOuter}
       >
         <LinearGradient
-          colors={['#8665FF', '#5B47A3']}
+          colors={['#3545A3', '#080B26']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.viewMoreGradient}
@@ -209,7 +234,6 @@ const ListFooter = memo<FooterProps>(
       <View style={styles.learnSection}>
         <MFBeginners navigation={navigation} />
         <MFInformedInvestors navigation={navigation} />
-
       </View>
       <View style={styles.bottomPad} />
     </View>
@@ -221,6 +245,7 @@ const ListFooter = memo<FooterProps>(
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MFScreen: React.FC<Props> = ({ navigation }) => {
+  const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(false);
   const chevronAnim = useRef(new Animated.Value(0)).current;
   const hiddenCount = CALCULATORS.length - INITIAL_VISIBLE;
@@ -280,30 +305,35 @@ const MFScreen: React.FC<Props> = ({ navigation }) => {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+      <StatusBar barStyle={servicesTheme.isDark ? 'light-content' : 'dark-content'} backgroundColor={servicesTheme.colors.background} />
 
       {/* ── Top Header ──────────────────────────────────────── */}
-      <View style={styles.header}>
+      <LinearGradient
+        colors={servicesTheme.isDark ? ['#111113', '#18181B'] : ['#FFFFFF', '#F7F4FF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.header, { borderBottomColor: servicesTheme.colors.divider }]}
+      >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.backBtn}
+          style={[styles.backBtn, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}
           activeOpacity={0.7}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color="#1F2937" />
+          <MaterialCommunityIcons name="chevron-left" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
-          <Text style={styles.headerTitle}>Mutual Funds</Text>
-          <Text style={styles.headerSubtitle}>Calculators · Learn · Grow</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Mutual Funds</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>Calculators · Learn · Grow</Text>
         </View>
 
-        <View style={styles.badge}>
+        <View style={[styles.badge, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
           <Text style={styles.badgeCount}>{CALCULATORS.length}</Text>
-          <Text style={styles.badgeLabel}>Tools</Text>
+          <Text style={[styles.badgeLabel, { color: servicesTheme.colors.primaryDark }]}>Tools</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* ── Content ─────────────────────────────────────────── */}
       <FlatList
@@ -331,85 +361,84 @@ export default MFScreen;
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F7F4FF',
   },
 
   // ── Header ──────────────────────────────────────────────────
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SCREEN_PADDING,
-    paddingVertical: 12,
-    backgroundColor: '#FFFFFF',
+
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(124,58,237,0.08)',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: '#5B47A3',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.06,
         shadowRadius: 4,
       },
-      android: { elevation: 2 },
+      android: { elevation: 3 },
     }),
   },
   backBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(124,58,237,0.08)',
   },
   headerTextBlock: { flex: 1 },
   headerTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#1F2937',
+    color: '#241C3B',
     letterSpacing: -0.3,
   },
   headerSubtitle: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: '#7A718A',
     marginTop: 1,
     fontWeight: '500',
   },
 
   // ── Badge ────────────────────────────────────────────────────
   badge: {
-    backgroundColor: '#F0EDFF',
-    borderRadius: 10,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingVertical: 6,
     alignItems: 'center',
     minWidth: 48,
+    borderWidth: 1,
+    borderColor: 'rgba(124,58,237,0.12)',
   },
   badgeCount: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#8665FF',
+    color: '#3545A3',
     lineHeight: 21,
   },
   badgeLabel: {
     fontSize: 9,
     fontWeight: '700',
-    color: '#5B47A3',
+    color: '#171F59',
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
 
   // ── Hero ─────────────────────────────────────────────────────
   heroSection: {
-    borderRadius: 20,
-
+    borderRadius: 28,
+    // paddingHorizontal: 22,
+    // paddingTop: 20,
+    // paddingBottom: 22,
+    marginBottom: 18,
     overflow: 'hidden',
-    ...Platform.select({
-      android: { elevation: 8 },
-    }),
-  },
-  heroSectionShadow: {
-    borderRadius: 20,
     ...Platform.select({
       ios: {
         shadowColor: '#5B47A3',
@@ -417,33 +446,58 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.28,
         shadowRadius: 16,
       },
+      android: { elevation: 8 },
     }),
+  },
+  heroGlowOne: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    right: -40,
+    top: -48,
+  },
+  heroGlowTwo: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    left: -42,
+    bottom: -46,
   },
   heroBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.18)',
-    borderRadius: 20,
+    borderRadius: 999,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    marginBottom: 12,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.16)',
+    marginTop: 12,
+    marginLeft: 12,
 
-    // marginBottom: 12,
-    gap: 4,
   },
   heroBadgeText: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#FFFFFF',
     letterSpacing: 0.4,
 
   },
   heroTitle: {
-    fontSize: 26,
-    fontWeight: '800',
+    fontSize: 30,
+    fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: -0.5,
-    lineHeight: 32,
-    paddingHorizontal: 10,
-    paddingVertical: 14,
+    lineHeight: 35,
+    marginBottom: 10,
+    marginLeft: 12,
 
   },
   heroSubtitle: {
@@ -451,9 +505,43 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: 'rgba(255,255,255,0.82)',
     fontWeight: '400',
-    paddingRight: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 14,
+    paddingLeft: 16,
+  },
+  heroStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 18,
+    marginTop: 16,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.14)',
+    marginLeft: 12,
+    marginRight: 12,
+
+  },
+  heroStat: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  heroStatValue: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '900',
+
+  },
+  heroStatLabel: {
+    color: 'rgba(255,255,255,0.68)',
+    fontSize: 10,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  heroStatDivider: {
+    width: 1,
+    height: 26,
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
 
   // ── Section Headings ─────────────────────────────────────────
@@ -462,7 +550,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
     paddingTop: 12,
-
   },
   sectionHeadingLeft: {
     flexDirection: 'row',
@@ -473,19 +560,21 @@ const styles = StyleSheet.create({
   sectionHeading: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#1F2937',
+    color: '#241C3B',
     letterSpacing: -0.3,
   },
   sectionBadge: {
-    backgroundColor: '#F0EDFF',
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(134,101,255,0.16)',
   },
   sectionBadgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#8665FF',
+    color: '#3545A3',
   },
 
   // ── List ─────────────────────────────────────────────────────
@@ -505,14 +594,24 @@ const styles = StyleSheet.create({
 
   // ── View More ─────────────────────────────────────────────────
   viewMoreOuter: {
-    borderRadius: 16,
+    borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 4,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#5B47A3',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.18,
+        shadowRadius: 16,
+      },
+      android: { elevation: 5 },
+    }),
   },
   viewMoreGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-
+    paddingVertical: 15,
+    paddingHorizontal: 16,
     gap: 10,
   },
   viewMoreIconCircle: {
@@ -522,12 +621,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
-    marginStart: 14,
   },
-  viewMoreTextBlock: {
-    flex: 1, paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
+  viewMoreTextBlock: { flex: 1 },
   viewMoreTitle: {
     fontSize: 14,
     fontWeight: '700',

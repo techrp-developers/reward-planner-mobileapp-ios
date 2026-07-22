@@ -11,9 +11,10 @@ import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import api, { API_BASE_URL, setSessionHandlers } from "../api/axios";
-import { setAuthToken as setLegacyAuthToken } from "../api/AuthAPI";
+import { clearAuthToken, persistAuthToken } from "../api/AuthAPI";
 import { fetchTermsStatus } from "../../../ecommerce/api/TermsConditionAPI";
 import { isTokenExpiringSoon } from "../utils/jwtUtils";
+import { parseLoginIdentifier } from "../utils/loginIdentifier";
 
 const REFRESH_TOKEN_KEY = "@rewardsplanners_refresh_token";
 const DEVICE_ID_KEY = "@rewardsplanners_device_id";
@@ -36,7 +37,9 @@ type RegisterPayload = {
 };
 
 type LoginPayload = {
-  email: string;
+  identifier: string;
+  email?: string;
+  phone?: string;
   password: string;
 };
 
@@ -169,10 +172,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const clearLocalSession = useCallback(async () => {
     updateAccessToken(null);
     setUser(null);
-    setLegacyAuthToken(null);
     setTermsAccepted(null); // reset so next login re-checks
     setFirstLoginReward(null);
-    await secureDeleteItem(REFRESH_TOKEN_KEY);
+    await Promise.all([
+      clearAuthToken(),
+      secureDeleteItem(REFRESH_TOKEN_KEY),
+    ]);
   }, [updateAccessToken]);
 
   const fetchProfile = useCallback(async () => {
@@ -225,9 +230,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         const deviceId   = await getOrCreateDeviceId();
         const deviceName = getDeviceName();
+        const parsedIdentifier = parseLoginIdentifier(payload.identifier);
+        const identifier = String(payload.identifier || "").trim();
+        const email =
+          payload.email?.trim().toLowerCase() ||
+          (parsedIdentifier.kind === "email" ? parsedIdentifier.normalized : undefined);
+        const phone =
+          payload.phone?.trim() ||
+          (parsedIdentifier.kind === "phone" ? parsedIdentifier.normalized : undefined);
 
         const response = await api.post("/v1/auth/login", {
-          email:       payload.email.trim().toLowerCase(),
+          identifier,
+          login:       identifier,
+          email,
+          phone,
           password:    payload.password,
           device_id:   deviceId,
           device_name: deviceName,
@@ -241,7 +257,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         updateAccessToken(nextAccessToken);
-        setLegacyAuthToken(nextAccessToken);
+        await persistAuthToken(nextAccessToken);
 
         await secureSetItem(REFRESH_TOKEN_KEY, nextRefreshToken);
         await fetchProfile();
@@ -301,7 +317,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       updateAccessToken(nextAccessToken);
-      setLegacyAuthToken(nextAccessToken);
+      await persistAuthToken(nextAccessToken);
 
       await fetchProfile();
 
@@ -338,7 +354,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       onAccessTokenRefresh: async (nextAccessToken) => {
         updateAccessToken(nextAccessToken);
-        setLegacyAuthToken(nextAccessToken);
+        await persistAuthToken(nextAccessToken);
       },
 
       onLogout: async () => {

@@ -34816,7 +34816,7 @@
 			name = "[CP-User] [Hermes] Replace Hermes for the right configuration, if needed";
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export NODE_BINARY=\"/Users/ppbuddy/.nvm/versions/node/v22.23.1/bin/node\"\n        . \"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\n\n        CONFIG=\"Release\"\n        if echo $GCC_PREPROCESSOR_DEFINITIONS | grep -q \"DEBUG=1\"; then\n          CONFIG=\"Debug\"\n        fi\n\n        \"$NODE_BINARY\" \"$REACT_NATIVE_PATH/sdks/hermes-engine/utils/replace_hermes_version.js\" -c \"$CONFIG\" -r \"0.82.1\" -p \"$PODS_ROOT\"\n";
+			shellScript = "export NODE_BINARY=\"/Users/ppbuddy/.nvm/versions/node/v20.20.2/bin/node\"\n        . \"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\n\n        CONFIG=\"Release\"\n        if echo $GCC_PREPROCESSOR_DEFINITIONS | grep -q \"DEBUG=1\"; then\n          CONFIG=\"Debug\"\n        fi\n\n        \"$NODE_BINARY\" \"$REACT_NATIVE_PATH/sdks/hermes-engine/utils/replace_hermes_version.js\" -c \"$CONFIG\" -r \"0.82.1\" -p \"$PODS_ROOT\"\n";
 		};
 		46EB2E00026AE0 /* [CP] Copy XCFrameworks */ = {
 			isa = PBXShellScriptBuildPhase;

@@ -132,7 +132,7 @@ export default function OrderConfirmScreen() {
                 >
                   <Text style={styles.coinIcon}>🪙</Text>
                   <Text style={styles.rewardBtnText}>
-                    +{Number(receipt?.rewards?.earned || 462)} Coins added to your wallet
+                    +{Number(receipt?.rewards?.earned ?? 0)} Coins earned on this order
                   </Text>
                 </LinearGradient>
               </Pressable>
@@ -177,7 +177,7 @@ export default function OrderConfirmScreen() {
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            <OrderReceipt orderId={order_id} />
+            <OrderReceipt orderId={order_id} receiptData={receipt} />
           </Animated.View>
         )}
       </LinearGradient>

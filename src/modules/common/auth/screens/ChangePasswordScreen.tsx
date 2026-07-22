@@ -9,6 +9,7 @@ import {
     Platform,
     ScrollView,
     ActivityIndicator,
+    StatusBar,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
@@ -19,12 +20,14 @@ import Logo from "../../../../assets/homepage/login_logo.svg";
 import { changePassword } from "../api/AuthAPI";
 import { useAlert } from "../../../ecommerce/components/alerts";
 import type { AppStackParamList } from "../../../../navigation/RootNavigator";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<AppStackParamList, "ChangePassword">;
 
 function ChangePasswordScreen() {
     const navigation = useNavigation<Nav>();
     const alert = useAlert();
+    const { isDark, theme } = useAppTheme();
 
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -42,23 +45,27 @@ function ChangePasswordScreen() {
     // ── Success view (PasswordSuccess UI) ─────────────────────────────────────
     if (isSuccess) {
         return (
-            <View style={styles.successScreen}>
+            <View style={[styles.successScreen, isDark && darkStyles.screen]}>
+                <StatusBar
+                    barStyle={isDark ? "light-content" : "dark-content"}
+                    backgroundColor={isDark ? "#09090B" : "#F5F0FF"}
+                />
                 <View style={styles.logoWrap}>
                     <Logo width={160} height={160} />
                 </View>
 
-                <View style={styles.successCard}>
-                    <View style={styles.successOuter}>
+                <View style={[styles.successCard, isDark && darkStyles.card]}>
+                    <View style={[styles.successOuter, isDark && darkStyles.successOuter]}>
                         <View style={styles.successInner}>
                             <MaterialCommunityIcons name="check" size={40} color="#FFFFFF" />
                         </View>
                     </View>
 
-                    <Text style={styles.successTitle}>
+                    <Text style={[styles.successTitle, isDark && darkStyles.primaryText]}>
                         Password Updated{"\n"}Successfully
                     </Text>
 
-                    <Text style={styles.successSub}>
+                    <Text style={[styles.successSub, isDark && darkStyles.mutedText]}>
                         Your Password has been updated successfully!{"\n"}
                         You can now continue using the app.
                     </Text>
@@ -117,7 +124,14 @@ function ChangePasswordScreen() {
 
     // ── Form view ─────────────────────────────────────────────────────────────
     return (
-        <SafeAreaView style={styles.screen} edges={["left", "right", "top"]}>
+        <SafeAreaView
+            style={[styles.screen, isDark && darkStyles.screen]}
+            edges={["left", "right", "top"]}
+        >
+            <StatusBar
+                barStyle={isDark ? "light-content" : "dark-content"}
+                backgroundColor={isDark ? "#09090B" : "#F5F0FF"}
+            />
             <KeyboardAvoidingView
                 style={styles.keyboardWrap}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -131,17 +145,20 @@ function ChangePasswordScreen() {
                         <Logo width={160} height={160} />
                     </View>
 
-                    <View style={styles.card}>
-                        <Text style={styles.title}>Change Password</Text>
+                    <View style={[styles.card, isDark && darkStyles.card]}>
+                        <Text style={[styles.title, isDark && darkStyles.primaryText]}>
+                            Change Password
+                        </Text>
 
                         {/* Current Password */}
-                        <Text style={styles.label}>Current Password</Text>
-                        <View style={styles.inputWrap}>
+                        <Text style={[styles.label, isDark && darkStyles.label]}>Current Password</Text>
+                        <View style={[styles.inputWrap, isDark && darkStyles.inputWrap]}>
                             <TextInput
                                 placeholder="Enter current password"
-                                placeholderTextColor="#999"
+                                placeholderTextColor={isDark ? "#71717A" : "#999"}
+                                selectionColor={theme.primary}
                                 secureTextEntry={!currentPasswordVisible}
-                                style={styles.input}
+                                style={[styles.input, isDark && darkStyles.input]}
                                 value={currentPassword}
                                 onChangeText={setCurrentPassword}
                                 editable={!loading}
@@ -152,19 +169,20 @@ function ChangePasswordScreen() {
                                 <MaterialCommunityIcons
                                     name={currentPasswordVisible ? "eye-off-outline" : "eye-outline"}
                                     size={20}
-                                    color="#A654CD"
+                                    color={theme.primary}
                                 />
                             </TouchableOpacity>
                         </View>
 
                         {/* New Password */}
-                        <Text style={styles.label}>New Password</Text>
-                        <View style={styles.inputWrap}>
+                        <Text style={[styles.label, isDark && darkStyles.label]}>New Password</Text>
+                        <View style={[styles.inputWrap, isDark && darkStyles.inputWrap]}>
                             <TextInput
                                 placeholder="Enter your new password"
-                                placeholderTextColor="#999"
+                                placeholderTextColor={isDark ? "#71717A" : "#999"}
+                                selectionColor={theme.primary}
                                 secureTextEntry={!newPasswordVisible}
-                                style={styles.input}
+                                style={[styles.input, isDark && darkStyles.input]}
                                 value={newPassword}
                                 onChangeText={setNewPassword}
                                 editable={!loading}
@@ -175,19 +193,20 @@ function ChangePasswordScreen() {
                                 <MaterialCommunityIcons
                                     name={newPasswordVisible ? "eye-off-outline" : "eye-outline"}
                                     size={20}
-                                    color="#A654CD"
+                                    color={theme.primary}
                                 />
                             </TouchableOpacity>
                         </View>
 
                         {/* Confirm New Password */}
-                        <Text style={styles.label}>Confirm New Password</Text>
-                        <View style={styles.inputWrap}>
+                        <Text style={[styles.label, isDark && darkStyles.label]}>Confirm New Password</Text>
+                        <View style={[styles.inputWrap, isDark && darkStyles.inputWrap]}>
                             <TextInput
                                 placeholder="Confirm your new password"
-                                placeholderTextColor="#999"
+                                placeholderTextColor={isDark ? "#71717A" : "#999"}
+                                selectionColor={theme.primary}
                                 secureTextEntry={!confirmPasswordVisible}
-                                style={styles.input}
+                                style={[styles.input, isDark && darkStyles.input]}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 editable={!loading}
@@ -198,7 +217,7 @@ function ChangePasswordScreen() {
                                 <MaterialCommunityIcons
                                     name={confirmPasswordVisible ? "eye-off-outline" : "eye-outline"}
                                     size={20}
-                                    color="#A654CD"
+                                    color={theme.primary}
                                 />
                             </TouchableOpacity>
                         </View>
@@ -296,7 +315,8 @@ const styles = StyleSheet.create({
 
     confirmBtn: {
         marginTop: 20,
-
+        paddingVertical: 14,
+        paddingHorizontal: 24,
         borderRadius: 10,
         alignItems: "center",
     },
@@ -305,8 +325,6 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontSize: 15,
         fontWeight: "700",
-        paddingVertical: 14,
-        paddingHorizontal: 24,
     },
 
     // ── Success screen ────────────────────────────────────────────────────────
@@ -361,4 +379,18 @@ const styles = StyleSheet.create({
         marginBottom: 30,
         lineHeight: 20,
     },
+});
+
+const darkStyles = StyleSheet.create({
+    screen: { backgroundColor: "#09090B" },
+    card: { backgroundColor: "#18181B" },
+    primaryText: { color: "#C4B5FD" },
+    mutedText: { color: "#A1A1AA" },
+    label: { color: "#D4D4D8" },
+    inputWrap: {
+        backgroundColor: "#27272A",
+        borderColor: "rgba(255,255,255,0.20)",
+    },
+    input: { color: "#F4F4F5" },
+    successOuter: { backgroundColor: "#052E16" },
 });

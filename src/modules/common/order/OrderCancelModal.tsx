@@ -5,6 +5,7 @@ import ProductImg from "../../../assets/product/product(2).svg";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../ecommerce/navigation/types";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -30,6 +31,7 @@ export default function OrderCancelModal({
     productWeight,
 }: OrderCancelModalProps) {
     const navigation = useNavigation<Nav>();
+    const { isDark, theme } = useAppTheme();
 
     return (
         <Modal
@@ -46,20 +48,28 @@ export default function OrderCancelModal({
                     activeOpacity={1}
                 />
 
-                <View style={styles.sheetContainer}>
-                    <View style={styles.dragHandle} />
+                <View style={[styles.sheetContainer, { backgroundColor: theme.card }]}>
+                    <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
 
                     {/* RP Coins Savings Banner */}
-                    <View style={styles.savingsBanner}>
+                    <View
+                        style={[
+                            styles.savingsBanner,
+                            {
+                                backgroundColor: isDark ? "#2A1618" : "#FFF5F5",
+                                borderColor: isDark ? "#7F1D1D" : "#FFB4B4",
+                            },
+                        ]}
+                    >
                         <View style={styles.savingsLeft}>
                             {/* Render SVG as a component */}
                             <CoinIcon width={32} height={32} style={styles.coinIcon} />
-                            <Text style={styles.savingsText}>
-                                You saved <Text style={styles.boldText}>450 RP coins</Text> on this product!
+                            <Text style={[styles.savingsText, { color: theme.secondaryText }]}>
+                                You saved <Text style={[styles.boldText, { color: theme.text }]}>450 RP coins</Text> on this product!
                             </Text>
                         </View>
 
-                        <View style={styles.productImageContainer}>
+                        <View style={[styles.productImageContainer, { backgroundColor: isDark ? "#111827" : "#FFFFFF", borderColor: theme.border }]}>
                             {/* Render Product SVG or Image */}
                             <ProductImg width={60} height={60} />
                         </View>
@@ -67,19 +77,19 @@ export default function OrderCancelModal({
 
                     {/* Warning Text */}
                     <View style={styles.textContainer}>
-                        <Text style={styles.warningText}>
+                        <Text style={[styles.warningText, { color: theme.secondaryText }]}>
                             If you cancel now, these savings will be lost and may not be available again.
                         </Text>
-                        <Text style={styles.confirmText}>Do you still want to cancel?</Text>
+                        <Text style={[styles.confirmText, { color: theme.text }]}>Do you still want to cancel?</Text>
                     </View>
 
                     {/* Action Buttons */}
-                    <View style={styles.buttonRow}>
+                    <View style={[styles.buttonRow, { borderColor: theme.border }]}>
                         <TouchableOpacity style={styles.keepButton} onPress={onClose}>
-                            <Text style={styles.keepButtonText}>Keep Order</Text>
+                            <Text style={[styles.keepButtonText, { color: theme.secondaryText }]}>Keep Order</Text>
                         </TouchableOpacity>
 
-                        <View style={styles.divider} />
+                        <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
                         <TouchableOpacity
                             style={styles.cancelButton}

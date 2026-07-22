@@ -11,6 +11,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
 import { handleNavigateWithPrefetch } from "../../navigation/navigationPerformance";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Props = {
   title?: string;
@@ -30,6 +31,9 @@ export default function OrderHeading({
   isDark = false,
 }: Props) {
   const navigation = useNavigation<Nav>();
+  const appTheme = useAppTheme();
+  const darkMode = isDark || appTheme.isDark;
+  const { theme } = appTheme;
 
   const handleBack = () => {
     handleNavigateWithPrefetch({
@@ -52,13 +56,9 @@ export default function OrderHeading({
     });
   };
 
-  const bg = isDark ? "#09090B" : "#FFFFFF";
-  const iconColor = isDark ? "#D1D5DB" : "#374151";
-  const borderColor = isDark ? "#27272A" : "#F3F4F6";
-
   return (
-    <SafeAreaView edges={["top"]} style={[styles.safe, { backgroundColor: bg }]}>
-      <View style={[styles.header, { backgroundColor: bg, borderBottomColor: borderColor }]}>
+    <SafeAreaView edges={["top"]} style={[styles.safe, { backgroundColor: theme.card }]}>
+      <View style={[styles.header, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         {/* Back Button */}
         <TouchableOpacity
           onPress={handleBack}
@@ -68,12 +68,12 @@ export default function OrderHeading({
           <MaterialCommunityIcons
             name="chevron-left"
             size={28}
-            color={iconColor}
+            color={theme.text}
           />
         </TouchableOpacity>
 
         {/* Title */}
-        <Text style={[styles.title, { color: iconColor }]} numberOfLines={1}>
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={1}>
           {title}
         </Text>
 
@@ -81,7 +81,13 @@ export default function OrderHeading({
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={handleHelp}
-            style={[styles.helpBtn, { borderColor: isDark ? "#3F3F46" : "#E5E7EB", backgroundColor: bg }]}
+            style={[
+              styles.helpBtn,
+              {
+                backgroundColor: darkMode ? "#18181B" : "#FFFFFF",
+                borderColor: theme.border,
+              },
+            ]}
           >
             <MaterialCommunityIcons
               name="chat-outline"
@@ -100,6 +106,7 @@ const styles = StyleSheet.create({
   safe: {
     backgroundColor: "#FFFFFF",
   },
+  safeDark: { backgroundColor: "#111113" },
 
   header: {
     height: 56,
@@ -109,6 +116,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F3F4F6",
     backgroundColor: "#FFFFFF",
+  },
+  headerDark: {
+    backgroundColor: "#111113",
+    borderBottomColor: "#27272A",
   },
 
   iconBtn: {
@@ -125,6 +136,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#374151",
   },
+  titleDark: { color: "#FFFFFF" },
 
   helpBtn: {
     flexDirection: "row",

@@ -6,7 +6,6 @@ import BBPSHead from '../constatnt/BBPSHead';
 import { pollTransactionStatus, TERMINAL_TRANSACTION_STATUSES, TransactionStatus } from '../api/BillsAPI';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
 
-const BRAND_PRIMARY = '#8665FF';
 const BRAND_SECONDARY = '#5B47A3';
 
 const STATUS_PRESENTATION: Record<
@@ -97,7 +96,7 @@ const TransactionStatusScreenComponent = ({ navigation, route }: any) => {
           <Text style={[styles.message, { color: bbpsTheme.colors.muted }]}>{message}</Text>
 
           {transactionId ? (
-            <View style={[styles.transactionPill, { backgroundColor: bbpsTheme.isDark ? '#18112A' : '#F3EFFF' }]}>
+            <View style={[styles.transactionPill, { backgroundColor: bbpsTheme.colors.iconBg }]}>
               <Text style={[styles.transactionPillText, { color: bbpsTheme.colors.primary }]}>Txn ID: {String(transactionId)}</Text>
             </View>
           ) : null}

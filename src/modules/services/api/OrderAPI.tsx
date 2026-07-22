@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
-import { BASE_API_URL, BASE_IMAGE_URL } from "./api";
+import { BASE_API_URL } from "./api";
 
 /* =========================================================
    TYPES
@@ -93,6 +93,9 @@ export interface ServiceFeedback {
 
 export interface ServiceCancellation {
   can_cancel: boolean;
+  status?: string;
+  reason?: string | null;
+  refund_status?: string | null;
 }
 
 export interface ServiceCancellationReason {
@@ -100,16 +103,95 @@ export interface ServiceCancellationReason {
   reason_text: string;
 }
 
-export interface ServiceInvoiceDetails {
-  id: number;
-  parent_order_id: string;
-  invoice_number: string;
-  invoice_url: string;
-  total_amount: string;
-  created_at: string;
-  url: string;
-  download_url: string;
+export interface ServiceCancellationDetails {
+  service_order_id: number;
+  order_ref: string;
+  status: string;
+  service: {
+    service_id?: number | null;
+    service_name: string;
+    variant_name?: string | null;
+    title?: string | null;
+    image_url?: string | null;
+  };
+  address: null | {
+    address_type?: string | null;
+    address1?: string | null;
+    address2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    country?: string | null;
+    zipcode?: string | null;
+    landmark?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+  };
+  cancellation: null | {
+    status: string;
+    refund_status?: string | null;
+    refund_method?: string | null;
+    refund_amount: number;
+    created_at?: string | null;
+  };
+  timeline: Array<{
+    label: string;
+    event: string;
+    date?: string | null;
+  }>;
+  refund: {
+    total: number;
+    money_refund: number;
+    coin_refund: number;
+  };
+  rewards: {
+    used: number;
+    reversed: number;
+  };
+  summary: {
+    service_total: number;
+    order_total: number;
+  };
 }
+
+type ServiceInvoicePdfResult =
+  | { success: true; base64: string; fileName: string }
+  | { success: false; message?: string; status?: number };
+
+const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 8192;
+  let binary = "";
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...Array.from(chunk));
+  }
+
+  const encoder = (globalThis as { btoa?: (value: string) => string }).btoa;
+  if (typeof encoder !== "function") {
+    throw new Error("Base64 encoder is not available");
+  }
+
+  return encoder(binary);
+};
+
+const extractFileName = (contentDisposition?: string, fallback?: string): string => {
+  if (!contentDisposition) {
+    return fallback || "service_invoice.pdf";
+  }
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) {
+    return decodeURIComponent(utf8Match[1]);
+  }
+
+  const normalMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  if (normalMatch?.[1]) {
+    return normalMatch[1];
+  }
+
+  return fallback || "service_invoice.pdf";
+};
 
 export interface SubmitServiceFeedbackPayload {
   service_order_id: number;
@@ -124,12 +206,16 @@ export interface SubmitServiceFeedbackPayload {
 
 export interface ServiceItem {
   id: number;
+  service_id?: number | null;
   order_ref: string;
   service_name: string;
   variant_name: string;
   title: string;
   image_url: string;
   price: number;
+  total_amount?: number;
+  reward_coins_used?: number;
+  reward_coins_earned?: number;
   status: string;
   documents: ServiceDocument[];
   timeline: ServiceTimeline[];
@@ -163,10 +249,23 @@ export interface ServiceOrderDetails {
   status: string;
   address: ServiceAddress | null;
   total_amount: number;
+  subtotal: number;
+  reward_discount: number;
+  reward_coins_used: number;
+  reward_coins_earned: number;
+  rewards: {
+    used: number;
+    earned: number;
+  };
   summary: {
     total_services: number;
     completed_services: number;
     total_bundles: number;
+    subtotal: number;
+    reward_discount: number;
+    total: number;
+    reward_coins_used: number;
+    reward_coins_earned: number;
   };
   timeline: ServiceTimeline[];
   items: ServiceItem[];
@@ -265,7 +364,7 @@ export const createServiceOrderPayment = async (parent_order_id: string) => {
       throw new Error("Invalid parent_order_id (must be UUID)");
     }
 
-    console.log("📤 Creating payment order:", parent_order_id);
+    __DEV__ && console.log("📤 Creating payment order:", parent_order_id);
 
     const res = await axios.post(
       `${BASE_API_URL}/service-orders/create-order`,
@@ -298,7 +397,7 @@ export const verifyServicePayment = async (payload: {
   try {
     const headers = await getAuthHeaders();
 
-    console.log("🔐 Verifying service payment:", {
+    __DEV__ && console.log("🔐 Verifying service payment:", {
       parent_order_id: payload.parent_order_id,
       razorpay_order_id: payload.razorpay_order_id,
     });
@@ -309,7 +408,7 @@ export const verifyServicePayment = async (payload: {
       { headers }
     );
 
-    console.log("✅ Payment verified:", res.data);
+    __DEV__ && console.log("✅ Payment verified:", res.data);
     return res.data;
 
   } catch (error: any) {
@@ -334,14 +433,14 @@ export const checkServicePaymentStatus = async (parent_order_id: string) => {
   try {
     const headers = await getAuthHeaders();
 
-    console.log("📊 Checking service payment status for:", parent_order_id);
+    __DEV__ && console.log("📊 Checking service payment status for:", parent_order_id);
 
     const res = await axios.get(
       `${BASE_API_URL}/service-orders/payment-status/${parent_order_id}`,
       { headers }
     );
 
-    console.log("📊 Payment status:", res.data);
+    __DEV__ && console.log("📊 Payment status:", res.data);
     return res.data;
 
   } catch (error: any) {
@@ -419,14 +518,40 @@ export const requestServiceOrderCancellation = async (payload: {
 };
 
 // ==============================
-// 8. Get Service Invoice Details
+// 8. Get Service Cancellation Details
+// ==============================
+export const getServiceCancellationDetails = async (
+  service_order_id: number
+): Promise<{ success: boolean; data?: ServiceCancellationDetails; message?: string }> => {
+  try {
+    const headers = await getAuthHeaders();
+
+    const res = await axios.get(
+      `${BASE_API_URL}/service-orders/cancellation-details/${service_order_id}`,
+      { headers }
+    );
+
+    return {
+      success: Boolean(res.data?.success),
+      data: res.data?.data,
+      message: res.data?.message,
+    };
+  } catch (error: any) {
+    if (Number(error?.response?.status) === 401) {
+      await clearAuthToken();
+    }
+
+    console.error("Get Service Cancellation Details Error:", error?.response || error);
+    throw error?.response?.data || error;
+  }
+};
+
+// ==============================
+// 9. Get Service Invoice Details
 // ==============================
 export const getServiceInvoiceDetails = async (
   parent_order_id: string
-): Promise<{
-  success: boolean;
-  data: ServiceInvoiceDetails;
-}> => {
+): Promise<ServiceInvoicePdfResult> => {
   try {
     const headers = await getAuthHeaders();
 
@@ -436,23 +561,30 @@ export const getServiceInvoiceDetails = async (
 
     const res = await axios.get(
       `${BASE_API_URL}/service-orders/invoice-details/${parent_order_id}`,
-      { headers }
+      {
+        headers,
+        responseType: "arraybuffer",
+      }
     );
 
-    const invoice = res.data?.data;
-    const relativeUrl = String(invoice?.url || "").trim();
-    const downloadUrl = relativeUrl
-      ? relativeUrl.startsWith("http")
-        ? relativeUrl
-        : `${BASE_IMAGE_URL}/api/crm${relativeUrl.startsWith("/") ? relativeUrl : `/${relativeUrl}`}`
-      : "";
+    const base64 =
+      typeof res.data === "string"
+        ? res.data.replace(/^data:application\/pdf;base64,/, "")
+        : arrayBufferToBase64(res.data as ArrayBuffer);
+
+    const contentDisposition = res?.headers?.["content-disposition"] as
+      | string
+      | undefined;
+    const fileName = extractFileName(contentDisposition, `service_invoice_${parent_order_id}.pdf`);
+
+    if (!base64) {
+      return { success: false, message: "Invoice PDF is empty" };
+    }
 
     return {
-      success: Boolean(res.data?.success),
-      data: {
-        ...invoice,
-        download_url: downloadUrl,
-      },
+      success: true,
+      base64,
+      fileName,
     };
   } catch (error: any) {
     if (Number(error?.response?.status) === 401) {
@@ -460,7 +592,15 @@ export const getServiceInvoiceDetails = async (
     }
 
     console.error("Get Service Invoice Details Error:", error?.response || error);
-    throw error?.response?.data || error;
+    const status = Number(error?.response?.status || 0);
+    const message =
+      status === 400
+        ? "Invoice is available after payment."
+        : status === 404
+          ? "Invoice is not available for this order yet."
+          : error?.message || "Could not fetch invoice PDF";
+
+    return { success: false, status, message };
   }
 };
 

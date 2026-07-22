@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,11 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
 import BBPSHead from '../constatnt/BBPSHead';
-import { createBillPayOrder, verifyBillPayPayment } from '../api/BillsAPI';
+import {
+  cancelUnpaidBillPayOrder,
+  createBillPayOrder,
+  verifyBillPayPayment,
+} from '../api/BillsAPI';
 import { useAlert } from '../../ecommerce/components/alerts';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
 
@@ -126,6 +130,7 @@ const PaymentConfirmationScreenComponent = () => {
   const bbpsTheme = useBbpsTheme();
 
   const [processing, setProcessing] = useState(false);
+  const paymentFlowInProgress = useRef(false);
 
   // Memoizing Parameter Dependencies To Eradicate Hook Warnings
   const params = useMemo(() => (route.params || {}) as ConfirmationRouteParams, [route.params]);
@@ -165,12 +170,18 @@ const PaymentConfirmationScreenComponent = () => {
 
   // Handle Order Generation & Verification Execution
   const handleProceed = useCallback(async () => {
+    if (paymentFlowInProgress.current) return;
+
     if (!billFetchId) {
       alert.warning('Missing Bill', 'Bill fetch id is missing. Please fetch the bill again.');
       return;
     }
 
+    paymentFlowInProgress.current = true;
     setProcessing(true);
+    let transactionId: string | number | null = null;
+    let razorpaySucceeded = false;
+
     try {
       const payload = {
         operator_id: String(customer.operatorId || ''),
@@ -190,8 +201,9 @@ const PaymentConfirmationScreenComponent = () => {
 
       // create-order responds with { key, orderId, amount, currency, transaction_id }
       const order = response.data;
+      transactionId = order?.transaction_id ?? null;
 
-      if (!order?.key || !order?.orderId) {
+      if (!order?.key || !order?.orderId || !Number(order?.amount)) {
         alert.warning('Payment Failed', 'Payment order details are missing.', PAYMENT_MESSAGE_DURATION_MS);
         return;
       }
@@ -211,6 +223,7 @@ const PaymentConfirmationScreenComponent = () => {
           color: BRAND_PRIMARY,
         },
       });
+      razorpaySucceeded = true;
 
       // verify-payment expects only the three razorpay_* fields — no transaction_id.
       const verifyPayload = {
@@ -225,7 +238,7 @@ const PaymentConfirmationScreenComponent = () => {
       // when the payment was captured but bill processing is queued/retrying
       // (HTTP 202) or already resolved by a webhook — the status screen still
       // needs to open so the user can track that in-progress/refund state.
-      const transactionId = verifyResponse?.transaction_id ?? order.transaction_id;
+      transactionId = verifyResponse?.transaction_id ?? order.transaction_id;
 
       if (verifyResponse?.success === false && !transactionId) {
         alert.warning(
@@ -241,15 +254,30 @@ const PaymentConfirmationScreenComponent = () => {
       // A rejected verify-payment call (e.g. HTTP 422 when the provider
       // permanently rejected the transaction) still carries a transaction_id —
       // route to the status screen instead of stranding the user on an alert.
-      const transactionId = error?.transaction_id;
-      if (transactionId) {
-        navigation.navigate('TransactionStatusScreen', { transactionId });
+      const errorTransactionId = error?.transaction_id ?? transactionId;
+
+      if (razorpaySucceeded && errorTransactionId) {
+        navigation.navigate('TransactionStatusScreen', {
+          transactionId: errorTransactionId,
+        });
         return;
+      }
+
+      if (!razorpaySucceeded && errorTransactionId) {
+        try {
+          await cancelUnpaidBillPayOrder(errorTransactionId);
+        } catch {
+          navigation.navigate('TransactionStatusScreen', {
+            transactionId: errorTransactionId,
+          });
+          return;
+        }
       }
 
       alert.error('Error', error?.message || 'Could not create bill payment order.', PAYMENT_MESSAGE_DURATION_MS);
     } finally {
       setProcessing(false);
+      paymentFlowInProgress.current = false;
     }
   }, [billFetchId, customer.operatorId, operatorName, customerName, consumerNumber, alert, navigation]);
 

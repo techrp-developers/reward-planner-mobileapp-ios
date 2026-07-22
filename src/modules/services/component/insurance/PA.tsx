@@ -10,6 +10,7 @@ import Step3PA from "./Step3PA";
 import QuotesResult from "./QuotesResult";
 import Step1PA from "./Step1PA";
 import { startInsurance, saveStep, mapMembersConfig } from "../../api/InsuranceApi";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 export type FormData = {
   gender: string;
@@ -45,6 +46,7 @@ const steps = ["Select Self", "Basic Details", "Additional Details"];
 export default function PersonalAccident() {
   const navigation = useNavigation();
   const { success, info } = useAlert();
+  const servicesTheme = useServicesTheme();
   const [step, setStep] = useState(0);
   const [stepLoading, setStepLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
@@ -140,8 +142,8 @@ export default function PersonalAccident() {
   // If showing results, render QuotesResult screen
   if (showResults) {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F8F9FF" />
+      <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
+        <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.background} />
         <QuotesResult
           quotes={quoteResults}
           onBack={handleBackToForm}
@@ -154,27 +156,27 @@ export default function PersonalAccident() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider }]}>
         <TouchableOpacity
           onPress={() => navigation?.goBack?.()}
           style={styles.backButton}
         >
-          <MaterialIcons name="arrow-back" size={24} color="#1A1A1A" />
+          <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Personal Accident Insurance</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Accident Insurance</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
             Protect your income from accidental risk
           </Text>
         </View>
       </View>
 
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
 
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
@@ -182,8 +184,8 @@ export default function PersonalAccident() {
         <StepIndicator steps={steps} currentStep={step} />
 
         {stepLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#8665FF" />
+          <View style={[styles.loadingOverlay, { backgroundColor: servicesTheme.isDark ? "rgba(9,9,11,0.74)" : "rgba(255,255,255,0.7)" }]}>
+            <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
           </View>
         )}
 

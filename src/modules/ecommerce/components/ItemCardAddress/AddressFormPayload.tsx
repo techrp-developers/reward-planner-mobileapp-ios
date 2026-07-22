@@ -69,11 +69,11 @@ function useStates() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const load = React.useCallback(async () => {
+  const load = React.useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetchAllStates();
+      const res = await fetchAllStates(forceRefresh);
       setStates(Array.isArray(res?.data) ? res.data : []);
     } catch {
       setStates([]);
@@ -87,7 +87,7 @@ function useStates() {
     load();
   }, [load]);
 
-  return { states, loading, error, retry: () => load() };
+  return { states, loading, error, retry: () => load(true) };
 }
 
 type FormFields = {
@@ -270,8 +270,8 @@ function AddressDetailsSheet({
   const statePlaceholder = statesLoading
     ? "Loading states..."
     : statesError
-      ? "Couldn't load states - tap to retry"
-      : "Select State";
+    ? "Couldn't load states - tap to retry"
+    : "Select State";
 
   const themedInputProps = {
     placeholderTextColor: isDark ? "#71717A" : "#9A9AA5",
@@ -517,6 +517,7 @@ const styles = StyleSheet.create({
   },
   cta: {
     borderRadius: 12,
+    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
     width: 238,
@@ -530,8 +531,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 20,
     textAlign: "center",
-    paddingVertical: 14,
-
   },
 });
 

@@ -6,11 +6,13 @@ import type { NavigationProp } from '@react-navigation/native';
 import Card from './Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const fallbackImg = require('../../assete/gov_documet/aadhar card.png');
 
 const YouMayNeedServicesCarousel = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+  const servicesTheme = useServicesTheme();
   const { data, isLoading, error } = useServiceHome();
 
   const services = useMemo((): ServiceItem[] => {
@@ -23,8 +25,8 @@ const YouMayNeedServicesCarousel = () => {
     return (
       <View style={styles.wrapper}>
         <View style={styles.headerRow}>
-          <Text style={styles.heading}>You may also need</Text>
-          <Text style={styles.subheading}>Handy add-ons for this service</Text>
+          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>You may also need</Text>
+          <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Handy add-ons for this service</Text>
         </View>
         <ActivityIndicator size="small" color="#8665FF" style={styles.loader} />
       </View>
@@ -36,8 +38,8 @@ const YouMayNeedServicesCarousel = () => {
   return (
     <View style={styles.wrapper}>
       <View style={styles.headerRow}>
-        <Text style={styles.heading}>You may also need</Text>
-        <Text style={styles.subheading}>Handy add-ons for this service</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>You may also need</Text>
+        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Handy add-ons for this service</Text>
       </View>
 
       <ScrollView

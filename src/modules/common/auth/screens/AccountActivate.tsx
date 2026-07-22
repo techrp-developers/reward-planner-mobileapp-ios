@@ -19,6 +19,7 @@ import { AuthStackParamList } from "../../../common/auth/navigation/types";
 import { activateAccount } from "../api/AuthAPI";
 import { useAlert } from "../../../ecommerce/components/alerts";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type LoginAccountNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
@@ -28,6 +29,7 @@ type LoginAccountNavigationProp = NativeStackNavigationProp<
 function AccountActivate() {
   const navigation = useNavigation<LoginAccountNavigationProp>();
   const alert = useAlert();
+  const { isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,7 +57,10 @@ function AccountActivate() {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={["left", "right", "top"]}>
+    <SafeAreaView
+      style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}
+      edges={["left", "right", "top"]}
+    >
       <KeyboardAvoidingView
         style={styles.keyboardWrap}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -70,22 +75,30 @@ function AccountActivate() {
             <Logo width={180} height={180} />
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
 
-            <Text style={styles.title}>Activate Your Account</Text>
+            <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>Activate Your Account</Text>
 
             {/* Email Input */}
-            <View style={styles.inputWrap}>
+            <View
+              style={[
+                styles.inputWrap,
+                {
+                  backgroundColor: isDark ? "#18181B" : "#F8F8F8",
+                  borderColor: isDark ? "rgba(255,255,255,0.10)" : "#EEE",
+                },
+              ]}
+            >
               <MaterialCommunityIcons
                 name="email-outline"
                 size={18}
-                color="#999"
+                color={isDark ? "#A1A1AA" : "#999"}
                 style={styles.inputIcon}
               />
               <TextInput
                 placeholder="Email Address"
-                placeholderTextColor="#999"
-                style={styles.input}
+                placeholderTextColor={isDark ? "#71717A" : "#999"}
+                style={[styles.input, { color: isDark ? "#FFFFFF" : "#333" }]}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 value={email}
@@ -105,14 +118,23 @@ function AccountActivate() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-        <View style={[styles.bottomWrap, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View
+          style={[
+            styles.bottomWrap,
+            {
+              paddingBottom: Math.max(insets.bottom, 16),
+              backgroundColor: isDark ? "#09090B" : "#F5F0FF",
+              borderTopColor: isDark ? "rgba(255,255,255,0.08)" : "#E8DCF7",
+            },
+          ]}
+        >
           <View style={styles.bottomRow}>
-            <Text style={styles.bottomText}>Already have an account?</Text>
+            <Text style={[styles.bottomText, { color: isDark ? "#A1A1AA" : "#666" }]}>Already have an account?</Text>
 
             <TouchableOpacity
               onPress={() => navigation.navigate("Login")}
             >
-              <Text style={styles.signUp}>Login Account</Text>
+              <Text style={[styles.signUp, { color: isDark ? "#F472B6" : "#7B2CBF" }]}>Login Account</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -126,7 +148,6 @@ export default AccountActivate;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F5F0FF",
   },
   keyboardWrap: {
     flex: 1,
@@ -140,7 +161,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   card: {
-    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
@@ -156,9 +176,7 @@ const styles = StyleSheet.create({
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8F8F8",
     borderWidth: 1,
-    borderColor: "#EEE",
     borderRadius: 10,
     paddingHorizontal: 12,
     marginBottom: 15,
@@ -170,7 +188,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: "#333",
   },
   forgotText: {
     fontSize: 13,
@@ -186,11 +203,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     paddingVertical: 14,
+
   },
   bottomWrap: {
-    backgroundColor: "#F5F0FF",
     borderTopWidth: 1,
-    borderTopColor: "#E8DCF7",
     paddingTop: 16,
     alignItems: "center",
     paddingHorizontal: 20,

@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     paddingVertical: 10,
 
+
   },
 
   inactiveText: {

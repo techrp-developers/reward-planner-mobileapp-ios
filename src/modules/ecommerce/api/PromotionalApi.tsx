@@ -137,7 +137,7 @@ const fetchPromotionalProducts = async <T = any>(
 };
 
 export const fetchNewArrivals = async (offset = 0) => {
-    return fetchPromotionalProducts(`/v1/product/new-arrivals`, offset);
+    return fetchPromotionalProducts(`/v1/product/new-arrivals`, offset, true);
 };
 
 export const getRecentProducts = async (offset = 0) => {
@@ -197,21 +197,22 @@ export const getSimilarProducts = async (product_id: number, offset = 0) => {
 };
 
 export const getTrendingProducts = async (offset = 0) => {
-    return fetchPromotionalProducts(`/v1/product/trending`, offset);
+    return fetchPromotionalProducts(`/v1/product/trending`, offset, true);
 };
 export const fetchBestSellers = async (offset = 0) => {
-    return fetchPromotionalProducts(`/v1/product/best-sellers`, offset);
+    return fetchPromotionalProducts(`/v1/product/best-sellers`, offset, true);
 };
 export const fetchMostViewedProducts = async (offset = 0) => {
-    return fetchPromotionalProducts(`/v1/product/most-viewed`, offset);
+    return fetchPromotionalProducts(`/v1/product/most-viewed`, offset, true);
 };
 export const fetchTopRatedProducts = async (offset = 0) => {
-    return fetchPromotionalProducts(`/v1/product/top-rated`, offset);
+    return fetchPromotionalProducts(`/v1/product/top-rated`, offset, true);
 };
 
 export const getCustomersAlsoBought = async (productId: number, offset = 0) => {
     return fetchPromotionalProducts(
         `/v1/product/${productId}/customers-also-bought`,
-        offset
+        offset,
+        true
     );
 };

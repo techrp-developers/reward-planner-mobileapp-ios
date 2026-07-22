@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useQuery } from "@tanstack/react-query";
 import LinearGradient from "react-native-linear-gradient";
 import RewardIcon from "../../../assets/product/rewards.svg";
 import { useAppTheme } from "../../../theme/ThemeContext";
@@ -31,9 +32,50 @@ interface RewardsState {
 
 const PURPLE = "#8665FF";
 const PURPLE_DARK = "#5B47A3";
+const REWARDS_OVERVIEW_QUERY_KEY = ["dashboard", "rewards-overview"] as const;
+const FIVE_MINUTES = 5 * 60 * 1000;
+const THIRTY_MINUTES = 30 * 60 * 1000;
 
 const formatPts = (pts: number): string =>
   `${pts.toLocaleString("en-IN")} pts`;
+
+const getTotalEarnedFromBalance = (data: any): number | null => {
+  const value =
+    data?.total_earned_points ??
+    data?.total_earned ??
+    data?.total_earned_coins ??
+    data?.earned_points ??
+    data?.earned_coins;
+  const numericValue = Number(value);
+  return Number.isFinite(numericValue) ? numericValue : null;
+};
+
+const loadRewardsOverview = async (): Promise<Omit<RewardsState, "loading" | "error">> => {
+  const [balanceRes, creditRes, debitRes] = await Promise.all([
+    fetchWalletBalance(),
+    fetchWalletTransactions("credit"),
+    fetchWalletTransactions("debit"),
+  ]);
+
+  const credits = creditRes.success ? creditRes.data : [];
+  const debits = debitRes.success ? debitRes.data : [];
+  const earnedFromBalance = getTotalEarnedFromBalance(balanceRes.data);
+  const totalSpent =
+    earnedFromBalance ?? credits.reduce((sum, tx) => sum + tx.coins, 0);
+  const totalRedeemed = debits.reduce((sum, tx) => sum + tx.coins, 0);
+  const allTx = [...credits, ...debits].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  );
+
+  return {
+    balance: balanceRes.data.balance,
+    expiringCoins: Number(balanceRes.data.expiring_coins ?? 0),
+    expiryDate: balanceRes.data.expiry_date ?? null,
+    totalSpent,
+    totalRedeemed,
+    transactions: allTx,
+  };
+};
 
 const StatColumn: React.FC<{ label: string; value: string }> = ({ label, value }) => {
   const { theme } = useAppTheme();
@@ -53,57 +95,29 @@ const StatColumn: React.FC<{ label: string; value: string }> = ({ label, value }
 const RewardsOverview: React.FC = () => {
   const { isDark, theme } = useAppTheme();
   const navigation = useNavigation();
-  const [state, setState] = useState<RewardsState>({
-    balance: 0,
-    expiringCoins: 0,
-    expiryDate: null,
-    totalSpent: 0,
-    totalRedeemed: 0,
-    transactions: [],
-    loading: true,
-    error: null,
+  const {
+    data,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: REWARDS_OVERVIEW_QUERY_KEY,
+    queryFn: loadRewardsOverview,
+    staleTime: FIVE_MINUTES,
+    gcTime: THIRTY_MINUTES,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setState((s) => ({ ...s, loading: true, error: null }));
-
-        const [balanceRes, creditRes, debitRes] = await Promise.all([
-          fetchWalletBalance(),
-          fetchWalletTransactions("credit"),
-          fetchWalletTransactions("debit"),
-        ]);
-
-        const credits = creditRes.success ? creditRes.data : [];
-        const debits = debitRes.success ? debitRes.data : [];
-        const totalSpent = credits.reduce((sum, tx) => sum + tx.coins, 0);
-        const totalRedeemed = debits.reduce((sum, tx) => sum + tx.coins, 0);
-        const allTx = [...credits, ...debits].sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-        );
-
-        setState({
-          balance: balanceRes.data.balance,
-          expiringCoins: Number(balanceRes.data.expiring_coins ?? 0),
-          expiryDate: balanceRes.data.expiry_date ?? null,
-          totalSpent,
-          totalRedeemed,
-          transactions: allTx,
-          loading: false,
-          error: null,
-        });
-      } catch (e) {
-        setState((s) => ({
-          ...s,
-          loading: false,
-          error: e instanceof Error ? e.message : "Something went wrong",
-        }));
-      }
-    };
-
-    load();
-  }, []);
+  const state: RewardsState = {
+    balance: data?.balance ?? 0,
+    expiringCoins: data?.expiringCoins ?? 0,
+    expiryDate: data?.expiryDate ?? null,
+    totalSpent: data?.totalSpent ?? 0,
+    totalRedeemed: data?.totalRedeemed ?? 0,
+    transactions: data?.transactions ?? [],
+    loading: isLoading && !data,
+    error: error instanceof Error ? error.message : error ? "Something went wrong" : null,
+  };
 
   const t = useMemo(() => ({
     centered: { backgroundColor: theme.background } as ViewStyle,

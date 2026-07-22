@@ -63,7 +63,7 @@ export type HomeStackParamList = {
     redirectDelayMs?: number;
   };
   CartScreen: undefined;
-  Profile: undefined;
+  Profile: { context?: 'services' } | undefined;
   MyOrder: undefined;
   ServiceOrderDetail: { parent_order_id: string };
   ServiceCancellationRequest: {
@@ -73,6 +73,11 @@ export type HomeStackParamList = {
     service_name: string;
     variant_name?: string;
     image_url?: string | null;
+  };
+  ServiceCancellationDetails: {
+    service_order_id: number;
+    parent_order_id: string;
+    service_id?: number | null;
   };
   ServiceFeedback: {
     service_order_id: number;
@@ -84,22 +89,47 @@ export type HomeStackParamList = {
   };
   WalletHistory: undefined;
   TodoList: undefined;
-  AddAddressMap: undefined;
+  AddAddressMap: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   PrivacyPolicy: undefined;
   TermsAndConditions: undefined;
+  HelpForm: undefined;
+  MyTickets: undefined;
+  ChangePassword: undefined;
   OrderConfirmedScreen: { order_id?: number } | undefined;
   CommonQuestionsScreen: undefined;
   ArticleDetails: { articleId: number; sectionId: number };
   MFInvestorsDetail: { categoryId: number };
   MFSectionArticles: { sectionId: number; sectionTitle: string };
-  AddressSelect: { fromCart?: boolean } | undefined;
+  AddressSelect: { fromCart?: boolean; manageOnly?: boolean } | undefined;
+  AddressDetails:
+    | undefined
+    | {
+        mode?: "add" | "edit";
+        addressId?: number;
+        manageOnly?: boolean;
+        initialData?: {
+          saveAs?: "Home" | "Work" | "Other";
+          flatHouseBuilding?: string;
+          areaLocality?: string;
+          landmark?: string;
+          name?: string;
+          phone?: string;
+          pincode?: string;
+          city?: string;
+          state?: string;
+          state_id?: number;
+          isDefault?: boolean;
+        };
+      };
 
   ServiceCheckoutScreen: {
     mode?: 'buy_now' | 'cart';
     service_id?: number;
     variant_id?: number;
     bundle_id?: number; 
+    selected_items?: number[];
     previewData?: any; 
+    redeem_coins?: number;
   };
 };
 

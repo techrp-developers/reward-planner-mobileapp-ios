@@ -1,17 +1,16 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { Animated, View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import ProfileIcon from "../assets/menu/profile.svg";
 import HomeIcon from "../assets/menu/Home.svg";
-import CenterIcon from "../assets/menu/Menu_Home.svg";
-import dashbord_menu from "../assets/menu/dashbord_home.png";
 import CartIcon from "../assets/menu/Cart.svg";
 import ExploreIcon from "../assets/menu/Explore.svg";
 import SearchIcon from "../assets/menu/Search.svg";
 import HistoryIcon from "../assets/menu/History.svg";
+import { useAppTheme } from "../theme/ThemeContext";
 
 export const TAB_BAR_HEIGHT = 68;
 
@@ -43,12 +42,16 @@ type TabItemProps = {
   active: boolean;
   onPress: () => void;
   Icon: React.ComponentType<{ width: number; height: number; color?: string }>;
+  activeIconColor: string;
+  activeLabelColor: string;
+  inactiveColor: string;
   badgeCount?: number;
+  badgeBorderColor: string;
 };
 
 // Defined outside render — stable reference, no allocation per press.
 const HIT_SLOP = { top: 10, bottom: 10, left: 6, right: 6 } as const;
-const NOOP = () => { };
+const NOOP = () => {};
 const DASHBOARD_SLOT_WIDTH = 62;
 const DASHBOARD_INDICATOR_LEFT = 9;
 
@@ -79,11 +82,77 @@ const DASHBOARD_TABS: TabConfig[] = [
   { key: "Profile", label: "Profile", Icon: ProfileIcon },
 ];
 
-const ACTIVE_COLOR = "#8B5CF6";
 const INACTIVE_COLOR = "#9CA3AF";
+const TAB_ICON_THEME: Record<AppMode, { activeIcon: string; activeLabel: string }> = {
+  Product: {
+    activeIcon: "#D69A33",
+    activeLabel: "#111827",
+  },
+  Services: {
+    activeIcon: "#1D4ED8",
+    activeLabel: "#06111F",
+  },
+  Payments: {
+    activeIcon: "#7C3AED",
+    activeLabel: "#120A24",
+  },
+  DineOut: {
+    activeIcon: "#DC2626",
+    activeLabel: "#1F0A0A",
+  },
+};
+const CENTER_BUTTON_THEME: Record<AppMode, { background: string; border: string; icon: string; shadow: string }> = {
+  Product: {
+    background: "#111827",
+    border: "#FACC15",
+    icon: "#FACC15",
+    shadow: "#FACC15",
+  },
+  Services: {
+    background: "#06111F",
+    border: "#1D4ED8",
+    icon: "#BFDBFE",
+    shadow: "#1D4ED8",
+  },
+  Payments: {
+    background: "#120A24",
+    border: "#7C3AED",
+    icon: "#DDD6FE",
+    shadow: "#7C3AED",
+  },
+  DineOut: {
+    background: "#1F0A0A",
+    border: "#DC2626",
+    icon: "#FECACA",
+    shadow: "#DC2626",
+  },
+};
 
-const TabItem = React.memo(({ label, active, onPress, Icon, badgeCount }: TabItemProps) => {
-  const iconColor = active ? ACTIVE_COLOR : INACTIVE_COLOR;
+// Icon "pop" when a tab becomes active — spring overshoots past ACTIVE_ICON_SCALE
+// then settles, giving a bouncy feel without a background pill.
+const ACTIVE_ICON_SCALE = 1.22;
+const ICON_SPRING_CONFIG = { useNativeDriver: true, tension: 220, friction: 5 };
+
+const TabItem = React.memo(({
+  label,
+  active,
+  onPress,
+  Icon,
+  activeIconColor,
+  activeLabelColor,
+  inactiveColor,
+  badgeCount,
+  badgeBorderColor,
+}: TabItemProps) => {
+  const iconColor = active ? activeIconColor : inactiveColor;
+  const iconScale = useRef(new Animated.Value(active ? ACTIVE_ICON_SCALE : 1)).current;
+
+  useEffect(() => {
+    Animated.spring(iconScale, {
+      toValue: active ? ACTIVE_ICON_SCALE : 1,
+      ...ICON_SPRING_CONFIG,
+    }).start();
+  }, [active, iconScale]);
 
   return (
     <TouchableOpacity
@@ -93,14 +162,18 @@ const TabItem = React.memo(({ label, active, onPress, Icon, badgeCount }: TabIte
       hitSlop={HIT_SLOP}
     >
       <View>
-        <Icon width={24} height={24} color={iconColor} />
+        <Animated.View style={{ transform: [{ scale: iconScale }] }}>
+          <Icon width={24} height={24} color={iconColor} />
+        </Animated.View>
         {(badgeCount ?? 0) > 0 && (
-          <View style={styles.badge}>
+          <View style={[styles.badge, { borderColor: badgeBorderColor }]}>
             <Text style={styles.badgeText}>{badgeCount}</Text>
           </View>
         )}
       </View>
-      <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>
+      <Text style={[styles.label, { color: inactiveColor }, active && styles.labelActive, active && { color: activeLabelColor }]}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 });
@@ -108,12 +181,14 @@ const TabItem = React.memo(({ label, active, onPress, Icon, badgeCount }: TabIte
 TabItem.displayName = "TabItem";
 
 const CenterButton = React.memo(function CenterButton({
-  isDashboard,
+  activeMode,
   onPress,
 }: {
-  isDashboard: boolean;
+  activeMode: AppMode;
   onPress: () => void;
 }) {
+  const centerTheme = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
+
   return (
     <TouchableOpacity
       activeOpacity={0.9}
@@ -121,12 +196,22 @@ const CenterButton = React.memo(function CenterButton({
       style={styles.fabWrap}
       hitSlop={HIT_SLOP}
     >
-      <View style={styles.diamond}>
-        {isDashboard ? (
-          <Image source={dashbord_menu} style={styles.centerDashboardImage} resizeMode="contain" />
-        ) : (
-          <CenterIcon width={90} height={90} />
-        )}
+      <View
+        style={[
+          styles.centerDiamondButton,
+          {
+            backgroundColor: centerTheme.background,
+            borderColor: centerTheme.border,
+            shadowColor: centerTheme.shadow,
+          },
+        ]}
+      >
+        <MaterialCommunityIcons
+          name="view-dashboard"
+          size={27}
+          color={centerTheme.icon}
+          style={styles.centerDashboardIcon}
+        />
       </View>
     </TouchableOpacity>
   );
@@ -145,6 +230,7 @@ function BottomTabs({
 }: Props) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
+  const { isDark, theme } = useAppTheme();
   const bottomInset = Math.max(insets.bottom, 8);
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
@@ -167,6 +253,12 @@ function BottomTabs({
     : activeMode === "Payments"
       ? PAYMENT_TABS
       : TABS;
+  const tabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
+  const inactiveColor = isDark ? theme.secondaryText : INACTIVE_COLOR;
+  const barBackgroundColor = isDark ? theme.card : "#FFFFFF";
+  const barBorderColor = isDark ? theme.border : "rgba(17,24,39,0.08)";
+  const homeIndicatorColor = isDark ? "rgba(255,255,255,0.24)" : "#D1D5DB";
+  const activeLabelColor = isDark ? tabTheme.activeIcon : tabTheme.activeLabel;
 
   const animateDashboardIndicator = useCallback((index: number) => {
     Animated.spring(dashboardIndicatorX, {
@@ -207,13 +299,12 @@ function BottomTabs({
   React.useEffect(() => {
     if (!isFocused || !activeTabKey) return;
 
-    const tabChanged = activeTabKey !== activeTabRef.current;
-    if (tabChanged) {
+    if (activeTabKey !== activeTabRef.current) {
       activeTabRef.current = activeTabKey;
       setActiveTab(activeTabKey);
     }
 
-    if (isDashboard && tabChanged) {
+    if (isDashboard) {
       const index = activeTabKey === "Notes" ? 0 : activeTabKey === "Home" ? 1 : 2;
       animateDashboardIndicator(index);
     }
@@ -277,13 +368,22 @@ function BottomTabs({
     <View
       style={[
         layoutMode === "navigator" ? styles.navigatorWrap : styles.wrap,
-        { height: TAB_BAR_HEIGHT + bottomInset },
+        {
+          height: TAB_BAR_HEIGHT + bottomInset,
+          backgroundColor: layoutMode === "navigator" ? barBackgroundColor : "transparent",
+        },
       ]}
     >
       <View
         style={[
           styles.bar,
-          { height: TAB_BAR_HEIGHT + bottomInset, paddingBottom: bottomInset },
+          {
+            height: TAB_BAR_HEIGHT + bottomInset,
+            paddingBottom: bottomInset,
+            backgroundColor: barBackgroundColor,
+            borderTopColor: barBorderColor,
+            shadowColor: isDark ? "#000000" : "#000000",
+          },
         ]}
       >
         {/* LEFT SIDE */}
@@ -294,6 +394,10 @@ function BottomTabs({
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
+            activeIconColor={tabTheme.activeIcon}
+            activeLabelColor={activeLabelColor}
+            inactiveColor={inactiveColor}
+            badgeBorderColor={barBackgroundColor}
           />
         ))}
 
@@ -307,7 +411,11 @@ function BottomTabs({
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
+            activeIconColor={tabTheme.activeIcon}
+            activeLabelColor={activeLabelColor}
+            inactiveColor={inactiveColor}
             badgeCount={tab.key === "Cart" ? cartCount : undefined}
+            badgeBorderColor={barBackgroundColor}
           />
         ))}
 
@@ -315,11 +423,11 @@ function BottomTabs({
             component stays navigation-agnostic and works in both MainLayout
             and MainTabs (HomeStack) contexts without needing useNavigation. */}
         <CenterButton
-          isDashboard={Boolean(isDashboard)}
+          activeMode={activeMode}
           onPress={onCenterPress ?? NOOP}
         />
       </View>
-      <View style={styles.homeIndicator} />
+      <View style={[styles.homeIndicator, { backgroundColor: homeIndicatorColor }]} />
     </View>
   );
 }
@@ -411,7 +519,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   labelActive: {
-    color: ACTIVE_COLOR,
     fontWeight: "700",
   },
   homeIndicator: {
@@ -436,15 +543,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  diamond: {
-    width: 95,
-    height: 95,
+  centerDiamondButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
+    transform: [{ rotate: "45deg" }],
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.28,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  centerDashboardImage: {
-    width: 90,
-    height: 90,
+  centerDashboardIcon: {
+    transform: [{ rotate: "-45deg" }],
   },
   badge: {
     position: "absolute",

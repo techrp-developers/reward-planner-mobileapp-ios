@@ -1,6 +1,5 @@
 import React, { useCallback } from "react";
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -17,11 +16,13 @@ import { fetchMostViewedProducts } from "../../api/PromotionalApi";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { queryClient } from "../../../../query/queryClient";
 import { normalizeProduct } from "../../utils/normalizeProduct";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 import {
   PROMO_CARD_WIDTH,
   PROMO_CARD_GAP,
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
+import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -61,6 +62,7 @@ const mapMostViewItem = (item: any, index: number) => {
 
 function MostView() {
   const navigation = useNavigation<Nav>();
+  const { isDark, theme } = useAppTheme();
   const fetchMostViewData = useCallback(async () => {
     const res = await fetchMostViewedProducts();
     const rawList =
@@ -80,7 +82,7 @@ function MostView() {
   });
 
   const handleExplore = useCallback(() => {
-    navigation.navigate("ProductScreen");
+    navigation.navigate("ProductScreen", { source: "mostViewed" });
   }, [navigation]);
 
   const renderCard = useCallback(
@@ -91,26 +93,22 @@ function MostView() {
   );
 
   if (isLoading && products.length === 0) {
-    return (
-      <View style={styles.loaderWrap}>
-        <ActivityIndicator size="small" color="#5B47A3" />
-      </View>
-    );
+    return <HomeSectionSkeleton height={350} backgroundColor={theme.background} />;
   }
 
   if (products.length === 0) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
-        <Text style={styles.heading}>Most Viewed</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>Most Viewed</Text>
         <TouchableOpacity
           style={styles.exploreBtn}
           activeOpacity={0.85}
           onPress={handleExplore}
         >
-          <Text style={styles.exploreText}>Explore More</Text>
-          <MaterialIcons name="arrow-forward-ios" size={14} color="#5B47A3" />
+          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>Explore More</Text>
+          <MaterialIcons name="arrow-forward-ios" size={14} color={isDark ? "#FFFFFF" : "#111827"} />
         </TouchableOpacity>
       </View>
       <HorizontalProductList
@@ -145,9 +143,8 @@ export const prefetchMostViewSection = async () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFFFFF",
-    paddingTop: 16,
-    paddingBottom: 14,
-    marginTop: 8,
+    paddingTop: 22,
+    paddingBottom: 8,
   },
   headerRow: {
     flexDirection: "row",
@@ -168,7 +165,6 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 10,
     borderRadius: 14,
-    backgroundColor: "#F3F0FF",
   },
   exploreText: {
     fontSize: 13,

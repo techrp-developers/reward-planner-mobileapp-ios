@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Animated,
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,6 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import Modal from "react-native-modal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
@@ -24,9 +26,22 @@ import ClockIcon  from "../../assets/StepCount/clock_icon.svg";
 import RewardIcon from "../../../../assets/product/rewards.svg";
 import {
   fetchProfilePlan,
+  updateBodyProfile,
   type ProfilePlanResponse,
   type WeeklyPlanItem,
 } from "../../api/ProfileAPI";
+
+// ─── Measurement picker constants ─────────────────────────────────────────────
+
+const heightList = ["4.5 ft", "4.8 ft", "5.0 ft", "5.2 ft", "5.4 ft", "5.6 ft", "5.8 ft", "6.0 ft", "6.2 ft"];
+const weightList = Array.from({ length: 100 }, (_, i) => `${30 + i} kg`);
+
+const parseLeadingNumber = (v: string) => {
+  const n = Number.parseFloat(v.replace(/[^\d.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+};
+
+const heightFeetToCm = (v: string) => Math.round(parseLeadingNumber(v) * 30.48);
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "BMICart">;
 
@@ -142,6 +157,17 @@ const BMIScreen: React.FC = () => {
   const [errorMessage,  setErrorMessage]  = useState("");
   const [barWidth,      setBarWidth]      = useState(0);
 
+  // ── Recalculate BMI state ─────────────────────────────────────────────────
+  const [showUpdateForm,   setShowUpdateForm]   = useState(false);
+  const [showPicker,       setShowPicker]       = useState(false);
+  const [pickerField,      setPickerField]      = useState<"height" | "weight">("height");
+  const [heightValue,      setHeightValue]      = useState("5.8 ft");
+  const [weightValue,      setWeightValue]      = useState("55 kg");
+  const [updateError,      setUpdateError]      = useState("");
+  const [updating,         setUpdating]         = useState(false);
+
+  const pickerItems = pickerField === "height" ? heightList : weightList;
+
   const bannerHeight   = Math.min(Math.max(height * 0.32, 220), 320);
   const contentPadding = width >= 768 ? 34 : 20;
 
@@ -154,6 +180,38 @@ const BMIScreen: React.FC = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const openPicker = useCallback((field: "height" | "weight") => {
+    setPickerField(field);
+    setShowPicker(true);
+  }, []);
+
+  const handlePickerSelect = useCallback((value: string) => {
+    if (pickerField === "height") setHeightValue(value);
+    else setWeightValue(value);
+    setShowPicker(false);
+  }, [pickerField]);
+
+  const handleUpdateMeasurements = useCallback(async () => {
+    setUpdateError("");
+    setUpdating(true);
+    try {
+      const res = await updateBodyProfile({
+        height_cm: heightFeetToCm(heightValue),
+        weight_kg: Math.round(parseLeadingNumber(weightValue)),
+      });
+      if (!res.success) {
+        setUpdateError(res.message || "Update failed");
+        return;
+      }
+      setShowUpdateForm(false);
+      load();
+    } catch (e: any) {
+      setUpdateError(e?.message || "Update failed");
+    } finally {
+      setUpdating(false);
+    }
+  }, [heightValue, weightValue, load]);
 
   const bmi = useMemo(() => {
     const value  = Number(profilePlan?.bmi ?? 0);
@@ -322,17 +380,117 @@ const BMIScreen: React.FC = () => {
                   </View>
                 </View>
 
-                {/* CTA */}
+                {/* Primary CTA */}
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate("StepGoal")} style={ss.ctaWrap}>
                   <LinearGradient colors={["#8EA2FF", "#B9C4FF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
                     <Text style={ss.ctaText}>{bmi.currentGoal ? "Choose a New Plan" : "Make This My Goal"}</Text>
                     <MaterialCommunityIcons name="arrow-right" size={18} color="#070A16" />
                   </LinearGradient>
                 </TouchableOpacity>
+
+                {/* Secondary CTA — recalculate if measurements changed */}
+                <TouchableOpacity
+                  activeOpacity={0.78}
+                  onPress={() => { setUpdateError(""); setShowUpdateForm(true); }}
+                  style={ss.recalcBtn}
+                >
+                  <MaterialCommunityIcons name="pencil-ruler" size={15} color={VD.accentDark} />
+                  <Text style={ss.recalcBtnText}>Update Measurements &amp; Recalculate BMI</Text>
+                </TouchableOpacity>
               </>
             )}
           </View>
         </ScrollView>
+      {/* ── Update measurements modal ─────────────────────────────── */}
+      <Modal
+        isVisible={showUpdateForm}
+        onBackdropPress={() => setShowUpdateForm(false)}
+        onBackButtonPress={() => setShowUpdateForm(false)}
+        useNativeDriver
+        hideModalContentWhileAnimating
+        style={ss.modalWrap}
+      >
+        <View style={ss.updateSheet}>
+          <View style={ss.sheetHandle} />
+
+          <Text style={ss.sheetTitle}>Update Measurements</Text>
+          <Text style={ss.sheetSubtitle}>Enter your current height and weight to recalculate your BMI.</Text>
+
+          {/* Height row */}
+          <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("height")} activeOpacity={0.84}>
+            <View style={ss.sheetRowLeft}>
+              <MaterialCommunityIcons name="human-male-height" size={18} color={VD.accentDark} />
+              <Text style={ss.sheetRowLabel}>Height</Text>
+            </View>
+            <View style={ss.sheetRowRight}>
+              <Text style={ss.sheetRowValue}>{heightValue}</Text>
+              <MaterialCommunityIcons name="chevron-down" size={18} color={VD.accentDark} />
+            </View>
+          </TouchableOpacity>
+
+          {/* Weight row */}
+          <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("weight")} activeOpacity={0.84}>
+            <View style={ss.sheetRowLeft}>
+              <MaterialCommunityIcons name="scale-bathroom" size={18} color={VD.accentDark} />
+              <Text style={ss.sheetRowLabel}>Weight</Text>
+            </View>
+            <View style={ss.sheetRowRight}>
+              <Text style={ss.sheetRowValue}>{weightValue}</Text>
+              <MaterialCommunityIcons name="chevron-down" size={18} color={VD.accentDark} />
+            </View>
+          </TouchableOpacity>
+
+          {!!updateError && (
+            <View style={ss.sheetError}>
+              <MaterialCommunityIcons name="alert-circle-outline" size={13} color={VD.error} />
+              <Text style={ss.sheetErrorText}>{updateError}</Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleUpdateMeasurements}
+            disabled={updating}
+            style={ss.sheetCtaWrap}
+          >
+            <LinearGradient
+              colors={updating ? ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.10)"] : ["#8EA2FF", "#B9C4FF"]}
+              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+              style={ss.sheetCta}
+            >
+              {updating
+                ? <ActivityIndicator color="#070A16" />
+                : <Text style={ss.sheetCtaText}>Recalculate BMI</Text>}
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </Modal>
+
+      {/* ── Picker modal (height / weight list) ──────────────────── */}
+      <Modal
+        isVisible={showPicker}
+        onBackdropPress={() => setShowPicker(false)}
+        onBackButtonPress={() => setShowPicker(false)}
+        useNativeDriver
+        hideModalContentWhileAnimating
+        style={ss.modalWrap}
+      >
+        <View style={ss.pickerSheet}>
+          <View style={ss.sheetHandle} />
+          <FlatList
+            data={pickerItems}
+            keyExtractor={item => item}
+            initialNumToRender={18}
+            maxToRenderPerBatch={18}
+            windowSize={7}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={ss.pickerItem} activeOpacity={0.8} onPress={() => handlePickerSelect(item)}>
+                <Text style={ss.pickerItemText}>{item}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </Modal>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -523,4 +681,64 @@ const ss = StyleSheet.create({
     backgroundColor: "rgba(248,113,113,0.15)",
     alignItems: "center", justifyContent: "center",
   },
+
+  // Recalculate BMI secondary button
+  recalcBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+    marginTop: SPACING.sm, paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.large,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  recalcBtnText: { fontSize: 13, fontWeight: "600", color: VD.accentDark },
+
+  // Update measurements modal
+  modalWrap: { justifyContent: "flex-end", margin: 0 },
+  updateSheet: {
+    backgroundColor: "#111735",
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    padding: SPACING.lg, paddingBottom: SPACING.xxl,
+  },
+  sheetHandle: {
+    width: 44, height: 4, borderRadius: BORDER_RADIUS.pill,
+    backgroundColor: VD.cardBorder, alignSelf: "center", marginBottom: SPACING.lg,
+  },
+  sheetTitle:    { fontSize: 18, fontWeight: "800", color: VD.white, marginBottom: 4 },
+  sheetSubtitle: { fontSize: 13, color: VD.whiteLow, lineHeight: 18, marginBottom: SPACING.lg },
+  sheetRow: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    backgroundColor: VD.cardBg, borderRadius: BORDER_RADIUS.large,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md,
+    marginBottom: SPACING.sm,
+  },
+  sheetRowLeft:  { flexDirection: "row", alignItems: "center", gap: 8 },
+  sheetRowRight: { flexDirection: "row", alignItems: "center", gap: 4 },
+  sheetRowLabel: { fontSize: 14, color: VD.whiteMid, fontWeight: "600" },
+  sheetRowValue: { fontSize: 14, fontWeight: "700", color: VD.white },
+  sheetError: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    marginBottom: SPACING.sm,
+  },
+  sheetErrorText: { fontSize: 12, color: VD.error, flex: 1 },
+  sheetCtaWrap: { marginTop: SPACING.md },
+  sheetCta: {
+    height: RESPONSIVE.buttonHeight, borderRadius: BORDER_RADIUS.large,
+    alignItems: "center", justifyContent: "center",
+  },
+  sheetCtaText: { fontSize: 15, fontWeight: "800", color: "#070A16" },
+
+  // Picker sheet
+  pickerSheet: {
+    backgroundColor: "#111735",
+    borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    maxHeight: "60%", padding: SPACING.md,
+  },
+  pickerItem: {
+    paddingVertical: 15, paddingHorizontal: SPACING.md,
+    borderBottomWidth: 1, borderBottomColor: VD.cardBorder,
+  },
+  pickerItemText: { fontSize: 15, fontWeight: "600", color: VD.white },
 });

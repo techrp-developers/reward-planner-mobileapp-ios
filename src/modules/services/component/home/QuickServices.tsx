@@ -10,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import type { ServiceItem } from '../../navigation/type';
 import Card from '../constant/Card';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const HORIZONTAL_PADDING = 16;
 
@@ -18,6 +19,7 @@ const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png')
 
 export default function QuickServices() {
   const navigation = useNavigation<any>();
+  const servicesTheme = useServicesTheme();
   const { data: homeData, isLoading, error } = useServiceHome();
 
   // Extract the Quick Services section
@@ -33,9 +35,9 @@ export default function QuickServices() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.heading}>Quick & Easy Services</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Quick & Easy Services</Text>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4361EE" />
+          <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
         </View>
       </View>
     );
@@ -73,7 +75,7 @@ export default function QuickServices() {
         <Card
           title={item.title || item.name}
           image={getImageSource(item)}
-          price={`${item.price}`}
+          price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
           oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
           rating={item.rating}
           users={orders}
@@ -94,10 +96,10 @@ export default function QuickServices() {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.heading}>
+          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
             {quickServicesSection?.title || 'Quick & Easy Services'}
           </Text>
-          <Text style={styles.subheading}>Quick and easy</Text>
+          <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Quick and easy</Text>
         </View>
       </View>
 

@@ -1,4 +1,3 @@
-import { InteractionManager } from "react-native";
 import { queryClient } from "../../../query/queryClient";
 import { fetchProductDetailsByID } from "../api/ProductApi";
 import { fetchCartItems } from "../api/CartApi";
@@ -68,9 +67,9 @@ export const handleNavigateWithPrefetch = ({
       });
   }
 
-  InteractionManager.runAfterInteractions(() => {
-    navigate();
-  });
+  // Route changes must never wait for animations or background prefetching.
+  // The destination can render its skeleton while the query fills the cache.
+  navigate();
 };
 
 export const prefetchProductDetails = (productId: number | string) => {

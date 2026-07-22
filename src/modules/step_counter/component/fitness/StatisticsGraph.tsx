@@ -88,14 +88,14 @@ const StatisticsGraph: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Statistics</Text>
 
-        <TouchableOpacity style={styles.dropdown} activeOpacity={0.85}>
+        <View style={styles.dropdown}>
           <Text style={styles.dropdownText}>Today</Text>
           {/* <MaterialCommunityIcons
             name="chevron-down"
             size={24}
             color="#374151"
           /> */}
-        </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.graphContainer}>

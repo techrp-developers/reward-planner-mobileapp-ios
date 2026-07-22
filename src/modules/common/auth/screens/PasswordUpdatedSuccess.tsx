@@ -11,25 +11,27 @@ import Logo from "../../../../assets/homepage/login_logo.svg";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { AuthStackParamList } from "../navigation/types";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<AuthStackParamList>;
 
 function PasswordSuccessComponent() {
   const navigation = useNavigation<Nav>();
+  const { isDark } = useAppTheme();
 
   const handleReturnToLogin = useCallback(() => {
     navigation.navigate("Login");
   }, [navigation]);
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#D4D4D5" }]}>
       <View style={styles.logoWrap}>
         <Logo width={160} height={160} />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
         {/* Success Icon */}
-        <View style={styles.successOuter}>
+        <View style={[styles.successOuter, { backgroundColor: isDark ? "rgba(34,197,94,0.16)" : "#E6F7EC" }]}>
           <View style={styles.successInner}>
             <MaterialCommunityIcons
               name="check"
@@ -39,11 +41,11 @@ function PasswordSuccessComponent() {
           </View>
         </View>
 
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>
           Password Updated{"\n"}Successfully
         </Text>
 
-        <Text style={styles.subText}>
+        <Text style={[styles.subText, { color: isDark ? "#D4D4D8" : "#666" }]}>
           Your Password has been updated successfully!{"\n"}
           You can now log in to your account using your new password.
         </Text>
@@ -71,7 +73,6 @@ export default PasswordSuccess;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#D4D4D5",
   },
 
   logoWrap: {
@@ -82,7 +83,6 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     marginTop: 20,
-    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: "#E6F7EC",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 25,

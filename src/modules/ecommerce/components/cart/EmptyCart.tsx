@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import EmptyCartImage from "../../../../assets/product/EmptyCart.svg";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
@@ -11,13 +12,15 @@ type EmptyCartProps = {
 };
 
 export default function EmptyCart({ onBrowse, message }: EmptyCartProps) {
+  const { theme } = useAppTheme();
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <EmptyCartImage width={180} height={180} />
 
-      <Text style={styles.title}>Your cart looks a little lonely 🛒</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Your cart looks a little lonely 🛒</Text>
 
-      <Text style={styles.subtitle}>
+      <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
         {message ?? "Add a few favourites and watch this space glow up. ✨"}
       </Text>
 

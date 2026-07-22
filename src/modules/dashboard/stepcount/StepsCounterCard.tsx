@@ -41,7 +41,7 @@ const BAR_HEIGHTS = DAILY_BARS.map((h, i) => ({
 // ── Component ──────────────────────────────────────────────────────────────
 const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
     steps = 4820,
-    goalSteps = 7000,
+    goalSteps = 5000,
     progressPercent,
     stepsToday = 320,
     onPress,

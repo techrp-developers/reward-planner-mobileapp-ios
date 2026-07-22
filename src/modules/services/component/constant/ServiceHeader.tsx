@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const topNavImage = require('../../../../assets/homepage/service_top_nav.png');
 
@@ -23,17 +24,27 @@ export default function ServiceHeader({
   onFocusSearch,
   autoFocus = false,
 }: ServiceHeaderProps) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
       <Image source={topNavImage} style={styles.topNav} resizeMode="cover" />
 
-      <View style={styles.searchCard}>
-        <MaterialCommunityIcons name="magnify" size={20} color="#A654CD" />
+      <View
+        style={[
+          styles.searchCard,
+          {
+            backgroundColor: servicesTheme.colors.surface,
+            shadowColor: servicesTheme.colors.shadow,
+          },
+        ]}
+      >
+        <MaterialCommunityIcons name="magnify" size={20} color={servicesTheme.colors.primary} />
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: servicesTheme.colors.text }]}
           placeholder="Search services..."
-          placeholderTextColor="#999"
+          placeholderTextColor={servicesTheme.colors.subtle}
           value={search}
           onChangeText={onChangeSearch}
           onFocus={onFocusSearch}
@@ -46,7 +57,7 @@ export default function ServiceHeader({
             onPress={() => onChangeSearch('')}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <MaterialCommunityIcons name="close-circle" size={18} color="#ccc" />
+            <MaterialCommunityIcons name="close-circle" size={18} color={servicesTheme.colors.subtle} />
           </TouchableOpacity>
         )}
       </View>

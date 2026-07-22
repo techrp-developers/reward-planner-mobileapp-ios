@@ -1,30 +1,49 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, FlatList, StyleSheet, Animated, InteractionManager } from 'react-native';
-// import Home_Chart from '../components/home/home_chart';
+import {
+  FlatList,
+  InteractionManager,
+  Platform,
+  StyleSheet,
+  View,
+  ViewToken,
+} from 'react-native';
 import CategoriesSection from '../components/home/categories_section';
-import FeaturesProduct from '../components/home/featuresProduct';
-import ProductCategory from './ProductCategoriesScreen';
-import HomeBanner from '../components/home/HomeBanner';
-import OfferHome from '../components/home/OfferHome';
+import HomeSectionSkeleton from '../components/home/HomeSectionSkeleton';
 import { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
-import RecentProduct from '../components/Promotion/RecentProduct';
-import NewArrivals from '../components/Promotion/NewArrivals';
-import BestSeller from '../components/Promotion/BestSeller';
-import TopRated from '../components/Promotion/TopRated';
-import RecommendedProducts from '../components/Promotion/RecommendedProducts';
-import MostView from '../components/Promotion/MostView';
-import SkeletonBox from '../../services/component/constant/SkeletonBox';
-import { prefetchBestSellerSection } from '../components/Promotion/BestSeller';
-import { prefetchTopRatedSection } from '../components/Promotion/TopRated';
-import { prefetchMostViewSection } from '../components/Promotion/MostView';
-import { prefetchNewArrivalsSection } from '../components/Promotion/NewArrivals';
-import { prefetchRecommendedSection } from '../components/Promotion/RecommendedProducts';
-import { prefetchRecentProductSection } from '../components/Promotion/RecentProduct';
 import { useAuth } from '../../common/auth/context/AuthContext';
+import { useAppTheme } from '../../../theme/ThemeContext';
+
+// Keep only the immediately visible categories in the cold-open
+// bundle. Every lower section is evaluated only when FlatList reaches it.
+const LazyBestSeller = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/BestSeller').default }),
+);
+const LazyTopRated = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/TopRated').default }),
+);
+const LazyOfferHome = React.lazy(() =>
+  Promise.resolve({ default: require('../components/home/OfferHome').default }),
+);
+const LazyNewArrivals = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/NewArrivals').default }),
+);
+const LazyMostView = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/MostView').default }),
+);
+const LazyRecommendedProducts = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/RecommendedProducts').default }),
+);
+const LazyFeaturesProduct = React.lazy(() =>
+  Promise.resolve({ default: require('../components/home/featuresProduct').default }),
+);
+const LazyRecentProduct = React.lazy(() =>
+  Promise.resolve({ default: require('../components/Promotion/RecentProduct').default }),
+);
+const LazyProductCategory = React.lazy(() =>
+  Promise.resolve({ default: require('./ProductCategoriesScreen').default }),
+);
 
 type SectionKey =
-  | 'banner'
-  | 'homeChart'
   | 'categories'
   | 'bestSeller'
   | 'topRated'
@@ -40,14 +59,7 @@ type HomeSection = {
   key: SectionKey;
 };
 
-const INITIAL_SECTIONS = 2;
-const PRELOAD_AHEAD_COUNT = 1;
-const PREFETCH_DELAY_MS = 240;
-const MOUNT_DELAY_MS = 120;
-
 const HOME_SECTIONS: HomeSection[] = [
-  { key: 'banner' },
-  { key: 'homeChart' },
   { key: 'categories' },
   { key: 'bestSeller' },
   { key: 'topRated' },
@@ -60,414 +72,338 @@ const HOME_SECTIONS: HomeSection[] = [
   { key: 'productCategory' },
 ];
 
-const SECTION_PLACEHOLDER_HEIGHT: Record<SectionKey, number> = {
-  banner: 180,
-  homeChart: 160,
-  categories: 120,
-  bestSeller: 120,
-  topRated: 170,
-  offerHome: 140,
-  newArrivals: 170,
-  mostView: 170,
-  recommended: 170,
-  features: 160,
-  recent: 170,
-  productCategory: 170,
+const INITIAL_VISIBLE_SECTIONS = ['categories'] as const;
+const INITIAL_VISIBLE_SECTION_SET = new Set<SectionKey>(INITIAL_VISIBLE_SECTIONS);
+const HOME_SECTION_KEYS = HOME_SECTIONS.map((section) => section.key);
+const SECTION_RENDER_AHEAD = 1;
+
+const SECTION_HEIGHTS: Record<SectionKey, number> = {
+  categories: 260,
+  bestSeller: 360,
+  topRated: 360,
+  offerHome: 430,
+  newArrivals: 360,
+  mostView: 360,
+  recommended: 360,
+  features: 620,
+  recent: 360,
+  productCategory: 720,
 };
 
-const MemoHomeBanner = React.memo(HomeBanner);
-// const MemoHomeChart = React.memo(Home_Chart);
-const MemoCategoriesSection = React.memo(CategoriesSection);
-const MemoBestSeller = React.memo(BestSeller);
-const MemoTopRated = React.memo(TopRated);
-const MemoOfferHome = React.memo(OfferHome);
-const MemoNewArrivals = React.memo(NewArrivals);
-const MemoMostView = React.memo(MostView);
-const MemoRecommendedProducts = React.memo(RecommendedProducts);
-const MemoFeaturesProduct = React.memo(FeaturesProduct);
-const MemoRecentProduct = React.memo(RecentProduct);
-const MemoProductCategory = React.memo(ProductCategory);
-
-type SectionItemProps = {
-  item: HomeSection;
-  isMounted: boolean;
-  isRenderable: boolean;
-  pulse: Animated.Value;
-};
-
-const SectionPlaceholder = React.memo(
-  ({ sectionKey, pulse }: { sectionKey: SectionKey; pulse: Animated.Value }) => (
-    <View style={styles.skeletonBlock}>
-      <SkeletonBox
-        width="100%"
-        height={SECTION_PLACEHOLDER_HEIGHT[sectionKey] ?? 170}
-        borderRadius={12}
-        pulse={pulse}
-      />
-    </View>
-  )
+const SECTION_OFFSETS: Record<SectionKey, number> = HOME_SECTIONS.reduce(
+  (acc, section, index) => {
+    const previous = index === 0 ? 0 : acc[HOME_SECTIONS[index - 1].key] + SECTION_HEIGHTS[HOME_SECTIONS[index - 1].key];
+    acc[section.key] = previous;
+    return acc;
+  },
+  {} as Record<SectionKey, number>,
 );
 
-SectionPlaceholder.displayName = 'SectionPlaceholder';
+const getSectionIndex = (key: SectionKey) => HOME_SECTION_KEYS.indexOf(key);
+const getSectionRange = (startKey: SectionKey, ahead = SECTION_RENDER_AHEAD) => {
+  const startIndex = getSectionIndex(startKey);
+  if (startIndex < 0) return [];
 
-const SectionContent = React.memo(({ sectionKey }: { sectionKey: SectionKey }) => {
+  return HOME_SECTION_KEYS.slice(
+    startIndex,
+    Math.min(HOME_SECTION_KEYS.length, startIndex + ahead + 1),
+  );
+};
+
+const SECTION_PREFETCHERS: Partial<Record<SectionKey, () => Promise<unknown>>> = {
+  categories: () => {
+    const { prefetchCategoriesSection } = require('../components/home/categories_section');
+    return prefetchCategoriesSection();
+  },
+  bestSeller: () => {
+    const { prefetchBestSellerSection } = require('../components/Promotion/BestSeller');
+    return prefetchBestSellerSection();
+  },
+  topRated: () => {
+    const { prefetchTopRatedSection } = require('../components/Promotion/TopRated');
+    return prefetchTopRatedSection();
+  },
+  offerHome: () => {
+    const { prefetchOfferHomeSection } = require('../components/home/OfferHome');
+    return prefetchOfferHomeSection();
+  },
+  newArrivals: () => {
+    const { prefetchNewArrivalsSection } = require('../components/Promotion/NewArrivals');
+    return prefetchNewArrivalsSection();
+  },
+  mostView: () => {
+    const { prefetchMostViewSection } = require('../components/Promotion/MostView');
+    return prefetchMostViewSection();
+  },
+  features: () => {
+    const { prefetchFeaturesProductSection } = require('../components/home/featuresProduct');
+    return prefetchFeaturesProductSection();
+  },
+  productCategory: () => {
+    const { prefetchProductCategoriesSection } = require('./ProductCategoriesScreen');
+    return prefetchProductCategoriesSection();
+  },
+};
+
+const buildRecommendedPrefetcher = (userId?: number | string) => {
+  if (!userId) return undefined;
+  return () => {
+    const { prefetchRecommendedSection } = require('../components/Promotion/RecommendedProducts');
+    return prefetchRecommendedSection(Number(userId));
+  };
+};
+
+const buildRecentPrefetcher = (userId?: number | string) => {
+  if (!userId) return undefined;
+  return () => {
+    const { prefetchRecentProductSection } = require('../components/Promotion/RecentProduct');
+    return prefetchRecentProductSection(Number(userId));
+  };
+};
+
+const MemoCategoriesSection = React.memo(CategoriesSection);
+
+const SectionSkeleton = React.memo(function SectionSkeleton({
+  sectionKey,
+}: {
+  sectionKey: SectionKey;
+}) {
+  return <HomeSectionSkeleton height={SECTION_HEIGHTS[sectionKey]} />;
+});
+
+const LazySection = React.memo(function LazySection({
+  sectionKey,
+  children,
+}: {
+  sectionKey: SectionKey;
+  children: React.ReactNode;
+}) {
+  return (
+  <React.Suspense fallback={<SectionSkeleton sectionKey={sectionKey} />}>
+    {children}
+  </React.Suspense>
+  );
+});
+
+const HomeSectionLoader = React.memo(function HomeSectionLoader({
+  sectionKey,
+}: {
+  sectionKey: SectionKey;
+}) {
   switch (sectionKey) {
-    case 'banner':
-      return <MemoHomeBanner />;
-    // case 'homeChart':
-    //   return <MemoHomeChart />;
     case 'categories':
       return <MemoCategoriesSection />;
     case 'bestSeller':
-      return <MemoBestSeller />;
+      return <LazySection sectionKey={sectionKey}><LazyBestSeller /></LazySection>;
     case 'topRated':
-      return <MemoTopRated />;
+      return <LazySection sectionKey={sectionKey}><LazyTopRated /></LazySection>;
     case 'offerHome':
-      return <MemoOfferHome />;
+      return <LazySection sectionKey={sectionKey}><LazyOfferHome /></LazySection>;
     case 'newArrivals':
-      return <MemoNewArrivals />;
+      return <LazySection sectionKey={sectionKey}><LazyNewArrivals /></LazySection>;
     case 'mostView':
-      return <MemoMostView />;
+      return <LazySection sectionKey={sectionKey}><LazyMostView /></LazySection>;
     case 'recommended':
-      return <MemoRecommendedProducts />;
+      return <LazySection sectionKey={sectionKey}><LazyRecommendedProducts /></LazySection>;
     case 'features':
-      return <MemoFeaturesProduct />;
+      return <LazySection sectionKey={sectionKey}><LazyFeaturesProduct /></LazySection>;
     case 'recent':
-      return <MemoRecentProduct />;
+      return <LazySection sectionKey={sectionKey}><LazyRecentProduct /></LazySection>;
     case 'productCategory':
-      return <MemoProductCategory />;
+      return <LazySection sectionKey={sectionKey}><LazyProductCategory /></LazySection>;
     default:
       return null;
   }
 });
 
+const ViewportRenderer = React.memo(function ViewportRenderer({
+  sectionKey,
+  shouldRender,
+}: {
+  sectionKey: SectionKey;
+  shouldRender: boolean;
+}) {
+  if (!shouldRender) {
+    return <SectionSkeleton sectionKey={sectionKey} />;
+  }
+
+  return <HomeSectionLoader sectionKey={sectionKey} />;
+});
+
+const SectionContent = React.memo(({
+  sectionKey,
+  isReady,
+}: {
+  sectionKey: SectionKey;
+  isReady: boolean;
+}) => {
+  return <ViewportRenderer sectionKey={sectionKey} shouldRender={isReady} />;
+});
+
 SectionContent.displayName = 'SectionContent';
-
-const SectionItem = React.memo(
-  ({ item, isMounted, isRenderable, pulse }: SectionItemProps) => {
-    if (!isRenderable || !isMounted) {
-      return <SectionPlaceholder sectionKey={item.key} pulse={pulse} />;
-    }
-
-    return <SectionContent sectionKey={item.key} />;
-  },
-  (prev, next) =>
-    prev.item.key === next.item.key &&
-    prev.isMounted === next.isMounted &&
-    prev.isRenderable === next.isRenderable &&
-    prev.pulse === next.pulse
-);
-
-SectionItem.displayName = 'HomeSectionItem';
 
 const ListFooterSpacer = React.memo(() => <View style={styles.footerSpacer} />);
 
 ListFooterSpacer.displayName = 'HomeListFooterSpacer';
 
+const ThemedHomeSurface = React.memo(function ThemedHomeSurface({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { theme } = useAppTheme();
+  return <View style={[styles.container, { backgroundColor: theme.background }]}>{children}</View>;
+});
+
 function HomeScreen() {
   const { isAuthenticated, user } = useAuth();
-  const pulse = useRef(new Animated.Value(0)).current;
-  const [renderableKeys, setRenderableKeys] = useState<Set<SectionKey>>(
-    new Set(HOME_SECTIONS.slice(0, INITIAL_SECTIONS).map((section) => section.key))
+  const [readySections, setReadySections] = useState<Set<SectionKey>>(
+    () => new Set(INITIAL_VISIBLE_SECTION_SET),
   );
-  const [mountedKeys, setMountedKeys] = useState<Set<SectionKey>>(
-    new Set(HOME_SECTIONS.slice(0, INITIAL_SECTIONS).map((section) => section.key))
-  );
-  const mountedKeysRef = useRef(mountedKeys);
-  const prefetchedKeysRef = useRef<Set<SectionKey>>(new Set());
-  const queuedPrefetchKeysRef = useRef<Set<SectionKey>>(new Set());
-  const queuedMountKeysRef = useRef<Set<SectionKey>>(new Set());
-  const prefetchTaskRef = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(
-    null
-  );
-  const mountTaskRef = useRef<ReturnType<typeof InteractionManager.runAfterInteractions> | null>(
-    null
-  );
-  const mountDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const prefetchDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isUserScrollingRef = useRef(false);
-  const isMountedRef = useRef(true);
-  const prefetchByKeyRef = useRef<(key: SectionKey) => Promise<void>>(async () => {});
+  const pendingReadySections = useRef<Set<SectionKey>>(new Set(INITIAL_VISIBLE_SECTION_SET));
+  const prefetchedSections = useRef<Set<SectionKey>>(new Set());
+  const prefetchQueueRef = useRef(Promise.resolve());
 
-  useEffect(() => {
-    mountedKeysRef.current = mountedKeys;
-  }, [mountedKeys]);
+  const markSectionsReady = useCallback((keys: SectionKey[]) => {
+    const keysToAdd = keys.filter((key) => !pendingReadySections.current.has(key));
+    if (keysToAdd.length === 0) return;
 
-  const prefetchByKey = useCallback(async (key: SectionKey) => {
-    try {
-      switch (key) {
-        case 'bestSeller':
-          await prefetchBestSellerSection();
-          break;
-        case 'topRated':
-          await prefetchTopRatedSection();
-          break;
-        case 'mostView':
-          await prefetchMostViewSection();
-          break;
-        case 'newArrivals':
-          await prefetchNewArrivalsSection();
-          break;
-        case 'recommended':
-          if (isAuthenticated && user?.user_id) {
-            await prefetchRecommendedSection(user.user_id);
-          }
-          break;
-        case 'recent':
-          if (isAuthenticated && user?.user_id) {
-            await prefetchRecentProductSection(user.user_id);
-          }
-          break;
-        case 'offerHome':
-          await prefetchTopRatedSection();
-          break;
-        default:
-          break;
-      }
-    } catch {
-      // ignore prefetch errors to keep scroll smooth
-    }
-  }, [isAuthenticated, user?.user_id]);
-
-  useEffect(() => {
-    prefetchByKeyRef.current = prefetchByKey;
-  }, [prefetchByKey]);
-
-  const flushPrefetchQueue = useCallback(() => {
-    if (prefetchTaskRef.current || queuedPrefetchKeysRef.current.size === 0) {
-      return;
-    }
-
-    prefetchTaskRef.current = InteractionManager.runAfterInteractions(async () => {
-      const queue = Array.from(queuedPrefetchKeysRef.current);
-      queuedPrefetchKeysRef.current.clear();
-
-      for (let index = 0; index < queue.length; index += 1) {
-        const key = queue[index];
-        await prefetchByKeyRef.current(key);
-
-        if (index < queue.length - 1) {
-          await new Promise<void>((resolve) => {
-            prefetchDelayRef.current = setTimeout(resolve, PREFETCH_DELAY_MS);
-          });
-        }
-      }
-
-      prefetchTaskRef.current = null;
-
-      if (
-        isMountedRef.current &&
-        !isUserScrollingRef.current &&
-        queuedPrefetchKeysRef.current.size > 0
-      ) {
-        flushPrefetchQueue();
-      }
+    keysToAdd.forEach((key) => {
+      pendingReadySections.current.add(key);
     });
-  }, []);
 
-  const enqueuePrefetch = useCallback(
-    (keys: SectionKey[]) => {
-      keys.forEach((key) => {
-        if (prefetchedKeysRef.current.has(key)) return;
-        prefetchedKeysRef.current.add(key);
-        queuedPrefetchKeysRef.current.add(key);
-      });
-
-      if (!isUserScrollingRef.current) {
-        flushPrefetchQueue();
-      }
-    },
-    [flushPrefetchQueue]
-  );
-
-  const flushMountQueue = useCallback(() => {
-    if (mountTaskRef.current || queuedMountKeysRef.current.size === 0) {
-      return;
-    }
-
-    if (isUserScrollingRef.current) {
-      return;
-    }
-
-    mountTaskRef.current = InteractionManager.runAfterInteractions(() => {
-      const [nextKey] = Array.from(queuedMountKeysRef.current);
-      if (!nextKey) {
-        mountTaskRef.current = null;
-        return;
-      }
-
-      queuedMountKeysRef.current.delete(nextKey);
-      setMountedKeys((prev) => {
-        if (prev.has(nextKey)) return prev;
-        const next = new Set(prev);
-        next.add(nextKey);
-        mountedKeysRef.current = next;
+    InteractionManager.runAfterInteractions(() => {
+      setReadySections((previous) => {
+        const next = new Set(previous);
+        keysToAdd.forEach((key) => next.add(key));
         return next;
       });
-
-      mountTaskRef.current = null;
-
-      if (queuedMountKeysRef.current.size > 0 && isMountedRef.current) {
-        mountDelayRef.current = setTimeout(flushMountQueue, MOUNT_DELAY_MS);
-      }
     });
   }, []);
 
-  const enqueueMount = useCallback(
-    (keys: SectionKey[]) => {
-      let changed = false;
+  const userId = user?.user_id;
+  const sectionPrefetchers = useMemo(() => {
+    const next = {
+      ...SECTION_PREFETCHERS,
+    };
+    const recommendedPrefetcher = buildRecommendedPrefetcher(userId);
+    const recentPrefetcher = buildRecentPrefetcher(userId);
 
-      keys.forEach((key) => {
-        if (mountedKeysRef.current.has(key) || queuedMountKeysRef.current.has(key)) return;
-        queuedMountKeysRef.current.add(key);
-        changed = true;
+    if (recommendedPrefetcher) next.recommended = recommendedPrefetcher;
+    if (recentPrefetcher) next.recent = recentPrefetcher;
+
+    return next;
+  }, [userId]);
+
+  const enqueueSectionPrefetch = useCallback(
+    (keys: SectionKey[]) => {
+      const uniqueKeys = keys.filter((key) => {
+        if (prefetchedSections.current.has(key)) return false;
+        return Boolean(sectionPrefetchers[key]);
       });
 
-      if (changed) {
-        flushMountQueue();
-      }
+      if (uniqueKeys.length === 0) return prefetchQueueRef.current;
+
+      uniqueKeys.forEach((key) => prefetchedSections.current.add(key));
+
+      prefetchQueueRef.current = uniqueKeys.reduce(
+        (queue, key) =>
+          queue
+            .catch(() => undefined)
+            .then(() => sectionPrefetchers[key]?.())
+            .then(() => undefined)
+            .catch(() => undefined),
+        prefetchQueueRef.current,
+      );
+
+      return prefetchQueueRef.current;
     },
-    [flushMountQueue]
+    [sectionPrefetchers],
+  );
+
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
+      const keysToRender = new Set<SectionKey>();
+      const keysToPrefetch = new Set<SectionKey>();
+
+      viewableItems.forEach((entry) => {
+        const key = (entry.item as HomeSection | undefined)?.key;
+        if (!key) return;
+
+        getSectionRange(key, SECTION_RENDER_AHEAD).forEach((sectionKey) => {
+          keysToRender.add(sectionKey);
+          keysToPrefetch.add(sectionKey);
+        });
+      });
+
+      const sectionsToRender = Array.from(keysToRender);
+      enqueueSectionPrefetch(Array.from(keysToPrefetch));
+      markSectionsReady(sectionsToRender);
+    },
+    [enqueueSectionPrefetch, markSectionsReady],
   );
 
   useEffect(() => {
-    isMountedRef.current = true;
-
-    const pulseAnimation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulse, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: false,
-        }),
-        Animated.timing(pulse, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: false,
-        }),
-      ])
-    );
-    pulseAnimation.start();
-
-    const initialPrefetchKeys = HOME_SECTIONS.slice(0, INITIAL_SECTIONS + PRELOAD_AHEAD_COUNT).map(
-      (section) => section.key
-    );
-    enqueuePrefetch(initialPrefetchKeys);
+    const interaction = InteractionManager.runAfterInteractions(() => {
+      enqueueSectionPrefetch(['categories'])
+        .catch(() => undefined)
+        .then(() => {
+          const phaseTwo: SectionKey[] = ['bestSeller', 'topRated'];
+          enqueueSectionPrefetch(phaseTwo);
+        });
+    });
 
     return () => {
-      isMountedRef.current = false;
-      prefetchTaskRef.current?.cancel();
-      mountTaskRef.current?.cancel();
-      if (mountDelayRef.current) clearTimeout(mountDelayRef.current);
-      if (prefetchDelayRef.current) clearTimeout(prefetchDelayRef.current);
-      pulseAnimation.stop();
+      interaction.cancel();
     };
-  }, [enqueuePrefetch, pulse]);
-
-  useEffect(() => {
-    const toMount = Array.from(renderableKeys).filter((key) => !mountedKeys.has(key));
-    if (toMount.length === 0) return;
-    enqueueMount(toMount);
-  }, [enqueueMount, mountedKeys, renderableKeys]);
-
-  const onViewableItemsChanged = useRef(
-    ({ viewableItems }: { viewableItems: Array<{ item: HomeSection; index: number | null }> }) => {
-      const nearKeys = new Set<SectionKey>();
-
-      setRenderableKeys((prev) => {
-        const next = new Set(prev);
-        let changed = false;
-
-        viewableItems.forEach((entry) => {
-          const index = entry?.index;
-          if (typeof index !== 'number' || index < 0) return;
-
-          for (let i = index; i <= index + PRELOAD_AHEAD_COUNT; i += 1) {
-            const target = HOME_SECTIONS[i];
-            if (target?.key) {
-              nearKeys.add(target.key);
-              if (!next.has(target.key)) {
-                next.add(target.key);
-                changed = true;
-              }
-            }
-          }
-        });
-
-        return changed ? next : prev;
-      });
-
-      if (nearKeys.size > 0) {
-        const keys = Array.from(nearKeys);
-        enqueuePrefetch(keys);
-        enqueueMount(keys);
-      }
-    }
-  ).current;
+  }, [enqueueSectionPrefetch, isAuthenticated]);
 
   const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 20,
-    minimumViewTime: 120,
+    itemVisiblePercentThreshold: 8,
+    minimumViewTime: 80,
   }).current;
-
-  const onScrollBegin = useCallback(() => {
-    isUserScrollingRef.current = true;
-  }, []);
-
-  const onScrollEnd = useCallback(() => {
-    isUserScrollingRef.current = false;
-    flushPrefetchQueue();
-    flushMountQueue();
-  }, [flushMountQueue, flushPrefetchQueue]);
 
   const renderItem = useCallback(
     ({ item }: { item: HomeSection }) => (
-      <SectionItem
-        item={item}
-        isRenderable={renderableKeys.has(item.key)}
-        isMounted={mountedKeys.has(item.key)}
-        pulse={pulse}
+      <SectionContent
+        sectionKey={item.key}
+        isReady={readySections.has(item.key)}
       />
     ),
-    [mountedKeys, pulse, renderableKeys]
+    [readySections]
   );
-
   const keyExtractor = useCallback((item: HomeSection) => item.key, []);
-
-  const data = useMemo(() => HOME_SECTIONS, []);
-  const sectionStateKey = useMemo(
-    () =>
-      [
-        Array.from(renderableKeys).join('|'),
-        Array.from(mountedKeys).join('|'),
-      ].join('::'),
-    [mountedKeys, renderableKeys]
+  const getItemLayout = useCallback(
+    (_: ArrayLike<HomeSection> | null | undefined, index: number) => {
+      const key = HOME_SECTIONS[index].key;
+      return {
+        length: SECTION_HEIGHTS[key],
+        offset: SECTION_OFFSETS[key],
+        index,
+      };
+    },
+    [],
   );
 
   return (
-    <View style={styles.container}>
+    <ThemedHomeSurface>
       <FlatList
-        data={data}
+        data={HOME_SECTIONS}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        initialNumToRender={INITIAL_SECTIONS}
+        initialNumToRender={2}
         maxToRenderPerBatch={2}
-        updateCellsBatchingPeriod={80}
-        windowSize={4}
-        removeClippedSubviews={true}
-        scrollEventThrottle={16}
-        extraData={sectionStateKey}
+        updateCellsBatchingPeriod={48}
+        windowSize={5}
+        removeClippedSubviews={Platform.OS === 'android'}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        onScrollBeginDrag={onScrollBegin}
-        onMomentumScrollBegin={onScrollBegin}
-        onScrollEndDrag={onScrollEnd}
-        onMomentumScrollEnd={onScrollEnd}
+        getItemLayout={getItemLayout}
         ListFooterComponent={ListFooterSpacer}
       />
-    </View>
+    </ThemedHomeSurface>
   );
 }
 
@@ -480,10 +416,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 0,
-  },
-  skeletonBlock: {
-    paddingHorizontal: 16,
-    marginTop: 8,
   },
   footerSpacer: {
     height: TAB_BAR_HEIGHT + 16,

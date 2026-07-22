@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, Pla
 import Share from "react-native-share";
 import ServiceBanner from "../../../assets/order/serviceBanner.svg";
 import { fetchOrderInvoice } from "../../ecommerce/api/OrderApi";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type InvoiceAndServiceBannerProps = {
   orderId: number | string;
@@ -10,6 +11,7 @@ type InvoiceAndServiceBannerProps = {
 
 export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBannerProps) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const { theme } = useAppTheme();
 
   const handleDownloadInvoice = async () => {
     try {
@@ -48,8 +50,8 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
   return (
     <View style={styles.wrapper}>
       {/* Invoice row */}
-      <View style={styles.invoiceRow}>
-        <Text style={styles.invoiceText}>
+      <View style={[styles.invoiceRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+        <Text style={[styles.invoiceText, { color: theme.text }]}>
           Save a copy of your order
         </Text>
 
@@ -61,9 +63,9 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
           style={styles.downloadAction}
         >
           {isDownloading ? (
-            <ActivityIndicator size="small" color="#6366F1" />
+            <ActivityIndicator size="small" color={theme.primary} />
           ) : (
-            <Text style={styles.downloadText}>Download Invoice</Text>
+            <Text style={[styles.downloadText, { color: theme.primary }]}>Download Invoice</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -75,8 +77,8 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
 
       {/* Pagination dots (static) */}
       <View style={styles.dotsRow}>
-        <View style={[styles.dot, styles.dotActive]} />
-        <View style={styles.dot} />
+        <View style={[styles.dot, styles.dotActive, { backgroundColor: theme.primary }]} />
+        <View style={[styles.dot, { backgroundColor: theme.border }]} />
       </View>
     </View>
   );

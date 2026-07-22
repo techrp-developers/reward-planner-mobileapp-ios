@@ -15,16 +15,25 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { fetchOrderReceipt } from "../../ecommerce/api/OrderApi";
 import { getProductImageUrl } from "../../ecommerce/api/ProductApi";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 interface OrderReceiptProps {
   orderId: number;
+  receiptData?: any;
 }
 
-export default function OrderReceipt({ orderId }: OrderReceiptProps) {
-  const [receipt, setReceipt] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps) {
+  const [receipt, setReceipt] = useState<any>(receiptData ?? null);
+  const [loading, setLoading] = useState(!receiptData);
+  const { isDark, theme } = useAppTheme();
 
   const loadReceipt = useCallback(async () => {
+    if (receiptData) {
+      setReceipt(receiptData);
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetchOrderReceipt(orderId);
       if (res?.success) {
@@ -35,7 +44,7 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
     } finally {
       setLoading(false);
     }
-  }, [orderId]);
+  }, [orderId, receiptData]);
 
   useEffect(() => {
     loadReceipt();
@@ -43,9 +52,9 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
         <View style={styles.loaderWrap}>
-          <ActivityIndicator size="large" color="#8665FF" />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       </SafeAreaView>
     );
@@ -53,9 +62,9 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
 
   if (!receipt) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
         <View style={styles.loaderWrap}>
-          <Text style={styles.errorText}>Receipt not found</Text>
+          <Text style={[styles.errorText, { color: theme.secondaryText }]}>Receipt not found</Text>
         </View>
       </SafeAreaView>
     );
@@ -80,17 +89,17 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
     receipt?.deliveryDate ||
     "";
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} translucent backgroundColor="transparent" />
 
       <LinearGradient
-        colors={["rgba(62,182,85,0.7)", "rgba(255,255,255,0.7)"]}
+        colors={isDark ? ["rgba(17,24,39,0.95)", "rgba(17,24,39,0.95)"] : ["rgba(62,182,85,0.7)", "rgba(255,255,255,0.7)"]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.container}
       >
-        <View style={styles.sheet}>
-          <View style={styles.dragHandle} />
+        <View style={[styles.sheet, { backgroundColor: theme.background }]}>
+          <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             <Text style={styles.deliveryDate}>Arriving {deliveryDate}</Text>
@@ -110,10 +119,10 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
 
             {/* Address */}
             <View style={styles.addressSection}>
-              <MaterialIcons name="location-on" size={22} color="#6B7280" style={styles.locIcon} />
+              <MaterialIcons name="location-on" size={22} color={theme.secondaryText} style={styles.locIcon} />
               <View>
-                <Text style={styles.addressName}>Delivering to {username}</Text>
-                <Text style={styles.addressText}>
+                <Text style={[styles.addressName, { color: theme.text }]}>Delivering to {username}</Text>
+                <Text style={[styles.addressText, { color: theme.secondaryText }]}>
                   {[
                     address?.line1,
                     address?.line2,
@@ -128,35 +137,37 @@ export default function OrderReceipt({ orderId }: OrderReceiptProps) {
             </View>
 
             {/* Bill */}
-            <View style={styles.billBox}>
-              <View style={styles.rewardBanner}>
-                <MaterialCommunityIcons name="star-four-points" size={18} color="#7A63FF" />
-                <Text style={styles.rewardBannerText}>You earned {rewardsEarned} reward coins</Text>
-                <MaterialCommunityIcons name="star-four-points" size={18} color="#7A63FF" />
+            <View style={[styles.billBox, { borderColor: theme.border }]}>
+              <View style={[styles.rewardBanner, { backgroundColor: isDark ? "#2D2148" : "#EEF2FF" }]}>
+                <MaterialCommunityIcons name="star-four-points" size={18} color={theme.primary} />
+                <Text style={[styles.rewardBannerText, { color: theme.primary }]}>You earned {rewardsEarned} reward coins</Text>
+                <MaterialCommunityIcons name="star-four-points" size={18} color={theme.primary} />
               </View>
 
               <View style={styles.billContent}>
-                <Text style={styles.billTitle}>Bill Details</Text>
+                <Text style={[styles.billTitle, { color: theme.text }]}>Bill Details</Text>
 
                 <Row label="Item Total" value={`₹${Number(bill.item_total || 0)}`} />
                 <Row label="Delivery Fee" value={`₹${Number(bill.delivery_fee || 0)}`} />
-                <Row label="Bag Discount" value={`-₹${Number(bill.bag_discount || 0)}`} color="#22C55E" />
+                {Number(bill.bag_discount || 0) > 0 && (
+                  <Row label="Bag Discount" value={`-₹${Number(bill.bag_discount)}`} color="#22C55E" />
+                )}
                 <Row label="Reward Discount" value={`-₹${Number(bill.reward_discount || 0)}`} color="#22C55E" />
                 {rewardsUsed > 0 && (
                   <Row label="Rewards Used" value={`${rewardsUsed} coins`} color="#7A63FF" />
                 )}
 
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
                 <View style={styles.totalRow}>
-                  <Text style={styles.totalLabel}>Order Total</Text>
-                  <Text style={styles.totalValue}>₹{Number(bill.order_total || 0)}</Text>
+                  <Text style={[styles.totalLabel, { color: theme.text }]}>Order Total</Text>
+                  <Text style={[styles.totalValue, { color: theme.text }]}>₹{Number(bill.order_total || 0)}</Text>
                 </View>
               </View>
             </View>
 
-            <Text style={styles.noteText}>
-              <Text style={styles.noteBold}>Note:</Text> Reward coins will be credited to your wallet
+            <Text style={[styles.noteText, { color: theme.secondaryText }]}>
+              <Text style={[styles.noteBold, { color: theme.text }]}>Note:</Text> Reward coins will be credited to your wallet
               within 24 hours after your order is delivered.
             </Text>
           </ScrollView>
@@ -182,36 +193,40 @@ const ProductRow = ({
   price,
   originalPrice,
   rewardDiscount,
-}: ProductRowProps) => (
-  <View style={styles.productCard}>
-    <Image
-      source={{ uri: getProductImageUrl(image) }}
-      style={styles.productImage}
-    />
+}: ProductRowProps) => {
+  const { theme } = useAppTheme();
 
-    <View style={styles.productInfo}>
-      <Text style={styles.productName} numberOfLines={2}>
-        {name}
-      </Text>
+  return (
+    <View style={[styles.productCard, { borderColor: theme.border }]}>
+      <Image
+        source={{ uri: getProductImageUrl(image) }}
+        style={styles.productImage}
+      />
 
-      <View style={styles.priceRow}>
-        <Text style={styles.newPrice}>₹{Number(price || 0)}</Text>
-
-        {originalPrice && Number(originalPrice) > Number(price) ? (
-          <Text style={styles.oldPrice}>₹{Number(originalPrice)}</Text>
-        ) : null}
-
-        <Text style={styles.qty}>× {Number(qty || 1)}</Text>
-      </View>
-
-      {rewardDiscount && Number(rewardDiscount) > 0 ? (
-        <Text style={styles.rewardSave}>
-          Saved ₹{Number(rewardDiscount)} using rewards
+      <View style={styles.productInfo}>
+        <Text style={[styles.productName, { color: theme.text }]} numberOfLines={2}>
+          {name}
         </Text>
-      ) : null}
+
+        <View style={styles.priceRow}>
+          <Text style={[styles.newPrice, { color: theme.text }]}>₹{Number(price || 0)}</Text>
+
+          {originalPrice && Number(originalPrice) > Number(price) ? (
+            <Text style={styles.oldPrice}>₹{Number(originalPrice)}</Text>
+          ) : null}
+
+          <Text style={[styles.qty, { color: theme.secondaryText }]}>× {Number(qty || 1)}</Text>
+        </View>
+
+        {rewardDiscount && Number(rewardDiscount) > 0 ? (
+          <Text style={styles.rewardSave}>
+            Saved ₹{Number(rewardDiscount)} using rewards
+          </Text>
+        ) : null}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 interface RowProps {
   label: string;
@@ -219,12 +234,16 @@ interface RowProps {
   color?: string;
 }
 
-const Row = ({ label, value, color = "#333" }: RowProps) => (
-  <View style={styles.row}>
-    <Text style={styles.rowLabel}>{label}</Text>
-    <Text style={[styles.rowValue, { color }]}>{value}</Text>
-  </View>
-);
+const Row = ({ label, value, color }: RowProps) => {
+  const { theme } = useAppTheme();
+
+  return (
+    <View style={styles.row}>
+      <Text style={[styles.rowLabel, { color: theme.secondaryText }]}>{label}</Text>
+      <Text style={[styles.rowValue, { color: color || theme.text }]}>{value}</Text>
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFFFFF" },

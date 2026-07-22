@@ -10,9 +10,10 @@ import {
   ViewStyle,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
-const PRIMARY = '#8665FF';
-const PRIMARY_DARK = '#5B47A3';
+const PRIMARY = '#3545A3';
+const PRIMARY_DARK = '#080B26';
 const TEXT_DARK = '#1F2937';
 const TEXT_SECONDARY = '#6B7280';
 const TEXT_MUTED = '#9CA3AF';
@@ -50,7 +51,7 @@ function fmtRange(v: number, prefix: string, suffix: string): string {
 
 const BTN_SHADOW = Platform.select({
   ios: {
-    shadowColor: '#5B47A3',
+    shadowColor: '#080B26',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.28,
     shadowRadius: 8,
@@ -89,23 +90,27 @@ interface InputFieldProps {
 }
 export const InputField: React.FC<InputFieldProps> = ({
   label, value, onChangeText, prefix, suffix, keyboardType = 'numeric', placeholder = '0',
-}) => (
+}) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
   <View style={styles.inputContainer}>
-    <Text style={styles.inputLabel}>{label}</Text>
-    <View style={styles.inputRow}>
-      {prefix ? <Text style={styles.inputAddon}>{prefix}</Text> : null}
+    <Text style={[styles.inputLabel, { color: servicesTheme.colors.muted }]}>{label}</Text>
+    <View style={[styles.inputRow, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      {prefix ? <Text style={[styles.inputAddon, { color: servicesTheme.colors.primary }]}>{prefix}</Text> : null}
       <TextInput
-        style={styles.input}
+        style={[styles.input, { color: servicesTheme.colors.text }]}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
         placeholder={placeholder}
-        placeholderTextColor={TEXT_MUTED}
+        placeholderTextColor={servicesTheme.colors.subtle}
       />
-      {suffix ? <Text style={styles.inputAddon}>{suffix}</Text> : null}
+      {suffix ? <Text style={[styles.inputAddon, { color: servicesTheme.colors.primary }]}>{suffix}</Text> : null}
     </View>
   </View>
-);
+  );
+};
 
 // ─── Premium Draggable Slider Row ─────────────────────────────────
 interface SliderRowProps {
@@ -121,6 +126,7 @@ interface SliderRowProps {
 export const SliderRow: React.FC<SliderRowProps> = ({
   label, value, min, max, step, onChange, prefix = '', suffix = '',
 }) => {
+  const servicesTheme = useServicesTheme();
   const trackWidthRef = useRef(0);
   const startPxRef = useRef(0);
   // always-fresh ref so PanResponder closure sees current value
@@ -165,7 +171,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
     <View style={styles.sliderContainer}>
       {/* Label + current value pill */}
       <View style={styles.sliderHeader}>
-        <Text style={styles.sliderLabel}>{label}</Text>
+        <Text style={[styles.sliderLabel, { color: servicesTheme.colors.muted }]}>{label}</Text>
         <LinearGradient
           colors={[PRIMARY, PRIMARY_DARK]}
           start={{ x: 0, y: 0 }}
@@ -184,7 +190,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
         }}
       >
         {/* Background track */}
-        <View style={styles.trackBg} />
+        <View style={[styles.trackBg, { backgroundColor: servicesTheme.colors.divider }]} />
 
         {/* Gradient fill */}
         <LinearGradient
@@ -212,11 +218,11 @@ export const SliderRow: React.FC<SliderRowProps> = ({
 
       {/* Min · step controls · Max */}
       <View style={styles.sliderFooter}>
-        <Text style={styles.rangeText}>{fmtRange(min, prefix, suffix)}</Text>
+        <Text style={[styles.rangeText, { color: servicesTheme.colors.subtle }]}>{fmtRange(min, prefix, suffix)}</Text>
         <View style={styles.stepRow}>
           <TouchableOpacity
             onPress={handleMinus}
-            style={styles.stepBtn}
+            style={[styles.stepBtn, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -224,14 +230,14 @@ export const SliderRow: React.FC<SliderRowProps> = ({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handlePlus}
-            style={styles.stepBtn}
+            style={[styles.stepBtn, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.stepBtnText}>+</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.rangeText}>{fmtRange(max, prefix, suffix)}</Text>
+        <Text style={[styles.rangeText, { color: servicesTheme.colors.subtle }]}>{fmtRange(max, prefix, suffix)}</Text>
       </View>
     </View>
   );
@@ -246,18 +252,21 @@ interface ResultItem {
 interface ResultCardProps {
   items: ResultItem[];
 }
-export const ResultCard: React.FC<ResultCardProps> = ({ items }) => (
-  <View style={styles.resultCard}>
+export const ResultCard: React.FC<ResultCardProps> = ({ items }) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
+  <View style={[styles.resultCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
     {items.map((item, i) =>
       item.highlight ? (
         <LinearGradient
           key={i}
-          colors={['rgba(134,101,255,0.10)', 'rgba(91,71,163,0.06)']}
+          colors={servicesTheme.isDark ? ['#18112A', '#111113'] : ['rgba(134,101,255,0.10)', 'rgba(91,71,163,0.06)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.resultRow}
         >
-          <Text style={styles.resultLabel}>{item.label}</Text>
+          <Text style={[styles.resultLabel, { color: servicesTheme.colors.muted }]}>{item.label}</Text>
           <Text style={[styles.resultValue, styles.resultValueHighlight]}>
             {item.value}
           </Text>
@@ -268,33 +277,39 @@ export const ResultCard: React.FC<ResultCardProps> = ({ items }) => (
           style={[
             styles.resultRow,
             i < items.length - 1 && styles.resultRowBorder,
+            i < items.length - 1 && { borderBottomColor: servicesTheme.colors.divider },
           ]}
         >
-          <Text style={styles.resultLabel}>{item.label}</Text>
-          <Text style={styles.resultValue}>{item.value}</Text>
+          <Text style={[styles.resultLabel, { color: servicesTheme.colors.muted }]}>{item.label}</Text>
+          <Text style={[styles.resultValue, { color: servicesTheme.colors.textStrong }]}>{item.value}</Text>
         </View>
       ),
     )}
   </View>
-);
+  );
+};
 
 // ─── Section Header ───────────────────────────────────────────────
 interface SectionHeaderProps {
   title: string;
   subtitle?: string;
 }
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle }) => (
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle }) => {
+  const servicesTheme = useServicesTheme();
+
+  return (
   <View style={styles.sectionHeader}>
     <LinearGradient
       colors={[PRIMARY, PRIMARY_DARK]}
       style={styles.sectionAccent}
     />
     <View style={styles.sectionTextWrap}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+      <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
+      {subtitle ? <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>{subtitle}</Text> : null}
     </View>
   </View>
-);
+  );
+};
 
 // ─── Donut Summary ────────────────────────────────────────────────
 interface DonutProps {
@@ -307,13 +322,14 @@ export const DonutSummary: React.FC<DonutProps> = ({
   returns,
   size = 120,
 }) => {
+  const servicesTheme = useServicesTheme();
   const total = invested + returns;
   const returnsPct = total > 0 ? ((returns / total) * 100).toFixed(0) : '50';
 
   return (
     <View style={[styles.donutContainer, { width: size, height: size }]}>
       <View style={styles.donutOuter}>
-        <View style={styles.donutInner}>
+        <View style={[styles.donutInner, { backgroundColor: servicesTheme.colors.surface }]}>
           <Text style={styles.donutPct}>{returnsPct}%</Text>
           <Text style={styles.donutLabel}>Returns</Text>
         </View>
@@ -380,7 +396,8 @@ const styles = StyleSheet.create({
   },
   valuePill: {
     borderRadius: 999,
-
+    paddingHorizontal: 13,
+    paddingVertical: 6,
     ...Platform.select({
       ios: {
         shadowColor: PRIMARY_DARK,
@@ -396,8 +413,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#fff',
     letterSpacing: 0.3,
-    paddingHorizontal: 13,
-    paddingVertical: 6,
   },
 
   // Track
@@ -503,7 +518,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#4C2F91',
+        shadowColor: '#080B26',
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.06,
         shadowRadius: 14,
@@ -515,14 +530,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-
-  },
-  resultRowBorder: { borderBottomWidth: 1, borderBottomColor: BORDER_LIGHT },
-  resultLabel: {
-    fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500', paddingVertical: 14,
+    paddingVertical: 14,
     paddingHorizontal: 14,
   },
-  resultValue: { fontSize: 15, color: TEXT_DARK, fontWeight: '700', paddingRight: 14, paddingVertical: 14 },
+  resultRowBorder: { borderBottomWidth: 1, borderBottomColor: BORDER_LIGHT },
+  resultLabel: { fontSize: 13, color: TEXT_SECONDARY, fontWeight: '500' },
+  resultValue: { fontSize: 15, color: TEXT_DARK, fontWeight: '700' },
   resultValueHighlight: { fontSize: 17, color: PRIMARY, fontWeight: '800' },
 
   // ── Section Header

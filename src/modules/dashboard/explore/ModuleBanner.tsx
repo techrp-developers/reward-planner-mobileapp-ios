@@ -25,6 +25,9 @@ export default function ModuleBanner() {
     queryKey: ['ecommerce', 'home', 'campaign-home'],
     queryFn: getCampaignHome,
     staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const banners = useMemo(

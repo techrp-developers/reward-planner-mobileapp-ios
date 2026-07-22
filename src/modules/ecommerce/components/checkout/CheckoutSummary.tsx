@@ -1,7 +1,6 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RootStackParamList } from '@/navigation/types'
@@ -9,35 +8,30 @@ import { RootStackParamList } from '@/navigation/types'
 export default function CheckoutSummary() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
-    return (
+  return (
+    
+    <View style={styles.wrapper}>
+      
 
-        <View style={styles.wrapper}>
-
-
-            <View style={styles.freeBanner}>
-                <MaterialCommunityIcons name="check-circle" size={18} color="#16A34A" />
-                <Text style={styles.freeText}>Yay! You got FREE Delivery</Text>
-            </View>
-
-            <View style={styles.bottomBar}>
-                <View>
-                    <Text style={styles.price}>₹12738</Text>
-                    <Text style={styles.items}>2 items selected</Text>
-                </View>
-
-                <TouchableOpacity activeOpacity={0.85}>
-                    <LinearGradient
-                        colors={['#8665FF', '#5B47A3']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.button}
-                    >
-                        <Text style={styles.buttonText}>Proceed To Buy</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-            </View>
+      <View style={styles.bottomBar}>
+        <View>
+          <Text style={styles.price}>₹12738</Text>
+          <Text style={styles.items}>2 items selected</Text>
         </View>
-    )
+
+        <TouchableOpacity activeOpacity={0.85}>
+          <LinearGradient
+            colors={['#8665FF', '#5B47A3']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>Proceed To Buy</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
@@ -52,7 +46,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
 
 
-
+        
         alignItems: 'center',
         marginBottom: 10,
 
@@ -76,21 +70,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 13,
     },
-    freeBanner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#DCFCE7',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-        borderRadius: 10,
-        marginBottom: 12,
-    },
-    freeText: {
-        marginLeft: 6,
-        color: '#15803D',
-        fontSize: 12,
-        fontWeight: '500',
-    },
     bottomBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -107,13 +86,13 @@ const styles = StyleSheet.create({
     button: {
         flexDirection: 'row',
         alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 18,
         borderRadius: 12,
     },
     buttonText: {
         color: '#fff',
         fontWeight: '600',
         marginRight: 6,
-        paddingVertical: 10,
-        paddingHorizontal: 18,
     },
 })

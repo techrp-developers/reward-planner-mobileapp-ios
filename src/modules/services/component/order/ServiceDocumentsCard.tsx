@@ -8,12 +8,15 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { ServiceDocument } from '../../api/OrderAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Props = {
   documents: ServiceDocument[];
 };
 
 export default function ServiceDocumentsCard({ documents }: Props) {
+  const servicesTheme = useServicesTheme();
+
   if (documents.length === 0) return null;
 
   const uploadedCount = documents.filter(d => d.uploaded).length;
@@ -23,19 +26,19 @@ export default function ServiceDocumentsCard({ documents }: Props) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderTopColor: servicesTheme.colors.divider }]}>
       {/* Header row */}
       <View style={styles.header}>
-        <MaterialCommunityIcons name="file-multiple-outline" size={16} color="#7C3AED" />
-        <Text style={styles.title}>Documents</Text>
-        <View style={styles.countBadge}>
-          <Text style={styles.countText}>{uploadedCount}/{documents.length}</Text>
+        <MaterialCommunityIcons name="file-multiple-outline" size={16} color={servicesTheme.colors.primary} />
+        <Text style={[styles.title, { color: servicesTheme.colors.text }]}>Documents</Text>
+        <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#EDE9FE' }]}>
+          <Text style={[styles.countText, { color: servicesTheme.colors.primary }]}>{uploadedCount}/{documents.length}</Text>
         </View>
       </View>
 
       {/* Document rows */}
       {documents.map(doc => (
-        <View key={doc.service_document_id} style={styles.row}>
+        <View key={doc.service_document_id} style={[styles.row, { borderBottomColor: servicesTheme.colors.divider }]}>
           <MaterialCommunityIcons
             name={doc.uploaded ? 'file-check-outline' : 'file-clock-outline'}
             size={18}
@@ -44,7 +47,7 @@ export default function ServiceDocumentsCard({ documents }: Props) {
           />
 
           <View style={styles.rowBody}>
-            <Text style={styles.docName} numberOfLines={1}>
+            <Text style={[styles.docName, { color: servicesTheme.colors.text }]} numberOfLines={1}>
               {doc.document_name}
             </Text>
             <View style={styles.badges}>
@@ -78,7 +81,7 @@ export default function ServiceDocumentsCard({ documents }: Props) {
               style={styles.viewBtn}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MaterialCommunityIcons name="eye-outline" size={18} color="#7C3AED" />
+              <MaterialCommunityIcons name="eye-outline" size={18} color={servicesTheme.colors.primary} />
             </TouchableOpacity>
           )}
         </View>

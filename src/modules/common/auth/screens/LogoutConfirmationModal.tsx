@@ -8,6 +8,14 @@ type LogoutConfirmationModalProps = {
   onConfirm: () => void;
   onCancel: () => void;
   isLoading?: boolean;
+  isDark?: boolean;
+  title?: string;
+  description?: string;
+  subText?: string;
+  icon?: string;
+  confirmText?: string;
+  loadingText?: string;
+  danger?: boolean;
 };
 
 const LogoutConfirmationModalComponent = ({
@@ -15,6 +23,14 @@ const LogoutConfirmationModalComponent = ({
   onConfirm,
   onCancel,
   isLoading = false,
+  isDark = false,
+  title = "Confirm Logout",
+  description = "Are you sure you want to logout?",
+  subText = "You will need to login again to access your account.",
+  icon = "logout",
+  confirmText = "Yes, Logout",
+  loadingText = "Logging out...",
+  danger = false,
 }: LogoutConfirmationModalProps) => {
   const handleConfirm = useCallback(() => {
     onConfirm();
@@ -24,26 +40,47 @@ const LogoutConfirmationModalComponent = ({
     onCancel();
   }, [onCancel]);
 
+  if (!visible) return null;
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: isDark ? "#111113" : "#FFFFFF",
+              borderColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(166,84,205,0.12)",
+            },
+          ]}
+        >
           {/* Icon Section */}
-          <View style={styles.iconCircle}>
+          <View
+            style={[
+              styles.iconCircle,
+              {
+                backgroundColor: danger
+                  ? isDark ? "rgba(248,113,113,0.14)" : "rgba(239,68,68,0.10)"
+                  : isDark ? "rgba(166,84,205,0.18)" : "rgba(132,84,205,0.10)",
+              },
+            ]}
+          >
             <MaterialCommunityIcons
-              name="logout"
+              name={icon}
               size={50}
-              color="#852BAF"
+              color={danger ? "#EF4444" : isDark ? "#F472B6" : "#852BAF"}
             />
           </View>
 
           {/* Text Content */}
-          <Text style={styles.title}>Confirm Logout</Text>
-          <Text style={styles.description}>
-            Are you sure you want to logout?{"\n"}
-            <Text style={styles.subText}>
-              You will need to login again to access your account.
-            </Text>
+          <Text style={[styles.title, { color: danger ? "#EF4444" : isDark ? "#FFFFFF" : "#852BAF" }]}>
+            {title}
+          </Text>
+          <Text style={[styles.description, { color: isDark ? "#D4D4D8" : "#666666" }]}>
+            {description}
+          </Text>
+          <Text style={[styles.subText, { color: isDark ? "#A1A1AA" : "#999999" }]}>
+            {subText}
           </Text>
 
           {/* Button Row */}
@@ -55,8 +92,16 @@ const LogoutConfirmationModalComponent = ({
               disabled={isLoading}
               style={styles.cancelButtonContainer}
             >
-              <View style={styles.cancelBtn}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+              <View
+                style={[
+                  styles.cancelBtn,
+                  {
+                    backgroundColor: isDark ? "#18181B" : "#F9F9F9",
+                    borderColor: isDark ? "rgba(255,255,255,0.10)" : "#E5E5E5",
+                  },
+                ]}
+              >
+                <Text style={[styles.cancelBtnText, { color: isDark ? "#E5E7EB" : "#666666" }]}>Cancel</Text>
               </View>
             </TouchableOpacity>
 
@@ -68,13 +113,13 @@ const LogoutConfirmationModalComponent = ({
               style={styles.confirmButtonContainer}
             >
               <LinearGradient
-                colors={["#FC8BAD", "#A654CD"]}
+                colors={danger ? ["#F87171", "#DC2626"] : ["#FC8BAD", "#A654CD"]}
                 start={{ x: 1, y: 0 }}
                 end={{ x: 0, y: 0 }}
                 style={styles.gradientBtn}
               >
                 <Text style={styles.confirmBtnText}>
-                  {isLoading ? "Logging out..." : "Yes, Logout"}
+                  {isLoading ? loadingText : confirmText}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -97,16 +142,20 @@ const styles = StyleSheet.create({
   },
   container: {
     width: "100%",
-    backgroundColor: "white",
     borderRadius: 24,
     padding: 24,
     alignItems: "center",
+    borderWidth: 1,
+    shadowColor: "#000000",
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.24,
+    shadowRadius: 28,
+    elevation: 18,
   },
   iconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "rgba(132, 84, 205, 0.1)",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 20,
@@ -114,20 +163,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#852BAF",
     marginBottom: 12,
   },
   description: {
     fontSize: 15,
-    color: "#666",
     textAlign: "center",
     lineHeight: 24,
-    marginBottom: 28,
+    marginBottom: 6,
   },
   subText: {
     fontWeight: "400",
-    color: "#999",
     fontSize: 14,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 28,
   },
   buttonRow: {
     flexDirection: "row",
@@ -143,11 +192,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: "#E5E5E5",
-    backgroundColor: "#F9F9F9",
   },
   cancelBtnText: {
-    color: "#666",
     fontSize: 15,
     fontWeight: "700",
   },

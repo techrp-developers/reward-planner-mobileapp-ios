@@ -8,6 +8,9 @@ type ServiceCartCounts = {
   individual_items: number;
 };
 
+const THIRTY_SECONDS = 30 * 1000;
+const THIRTY_MINUTES = 30 * 60 * 1000;
+
 // checkout-preview is the endpoint CartScreen relies on as its primary
 // source — the dedicated /service-cart/* endpoints are flaky/404 in this
 // backend, so going straight to those on every mount made the badge slow
@@ -33,7 +36,7 @@ async function fetchServiceCartCounts(): Promise<ServiceCartCounts> {
  * Kept separate from the ecommerce CartContext so the services cart badge
  * never reflects products added in the ecommerce module (and vice versa).
  */
-export function useServiceCartCount(): number {
+export function useServiceCartCount(enabled = true): number {
   const { isAuthenticated } = useAuth();
 
   const { data } = useQuery({
@@ -45,9 +48,11 @@ export function useServiceCartCount(): number {
     // continue to trigger a refetch here too.
     queryKey: [...SERVICE_CART_QUERY_KEY, 'count'],
     queryFn: fetchServiceCartCounts,
-    enabled: isAuthenticated,
-    staleTime: 0,
-    refetchOnMount: 'always',
+    enabled: isAuthenticated && enabled,
+    staleTime: THIRTY_SECONDS,
+    gcTime: THIRTY_MINUTES,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   return (data?.bundles ?? 0) + (data?.individual_items ?? 0);

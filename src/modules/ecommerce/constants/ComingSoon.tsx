@@ -19,17 +19,24 @@ type ComingSoonRouteParams = {
   ComingSoon: { moduleName?: string } | undefined;
 };
 
+// Internal route identifiers don't always match what should be shown to the user
+// (e.g. "DineOut" is the routing key for the Bus Booking tab).
+const MODULE_DISPLAY_NAMES: Record<string, string> = {
+  DineOut: 'Bus Booking',
+};
+
 const ComingSoonScreen = () => {
   const route = useRoute<RouteProp<ComingSoonRouteParams, 'ComingSoon'>>();
-  const moduleName = route?.params?.moduleName || 'Dashboard';
+  const rawModuleName = route?.params?.moduleName || 'Dashboard';
+  const moduleName = MODULE_DISPLAY_NAMES[rawModuleName] ?? rawModuleName;
   const [imageError, setImageError] = React.useState(false);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <LinearGradient
-        // Soft Blue -> Pale Purple -> Soft Pink transition
-        colors={['#BCC5FF', '#F9E1FF', '#FFB6D9']} 
+        // Light red transition to match the Bus Booking navbar theme
+        colors={['#FFE1E1', '#FFB3B3', '#FF8A8A']}
         start={{ x: 0, y: 0 }} 
         end={{ x: 1, y: 1 }}  
         style={styles.gradientSection}
@@ -51,10 +58,10 @@ const ComingSoonScreen = () => {
                   style={styles.mainImage}
                   resizeMode="contain"
                   onError={() => {
-                    console.log('Image failed to load');
+                    __DEV__ && console.log('Image failed to load');
                     setImageError(true);
                   }}
-                  onLoad={() => console.log('✅ Coming Soon image loaded')}
+                  onLoad={() => __DEV__ && console.log('✅ Coming Soon image loaded')}
                 />
               ) : (
                 <View style={styles.placeholderBox}>

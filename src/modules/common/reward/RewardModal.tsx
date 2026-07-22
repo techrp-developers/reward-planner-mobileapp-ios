@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from "react";
-import { Animated, Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Animated, Easing, Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Reward from "../../../assets/product/rewards.svg";
@@ -11,11 +11,13 @@ type RewardModalProps = {
 };
 
 const BRAND_GRADIENT: string[] = ["#FC8BAD", "#A654CD"];
+const DARK_GRADIENT: string[] = ["#251126", "#A654CD", "#FC8BAD"];
 
 export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const cardScale = useRef(new Animated.Value(0.85)).current;
   const badgeScale = useRef(new Animated.Value(0)).current;
+  const coinFlip = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (!visible) return;
@@ -23,6 +25,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
     cardOpacity.setValue(0);
     cardScale.setValue(0.85);
     badgeScale.setValue(0);
+    coinFlip.setValue(0);
 
     Animated.parallel([
       Animated.timing(cardOpacity, {
@@ -43,12 +46,33 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
         delay: 140,
         useNativeDriver: true,
       }),
+      Animated.sequence([
+        Animated.delay(180),
+        Animated.timing(coinFlip, {
+          toValue: 1,
+          duration: 950,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]),
     ]).start();
-  }, [visible, cardOpacity, cardScale, badgeScale]);
+  }, [visible, cardOpacity, cardScale, badgeScale, coinFlip]);
+
+  const coinRotateY = coinFlip.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ["0deg", "180deg", "360deg"],
+  });
+
+  const coinScaleX = coinFlip.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: [1, 0.42, 1, 0.42, 1],
+  });
 
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
+
+  if (!visible) return null;
 
   return (
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
@@ -64,7 +88,19 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
             <View style={styles.glowOuter} />
             <View style={styles.glowMid} />
 
-            <Animated.View style={{ transform: [{ scale: badgeScale }] }}>
+            <Animated.View
+              style={[
+                styles.coinFlip,
+                {
+                  transform: [
+                    { perspective: 900 },
+                    { scale: badgeScale },
+                    { rotateY: coinRotateY },
+                    { scaleX: coinScaleX },
+                  ],
+                },
+              ]}
+            >
               <LinearGradient
                 colors={BRAND_GRADIENT}
                 start={{ x: 0, y: 0 }}
@@ -96,7 +132,11 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
           </View>
 
           {/* Header */}
-          <Text style={styles.title}>🎉 Welcome to Reward Planners</Text>
+          <View style={styles.premiumPill}>
+            <MaterialCommunityIcons name="crown-outline" size={15} color="#A654CD" />
+            <Text style={styles.premiumPillText}>Welcome Bonus</Text>
+          </View>
+          <Text style={styles.title}>Welcome to Reward Planners</Text>
           <Text style={styles.subtitle}>Your account is now active</Text>
 
           {/* Reward Card */}
@@ -119,6 +159,18 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
               <MaterialCommunityIcons name="check-circle" size={14} color="#FFFFFF" />
               <Text style={styles.rewardSuccessText}>Successfully Credited</Text>
             </View>
+
+            <View style={styles.rewardMetaRow}>
+              <View style={styles.rewardMetaItem}>
+                <MaterialCommunityIcons name="wallet-giftcard" size={16} color="#FFFFFF" />
+                <Text style={styles.rewardMetaText}>Reward wallet</Text>
+              </View>
+              <View style={styles.rewardMetaDivider} />
+              <View style={styles.rewardMetaItem}>
+                <MaterialCommunityIcons name="lightning-bolt" size={16} color="#FFFFFF" />
+                <Text style={styles.rewardMetaText}>Ready to use</Text>
+              </View>
+            </View>
           </LinearGradient>
 
           {/* Content */}
@@ -139,12 +191,13 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
             style={styles.buttonContainer}
           >
             <LinearGradient
-              colors={BRAND_GRADIENT}
+              colors={DARK_GRADIENT}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.gradientBtn}
             >
               <Text style={styles.btnText}>Start Exploring</Text>
+              <MaterialCommunityIcons name="arrow-right" size={19} color="#FFFFFF" />
             </LinearGradient>
           </TouchableOpacity>
         </Animated.View>
@@ -156,25 +209,27 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.65)",
+    backgroundColor: "rgba(7, 6, 10, 0.76)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   container: {
     width: "100%",
-    maxWidth: 380,
+    maxWidth: 386,
     backgroundColor: "#FFFFFF",
-    borderRadius: 28,
+    borderRadius: 30,
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 24,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(166, 84, 205, 0.18)",
     shadowColor: "#5B1E7A",
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.3,
-    shadowRadius: 28,
-    elevation: 18,
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.34,
+    shadowRadius: 30,
+    elevation: 20,
   },
   badgeWrap: {
     width: 140,
@@ -197,6 +252,9 @@ const styles = StyleSheet.create({
     borderRadius: 54,
     backgroundColor: "rgba(166, 84, 205, 0.14)",
   },
+  coinFlip: {
+    backfaceVisibility: "hidden",
+  },
   badgeCircle: {
     width: 88,
     height: 88,
@@ -212,17 +270,36 @@ const styles = StyleSheet.create({
   sparkleTopLeft: { position: "absolute", top: 6, left: 10 },
   sparkleTopRight: { position: "absolute", top: 18, right: 4 },
   sparkleBottom: { position: "absolute", bottom: 10, left: 22 },
-  title: {
-    fontSize: 21,
+  premiumPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#FFF2F8",
+    borderWidth: 1,
+    borderColor: "rgba(252, 139, 173, 0.35)",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    marginBottom: 12,
+  },
+  premiumPillText: {
+    fontSize: 11,
     fontWeight: "800",
-    color: "#852BAF",
+    color: "#A654CD",
+    letterSpacing: 0.7,
+    textTransform: "uppercase",
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#2D1732",
     textAlign: "center",
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 13,
-    fontWeight: "500",
-    color: "#9B8AA8",
+    fontWeight: "600",
+    color: "#8D7A94",
     marginBottom: 22,
   },
   rewardCard: {
@@ -232,6 +309,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     marginBottom: 22,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.24)",
     shadowColor: "#5B1E7A",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.32,
@@ -264,7 +343,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: "uppercase",
     marginTop: 2,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   rewardSuccessPill: {
     flexDirection: "row",
@@ -280,9 +359,35 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#FFFFFF",
   },
+  rewardMetaRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    marginTop: 16,
+    paddingTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(255, 255, 255, 0.22)",
+  },
+  rewardMetaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  rewardMetaText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#FFFFFF",
+  },
+  rewardMetaDivider: {
+    width: 1,
+    height: 18,
+    backgroundColor: "rgba(255, 255, 255, 0.28)",
+  },
   description: {
     fontSize: 14,
-    color: "#666",
+    color: "#5F5267",
     textAlign: "center",
     lineHeight: 22,
     marginBottom: 24,
@@ -299,9 +404,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#A654CD",
+    flexDirection: "row",
+    gap: 8,
+    shadowColor: "#251126",
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.32,
     shadowRadius: 16,
     elevation: 10,
   },

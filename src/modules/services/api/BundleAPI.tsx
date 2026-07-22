@@ -471,6 +471,7 @@ export const createOrderAPI = async ({
 export const getBuyNowBundlePreview = async (payload: {
   bundle_id: number;
   selected_items: number[];
+  redeem_coins?: number;
 }) => {
   try {
     const headers = await getAuthHeaders();
@@ -482,6 +483,7 @@ export const getBuyNowBundlePreview = async (payload: {
         params: {
           bundle_id: payload.bundle_id,
           selected_items: payload.selected_items.join(','), // ✅ FIX
+          redeem_coins: payload.redeem_coins ?? 0,
         },
       }
     );
@@ -497,6 +499,7 @@ export const buyNowBundle = async (payload: {
   bundle_id: number;
   selected_items: number[];
   address_id: number;
+  redeem_coins?: number;
 }) => {
   try {
     const authHeaders = await getAuthHeaders();

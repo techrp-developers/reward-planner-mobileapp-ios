@@ -38,10 +38,14 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<false/>
-		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>RewardsPlanners needs access to your local network to connect to the Metro bundler during development.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_react-native-packager._tcp</string>
+	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We need location access to help you select your delivery address accurately.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

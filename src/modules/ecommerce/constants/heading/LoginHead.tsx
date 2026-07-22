@@ -7,8 +7,9 @@ import {
   StyleSheet,
   Image,
 } from "react-native";
-import BackgroundImage from "../../../../assets/homepage/navbar_bg.jpg";
+import BackgroundImage from "../../../../navbar/assete/Background1.jpeg";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Props = {
   showSearch?: boolean;
@@ -19,6 +20,7 @@ type Props = {
 
 function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch }: Props) {
   const { width } = useWindowDimensions();
+  const { isDark, theme } = useAppTheme();
   const HEADER_HEIGHT = Math.round(width * 0.4);
 
   return (
@@ -32,12 +34,20 @@ function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch }: Props)
       />
 
       {showSearch && (
-        <View style={styles.searchWrap}>
-          <MaterialCommunityIcons name="magnify" size={20} color="#111827" />
+        <View
+          style={[
+            styles.searchWrap,
+            {
+              backgroundColor: theme.card,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons name="magnify" size={20} color={isDark ? "#FFFFFF" : "#111827"} />
           <TextInput
             placeholder="Search products"
-            placeholderTextColor="#6B7280"
-            style={styles.searchInput}
+            placeholderTextColor={theme.secondaryText}
+            style={[styles.searchInput, { color: theme.text }]}
             value={search}
             onChangeText={onChangeSearch}
             onFocus={onFocusSearch}

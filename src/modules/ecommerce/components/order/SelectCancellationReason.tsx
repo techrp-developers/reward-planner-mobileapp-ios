@@ -12,6 +12,7 @@ import { HomeStackParamList } from "../../navigation/types";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { cancelOrder, CancellationReason, fetchCancellationReasons } from "../../api/OrderApi";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type RouteProps = RouteProp<
     HomeStackParamList,
@@ -24,6 +25,7 @@ type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 export default function SelectCancellationReason() {
     const navigation = useNavigation<Nav>();
+    const { isDark, theme } = useAppTheme();
     const [comment, setComment] = useState("");
     const route = useRoute<RouteProps>();
     const [reasons, setReasons] = useState<CancellationReason[]>([]);
@@ -47,7 +49,7 @@ export default function SelectCancellationReason() {
             const data = await fetchCancellationReasons();
             setReasons(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.log("Failed to load cancellation reasons", error);
+            __DEV__ && console.log("Failed to load cancellation reasons", error);
             setReasons([]);
         } finally {
             setLoadingReasons(false);
@@ -78,7 +80,7 @@ export default function SelectCancellationReason() {
 
             Alert.alert("Cancellation failed", res?.message || "Unable to cancel order");
         } catch (error) {
-            console.log("Cancel order failed", error);
+            __DEV__ && console.log("Cancel order failed", error);
             Alert.alert("Error", "Unable to cancel order. Please try again.");
         } finally {
             setSubmitting(false);
@@ -86,10 +88,11 @@ export default function SelectCancellationReason() {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
             <OrderHeading
                 title="Request Cancellation"
                 onBackPress={() => navigation.goBack()}
+                isDark={isDark}
             />
 
             <ScrollView
@@ -107,8 +110,8 @@ export default function SelectCancellationReason() {
 
                 {/* Reason Section */}
                 {/* Reason Section */}
-                <View style={styles.reasonCard}>
-                    <Text style={styles.reasonTitle}>Reason For Cancellation</Text>
+                <View style={[styles.reasonCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <Text style={[styles.reasonTitle, { color: theme.text }]}>Reason For Cancellation</Text>
 
                     {/* WHEN NO REASON SELECTED → SHOW ALL */}
                     {!selectedReason &&
@@ -119,13 +122,13 @@ export default function SelectCancellationReason() {
                                 activeOpacity={0.7}
                                 onPress={() => setSelectedReason(reason)}
                             >
-                                <View style={styles.radioOuter} />
-                                <Text style={styles.reasonText}>{reason.reason}</Text>
+                                <View style={[styles.radioOuter, { borderColor: theme.border }]} />
+                                <Text style={[styles.reasonText, { color: theme.text }]}>{reason.reason}</Text>
                             </TouchableOpacity>
                         ))}
 
                     {!selectedReason && !loadingReasons && reasons.length === 0 && (
-                        <Text style={styles.emptyReasonText}>No cancellation reasons available.</Text>
+                        <Text style={[styles.emptyReasonText, { color: theme.secondaryText }]}>No cancellation reasons available.</Text>
                     )}
 
                     {/* WHEN REASON SELECTED → SHOW ONLY SELECTED */}
@@ -135,19 +138,26 @@ export default function SelectCancellationReason() {
                                 <View style={[styles.radioOuter, styles.radioOuterActive]}>
                                     <View style={styles.radioInner} />
                                 </View>
-                                <Text style={styles.reasonText}>{selectedReason.reason}</Text>
+                                <Text style={[styles.reasonText, { color: theme.text }]}>{selectedReason.reason}</Text>
                             </View>
 
                             {/* Comments Input */}
-                            <View style={styles.commentBox}>
-                                <Text style={styles.commentLabel}>Comments*</Text>
+                            <View style={[styles.commentBox, { backgroundColor: isDark ? "#111827" : "#F9FAFB", borderColor: theme.border }]}>
+                                <Text style={[styles.commentLabel, { color: theme.text }]}>Comments*</Text>
                                 <TextInput
                                     placeholder="Enter any specific questions or requirements you'd like to share"
-                                    placeholderTextColor="#9CA3AF"
+                                    placeholderTextColor={theme.secondaryText}
                                     value={comment}
                                     onChangeText={setComment}
                                     multiline
-                                    style={styles.commentInput}
+                                    style={[
+                                        styles.commentInput,
+                                        {
+                                            color: theme.text,
+                                            backgroundColor: isDark ? "#111827" : "#FFFFFF",
+                                            borderColor: theme.border,
+                                        },
+                                    ]}
                                 />
                             </View>
                         </>
