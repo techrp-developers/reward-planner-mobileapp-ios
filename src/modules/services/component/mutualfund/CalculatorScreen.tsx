@@ -10,8 +10,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useServicesTheme } from '../../utils/useServicesTheme';
 
 interface Props {
   title: string;
@@ -27,16 +25,13 @@ export const CalculatorScreen: React.FC<Props> = ({
   icon,
   navigation,
   children,
-}) => {
-  const servicesTheme = useServicesTheme();
-
-  return (
-  <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+}) => (
+  <SafeAreaView style={styles.safe} edges={['top']}>
     <StatusBar barStyle="light-content" backgroundColor="#080B26" />
     <LinearGradient
-      colors={['#080B26', '#171F59', '#3545A3']}
+      colors={['#3545A3', '#080B26']}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: 1, y: 0 }}
       style={styles.header}
     >
       <View style={styles.headerGlow} />
@@ -48,7 +43,7 @@ export const CalculatorScreen: React.FC<Props> = ({
         <Text style={styles.backIcon}>‹</Text>
       </TouchableOpacity>
       <View style={styles.headerIcon}>
-        <MaterialCommunityIcons name={icon} size={25} color="#FFFFFF" />
+        <Text style={styles.headerEmoji}>{icon}</Text>
       </View>
       <View style={styles.headerText}>
         <Text style={styles.headerTitle}>{title}</Text>
@@ -56,7 +51,7 @@ export const CalculatorScreen: React.FC<Props> = ({
       </View>
     </LinearGradient>
     <ScrollView
-      style={[styles.scroll, { backgroundColor: servicesTheme.colors.background }]}
+      style={styles.scroll}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
@@ -64,15 +59,12 @@ export const CalculatorScreen: React.FC<Props> = ({
       {children}
     </ScrollView>
   </SafeAreaView>
-  );
-};
+);
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F7F4FF' },
   header: {
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 26,
+
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
@@ -81,7 +73,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#080B26',
+        shadowColor: '#5B47A3',
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.3,
         shadowRadius: 12,
@@ -117,7 +109,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerText: { flex: 1 },
+  headerEmoji: { fontSize: 24 },
+  headerText: {
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 12,
+    paddingBottom: 12,
+  },
   headerTitle: {
     fontSize: 20,
     fontWeight: '900',

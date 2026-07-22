@@ -1,4 +1,3 @@
-import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "./types";
 import { useAppTheme } from "../../../theme/ThemeContext";
@@ -93,7 +92,7 @@ export default function HomeStack() {
       />
       <Stack.Screen
         name="Profile"
-        getComponent={() => require("../profile/ProfileScreen").default}
+        getComponent={() => require("../../dashboard/dashboard/ProfileScreen").default}
         initialParams={{ context: "ecommerce" }}
         options={{
           animation: "fade",

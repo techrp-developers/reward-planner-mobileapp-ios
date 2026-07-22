@@ -74,32 +74,32 @@ const CategoryCard: React.FC<{
   const servicesTheme = useServicesTheme();
 
   return (
-  <TouchableOpacity activeOpacity={0.82} style={[styles.card, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress}>
-    <View style={styles.cardTop}>
-      <LinearGradient
-        colors={theme.gradientColors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.iconCircle}
-      >
-        <Text style={styles.iconEmoji}>{theme.icon}</Text>
-      </LinearGradient>
+    <TouchableOpacity activeOpacity={0.82} style={[styles.card, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress}>
+      <View style={styles.cardTop}>
+        <LinearGradient
+          colors={theme.gradientColors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.iconCircle}
+        >
+          <Text style={styles.iconEmoji}>{theme.icon}</Text>
+        </LinearGradient>
 
-      {articleCount > 0 && (
-        <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3F0FF' }]}>
-          <Text style={styles.countText}>{articleCount}</Text>
-          <Text style={styles.countLabel}> articles</Text>
-        </View>
-      )}
-    </View>
+        {articleCount > 0 && (
+          <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3F0FF' }]}>
+            <Text style={styles.countText}>{articleCount}</Text>
+            <Text style={styles.countLabel}> articles</Text>
+          </View>
+        )}
+      </View>
 
-    <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{item.title}</Text>
+      <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{item.title}</Text>
 
-    <View style={styles.cardCta}>
-      <Text style={[styles.ctaText, { color: theme.gradientColors[0] }]}>View All</Text>
-      <Text style={[styles.ctaArrow, { color: theme.gradientColors[0] }]}>{' '}›</Text>
-    </View>
-  </TouchableOpacity>
+      <View style={styles.cardCta}>
+        <Text style={[styles.ctaText, { color: theme.gradientColors[0] }]}>View All</Text>
+        <Text style={[styles.ctaArrow, { color: theme.gradientColors[0] }]}>{' '}›</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -295,10 +295,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#F3F0FF',
     borderRadius: 12,
-    paddingHorizontal: 8,
+
+  },
+  countText: {
+    fontSize: 12, fontWeight: '800', color: '#3545A3', paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  countText: { fontSize: 12, fontWeight: '800', color: '#3545A3' },
   countLabel: { fontSize: 10, color: '#3545A3', fontWeight: '600' },
   cardTitle: {
     fontSize: 13,

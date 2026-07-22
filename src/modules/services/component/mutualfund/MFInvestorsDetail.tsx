@@ -71,32 +71,32 @@ const PillToggle: React.FC<{
     const servicesTheme = useServicesTheme();
 
     return (
-    <View style={[toggle.container, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
-        {(['beginners', 'informed'] as Tab[]).map(tab => {
-            const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
-            const isActive = value === tab;
-            return isActive ? (
-                <LinearGradient
-                    key={tab}
-                    colors={['#3545A3', '#080B26']}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={toggle.activeBtn}
-                >
-                    <Text style={toggle.activeText}>{label}</Text>
-                </LinearGradient>
-            ) : (
-                <TouchableOpacity
-                    key={tab}
-                    style={toggle.inactiveBtn}
-                    onPress={() => onChange(tab)}
-                    activeOpacity={0.7}
-                >
-                    <Text style={[toggle.inactiveText, { color: servicesTheme.colors.muted }]}>{label}</Text>
-                </TouchableOpacity>
-            );
-        })}
-    </View>
+        <View style={[toggle.container, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+            {(['beginners', 'informed'] as Tab[]).map(tab => {
+                const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
+                const isActive = value === tab;
+                return isActive ? (
+                    <LinearGradient
+                        key={tab}
+                        colors={['#3545A3', '#080B26']}
+                        start={{ x: 0, y: 0.5 }}
+                        end={{ x: 1, y: 0.5 }}
+                        style={toggle.activeBtn}
+                    >
+                        <Text style={toggle.activeText}>{label}</Text>
+                    </LinearGradient>
+                ) : (
+                    <TouchableOpacity
+                        key={tab}
+                        style={toggle.inactiveBtn}
+                        onPress={() => onChange(tab)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={[toggle.inactiveText, { color: servicesTheme.colors.muted }]}>{label}</Text>
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
     );
 };
 
@@ -112,14 +112,14 @@ const ArticleCard: React.FC<{
     const servicesTheme = useServicesTheme();
 
     return (
-    <TouchableOpacity style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress} activeOpacity={0.88}>
-        <View style={[styles.thumbContainer, { backgroundColor: accentLight }]}>
-            <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
-        </View>
-        <View style={styles.cardBody}>
-            <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
-        </View>
-    </TouchableOpacity>
+        <TouchableOpacity style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress} activeOpacity={0.88}>
+            <View style={[styles.thumbContainer, { backgroundColor: accentLight }]}>
+                <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
+            </View>
+            <View style={styles.cardBody}>
+                <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
+            </View>
+        </TouchableOpacity>
     );
 };
 
@@ -139,36 +139,36 @@ const SectionRow: React.FC<{
     const servicesTheme = useServicesTheme();
 
     return (
-    <View style={styles.sectionRow}>
-        <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{section.title}</Text>
-            <Text style={[styles.sectionCount, { color: servicesTheme.colors.muted }]}>{section.article_count} articles</Text>
+        <View style={styles.sectionRow}>
+            <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{section.title}</Text>
+                <Text style={[styles.sectionCount, { color: servicesTheme.colors.muted }]}>{section.article_count} articles</Text>
+            </View>
+
+            <FlatList
+                data={section.articles}
+                keyExtractor={item => item.id.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cardListContent}
+                ItemSeparatorComponent={CardSeparator}
+                renderItem={({ item }) => (
+                    <ArticleCard
+                        item={item}
+                        accentLight={accentLight}
+                        onPress={() => onArticlePress(item.id, section.id)}
+                    />
+                )}
+            />
+
+            <TouchableOpacity
+                style={[styles.viewAllBtn, { backgroundColor: accent }]}
+                onPress={() => onViewAll(section.id, section.title)}
+                activeOpacity={0.8}
+            >
+                <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
         </View>
-
-        <FlatList
-            data={section.articles}
-            keyExtractor={item => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardListContent}
-            ItemSeparatorComponent={CardSeparator}
-            renderItem={({ item }) => (
-                <ArticleCard
-                    item={item}
-                    accentLight={accentLight}
-                    onPress={() => onArticlePress(item.id, section.id)}
-                />
-            )}
-        />
-
-        <TouchableOpacity
-            style={[styles.viewAllBtn, { backgroundColor: accent }]}
-            onPress={() => onViewAll(section.id, section.title)}
-            activeOpacity={0.8}
-        >
-            <Text style={styles.viewAllText}>View All</Text>
-        </TouchableOpacity>
-    </View>
     );
 };
 
@@ -194,7 +194,7 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                 setBeginnersSections(cats.find(c => c.id === 5)?.children ?? []);
                 setInformedSections(cats.find(c => c.id === 6)?.children ?? []);
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
 
@@ -279,16 +279,14 @@ const toggle = StyleSheet.create({
     },
     activeBtn: {
         flex: 1,
-        paddingVertical: 10,
-        paddingHorizontal: 8,
+
         borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
     },
     inactiveBtn: {
         flex: 1,
-        paddingVertical: 10,
-        paddingHorizontal: 8,
+
         borderRadius: 50,
         alignItems: 'center',
         justifyContent: 'center',
@@ -299,12 +297,16 @@ const toggle = StyleSheet.create({
         color: '#FFFFFF',
         letterSpacing: 0.1,
         textAlign: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
     },
     inactiveText: {
         fontSize: 13,
         fontWeight: '600',
         color: '#6B7280',
         textAlign: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
     },
 });
 

@@ -270,8 +270,8 @@ function AddressDetailsSheet({
   const statePlaceholder = statesLoading
     ? "Loading states..."
     : statesError
-    ? "Couldn't load states - tap to retry"
-    : "Select State";
+      ? "Couldn't load states - tap to retry"
+      : "Select State";
 
   const themedInputProps = {
     placeholderTextColor: isDark ? "#71717A" : "#9A9AA5",
@@ -517,7 +517,6 @@ const styles = StyleSheet.create({
   },
   cta: {
     borderRadius: 12,
-    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
     width: 238,
@@ -531,6 +530,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 20,
     textAlign: "center",
+    paddingVertical: 14,
+
   },
 });
 

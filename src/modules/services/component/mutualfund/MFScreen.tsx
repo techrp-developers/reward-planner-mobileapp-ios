@@ -224,7 +224,7 @@ const ListFooter = memo<FooterProps>(
               <Text style={styles.viewMoreSub}>{hiddenCount} more tools available</Text>
             )}
           </View>
-          <Animated.View style={{ transform: [{ rotate: chevronRotate }] }}>
+          <Animated.View style={{ transform: [{ rotate: chevronRotate }], marginRight: 16 }}>
             <MaterialCommunityIcons name="chevron-down" size={18} color="rgba(255,255,255,0.85)" />
           </Animated.View>
         </LinearGradient>
@@ -610,8 +610,6 @@ const styles = StyleSheet.create({
   viewMoreGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 16,
     gap: 10,
   },
   viewMoreIconCircle: {
@@ -621,6 +619,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: 12,
+
   },
   viewMoreTextBlock: { flex: 1 },
   viewMoreTitle: {
@@ -628,11 +628,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 0.1,
+    marginTop: 10,
   },
   viewMoreSub: {
     fontSize: 11,
     color: 'rgba(255,255,255,0.75)',
     marginTop: 2,
+    marginBottom: 10,
   },
 
   // ── Learn Section ─────────────────────────────────────────────

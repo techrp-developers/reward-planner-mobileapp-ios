@@ -163,9 +163,8 @@ const styles = StyleSheet.create({
     },
 
     cardGradient: {
-        paddingHorizontal: 13,
-        paddingVertical: 14,
-        minHeight: 88,
+
+        // minHeight: 88,
         justifyContent: 'center',
     },
 
@@ -175,6 +174,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         minHeight: 52,
         gap: 8,
+        paddingHorizontal: 13,
+        paddingVertical: 14,
     },
 
     cardText: {

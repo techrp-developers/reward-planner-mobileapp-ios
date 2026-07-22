@@ -21,13 +21,13 @@ function CartHead({ onBackPress }: CartHeadProps) {
   const authRewardPoints = (user as { rewardPoints?: number } | null)?.rewardPoints;
   const [rewardPoints, setRewardPoints] = useState(0);
   const placeholder = "Search “ITR Filing”";
-const totalQuantity = useServiceCartCount();
-const handleCartPress = () => {
-  navigation.navigate("CartScreen");
-};
-const handleWalletPress = () => {
-  navigation.navigate("WalletHistory");
-};
+  const totalQuantity = useServiceCartCount();
+  const handleCartPress = () => {
+    navigation.navigate("CartScreen");
+  };
+  const handleWalletPress = () => {
+    navigation.navigate("WalletHistory");
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -89,7 +89,7 @@ const handleWalletPress = () => {
           <TouchableOpacity activeOpacity={0.7} style={styles.backButton} onPress={handleBackPress}>
             <MaterialCommunityIcons name="chevron-left" size={28} color={servicesTheme.colors.muted} />
           </TouchableOpacity>
-          
+
           <TextInput
             placeholder={placeholder}
             placeholderTextColor={servicesTheme.colors.subtle}
@@ -112,23 +112,23 @@ const handleWalletPress = () => {
         </TouchableOpacity>
 
         {/* Cart Icon */}
-<TouchableOpacity
-  style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surface }]}
-  activeOpacity={0.8}
-  onPress={handleCartPress}
->
-  <View>
-    <MaterialCommunityIcons name="cart-outline" size={18} color={servicesTheme.colors.text} />
+        <TouchableOpacity
+          style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surface }]}
+          activeOpacity={0.8}
+          onPress={handleCartPress}
+        >
+          <View>
+            <MaterialCommunityIcons name="cart-outline" size={18} color={servicesTheme.colors.text} />
 
-    {totalQuantity > 0 && (
-      <View style={styles.badge}>
-        <Text style={styles.badgeText}>
-          {totalQuantity}
-        </Text>
-      </View>
-    )}
-  </View>
-</TouchableOpacity>
+            {totalQuantity > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {totalQuantity}
+                </Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -195,17 +195,20 @@ const styles = StyleSheet.create({
   walletTag: {
     position: 'absolute',
     bottom: -7,
-    backgroundColor: '#5F341A', // Dark brown tag from image
-    paddingHorizontal: 5,
-    paddingVertical: 1.5,
+    backgroundColor: '#5F341A',
+    minWidth: 44,
+
     borderRadius: 6,
     borderWidth: 1.25,
     borderColor: '#fff',
+    alignItems: 'center',
   },
   walletTagText: {
     color: '#fff',
     fontWeight: '800',
     fontSize: 9,
+    paddingHorizontal: 2,
+    paddingVertical: 1.5,
   },
   iconCircle: {
     width: 36,
@@ -219,24 +222,24 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   badge: {
-  position: 'absolute',
-  top: -6,
-  right: -8,
-  backgroundColor: '#EF4444',
-  borderRadius: 9,
-  minWidth: 16,
-  height: 16,
-  justifyContent: 'center',
-  alignItems: 'center',
-  borderWidth: 1.5,
-  borderColor: '#fff',
-},
+    position: 'absolute',
+    top: -6,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 9,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#fff',
+  },
 
-badgeText: {
-  color: '#fff',
-  fontSize: 9,
-  fontWeight: 'bold',
-},
+  badgeText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
 });
 
 export default CartHead;

@@ -100,193 +100,193 @@ function AuthNavigator() {
 function AppNavigator() {
   return (
     <StepTrackerProvider>
-    <AppStack.Navigator
-      screenOptions={{
-        ...defaultScreenOptions,
-        contentStyle: { backgroundColor: "transparent" },
-      }}
-    >
-
-      <AppStack.Screen name="Dashboard" component={Dashbord} />
-      <AppStack.Screen
-        name="Home"
-        component={MainLayout}
-        options={{ animation: "none" }}
-      />
-
-      <AppStack.Screen
-        name="Checkout"
-        getComponent={() =>
-          require("../modules/ecommerce/components/checkout/OrderStepUI").default
-        }
-      />
-      <AppStack.Screen
-        name="ProductDetails"
-        getComponent={() =>
-          require("../modules/ecommerce/screens/product_description_screen").default
-        }
-      />
-      <AppStack.Screen
-        name="Cart"
-        getComponent={() =>
-          require("../modules/ecommerce/screens/cartScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="Orders"
-        getComponent={() =>
-          require("../modules/ecommerce/components/order/MyOrder").default
-        }
-      />
-      <AppStack.Screen
-        name="Profile"
-        getComponent={() =>
-          require("../modules/ecommerce/profile/ProfileScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="Search"
-        getComponent={() =>
-          require("../modules/ecommerce/screens/SearchScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="ServiceSearch"
-        getComponent={() =>
-          require("../modules/services/component/screens/ServiceSearchScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="WalletHistory"
-        getComponent={() =>
-          require("../modules/ecommerce/components/home/Wallet_History").default
-        }
-        options={{
-          animation: "fade",
-          presentation: "transparentModal",
+      <AppStack.Navigator
+        screenOptions={{
+          ...defaultScreenOptions,
           contentStyle: { backgroundColor: "transparent" },
         }}
-      />
-      <AppStack.Screen
-        name="ServiceStack"
-        getComponent={() => require("../modules/services/navigation/ServiceHomeStack").default}
-      />
-      <AppStack.Screen
-        name="RewardStack"
-        getComponent={() => require("../modules/step_counter/navigation/RewardHomeStack").default}
-      />
-      <AppStack.Screen
-        name="BBPSHomeStack"
-        getComponent={() => require("../modules/bbps/navigation/BBPSHomeStack").default}
-      />
-      <AppStack.Screen
-        name="HelpForm"
-        getComponent={() =>
-          require("../modules/ecommerce/constants/Support/HelpForm").default
-        }
-      />
-      <AppStack.Screen
-        name="MyTickets"
-        getComponent={() =>
-          require("../modules/ecommerce/constants/Support/MyTickets").default
-        }
-      />
-      <AppStack.Screen
-        name="TermsAndConditions"
-        getComponent={() =>
-          require("../modules/ecommerce/profile/TermsandCondition").default
-        }
-      />
-      <AppStack.Screen
-        name="OrderConfirmedScreen"
-        getComponent={() =>
-          require("../modules/ecommerce/screens/OrderConfirmedScreen").default
-        }
-      />
+      >
 
-      <AppStack.Screen
-        name="ExploreModule"
-        getComponent={() =>
-          require("../modules/dashboard/explore/ExploreModule").default
-        }
-      />
+        <AppStack.Screen name="Dashboard" component={Dashbord} />
+        <AppStack.Screen
+          name="Home"
+          component={MainLayout}
+          options={{ animation: "none" }}
+        />
 
-      <AppStack.Screen
-        name="AIAssistant"
-        getComponent={() =>
-          require("../modules/dashboard/aiassist/AIAssistantScreen").default
-        }
-      />
+        <AppStack.Screen
+          name="Checkout"
+          getComponent={() =>
+            require("../modules/ecommerce/components/checkout/OrderStepUI").default
+          }
+        />
+        <AppStack.Screen
+          name="ProductDetails"
+          getComponent={() =>
+            require("../modules/ecommerce/screens/product_description_screen").default
+          }
+        />
+        <AppStack.Screen
+          name="Cart"
+          getComponent={() =>
+            require("../modules/ecommerce/screens/cartScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="Orders"
+          getComponent={() =>
+            require("../modules/ecommerce/components/order/MyOrder").default
+          }
+        />
+        <AppStack.Screen
+          name="Profile"
+          getComponent={() =>
+            require("../modules/dashboard/dashboard/ProfileScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="Search"
+          getComponent={() =>
+            require("../modules/ecommerce/screens/SearchScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="ServiceSearch"
+          getComponent={() =>
+            require("../modules/services/component/screens/ServiceSearchScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="WalletHistory"
+          getComponent={() =>
+            require("../modules/ecommerce/components/home/Wallet_History").default
+          }
+          options={{
+            animation: "fade",
+            presentation: "transparentModal",
+            contentStyle: { backgroundColor: "transparent" },
+          }}
+        />
+        <AppStack.Screen
+          name="ServiceStack"
+          getComponent={() => require("../modules/services/navigation/ServiceHomeStack").default}
+        />
+        <AppStack.Screen
+          name="RewardStack"
+          getComponent={() => require("../modules/step_counter/navigation/RewardHomeStack").default}
+        />
+        <AppStack.Screen
+          name="BBPSHomeStack"
+          getComponent={() => require("../modules/bbps/navigation/BBPSHomeStack").default}
+        />
+        <AppStack.Screen
+          name="HelpForm"
+          getComponent={() =>
+            require("../modules/ecommerce/constants/Support/HelpForm").default
+          }
+        />
+        <AppStack.Screen
+          name="MyTickets"
+          getComponent={() =>
+            require("../modules/ecommerce/constants/Support/MyTickets").default
+          }
+        />
+        <AppStack.Screen
+          name="TermsAndConditions"
+          getComponent={() =>
+            require("../modules/ecommerce/profile/TermsandCondition").default
+          }
+        />
+        <AppStack.Screen
+          name="OrderConfirmedScreen"
+          getComponent={() =>
+            require("../modules/ecommerce/screens/OrderConfirmedScreen").default
+          }
+        />
 
-      <AppStack.Screen
-        name="TodoList"
-        getComponent={() =>
-          require("../modules/ecommerce/profile/TodoList").default
-        }
-      />
-      <AppStack.Screen
-        name="MyOrder"
-        getComponent={() =>
-          require("../modules/ecommerce/components/order/MyOrder").default
-        }
-      />
-      <AppStack.Screen
-        name="WishList"
-        getComponent={() =>
-          require("../modules/ecommerce/screens/WishlistScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="PrivacyPolicy"
-        getComponent={() =>
-          require("../modules/ecommerce/profile/PrivacyPolicy").default
-        }
-      />
-      <AppStack.Screen
-        name="AddressSelect"
-        getComponent={() =>
-          require("../modules/ecommerce/components/ItemCardAddress/AddressSelectScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="AddAddressMap"
-        getComponent={() =>
-          require("../modules/ecommerce/components/ItemCardAddress/AddAddressMapScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="AddressDetails"
-        getComponent={() =>
-          require("../modules/ecommerce/components/ItemCardAddress/NewAddressForm").default
-        }
-      />
-      <AppStack.Screen
-        name="ChangePassword"
-        getComponent={() =>
-          require("../modules/common/auth/screens/ChangePasswordScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="GlobalSearchScreen"
-        getComponent={() =>
-          require("../modules/dashboard/dashboard/GlobalSearchScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="TrackOrders"
-        getComponent={() =>
-          require("../modules/dashboard/globalorder/TrackOrderScreen").default
-        }
-      />
-      <AppStack.Screen
-        name="Notification"
-        getComponent={() =>
-          require("../modules/dashboard/notification/Notification").default
-        }
-      />
-      
+        <AppStack.Screen
+          name="ExploreModule"
+          getComponent={() =>
+            require("../modules/dashboard/explore/ExploreModule").default
+          }
+        />
 
-    </AppStack.Navigator>
+        <AppStack.Screen
+          name="AIAssistant"
+          getComponent={() =>
+            require("../modules/dashboard/aiassist/AIAssistantScreen").default
+          }
+        />
+
+        <AppStack.Screen
+          name="TodoList"
+          getComponent={() =>
+            require("../modules/ecommerce/profile/TodoList").default
+          }
+        />
+        <AppStack.Screen
+          name="MyOrder"
+          getComponent={() =>
+            require("../modules/ecommerce/components/order/MyOrder").default
+          }
+        />
+        <AppStack.Screen
+          name="WishList"
+          getComponent={() =>
+            require("../modules/ecommerce/screens/WishlistScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="PrivacyPolicy"
+          getComponent={() =>
+            require("../modules/ecommerce/profile/PrivacyPolicy").default
+          }
+        />
+        <AppStack.Screen
+          name="AddressSelect"
+          getComponent={() =>
+            require("../modules/ecommerce/components/ItemCardAddress/AddressSelectScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="AddAddressMap"
+          getComponent={() =>
+            require("../modules/ecommerce/components/ItemCardAddress/AddAddressMapScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="AddressDetails"
+          getComponent={() =>
+            require("../modules/ecommerce/components/ItemCardAddress/NewAddressForm").default
+          }
+        />
+        <AppStack.Screen
+          name="ChangePassword"
+          getComponent={() =>
+            require("../modules/common/auth/screens/ChangePasswordScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="GlobalSearchScreen"
+          getComponent={() =>
+            require("../modules/dashboard/dashboard/GlobalSearchScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="TrackOrders"
+          getComponent={() =>
+            require("../modules/dashboard/globalorder/TrackOrderScreen").default
+          }
+        />
+        <AppStack.Screen
+          name="Notification"
+          getComponent={() =>
+            require("../modules/dashboard/notification/Notification").default
+          }
+        />
+
+
+      </AppStack.Navigator>
     </StepTrackerProvider>
   );
 }

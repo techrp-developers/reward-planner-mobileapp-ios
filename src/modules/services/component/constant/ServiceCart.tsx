@@ -106,7 +106,7 @@ export default function ServiceCart({
         Share.share({
             title: mainTitle || 'Service',
             message: [mainTitle, subText].filter(Boolean).join('\n'),
-        }).catch(() => {});
+        }).catch(() => { });
     };
 
     return (
@@ -176,25 +176,25 @@ export default function ServiceCart({
                             )}
                         </View>
                     ) : (
-                      <View style={styles.ratingRow}>
-                        <Text style={[styles.ratingText, { color: servicesTheme.colors.textStrong }]}>{numericRating.toFixed(1)}</Text>
-                        {[1, 2, 3, 4, 5].map((star) => {
-                            const iconName = numericRating >= star
-                                ? 'star'
-                                : numericRating >= star - 0.5
-                                    ? 'star-half-full'
-                                    : 'star-outline';
+                        <View style={styles.ratingRow}>
+                            <Text style={[styles.ratingText, { color: servicesTheme.colors.textStrong }]}>{numericRating.toFixed(1)}</Text>
+                            {[1, 2, 3, 4, 5].map((star) => {
+                                const iconName = numericRating >= star
+                                    ? 'star'
+                                    : numericRating >= star - 0.5
+                                        ? 'star-half-full'
+                                        : 'star-outline';
 
-                            return (
-                                <MaterialCommunityIcons
-                                    key={star}
-                                    name={iconName}
-                                    size={16}
-                                    color="#FBBF24"
-                                />
-                            );
-                        })}
-                      </View>
+                                return (
+                                    <MaterialCommunityIcons
+                                        key={star}
+                                        name={iconName}
+                                        size={16}
+                                        color="#FBBF24"
+                                    />
+                                );
+                            })}
+                        </View>
                     )}
                 </View>
 
@@ -276,8 +276,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center', alignItems: 'center', elevation: 5,
     },
     contentPadding: { padding: 16 },
-    serviceList: { marginBottom: 20,
-     },
+    serviceList: {
+        marginBottom: 20,
+    },
     borderGradient: { padding: 2, borderRadius: 12, marginRight: 12 },
     serviceCard: {
         backgroundColor: '#FFF', padding: 12, borderRadius: 10, width: 140,

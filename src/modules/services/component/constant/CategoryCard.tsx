@@ -13,6 +13,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/type';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import Reward from '../../../../assets/product/rewards.svg';
 
 type VerticalServiceCardProps = {
   serviceId: number;
@@ -128,7 +129,7 @@ function CategoryCard({
             style={styles.ctaButton}
           >
             <Text style={styles.ctaText}>{primaryButtonText}</Text>
-            {hasPositivePrice && <View style={styles.coinIcon} />}
+            {hasPositivePrice && <Reward width={16} height={16} style={styles.coinIcon} />}
           </LinearGradient>
         </View>
       </View>
@@ -233,7 +234,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 14,
     alignSelf: 'flex-start',
     minWidth: 130,
     shadowColor: '#5B47A3',
@@ -246,12 +246,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13.5,
     fontWeight: '600',
+    paddingHorizontal: 14,
   },
   coinIcon: {
-     width: 16,
-     height: 16,
-     backgroundColor: '#FFD700',
-     borderRadius: 8,
-     marginLeft: 4,
+    width: 16,
+    height: 16,
+    marginRight: 14,
+
   }
 });

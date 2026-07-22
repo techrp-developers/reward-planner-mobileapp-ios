@@ -140,7 +140,7 @@ export default function AddressSelectScreen() {
     try {
       await deleteAddress(Number(deletedId));
       rawAddressesRef.current.delete(deletedId);
-      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => { });
       alert.success("Deleted", "Address deleted successfully");
     } catch {
       setAddresses(previousAddresses);
@@ -184,11 +184,11 @@ export default function AddressSelectScreen() {
       });
 
       // Quietly re-sync with the server in the background for eventual consistency.
-      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => { });
       return true;
     } catch {
       setAddresses(previousAddresses);
-      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => {});
+      queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => { });
       return false;
     }
   };
@@ -311,8 +311,8 @@ export default function AddressSelectScreen() {
         normalizedType === "home"
           ? "Home"
           : normalizedType === "work"
-          ? "Work"
-          : "Other";
+            ? "Work"
+            : "Other";
 
       navigation.navigate("AddressDetails", {
         mode: "edit",
@@ -752,12 +752,12 @@ const styles = StyleSheet.create({
 
   buttonText: { color: '#FFF', fontSize: 16, fontWeight: '600', },
 
-  ctaWrapper: { alignSelf: "center",
- },
+  ctaWrapper: {
+    alignSelf: "center",
+  },
   cta: {
     width: 338,
     borderRadius: 12,
-    paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -767,6 +767,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 20,
     fontWeight: "600",
+    paddingVertical: 14,
+
   },
 
   // -------------------- Bottom Sheet styles --------------------

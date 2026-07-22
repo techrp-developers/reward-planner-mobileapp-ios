@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { CalculatorScreen } from './CalculatorScreen';
 import { SliderRow, ResultCard, SectionHeader } from './UIComponents';
-import { useServicesTheme } from '../../utils/useServicesTheme';
 import {
   calculateSIP,
   calculateGoalSIP,
@@ -18,22 +17,9 @@ import {
 } from '../utils/calculations';
 
 // ─── Shared Card ──────────────────────────────────────────────────
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const servicesTheme = useServicesTheme();
-
-  return (
-    <View style={[
-      cardStyle.card,
-      {
-        backgroundColor: servicesTheme.colors.surface,
-        borderColor: servicesTheme.colors.border,
-        shadowColor: servicesTheme.colors.shadow,
-      },
-    ]}>
-      {children}
-    </View>
-  );
-};
+const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <View style={cardStyle.card}>{children}</View>
+);
 
 const cardStyle = StyleSheet.create({
   card: {
@@ -44,7 +30,7 @@ const cardStyle = StyleSheet.create({
     borderColor: 'rgba(134,101,255,0.12)',
     ...Platform.select({
       ios: {
-        shadowColor: '#080B26',
+        shadowColor: '#4C2F91',
         shadowOpacity: 0.08,
         shadowRadius: 16,
         shadowOffset: { width: 0, height: 8 },
@@ -57,7 +43,7 @@ const cardStyle = StyleSheet.create({
 // ─── Maturity Banner ──────────────────────────────────────────────
 const MaturityBanner: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <LinearGradient
-    colors={['#080B26', '#171F59', '#3545A3']}
+    colors={['#3545A3', '#080B26']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
     style={bannerStyle.banner}
@@ -70,11 +56,10 @@ const MaturityBanner: React.FC<{ label: string; value: string }> = ({ label, val
 const bannerStyle = StyleSheet.create({
   banner: {
     borderRadius: 24,
-    padding: 18,
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#080B26',
+        shadowColor: '#5B47A3',
         shadowOpacity: 0.22,
         shadowRadius: 18,
         shadowOffset: { width: 0, height: 10 },
@@ -86,7 +71,9 @@ const bannerStyle = StyleSheet.create({
     color: 'rgba(255,255,255,0.8)',
     fontSize: 13,
     fontWeight: '600',
-    marginBottom: 4,
+    // marginBottom: 4,
+    padding: 10,
+
   },
   value: { color: '#fff', fontSize: 30, fontWeight: '900', letterSpacing: -0.5 },
 });
@@ -105,7 +92,7 @@ export const SIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => 
     <CalculatorScreen
       title="SIP Calculator"
       subtitle="Estimate future value of your monthly SIP"
-      icon="calendar-month-outline"
+      icon="📅"
       navigation={navigation}
     >
       <MaturityBanner label="Estimated Maturity Value" value={formatCurrency(result.maturity)} />
@@ -144,7 +131,7 @@ export const GoalSIPCalculator: React.FC<{ navigation: any }> = ({ navigation })
     <CalculatorScreen
       title="Goal SIP Calculator"
       subtitle="Monthly investment needed to reach your goal"
-      icon="target"
+      icon="🎯"
       navigation={navigation}
     >
       <MaturityBanner label="Monthly SIP Required" value={formatCurrency(result.monthlyRequired)} />
@@ -188,7 +175,7 @@ export const SmartGoalCalculator: React.FC<{ navigation: any }> = ({ navigation 
     <CalculatorScreen
       title="Smart Goal Calculator"
       subtitle="Plan goals considering existing investments"
-      icon="head-cog-outline"
+      icon="🧠"
       navigation={navigation}
     >
       <MaturityBanner label="Additional Monthly SIP Needed" value={formatCurrency(result.monthlyRequired)} />
@@ -233,7 +220,7 @@ export const InflationCalculator: React.FC<{ navigation: any }> = ({ navigation 
     <CalculatorScreen
       title="Inflation Calculator"
       subtitle="Impact of inflation on your expenses"
-      icon="chart-line"
+      icon="📈"
       navigation={navigation}
     >
       <MaturityBanner label="Future Value of Expenses" value={formatCurrency(result.futureValue)} />
@@ -276,7 +263,7 @@ export const CostOfDelayCalculator: React.FC<{ navigation: any }> = ({ navigatio
     <CalculatorScreen
       title="Cost of Delay"
       subtitle="Impact of delaying your investments"
-      icon="timer-sand"
+      icon="⏳"
       navigation={navigation}
     >
       <MaturityBanner label="Wealth Lost Due to Delay" value={formatCurrency(result.loss)} />
@@ -320,7 +307,7 @@ export const LumpsumCalculator: React.FC<{ navigation: any }> = ({ navigation })
     <CalculatorScreen
       title="Lumpsum Calculator"
       subtitle="Calculate returns on one-time investment"
-      icon="cash-multiple"
+      icon="💰"
       navigation={navigation}
     >
       <MaturityBanner label="Estimated Maturity Value" value={formatCurrency(result.maturity)} />
@@ -375,7 +362,7 @@ export const RetirementCalculator: React.FC<{ navigation: any }> = ({ navigation
     <CalculatorScreen
       title="Retirement Planning"
       subtitle="Estimate your retirement corpus"
-      icon="beach"
+      icon="🏖️"
       navigation={navigation}
     >
       <MaturityBanner label="Monthly SIP Required" value={formatCurrency(result.monthlyRequired)} />
@@ -432,7 +419,7 @@ export const StepUpSIPCalculator: React.FC<{ navigation: any }> = ({ navigation 
     <CalculatorScreen
       title="Step-Up SIP Calculator"
       subtitle="Future value with annual SIP increase"
-      icon="trending-up"
+      icon="🚀"
       navigation={navigation}
     >
       <MaturityBanner label="Maturity with Step-Up" value={formatCurrency(result.maturity)} />
@@ -479,7 +466,7 @@ export const SWPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => 
     <CalculatorScreen
       title="SWP Calculator"
       subtitle="Systematic Withdrawal Plan projections"
-      icon="cash-minus"
+      icon="💸"
       navigation={navigation}
     >
       <MaturityBanner label="Remaining Balance" value={formatCurrency(result.finalBalance)} />

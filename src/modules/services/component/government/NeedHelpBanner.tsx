@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking, View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 const StartConversationAvatars = require('../../assete/service/Gov_Conversation.png');
 
@@ -31,11 +31,7 @@ export default function NeedHelpBanner() {
           <Text style={styles.phoneNumber}>+91 8660 583751</Text>
         </View>
 
-        <TouchableOpacity
-          style={styles.talkSection}
-          activeOpacity={0.8}
-          onPress={() => Linking.openURL('tel:+918660583751')}
-        >
+        <TouchableOpacity style={styles.talkSection} activeOpacity={0.8} onPress={() => Linking.openURL('tel:+918660583751')}>
           <Text style={styles.talkText}>Talk To Us</Text>
         </TouchableOpacity>
       </View>
@@ -45,19 +41,19 @@ export default function NeedHelpBanner() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    // padding: 16,
     borderRadius: 20,
-    marginHorizontal: 16,
-    marginVertical: 8,
+    marginHorizontal: 12,
+
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    marginTop: 14,
   },
   textCol: {
     flex: 1,
-    paddingRight: 8,
+    padding: 8,
   },
   title: {
     fontSize: 15,
@@ -73,6 +69,7 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: 72,
     height: 48,
+    paddingRight: 8,
   },
   actionButton: {
     flexDirection: 'row',
@@ -80,6 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFBEB',
     borderRadius: 10,
     overflow: 'hidden',
+    margin: 8,
     // Shadow
     elevation: 3,
     shadowColor: '#000',

@@ -120,10 +120,10 @@ function Dashbord() {
 
       if (userRes.data?.success) {
         const d = userRes.data.data;
-        if (d.name)          setHeaderUserName((prev) => (prev === d.name ? prev : d.name));
-        if (d.userImage)     setHeaderUserImage((prev) => (prev === d.userImage ? prev : d.userImage));
+        if (d.name) setHeaderUserName((prev) => (prev === d.name ? prev : d.name));
+        if (d.userImage) setHeaderUserImage((prev) => (prev === d.userImage ? prev : d.userImage));
         if (d.company?.logo) setHeaderCompanyLogo((prev) => (prev === d.company.logo ? prev : d.company.logo));
-        if (d.thought)       setThought((prev) => (prev === d.thought ? prev : d.thought));
+        if (d.thought) setThought((prev) => (prev === d.thought ? prev : d.thought));
 
         const apiStepGoal = Number(d.steps?.goal_steps);
         if (Number.isFinite(apiStepGoal) && apiStepGoal > 0) {
@@ -132,11 +132,11 @@ function Dashbord() {
 
         const raw: any[] = Array.isArray(d.birthday_employees) ? d.birthday_employees : [];
         const mappedBirthdays = raw.map((b) => ({
-          id:          b.employeeId,
-          name:        b.name,
+          id: b.employeeId,
+          name: b.name,
           designation: b.role,
-          department:  b.department,
-          photo:       b.image ?? null,
+          department: b.department,
+          photo: b.image ?? null,
         }));
         setBirthdays((prev) => (
           JSON.stringify(prev) === JSON.stringify(mappedBirthdays) ? prev : mappedBirthdays
@@ -338,7 +338,7 @@ function Dashbord() {
         </LinearGradient>
         {hasBirthdays && (
           <Pressable onPress={dismissSearch}>
-          <MemoBirthdayCarousel birthdays={birthdays} />
+            <MemoBirthdayCarousel birthdays={birthdays} />
           </Pressable>
         )}
         <Pressable onPress={dismissSearch}>
@@ -446,7 +446,11 @@ const styles = StyleSheet.create({
     // paddingHorizontal and paddingTop set inline
   },
   searchOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 250,
     elevation: 30,
   },
@@ -466,8 +470,8 @@ const styles = StyleSheet.create({
 
   card: {
     borderRadius: rs(20),
-    paddingVertical: rs(13),
-    paddingHorizontal: rs(14),
+
+    marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
     overflow: 'hidden',
@@ -485,7 +489,8 @@ const styles = StyleSheet.create({
     top: 0,
     right: 0,
     bottom: 0,
-    width: '62%',
+    width: rs(92),
+    backgroundColor: 'rgba(255,255,255,0.08)',
   },
 
   iconContainer: {
@@ -495,12 +500,13 @@ const styles = StyleSheet.create({
     // backgroundColor via t.iconContainer
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: rs(13),
+    marginLeft: rs(13),
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 4,
+    margin: 4,
   },
 
   quote: {
@@ -511,41 +517,46 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: '600',
     letterSpacing: 0,
+    paddingVertical: rs(13),
+    paddingHorizontal: rs(14),
   },
+
   moduleLaunchOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 500,
-    elevation: 50,
-    paddingTop: rs(72),
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 300,
+    elevation: 40,
+    justifyContent: 'flex-start',
+    paddingTop: rs(80),
+    paddingHorizontal: rs(20),
   },
   moduleLaunchTitle: {
-    color: '#FFFFFF',
+    color: '#fff',
     fontSize: fs(22),
     fontWeight: '800',
-    paddingHorizontal: rs(20),
-    paddingBottom: rs(20),
+    marginBottom: rs(20),
   },
   moduleLaunchContent: {
-    flex: 1,
-    padding: rs(18),
-    borderTopLeftRadius: rs(28),
-    borderTopRightRadius: rs(28),
+    borderRadius: rs(16),
+    padding: rs(16),
+    gap: rs(12),
   },
   moduleLaunchLineWide: {
-    width: '58%',
-    height: rs(18),
-    borderRadius: rs(9),
-    marginBottom: rs(12),
+    height: rs(14),
+    borderRadius: rs(7),
+    width: '80%',
   },
   moduleLaunchLine: {
-    width: '34%',
-    height: rs(12),
-    borderRadius: rs(6),
-    marginBottom: rs(22),
+    height: rs(14),
+    borderRadius: rs(7),
+    width: '55%',
   },
   moduleLaunchCard: {
-    width: '100%',
-    height: rs(210),
-    borderRadius: rs(18),
+    height: rs(120),
+    borderRadius: rs(16),
+    marginTop: rs(8),
   },
 });
