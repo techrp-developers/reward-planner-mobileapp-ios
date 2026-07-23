@@ -310,7 +310,7 @@ function Dashbord() {
           {/* Motivational Quote Banner */}
           <Pressable onPress={dismissSearch}>
             <View style={[styles.bannerOuter, { paddingHorizontal: rs(16), paddingTop: rs(2) }]}>
-              <View style={styles.cardShadow}>
+              <View style={t.cardShadow}>
               <LinearGradient
                 colors={quoteBannerGradient}
                 start={{ x: 0, y: 0.5 }}
