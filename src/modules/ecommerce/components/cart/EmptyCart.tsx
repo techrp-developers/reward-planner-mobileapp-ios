@@ -25,6 +25,7 @@ export default function EmptyCart({ onBrowse, message }: EmptyCartProps) {
       </Text>
 
       <TouchableOpacity activeOpacity={0.9} onPress={onBrowse}>
+        <View style={styles.buttonShadow}>
         <LinearGradient
           colors={["#8665FF", "#5B47A3"]}
           start={{ x: 0, y: 0 }}
@@ -33,6 +34,7 @@ export default function EmptyCart({ onBrowse, message }: EmptyCartProps) {
         >
           <Text style={styles.buttonText}>Browse products</Text>
         </LinearGradient>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -62,6 +64,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 
+  buttonShadow: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.15,
+      shadowRadius: 10,
+      elevation: 6,
+      borderRadius: 14,
+    },
+
   button: {
     marginTop: 24,
     height: 48,
@@ -69,11 +80,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
   },
 
   buttonText: {

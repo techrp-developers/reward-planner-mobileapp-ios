@@ -14,6 +14,7 @@ function HomeBanner() {
 
   return (
     <View style={styles.wrapper}>
+      <View style={styles.bannerBoxShadow}>
       <LinearGradient
         colors={isDark ? ['#18181B', '#3B0764', '#BE185D'] : ['#A95ACD', '#FC8BAD']}
         start={{ x: 0, y: 0 }}
@@ -32,6 +33,7 @@ function HomeBanner() {
 
         <BannerImage style={styles.bannerImage} />
       </LinearGradient>
+      </View>
     </View>
   );
 }
@@ -45,6 +47,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
 
+  bannerBoxShadow: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.2,
+      shadowRadius: 5,
+      elevation: 4,
+      borderRadius: 22,
+    },
+
   bannerBox: {
     height: BANNER_HEIGHT,
     flexDirection: 'row',
@@ -52,11 +63,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.08,
     borderRadius: 22,
     overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 3 },
   },
 
   textBlock: {

@@ -35,6 +35,7 @@ export const CalculatorScreen: React.FC<Props> = ({
         barStyle="light-content"
         backgroundColor="#080B26"
       />
+      <View style={styles.headerShadow}>
       <LinearGradient
         colors={['#3545A3', '#080B26']}
         start={{ x: 0, y: 0 }}
@@ -57,6 +58,7 @@ export const CalculatorScreen: React.FC<Props> = ({
           <Text style={styles.headerSubtitle}>{subtitle}</Text>
         </View>
       </LinearGradient>
+      </View>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -72,6 +74,14 @@ export const CalculatorScreen: React.FC<Props> = ({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F7F4FF' },
   safeDark: { backgroundColor: '#09090B' },
+  headerShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
+      elevation: 8,
+    },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -81,12 +91,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#5B47A3',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
       },
-      android: { elevation: 8 },
+      android: {},
     }),
   },
   headerGlow: {

@@ -122,6 +122,7 @@ function CategoryCard({
             )}
           </View>
 
+          <View style={styles.ctaButtonShadow}>
           <LinearGradient
             colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
@@ -131,6 +132,7 @@ function CategoryCard({
             <Text style={styles.ctaText}>{primaryButtonText}</Text>
             {hasPositivePrice && <Reward width={16} height={16} style={styles.coinIcon} />}
           </LinearGradient>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -228,6 +230,15 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
   },
+  ctaButtonShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 3,
+      borderRadius: 10,
+    },
+
   ctaButton: {
     borderRadius: 10,
     height: 38,
@@ -236,11 +247,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignSelf: 'flex-start',
     minWidth: 130,
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
   },
   ctaText: {
     color: '#FFFFFF',

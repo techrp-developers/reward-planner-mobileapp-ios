@@ -101,6 +101,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
                 },
               ]}
             >
+              <View style={styles.badgeCircleShadow}>
               <LinearGradient
                 colors={BRAND_GRADIENT}
                 start={{ x: 0, y: 0 }}
@@ -109,6 +110,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
               >
                 <Reward width={46} height={46} />
               </LinearGradient>
+              </View>
             </Animated.View>
 
             <MaterialCommunityIcons
@@ -140,6 +142,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
           <Text style={styles.subtitle}>Your account is now active</Text>
 
           {/* Reward Card */}
+          <View style={styles.rewardCardShadow}>
           <LinearGradient
             colors={BRAND_GRADIENT}
             start={{ x: 0, y: 0 }}
@@ -172,6 +175,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
               </View>
             </View>
           </LinearGradient>
+          </View>
 
           {/* Content */}
           <Text style={styles.description}>
@@ -190,6 +194,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
             onPress={handleClose}
             style={styles.buttonContainer}
           >
+            <View style={styles.gradientBtnShadow}>
             <LinearGradient
               colors={DARK_GRADIENT}
               start={{ x: 0, y: 0 }}
@@ -199,6 +204,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
               <Text style={styles.btnText}>Start Exploring</Text>
               <MaterialCommunityIcons name="arrow-right" size={19} color="#FFFFFF" />
             </LinearGradient>
+            </View>
           </TouchableOpacity>
         </Animated.View>
       </View>
@@ -255,17 +261,21 @@ const styles = StyleSheet.create({
   coinFlip: {
     backfaceVisibility: "hidden",
   },
+  badgeCircleShadow: {
+      shadowColor: "#A654CD",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.45,
+      shadowRadius: 18,
+      elevation: 12,
+      borderRadius: 44,
+    },
+
   badgeCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#A654CD",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.45,
-    shadowRadius: 18,
-    elevation: 12,
   },
   sparkleTopLeft: { position: "absolute", top: 6, left: 10 },
   sparkleTopRight: { position: "absolute", top: 18, right: 4 },
@@ -302,6 +312,15 @@ const styles = StyleSheet.create({
     color: "#8D7A94",
     marginBottom: 22,
   },
+  rewardCardShadow: {
+      shadowColor: "#5B1E7A",
+      shadowOffset: { width: 0, height: 12 },
+      shadowOpacity: 0.32,
+      shadowRadius: 20,
+      elevation: 14,
+      borderRadius: 22,
+    },
+
   rewardCard: {
     width: "100%",
     borderRadius: 22,
@@ -311,11 +330,6 @@ const styles = StyleSheet.create({
     marginBottom: 22,
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.24)",
-    shadowColor: "#5B1E7A",
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.32,
-    shadowRadius: 20,
-    elevation: 14,
   },
   rewardBonusRow: {
     flexDirection: "row",
@@ -399,6 +413,15 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: "100%",
   },
+  gradientBtnShadow: {
+      shadowColor: "#251126",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.32,
+      shadowRadius: 16,
+      elevation: 10,
+      borderRadius: 18,
+    },
+
   gradientBtn: {
     paddingVertical: 17,
     borderRadius: 18,
@@ -406,11 +429,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     gap: 8,
-    shadowColor: "#251126",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.32,
-    shadowRadius: 16,
-    elevation: 10,
   },
   btnText: {
     color: "#FFFFFF",

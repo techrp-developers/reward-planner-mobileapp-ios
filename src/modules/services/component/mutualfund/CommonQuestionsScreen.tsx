@@ -156,6 +156,7 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
       <StatusBar barStyle="light-content" backgroundColor="#080B26" />
 
+      <View style={styles.headerShadow}>
       <LinearGradient
         colors={['#3545A3', '#080B26']}
         start={{ x: 0, y: 0 }}
@@ -175,6 +176,7 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.headerSubtitle}>Your guide to investing smarter</Text>
         </View>
       </LinearGradient>
+      </View>
 
       {loading ? (
         <View style={styles.scrollPad}>
@@ -207,6 +209,14 @@ export default CommonQuestionsScreen;
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F7F8FA' },
 
+  headerShadow: {
+      shadowColor: '#080B26',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.28,
+      shadowRadius: 12,
+      elevation: 8,
+    },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -218,12 +228,8 @@ const styles = StyleSheet.create({
     gap: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#080B26',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.28,
-        shadowRadius: 12,
       },
-      android: { elevation: 8 },
+      android: {},
     }),
   },
   backBtn: {

@@ -171,6 +171,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
       {/* Label + current value pill */}
       <View style={styles.sliderHeader}>
         <Text style={[styles.sliderLabel, isDark && { color: 'rgba(255,255,255,0.6)' }]}>{label}</Text>
+        <View style={styles.valuePillShadow}>
         <LinearGradient
           colors={[PRIMARY, PRIMARY_DARK]}
           start={{ x: 0, y: 0 }}
@@ -179,6 +180,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
         >
           <Text style={styles.valuePillText}>{fmtSlider(value, prefix, suffix)}</Text>
         </LinearGradient>
+        </View>
       </View>
 
       {/* Track area */}
@@ -390,17 +392,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     paddingRight: 8,
   },
+  valuePillShadow: {
+      shadowColor: PRIMARY_DARK,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 3,
+      borderRadius: 999,
+    },
+
   valuePill: {
     borderRadius: 999,
 
     ...Platform.select({
       ios: {
-        shadowColor: PRIMARY_DARK,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
       },
-      android: { elevation: 3 },
+      android: {},
     }),
   },
   valuePillText: {

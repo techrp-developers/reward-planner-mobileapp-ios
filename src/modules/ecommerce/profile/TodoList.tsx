@@ -653,6 +653,7 @@ const TodoListScreen = () => {
         backgroundColor={headerColors[0]}
       />
 
+      <View style={styles.headerShadow}>
       <LinearGradient
         colors={headerColors}
         start={{ x: 0, y: 0 }}
@@ -697,6 +698,7 @@ const TodoListScreen = () => {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+      </View>
 
       <View style={[styles.body, themed.screen]}>
         <View style={styles.dateStripWrapper}>
@@ -1083,6 +1085,30 @@ const TodoListScreen = () => {
                 </TouchableOpacity>
               </View>
 
+              {timePickerVisible && (
+                <View style={[styles.inlineTimePicker, themed.surface]}>
+                  <View style={styles.inlineTimePickerHeader}>
+                    <Text style={[styles.modalTitle, themed.text, { marginBottom: 0 }]}>
+                      Select {timeTarget === "start" ? "Start" : "End"} Time
+                    </Text>
+                    <TouchableOpacity onPress={() => setTimePickerVisible(false)}>
+                      <MaterialCommunityIcons name="close" size={20} color={theme.text} />
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView style={styles.timeList} nestedScrollEnabled>
+                    {timeOptions.map(item => (
+                      <TouchableOpacity
+                        key={item}
+                        style={[styles.timeOption, themed.divider]}
+                        onPress={() => selectTime(item)}
+                      >
+                        <Text style={[styles.timeOptionText, themed.text]}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+
               <TouchableOpacity
                 style={[styles.createButton, saving && styles.disabledButton]}
                 onPress={saveTodo}
@@ -1098,35 +1124,6 @@ const TodoListScreen = () => {
               </TouchableOpacity>
             </ScrollView>
           </SafeAreaView>
-        </View>
-      </Modal>
-
-      <Modal visible={timePickerVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.timePickerModal, themed.surface]}>
-            <Text style={[styles.modalTitle, themed.text]}>
-              Select {timeTarget === "start" ? "Start" : "End"} Time
-            </Text>
-
-            <ScrollView style={styles.timeList}>
-              {timeOptions.map(item => (
-                <TouchableOpacity
-                  key={item}
-                  style={[styles.timeOption, themed.divider]}
-                  onPress={() => selectTime(item)}
-                >
-                  <Text style={[styles.timeOptionText, themed.text]}>{item}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[styles.cancelFullButton, themed.softButton]}
-              onPress={() => setTimePickerVisible(false)}
-            >
-              <Text style={[styles.cancelText, themed.text]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </Modal>
 
@@ -1170,6 +1167,14 @@ const styles = StyleSheet.create({
     backgroundColor: PAGE_BG,
   },
 
+  headerShadow: {
+      shadowColor: PRIMARY_DARK,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.2,
+      shadowRadius: 12,
+      elevation: 7,
+    },
+
   header: {
     height: 215,
     backgroundColor: PRIMARY,
@@ -1180,12 +1185,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 34,
     borderBottomRightRadius: 34,
-
-    shadowColor: PRIMARY_DARK,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 7,
 
     overflow: "hidden",
   },
@@ -1753,6 +1752,21 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: PINK_BORDER,
+  },
+
+  inlineTimePicker: {
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: PINK_BORDER,
+  },
+
+  inlineTimePickerHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
 
   timePickerModal: {

@@ -476,6 +476,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
+    marginLeft: 18,
   },
   headerTextWrap: {
     flex: 1, paddingHorizontal: 18,

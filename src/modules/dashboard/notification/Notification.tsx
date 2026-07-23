@@ -370,6 +370,7 @@ function Notification() {
           }
           ListHeaderComponent={
             <View>
+              <View style={styles.summaryCardShadow}>
               <LinearGradient
                 colors={isDark
                   ? ["#18181B", "#27233A", "#4338CA"]
@@ -394,6 +395,7 @@ function Notification() {
                   </Text>
                 </View>
               </LinearGradient>
+              </View>
               {notifications.length > 0 ? (
                 <View style={styles.sectionHeader}>
                   <Text style={[styles.sectionTitle, themed.mutedText]}>Recent updates</Text>
@@ -452,6 +454,15 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 30,
   },
+  summaryCardShadow: {
+      shadowColor: "#2F225F",
+      shadowOffset: { width: 0, height: 10 },
+      shadowOpacity: 0.18,
+      shadowRadius: 18,
+      elevation: 5,
+      borderRadius: 18,
+    },
+
   summaryCard: {
     minHeight: 82,
     borderRadius: 18,
@@ -460,11 +471,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: "#2F225F",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 5,
   },
   summaryIcon: {
     width: 42,

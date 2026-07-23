@@ -104,6 +104,7 @@ function Card({
           )}
 
           {/* CTA */}
+          <View style={styles.ctaShadow}>
           <LinearGradient
             colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
@@ -114,6 +115,7 @@ function Card({
               {offerPrice || price}
             </Text>
           </LinearGradient>
+          </View>
         </View>
       </View>
     </TouchableOpacity>
@@ -213,16 +215,20 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 4,
   },
+  ctaShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      elevation: 3,
+      borderRadius: 12,
+    },
+
   cta: {
     flexDirection: 'row',
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
   },
   ctaText: {
     color: '#fff',

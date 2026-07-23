@@ -307,6 +307,7 @@ export default function ServiceOrderDetail() {
         </View>
         {/* ── Order summary card ─────────────────────────────────────── */}
         {false && (
+        <View style={styles.summaryCardShadow}>
         <LinearGradient
           colors={['#30205F', '#6344BD', '#7C3AED']}
           start={{ x: 0, y: 0 }}
@@ -353,6 +354,7 @@ export default function ServiceOrderDetail() {
             </View>
           </View>
         </LinearGradient>
+        </View>
         )}
 
         {/* ── Standalone service items ───────────────────────────────── */}
@@ -634,14 +636,18 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
+  summaryCardShadow: {
+      shadowColor: '#33205E',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.18,
+      shadowRadius: 16,
+      elevation: 5,
+      borderRadius: 22,
+    },
+
   summaryCard: {
     borderRadius: 22,
     padding: 18,
-    elevation: 5,
-    shadowColor: '#33205E',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
   },
   summaryRow: {
     flexDirection: 'row',

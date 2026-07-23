@@ -21,6 +21,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
   return (
     <View style={[styles.screenContainer, { backgroundColor: bbpsTheme.colors.background }]}>
       {/* Main Card with specified top-to-bottom gradient */}
+      <View style={styles.cardContainerShadow}>
       <LinearGradient
         colors={bbpsTheme.isDark ? ['#111113', '#132016'] : ['#FBFFFC', '#E2FFE9']}
         start={{ x: 0.5, y: 0 }}
@@ -99,6 +100,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
           style={styles.bottomEdgeGradient}
         />
       </LinearGradient>
+      </View>
     </View>
   );
 };
@@ -110,15 +112,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FE',
     justifyContent: 'center',
   },
+  cardContainerShadow: {
+      shadowColor: '#000',
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 4,
+      borderRadius: 16,
+    },
+
   cardContainer: {
     borderRadius: 16,
     borderWidth: 1,
     borderColor: '#C1E9D0',
     overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
   cardContent: {
     padding: 20,

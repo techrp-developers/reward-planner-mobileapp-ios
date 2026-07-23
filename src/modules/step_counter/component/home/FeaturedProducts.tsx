@@ -52,6 +52,7 @@ export default function FeaturedProductsGrid() {
       <View style={styles.productCard}>
         <View style={styles.discountBadgeWrapper}>
                    {' '}
+          <View style={styles.discountGradientShadow}>
           <LinearGradient
             colors={['#FEB014', '#FFE486', '#F5B924']} // Gold/Yellow gradient
             style={styles.discountGradient}
@@ -62,6 +63,7 @@ export default function FeaturedProductsGrid() {
             <Text style={styles.discountBadgeText}>{item.discount}</Text>       
              {' '}
           </LinearGradient>
+          </View>
                  {' '}
         </View>
 
@@ -213,16 +215,20 @@ const styles = StyleSheet.create({
     borderRadius: 14, // Needs to be here so gradient respects border
     overflow: 'hidden',
   },
+  discountGradientShadow: {
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 3,
+      elevation: 5,
+      borderRadius: 14,
+    },
+
   discountGradient: {
     // Gradient style (replaces original discountBadge's visual properties)
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 14, // Add back shadow/elevation for the badge itself
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    borderRadius: 14, 
   },
   discountBadgeText: {
     // Text style

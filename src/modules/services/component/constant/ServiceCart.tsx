@@ -203,7 +203,8 @@ export default function ServiceCart({
                 </Text>
 
                 {/* 4. Renewal Offer Banner */}
-                {/* <LinearGradient
+                {/* <View style={styles.offerBannerShadow}>
+                <LinearGradient
                     colors={['#FEEEAC', '#FDD174']}
                     style={styles.offerBanner}
                     start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
@@ -216,7 +217,8 @@ export default function ServiceCart({
                     <View style={styles.offerBadge}>
                         <Text style={styles.offerBadgeText}>Today Only</Text>
                     </View>
-                </LinearGradient> */}
+                </LinearGradient>
+                </View> */}
 
                 {/* 5. Action Buttons */}
                 {!isEnquiryService && (
@@ -297,9 +299,17 @@ const styles = StyleSheet.create({
     enquirySavings: { fontSize: 13, marginTop: 3 },
     ratingRow: { flexDirection: 'row', alignItems: 'center' },
     subText: { color: '#6B7280', lineHeight: 20, marginBottom: 22, fontSize: 13.5 },
-    offerBanner: {
+    offerBannerShadow: {
+      shadowColor: '#B45309',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      elevation: 2,
+      borderRadius: 16,
+    },
+
+  offerBanner: {
         flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 16, marginBottom: 24,
-        shadowColor: '#B45309', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.12, shadowRadius: 12, elevation: 2,
     },
     offerTextCol: { marginLeft: 12, flex: 1 },
     offerTitle: { fontWeight: '700', color: '#92400E', fontSize: 14 },

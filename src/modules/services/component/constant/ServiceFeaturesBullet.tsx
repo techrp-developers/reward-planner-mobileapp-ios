@@ -108,6 +108,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
 
       {/* ====== BLOCK 2.5 : STATS BLOCK (NEW) ====== */}
       {stats && (
+        <View style={styles.statsCardShadow}>
         <LinearGradient
           colors={servicesTheme.isDark ? ['#18112A', '#111113'] : ['#F1EFFF', '#ECEBFF']}
           style={styles.statsCard}
@@ -122,10 +123,12 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
             </React.Fragment>
           ))}
         </LinearGradient>
+        </View>
       )}
 
       {/* ====== BLOCK 3 : DATA SAFETY (OPTIONAL) ====== */}
       {showSafetyCard && (
+        <View style={styles.safetyCardShadow}>
         <LinearGradient
           colors={servicesTheme.isDark ? ['#111113', '#132016'] : ['#F3F3F3', '#E9FFE3']}
           style={styles.safetyCard}
@@ -145,6 +148,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
             />
           </View>
         </LinearGradient>
+        </View>
       )}
 
       
@@ -268,6 +272,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  safetyCardShadow: {
+      shadowColor: '#1F2937',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.06,
+      shadowRadius: 14,
+      elevation: 3,
+      borderRadius: 18,
+    },
+
   safetyCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -275,11 +288,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 14,
     borderRadius: 18,
-    shadowColor: '#1F2937',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
   },
 
   safetyTitle: {
@@ -306,6 +314,15 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
   },
+  statsCardShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.1,
+      shadowRadius: 14,
+      elevation: 3,
+      borderRadius: 18,
+    },
+
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -314,11 +331,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 14,
     borderRadius: 18,
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 14,
-    elevation: 3,
   },
 
   statItem: {

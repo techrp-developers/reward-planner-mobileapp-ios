@@ -177,6 +177,7 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
       <StatusBar barStyle="light-content" backgroundColor="#080B26" />
 
       {/* ── Header ─────────────────────────────────────────── */}
+      <View style={styles.headerShadow}>
       <LinearGradient
         colors={['#3545A3', '#080B26']}
         start={{ x: 0, y: 0 }}
@@ -204,6 +205,7 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
           </View>
         )}
       </LinearGradient>
+      </View>
 
       {/* ── Content ────────────────────────────────────────── */}
       {loading ? (
@@ -248,6 +250,14 @@ export default FAQListingScreen;
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#F7F8FA' },
 
+  headerShadow: {
+      shadowColor: '#080B26',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.28,
+      shadowRadius: 12,
+      elevation: 8,
+    },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -257,12 +267,8 @@ const styles = StyleSheet.create({
     gap: 12,
     ...Platform.select({
       ios: {
-        shadowColor: '#080B26',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.28,
-        shadowRadius: 12,
       },
-      android: { elevation: 8 },
+      android: {},
     }),
   },
   backBtn: {

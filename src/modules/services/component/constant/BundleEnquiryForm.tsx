@@ -476,6 +476,7 @@ function BundleEnquiryForm() {
           </TouchableOpacity>
         </View>
 
+        <View style={styles.safetyCardShadow}>
         <LinearGradient
           colors={['#F4FFF1', '#E8FFE0']}
           style={styles.safetyCard}
@@ -493,6 +494,7 @@ function BundleEnquiryForm() {
             />
           </View>
         </LinearGradient>
+        </View>
       </ScrollView>
     </View>
   );
@@ -659,6 +661,15 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
 
+  safetyCardShadow: {
+      shadowColor: '#1F2937',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.06,
+      shadowRadius: 14,
+      elevation: 3,
+      borderRadius: 18,
+    },
+
   safetyCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -666,11 +677,6 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 14,
     borderRadius: 18,
-    shadowColor: '#1F2937',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    elevation: 3,
   },
 
   safetyTextWrap: {

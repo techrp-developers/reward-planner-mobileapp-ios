@@ -141,6 +141,7 @@ const ListHeader = memo<Props>(({ navigation }) => {
 
   return (
     <>
+      <View style={styles.heroSectionShadow}>
       <LinearGradient
         colors={['#080B26', '#171F59', '#3545A3']}
         start={{ x: 0, y: 0 }}
@@ -174,6 +175,7 @@ const ListHeader = memo<Props>(({ navigation }) => {
           </View>
         </View>
       </LinearGradient>
+      </View>
 
       <FAQSection navigation={navigation} />
 
@@ -309,6 +311,7 @@ const MFScreen: React.FC<Props> = ({ navigation }) => {
       <StatusBar barStyle={servicesTheme.isDark ? 'light-content' : 'dark-content'} backgroundColor={servicesTheme.colors.background} />
 
       {/* ── Top Header ──────────────────────────────────────── */}
+      <View style={styles.headerShadow}>
       <LinearGradient
         colors={servicesTheme.isDark ? ['#111113', '#18181B'] : ['#FFFFFF', '#F7F4FF']}
         start={{ x: 0, y: 0 }}
@@ -334,6 +337,7 @@ const MFScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={[styles.badgeLabel, { color: servicesTheme.colors.primaryDark }]}>Tools</Text>
         </View>
       </LinearGradient>
+      </View>
 
       {/* ── Content ─────────────────────────────────────────── */}
       <FlatList
@@ -365,6 +369,14 @@ const styles = StyleSheet.create({
   },
 
   // ── Header ──────────────────────────────────────────────────
+  headerShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.06,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -373,12 +385,8 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(124,58,237,0.08)',
     ...Platform.select({
       ios: {
-        shadowColor: '#5B47A3',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
       },
-      android: { elevation: 3 },
+      android: {},
     }),
   },
   backBtn: {
@@ -434,6 +442,15 @@ const styles = StyleSheet.create({
   },
 
   // ── Hero ─────────────────────────────────────────────────────
+  heroSectionShadow: {
+      shadowColor: '#5B47A3',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.28,
+      shadowRadius: 16,
+      elevation: 8,
+      borderRadius: 28,
+    },
+
   heroSection: {
     borderRadius: 28,
     // paddingHorizontal: 22,
@@ -443,12 +460,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#5B47A3',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.28,
-        shadowRadius: 16,
       },
-      android: { elevation: 8 },
+      android: {},
     }),
   },
   heroGlowOne: {
