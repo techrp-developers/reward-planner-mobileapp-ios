@@ -192,8 +192,7 @@ const TodoListScreen = () => {
       endTime: item.endTime || item.end_time,
       time:
         item.time ||
-        `${item.startTime || item.start_time || ""} - ${
-          item.endTime || item.end_time || ""
+        `${item.startTime || item.start_time || ""} - ${item.endTime || item.end_time || ""
         }`,
       title: item.title || "",
       subtitle: item.subtitle || "",
@@ -221,8 +220,8 @@ const TodoListScreen = () => {
       Alert.alert(
         "Todo",
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to load todos"
+        error?.message ||
+        "Failed to load todos"
       );
     } finally {
       setLoading(false);
@@ -404,8 +403,8 @@ const TodoListScreen = () => {
       Alert.alert(
         "Todo",
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to save todo"
+        error?.message ||
+        "Failed to save todo"
       );
     } finally {
       setSaving(false);
@@ -429,8 +428,8 @@ const TodoListScreen = () => {
             Alert.alert(
               "Todo",
               error?.response?.data?.message ||
-                error?.message ||
-                "Failed to delete todo"
+              error?.message ||
+              "Failed to delete todo"
             );
           }
         },
@@ -455,8 +454,8 @@ const TodoListScreen = () => {
             Alert.alert(
               "Todo",
               error?.response?.data?.message ||
-                error?.message ||
-                "Failed to delete selected todos"
+              error?.message ||
+              "Failed to delete selected todos"
             );
           }
         },
@@ -493,8 +492,8 @@ const TodoListScreen = () => {
       Alert.alert(
         "Todo",
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to complete todo"
+        error?.message ||
+        "Failed to complete todo"
       );
     }
   };
@@ -510,8 +509,8 @@ const TodoListScreen = () => {
       Alert.alert(
         "Todo",
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to complete selected todos"
+        error?.message ||
+        "Failed to complete selected todos"
       );
     }
   };
@@ -561,8 +560,8 @@ const TodoListScreen = () => {
       Alert.alert(
         "Reminder",
         error?.response?.data?.message ||
-          error?.message ||
-          "Failed to save reminder"
+        error?.message ||
+        "Failed to save reminder"
       );
     }
   };
@@ -687,8 +686,8 @@ const TodoListScreen = () => {
               {filterType === "TODAY"
                 ? "Today"
                 : selectedDate === todayKey
-                ? "Today"
-                : "Tasks"}
+                  ? "Today"
+                  : "Tasks"}
             </Text>
             <Text style={styles.taskCount}>{filteredTodos.length} Tasks</Text>
           </View>
@@ -766,10 +765,10 @@ const TodoListScreen = () => {
             {filterType === "ALL"
               ? "My Tasks"
               : filterType === "TODAY"
-              ? "Today Tasks"
-              : filterType === "PENDING"
-              ? "Pending Tasks"
-              : "Completed Tasks"}
+                ? "Today Tasks"
+                : filterType === "PENDING"
+                  ? "Pending Tasks"
+                  : "Completed Tasks"}
           </Text>
 
           <TouchableOpacity onPress={toggleSelectAll}>
@@ -1174,8 +1173,8 @@ const styles = StyleSheet.create({
   header: {
     height: 215,
     backgroundColor: PRIMARY,
-    paddingHorizontal: 20,
-    paddingTop: 16,
+    // paddingHorizontal: 20,
+    // paddingTop: 16,
 
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
@@ -1196,6 +1195,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 30,
+    paddingHorizontal: 20,
   },
 
   headerDate: {
@@ -1224,6 +1224,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 20,
+
   },
 
   todayText: {
