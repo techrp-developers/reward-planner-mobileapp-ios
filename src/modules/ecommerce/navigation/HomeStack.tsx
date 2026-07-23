@@ -33,9 +33,6 @@ export default function HomeStack() {
         getComponent={() => require("../screens/product_description_screen").default}
         options={{
           animation: "slide_from_right",
-          // Keep Home attached behind this opaque screen so popping cannot
-          // briefly expose the outgoing product image while Home reattaches.
-          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -44,7 +41,6 @@ export default function HomeStack() {
         getComponent={() => require("../screens/cartScreen").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -96,7 +92,6 @@ export default function HomeStack() {
         initialParams={{ context: "ecommerce" }}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />

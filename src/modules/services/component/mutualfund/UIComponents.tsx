@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 import {
   View,
   Text,
@@ -64,18 +65,21 @@ interface GradientButtonProps {
   onPress: () => void;
   style?: ViewStyle;
 }
-export const GradientButton: React.FC<GradientButtonProps> = ({ label, onPress, style }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.gradientBtn, BTN_SHADOW, style]}>
-    <LinearGradient
-      colors={[PRIMARY, PRIMARY_DARK]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={styles.gradientBtnInner}
-    >
-      <Text style={styles.gradientBtnText}>{label}</Text>
-    </LinearGradient>
-  </TouchableOpacity>
-);
+export const GradientButton: React.FC<GradientButtonProps> = ({ label, onPress, style }) => {
+  const { isDark } = useServicesTheme();
+  return (
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.gradientBtn, BTN_SHADOW, style]}>
+      <LinearGradient
+        colors={isDark ? ['#4F63C4', '#1A2560'] : [PRIMARY, PRIMARY_DARK]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.gradientBtnInner}
+      >
+        <Text style={styles.gradientBtnText}>{label}</Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+};
 
 // ─── Input Field ──────────────────────────────────────────────────
 interface InputFieldProps {
@@ -121,6 +125,7 @@ interface SliderRowProps {
 export const SliderRow: React.FC<SliderRowProps> = ({
   label, value, min, max, step, onChange, prefix = '', suffix = '',
 }) => {
+  const { isDark } = useServicesTheme();
   const trackWidthRef = useRef(0);
   const startPxRef = useRef(0);
   // always-fresh ref so PanResponder closure sees current value
@@ -165,7 +170,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
     <View style={styles.sliderContainer}>
       {/* Label + current value pill */}
       <View style={styles.sliderHeader}>
-        <Text style={styles.sliderLabel}>{label}</Text>
+        <Text style={[styles.sliderLabel, isDark && { color: 'rgba(255,255,255,0.6)' }]}>{label}</Text>
         <LinearGradient
           colors={[PRIMARY, PRIMARY_DARK]}
           start={{ x: 0, y: 0 }}
@@ -184,7 +189,7 @@ export const SliderRow: React.FC<SliderRowProps> = ({
         }}
       >
         {/* Background track */}
-        <View style={styles.trackBg} />
+        <View style={[styles.trackBg, isDark && { backgroundColor: 'rgba(255,255,255,0.08)' }]} />
 
         {/* Gradient fill */}
         <LinearGradient
@@ -206,17 +211,17 @@ export const SliderRow: React.FC<SliderRowProps> = ({
               </Text>
             </View>
           )}
-          <View style={[styles.thumb, dragging && styles.thumbActive]} />
+          <View style={[styles.thumb, isDark && { backgroundColor: '#1C1C26', borderColor: PRIMARY }, dragging && styles.thumbActive]} />
         </View>
       </View>
 
       {/* Min · step controls · Max */}
       <View style={styles.sliderFooter}>
-        <Text style={styles.rangeText}>{fmtRange(min, prefix, suffix)}</Text>
+        <Text style={[styles.rangeText, isDark && { color: 'rgba(255,255,255,0.4)' }]}>{fmtRange(min, prefix, suffix)}</Text>
         <View style={styles.stepRow}>
           <TouchableOpacity
             onPress={handleMinus}
-            style={styles.stepBtn}
+            style={[styles.stepBtn, isDark && { backgroundColor: '#2A2A35', borderColor: 'rgba(255,255,255,0.12)' }]}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
@@ -224,14 +229,14 @@ export const SliderRow: React.FC<SliderRowProps> = ({
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handlePlus}
-            style={styles.stepBtn}
+            style={[styles.stepBtn, isDark && { backgroundColor: '#2A2A35', borderColor: 'rgba(255,255,255,0.12)' }]}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Text style={styles.stepBtnText}>+</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.rangeText}>{fmtRange(max, prefix, suffix)}</Text>
+        <Text style={[styles.rangeText, isDark && { color: 'rgba(255,255,255,0.4)' }]}>{fmtRange(max, prefix, suffix)}</Text>
       </View>
     </View>
   );
@@ -246,55 +251,62 @@ interface ResultItem {
 interface ResultCardProps {
   items: ResultItem[];
 }
-export const ResultCard: React.FC<ResultCardProps> = ({ items }) => (
-  <View style={styles.resultCard}>
-    {items.map((item, i) =>
-      item.highlight ? (
-        <LinearGradient
-          key={i}
-          colors={['rgba(134,101,255,0.10)', 'rgba(91,71,163,0.06)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.resultRow}
-        >
-          <Text style={styles.resultLabel}>{item.label}</Text>
-          <Text style={[styles.resultValue, styles.resultValueHighlight]}>
-            {item.value}
-          </Text>
-        </LinearGradient>
-      ) : (
-        <View
-          key={i}
-          style={[
-            styles.resultRow,
-            i < items.length - 1 && styles.resultRowBorder,
-          ]}
-        >
-          <Text style={styles.resultLabel}>{item.label}</Text>
-          <Text style={styles.resultValue}>{item.value}</Text>
-        </View>
-      ),
-    )}
-  </View>
-);
+export const ResultCard: React.FC<ResultCardProps> = ({ items }) => {
+  const { isDark } = useServicesTheme();
+  return (
+    <View style={[styles.resultCard, isDark && { backgroundColor: '#1C1C26', borderColor: 'rgba(255,255,255,0.08)' }]}>
+      {items.map((item, i) =>
+        item.highlight ? (
+          <LinearGradient
+            key={i}
+            colors={isDark ? ['rgba(53,69,163,0.25)', 'rgba(8,11,38,0.18)'] : ['rgba(134,101,255,0.10)', 'rgba(91,71,163,0.06)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.resultRow}
+          >
+            <Text style={[styles.resultLabel, isDark && { color: 'rgba(255,255,255,0.55)' }]}>{item.label}</Text>
+            <Text style={[styles.resultValue, styles.resultValueHighlight, isDark && { color: '#818CF8' }]}>
+              {item.value}
+            </Text>
+          </LinearGradient>
+        ) : (
+          <View
+            key={i}
+            style={[
+              styles.resultRow,
+              i < items.length - 1 && styles.resultRowBorder,
+              i < items.length - 1 && isDark && { borderBottomColor: 'rgba(255,255,255,0.07)' },
+            ]}
+          >
+            <Text style={[styles.resultLabel, isDark && { color: 'rgba(255,255,255,0.55)' }]}>{item.label}</Text>
+            <Text style={[styles.resultValue, isDark && { color: '#F9FAFB' }]}>{item.value}</Text>
+          </View>
+        ),
+      )}
+    </View>
+  );
+};
 
 // ─── Section Header ───────────────────────────────────────────────
 interface SectionHeaderProps {
   title: string;
   subtitle?: string;
 }
-export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle }) => (
-  <View style={styles.sectionHeader}>
-    <LinearGradient
-      colors={[PRIMARY, PRIMARY_DARK]}
-      style={styles.sectionAccent}
-    />
-    <View style={styles.sectionTextWrap}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle }) => {
+  const { isDark } = useServicesTheme();
+  return (
+    <View style={styles.sectionHeader}>
+      <LinearGradient
+        colors={[PRIMARY, PRIMARY_DARK]}
+        style={styles.sectionAccent}
+      />
+      <View style={styles.sectionTextWrap}>
+        <Text style={[styles.sectionTitle, isDark && { color: '#F9FAFB' }]}>{title}</Text>
+        {subtitle ? <Text style={[styles.sectionSubtitle, isDark && { color: 'rgba(255,255,255,0.5)' }]}>{subtitle}</Text> : null}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 // ─── Donut Summary ────────────────────────────────────────────────
 interface DonutProps {

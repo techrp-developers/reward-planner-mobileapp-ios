@@ -251,9 +251,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 22,
+
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
     gap: 12,
@@ -273,10 +271,15 @@ const styles = StyleSheet.create({
     borderRadius: 19,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'center', marginLeft: 20
+
   },
   backIcon: { fontSize: 26, color: '#fff', lineHeight: 30, marginTop: -2 },
-  headerTextBlock: { flex: 1 },
+  headerTextBlock: {
+    flex: 1, paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 22,
+  },
   headerCategory: {
     fontSize: 10,
     fontWeight: '600',

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 import LinearGradient from 'react-native-linear-gradient';
 import { CalculatorScreen } from './CalculatorScreen';
 import { SliderRow, ResultCard, SectionHeader } from './UIComponents';
@@ -17,9 +18,14 @@ import {
 } from '../utils/calculations';
 
 // ─── Shared Card ──────────────────────────────────────────────────
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <View style={cardStyle.card}>{children}</View>
-);
+const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isDark } = useServicesTheme();
+  return (
+    <View style={[cardStyle.card, isDark && cardStyle.cardDark]}>
+      {children}
+    </View>
+  );
+};
 
 const cardStyle = StyleSheet.create({
   card: {
@@ -37,6 +43,10 @@ const cardStyle = StyleSheet.create({
       },
       android: { elevation: 4 },
     }),
+  },
+  cardDark: {
+    backgroundColor: '#1C1C26',
+    borderColor: 'rgba(255,255,255,0.08)',
   },
 });
 

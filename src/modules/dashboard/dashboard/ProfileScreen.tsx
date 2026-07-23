@@ -3,7 +3,7 @@
 // API:    GET /v1/auth/user-info  (via getAuthHeaders)
 // Deps:   useAuth, useAppTheme, LogoutConfirmationModal, rs, fs
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   Image, ActivityIndicator, Alert, Platform, Linking, Switch,
@@ -12,14 +12,13 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { HomeStackParamList } from '../../services/navigation/type';
+import type { HomeStackParamList } from '../../ecommerce/navigation/types';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAppTheme } from '../../../theme/ThemeContext';
 import { getStoredUserName, deleteCustomer, getAuthHeaders, updateProfile } from '../../common/auth/api/AuthAPI';
-import { fetchHistory } from '../../ecommerce/api/OrderApi';
 import { LogoutConfirmationModal } from '../../common/auth/screens/LogoutConfirmationModal';
 import { rs, fs } from '../../../utils/responsive';
 import axios from 'axios';
@@ -28,7 +27,20 @@ import Reward from '../../../assets/product/rewards.svg';
 const API_BASE_URL = 'https://rewardplanners.com/api/crm';
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
-type RootNav = NativeStackNavigationProp<RootStackParamList>;
+
+export type ProfileContext = 'dashboard' | 'ecommerce' | 'services' | 'bbps';
+
+const findRootNavigation = (navigation: any): NativeStackNavigationProp<RootStackParamList> => {
+  let current = navigation;
+  let parent = current?.getParent?.();
+
+  while (parent) {
+    current = parent;
+    parent = current.getParent?.();
+  }
+
+  return current;
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface Company {
@@ -85,8 +97,13 @@ const formatDate = (dateStr: string): string => {
 // ── Component ─────────────────────────────────────────────────────────────────
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<Nav>();
-  const rootNavigation = navigation.getParent() as RootNav | undefined;
-  const { isDark, theme, toggleTheme } = useAppTheme();
+  const route = useRoute<any>();
+  const rootNavigation = findRootNavigation(navigation);
+  const { isDark: appIsDark, theme: appTheme, toggleTheme } = useAppTheme();
+  const profileContext: ProfileContext = route.params?.context ?? 'dashboard';
+  const isDashboardProfile = profileContext === 'dashboard';
+  const isDark = appIsDark;
+  const theme = appTheme;
   const { isAuthenticated, user: authUser, logout } = useAuth();
   const insets = useSafeAreaInsets();
 
@@ -95,17 +112,10 @@ const ProfileScreen: React.FC = () => {
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [_orders, setOrders] = useState<any[]>([]);
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
-  const [showOrderMenu, setShowOrderMenu] = useState(false);
-
-  const om = useMemo(() => ({
-    parentBorder: { borderBottomWidth: 0.5 as const, borderBottomColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)' },
-    parentIconBg: { backgroundColor: isDark ? 'rgba(129,140,248,0.12)' : '#EEF2FF' },
-    subRowBg: { borderBottomWidth: 0.5 as const, borderBottomColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)', backgroundColor: isDark ? 'rgba(255,255,255,0.025)' : 'rgba(238,242,255,0.55)' },
-    subIconBg: { backgroundColor: isDark ? 'rgba(129,140,248,0.14)' : '#EEF2FF' },
-  }), [isDark]);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const topPadding =
     (insets.top > 0 ? insets.top : Platform.OS === 'android' ? 24 : 50) + 8;
@@ -145,16 +155,6 @@ const ProfileScreen: React.FC = () => {
   useFocusEffect(useCallback(() => { loadUser(); }, [loadUser]));
 
   // ── Fetch orders ─────────────────────────────────────────────────────────
-  const loadOrders = useCallback(async () => {
-    if (!isAuthenticated) { setOrders([]); return; }
-    try {
-      const res = await fetchHistory();
-      setOrders(res?.success ? (res.orders ?? []) : []);
-    } catch { setOrders([]); }
-  }, [isAuthenticated]);
-
-  useEffect(() => { loadOrders(); }, [loadOrders]);
-
   // ── Image picker + upload ────────────────────────────────────────────────
   const handlePickImage = useCallback(() => {
     launchImageLibrary({ mediaType: 'photo', quality: 0.8 }, async res => {
@@ -199,30 +199,25 @@ const ProfileScreen: React.FC = () => {
 
   // ── Delete account ───────────────────────────────────────────────────────
   const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      'Delete Account',
-      'Are you sure you want to permanently delete your account? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete', style: 'destructive',
-          onPress: async () => {
-            try {
-              setLogoutLoading(true);
-              const res = await deleteCustomer();
-              if (res?.success || res?.status === 'ok' || res?.data) {
-                await logout();
-                rootNavigation?.reset({ index: 0, routes: [{ name: 'Auth' }] });
-              } else {
-                Alert.alert('Failed', 'Could not delete account. Please try again.');
-              }
-            } catch {
-              Alert.alert('Failed', 'Could not delete account. Please try again.');
-            } finally { setLogoutLoading(false); }
-          },
-        },
-      ]
-    );
+    setDeleteModalVisible(true);
+  }, []);
+
+  const handleDeleteAccountConfirm = useCallback(async () => {
+    try {
+      setDeleteLoading(true);
+      const res = await deleteCustomer();
+      if (res?.success || res?.status === 'ok' || res?.data) {
+        await logout();
+        setDeleteModalVisible(false);
+        rootNavigation?.reset({ index: 0, routes: [{ name: 'Auth' }] });
+      } else {
+        Alert.alert('Failed', 'Could not delete account. Please try again.');
+      }
+    } catch {
+      Alert.alert('Failed', 'Could not delete account. Please try again.');
+    } finally {
+      setDeleteLoading(false);
+    }
   }, [logout, rootNavigation]);
 
   // ── Rate us ───────────────────────────────────────────────────────────────
@@ -274,13 +269,13 @@ const ProfileScreen: React.FC = () => {
           style={[styles.hero, { paddingTop: topPadding }]}
         >
           {/* Top bar */}
-          {/* <View style={styles.heroBar}>
+          <View style={styles.heroBar}>
             <TouchableOpacity style={styles.heroBtn} onPress={() => navigation.goBack()}>
               <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
             </TouchableOpacity>
             <Text style={[styles.heroTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>My Profile</Text>
             <View style={styles.heroBtnGhost} />
-          </View> */}
+          </View>
 
           <LinearGradient
             colors={isDark ? ['#18181B', '#27233A', '#312E81'] : ['#111827', '#312E81', '#4F46E5']}
@@ -363,66 +358,70 @@ const ProfileScreen: React.FC = () => {
           {/* ════════════════════════════════════
               CONTACT INFO
           ════════════════════════════════════ */}
-          <SectionHead title="User Info" isDark={isDark} />
-          <View style={[styles.userInfoCard, cardColor(isDark, theme)]}>
-            <InfoGroupTitle title="Contact Info" isDark={isDark} />
-            <InfoTableRow
-              icon="phone-outline"
-              label="Mobile"
-              value={formatPhone(userInfo?.phone ?? '')}
-              isDark={isDark}
-              theme={theme}
-            />
-            <InfoTableRow
-              icon="email-outline"
-              label="Email"
-              value={userInfo?.email ?? ''}
-              isDark={isDark}
-              theme={theme}
-            />
-            <InfoTableRow
-              icon="identifier"
-              label="User ID"
-              value={`#RP-${String(userInfo?.userId ?? 0).padStart(5, '0')}`}
-              isDark={isDark}
-              theme={theme}
-              badge="Active"
-              last={!showRole && !showDepartment && !showJoining}
-            />
-            {(showRole || showDepartment || showJoining) && (
-              <InfoGroupTitle title="Work Info" isDark={isDark} />
-            )}
-            {showRole && (
-              <InfoTableRow
-                icon="briefcase-outline"
-                label="Role"
-                value={emp!.role}
-                isDark={isDark}
-                theme={theme}
-                last={!showDepartment && !showJoining}
-              />
-            )}
-            {showDepartment && (
-              <InfoTableRow
-                icon="domain"
-                label="Department"
-                value={emp!.department}
-                isDark={isDark}
-                theme={theme}
-                last={!showJoining}
-              />
-            )}
-            {showJoining && (
-              <InfoTableRow
-                icon="calendar-check-outline"
-                label="Joined"
-                value={formatDate(emp!.dateOfJoining)}
-                isDark={isDark}
-                theme={theme}
-                last
-              />
-            )}
-          </View>
+          {isDashboardProfile && (
+            <>
+              <SectionHead title="User Info" isDark={isDark} />
+              <View style={[styles.userInfoCard, cardColor(isDark, theme)]}>
+                <InfoGroupTitle title="Contact Info" isDark={isDark} />
+                <InfoTableRow
+                  icon="phone-outline"
+                  label="Mobile"
+                  value={formatPhone(userInfo?.phone ?? '')}
+                  isDark={isDark}
+                  theme={theme}
+                />
+                <InfoTableRow
+                  icon="email-outline"
+                  label="Email"
+                  value={userInfo?.email ?? ''}
+                  isDark={isDark}
+                  theme={theme}
+                />
+                <InfoTableRow
+                  icon="identifier"
+                  label="User ID"
+                  value={`#RP-${String(userInfo?.userId ?? 0).padStart(5, '0')}`}
+                  isDark={isDark}
+                  theme={theme}
+                  badge="Active"
+                  last={!showRole && !showDepartment && !showJoining}
+                />
+                {(showRole || showDepartment || showJoining) && (
+                  <InfoGroupTitle title="Work Info" isDark={isDark} />
+                )}
+                {showRole && (
+                  <InfoTableRow
+                    icon="briefcase-outline"
+                    label="Role"
+                    value={emp!.role}
+                    isDark={isDark}
+                    theme={theme}
+                    last={!showDepartment && !showJoining}
+                  />
+                )}
+                {showDepartment && (
+                  <InfoTableRow
+                    icon="domain"
+                    label="Department"
+                    value={emp!.department}
+                    isDark={isDark}
+                    theme={theme}
+                    last={!showJoining}
+                  />
+                )}
+                {showJoining && (
+                  <InfoTableRow
+                    icon="calendar-check-outline"
+                    label="Joined"
+                    value={formatDate(emp!.dateOfJoining)}
+                    isDark={isDark}
+                    theme={theme}
+                    last
+                  />
+                )}
+              </View>
+            </>
+          )}
 
           {/* ════════════════════════════════════
               EMPLOYEE INFO
@@ -433,67 +432,58 @@ const ProfileScreen: React.FC = () => {
           {/* ════════════════════════════════════
               DEFAULT ADDRESS
           ════════════════════════════════════ */}
-          <SectionHead title="Shop" isDark={isDark} />
+          {(profileContext === 'ecommerce' || profileContext === 'services' || profileContext === 'bbps') && (
+            <>
+              <SectionHead title={profileContext === 'services' ? 'Services' : 'Shop'} isDark={isDark} />
+              <View style={[styles.card, cardColor(isDark, theme)]}>
+                {/* My Orders — expandable dropdown */}
+                <TouchableOpacity
+                  style={[styles.mrow, {
+                    borderBottomWidth: profileContext === 'ecommerce' ? 0.5 : 0,
+                    borderBottomColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)',
+                  }]}
+                  onPress={() => navigation.navigate(
+                    (profileContext === 'bbps' ? 'OrderHistory' : 'MyOrder') as any
+                  )}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.micon, { backgroundColor: isDark ? 'rgba(129,140,248,0.12)' : '#EEF2FF' }]}>
+                    <MaterialCommunityIcons name={profileContext === 'services' ? 'briefcase-check-outline' : 'shopping-outline'} size={17} color="#4F46E5" />
+                  </View>
+                  <View style={styles.flex1}>
+                    <Text style={[styles.rowVal, { color: theme.text }]}>My Orders</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={18} color="#CBD5E1" />
+                </TouchableOpacity>
+
+                {profileContext === 'ecommerce' && <AccountRow icon="heart-outline" label="Wishlist" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('WishList' as any)} />}
+              </View>
+            </>
+          )}
+
+          <SectionHead title="Address" isDark={isDark} />
           <View style={[styles.card, cardColor(isDark, theme)]}>
-            {/* My Orders — expandable dropdown */}
-            <TouchableOpacity
-              style={[styles.mrow, om.parentBorder]}
-              onPress={() => setShowOrderMenu(p => !p)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.micon, om.parentIconBg]}>
-                <MaterialCommunityIcons name="shopping-outline" size={17} color="#4F46E5" />
-              </View>
-              <View style={styles.flex1}>
-                <Text style={[styles.rowVal, { color: theme.text }]}>My Orders</Text>
-              </View>
-              <MaterialCommunityIcons
-                name={showOrderMenu ? 'chevron-up' : 'chevron-down'}
-                size={18}
-                color={isDark ? '#52525B' : '#CBD5E1'}
-              />
-            </TouchableOpacity>
-
-            {showOrderMenu && (
-              <>
-                <TouchableOpacity
-                  style={[styles.mrow, styles.subRow, om.subRowBg]}
-                  onPress={() => { setShowOrderMenu(false); navigation.navigate('MyOrder' as any); }}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.micon, om.subIconBg]}>
-                    <MaterialCommunityIcons name="cart-outline" size={16} color="#4F46E5" />
-                  </View>
-                  <View style={styles.flex1}>
-                    <Text style={[styles.rowVal, { color: theme.text }]}>Ecommerce Orders</Text>
-                    <Text style={[styles.rowLbl, { color: theme.secondaryText }]}>Products & shopping</Text>
-                  </View>
-                  <MaterialCommunityIcons name="chevron-right" size={18} color={isDark ? '#52525B' : '#CBD5E1'} />
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.mrow, styles.subRow, om.subRowBg]}
-                  onPress={() => {
-                    setShowOrderMenu(false);
-                    (navigation as any).navigate('ServiceStack', { screen: 'MyOrder' });
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.micon, om.subIconBg]}>
-                    <MaterialCommunityIcons name="briefcase-check-outline" size={16} color="#4F46E5" />
-                  </View>
-                  <View style={styles.flex1}>
-                    <Text style={[styles.rowVal, { color: theme.text }]}>Service Orders</Text>
-                    <Text style={[styles.rowLbl, { color: theme.secondaryText }]}>Insurance, docs & more</Text>
-                  </View>
-                  <MaterialCommunityIcons name="chevron-right" size={18} color={isDark ? '#52525B' : '#CBD5E1'} />
-                </TouchableOpacity>
-              </>
-            )}
-
-            <AccountRow icon="heart-outline" label="Wishlist" isDark={isDark} theme={theme} onPress={() => navigation.navigate('WishList' as any)} />
-            <AccountRow icon="map-marker-outline" label="Saved Addresses" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('AddressSelect' as any)} />
+            <AccountRow icon="map-marker-outline" label="Saved Addresses" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('AddressSelect', { manageOnly: true } as any)} />
           </View>
+
+          {isDashboardProfile && (
+            <>
+              <SectionHead title="All Orders" isDark={isDark} />
+              <View style={[styles.card, cardColor(isDark, theme)]}>
+                <AccountRow
+                  icon="clipboard-list-outline"
+                  label="All Orders"
+                  sub="Products, services, BBPS, and more"
+                  isDark={isDark}
+                  theme={theme}
+                  last
+                  onPress={() => rootNavigation.navigate('App', {
+                    screen: 'TrackOrders',
+                  } as any)}
+                />
+              </View>
+            </>
+          )}
 
           {/* ════════════════════════════════════
               OTHERS / ACCOUNT
@@ -531,8 +521,23 @@ const ProfileScreen: React.FC = () => {
       <LogoutConfirmationModal
         visible={logoutModalVisible}
         isLoading={logoutLoading}
+        isDark={isDark}
         onConfirm={handleLogoutConfirm}
         onCancel={() => setLogoutModalVisible(false)}
+      />
+      <LogoutConfirmationModal
+        visible={deleteModalVisible}
+        isLoading={deleteLoading}
+        isDark={isDark}
+        danger
+        icon="delete-outline"
+        title="Delete Account"
+        description="Are you sure you want to permanently delete your account?"
+        subText="This action cannot be undone."
+        confirmText="Delete Account"
+        loadingText="Deleting..."
+        onConfirm={handleDeleteAccountConfirm}
+        onCancel={() => setDeleteModalVisible(false)}
       />
     </LinearGradient>
   );
@@ -696,7 +701,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.20)',
-    top: -75,
+    top: -80,
     zIndex: 10,
   },
   heroBtnGhost: {
@@ -788,7 +793,6 @@ const styles = StyleSheet.create({
     borderRadius: rs(6),
     backgroundColor: '#FFFFFF',
   },
-
   // Company bar inside hero
 
   // ── Stats row — reward pts + company ──

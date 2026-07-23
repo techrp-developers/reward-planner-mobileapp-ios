@@ -179,7 +179,7 @@ const ListHeader = memo<Props>(({ navigation }) => {
 
       <View style={styles.sectionHeadingRow}>
         <View style={styles.sectionHeadingLeft}>
-          <MaterialCommunityIcons name="calculator-variant-outline" size={18} color="#3545A3" />
+          <MaterialCommunityIcons name="calculator-variant-outline" size={18} color={servicesTheme.colors.primary} />
           <Text style={[styles.sectionHeading, { color: servicesTheme.colors.textStrong }]}>MF Calculators</Text>
         </View>
         <View style={[styles.sectionBadge, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
@@ -330,7 +330,7 @@ const MFScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={[styles.badge, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
-          <Text style={styles.badgeCount}>{CALCULATORS.length}</Text>
+          <Text style={[styles.badgeCount, { color: servicesTheme.colors.primary }]}>{CALCULATORS.length}</Text>
           <Text style={[styles.badgeLabel, { color: servicesTheme.colors.primaryDark }]}>Tools</Text>
         </View>
       </LinearGradient>
@@ -404,6 +404,8 @@ const styles = StyleSheet.create({
     color: '#7A718A',
     marginTop: 1,
     fontWeight: '500',
+    marginBottom: 10,
+
   },
 
   // ── Badge ────────────────────────────────────────────────────
