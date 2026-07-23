@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import RenderHtml from 'react-native-render-html';
 import { getSectionContent, type MFArticleDetails } from '../../api/MutualFundAPI';
 import type { HomeStackParamList } from '../../navigation/type';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ type ArticleDetailsRouteProp = RouteProp<HomeStackParamList, 'ArticleDetails'>;
 function ArticleDetails() {
     const route = useRoute<ArticleDetailsRouteProp>();
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+    const servicesTheme = useServicesTheme();
     const { articleId, sectionId } = route.params;
 
     const [article, setArticle] = useState<MFArticleDetails | null>(null);
@@ -41,31 +43,40 @@ function ArticleDetails() {
             .finally(() => setLoading(false));
     }, [articleId, sectionId]);
 
-    return (
-        <SafeAreaView style={styles.safe} edges={['top']}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    const themedHtmlStyles = useMemo(() => ({
+        h2: { ...htmlTagStyles.h2, color: servicesTheme.colors.textStrong },
+        h3: { ...htmlTagStyles.h3, color: servicesTheme.colors.text },
+        p: { ...htmlTagStyles.p, color: servicesTheme.colors.muted },
+        li: { ...htmlTagStyles.li, color: servicesTheme.colors.muted },
+        strong: { ...htmlTagStyles.strong, color: servicesTheme.colors.textStrong },
+        em: { ...htmlTagStyles.em, color: servicesTheme.colors.subtle },
+    }), [servicesTheme.colors.muted, servicesTheme.colors.subtle, servicesTheme.colors.text, servicesTheme.colors.textStrong]);
 
-            <View style={styles.header}>
+    return (
+        <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+            <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
+
+            <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider, shadowColor: servicesTheme.colors.shadow }]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={styles.backBtn}
+                    style={[styles.backBtn, { backgroundColor: servicesTheme.colors.surfaceAlt }]}
                     activeOpacity={0.7}
                     hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                    <Text style={styles.backIcon}>‹</Text>
+                    <Text style={[styles.backIcon, { color: servicesTheme.colors.text }]}>‹</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle} numberOfLines={1}>
+                <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={1}>
                     {article ? article.title : 'Article'}
                 </Text>
             </View>
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#8665FF" />
+                    <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
                 </View>
             ) : !article ? (
                 <View style={styles.center}>
-                    <Text style={styles.errorText}>Article not found.</Text>
+                    <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>Article not found.</Text>
                 </View>
             ) : (
                 <ScrollView
@@ -75,25 +86,24 @@ function ArticleDetails() {
                     <Image
                         source={{ uri: article.banner_image }}
                         style={styles.banner}
-                        resizeMode="cover"
+                        resizeMode="contain"
                     />
 
                     <View style={styles.content}>
-                        <Text style={styles.title}>{article.title}</Text>
-                        <Text style={styles.shortDesc}>{article.short_description}</Text>
-                        <View style={styles.divider} />
+                        <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]}>{article.title}</Text>
+                        <Text style={[styles.shortDesc, { color: servicesTheme.colors.muted }]}>{article.short_description}</Text>
+                        <View style={[styles.divider, { backgroundColor: servicesTheme.colors.divider }]} />
 
                         <RenderHtml
                             contentWidth={width - 32}
                             source={{ html: article.article_content }}
-                            tagsStyles={htmlTagStyles}
+                            tagsStyles={themedHtmlStyles}
+                            renderersProps={{
+                                img: { enableExperimentalPercentWidth: true },
+                            }}
                         />
 
-                        {!!article.cta_text && (
-                            <TouchableOpacity style={styles.ctaBtn} activeOpacity={0.85}>
-                                <Text style={styles.ctaText}>{article.cta_text}</Text>
-                            </TouchableOpacity>
-                        )}
+                        {!!article.cta_text && <Text style={styles.ctaText}>{article.cta_text}</Text>}
                     </View>
                 </ScrollView>
             )}
@@ -197,7 +207,7 @@ const styles = StyleSheet.create({
     },
     banner: {
         width: '100%',
-        height: 220,
+        height: 240,
         backgroundColor: '#E5E7EB',
     },
     content: {
@@ -223,7 +233,7 @@ const styles = StyleSheet.create({
     },
     ctaBtn: {
         marginTop: 28,
-        backgroundColor: '#8665FF',
+        backgroundColor: '#3545A3',
         borderRadius: 14,
         paddingVertical: 16,
         alignItems: 'center',

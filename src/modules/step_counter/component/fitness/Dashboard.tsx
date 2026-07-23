@@ -322,7 +322,25 @@ const Dashboard: React.FC = () => {
     celebrationData,
     dismissCelebration,
     refreshSteps,
+    isSetupComplete,
   } = useStepTracker();
+
+  // If Health Connect is uninstalled while the user is on the Dashboard (or on
+  // a fresh install where HC is gone), the context resets isSetupComplete to
+  // false. Redirect back to onboarding so the user is prompted to reinstall HC
+  // rather than seeing a broken Dashboard with 0 steps and no explanation.
+  // The ref guards against a false redirect during the initial async restore
+  // (isSetupComplete starts as false, becomes true after AsyncStorage/network
+  // resolves — we only want to redirect when it transitions true → false).
+  const setupWasReadyRef = useRef(false);
+  useEffect(() => {
+    if (isSetupComplete) {
+      setupWasReadyRef.current = true;
+    } else if (setupWasReadyRef.current) {
+      navigation.replace('StepWelcome');
+    }
+  }, [isSetupComplete, navigation]);
+
   // Goal completion shows two overlays in sequence: GoalReachedScreen (quick
   // "Target Reached!" recap) first, then Continue advances to the fuller
   // TodayGoalCompletedScreen (Plan Overview + full summary).

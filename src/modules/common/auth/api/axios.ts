@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 
 export const API_BASE_URL = "https://rewardplanners.com/api/crm";
 
@@ -20,6 +20,7 @@ let queuedRequests: Array<{
   resolve: (value: AxiosResponse) => void;
   reject: (error: unknown) => void;
   config: RetryableRequestConfig;
+  retryRequest: (config: RetryableRequestConfig) => Promise<AxiosResponse>;
 }> = [];
 
 export const setSessionHandlers = (handlers: SessionHandlers | null) => {
@@ -64,7 +65,7 @@ const flushQueuedRequests = (
   const pending = [...queuedRequests];
   queuedRequests = [];
 
-  pending.forEach(({ resolve, reject, config }) => {
+  pending.forEach(({ resolve, reject, config, retryRequest }) => {
     if (error || !accessToken) {
       reject(error || new Error("Session refresh failed"));
       return;
@@ -75,7 +76,7 @@ const flushQueuedRequests = (
       Authorization: `Bearer ${accessToken}`,
     };
 
-    api({ ...config, headers: nextHeaders })
+    retryRequest({ ...config, headers: nextHeaders })
       .then(resolve)
       .catch(reject);
   });
@@ -112,10 +113,10 @@ api.interceptors.request.use((config) => {
   return nextConfig;
 });
 
-// On 401, refresh token once and retry pending requests.
-api.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
+const handleUnauthorizedResponse = async (
+  error: AxiosError,
+  retryRequest: (config: RetryableRequestConfig) => Promise<AxiosResponse>,
+) => {
     const status = error.response?.status;
     const originalConfig = (error.config || {}) as RetryableRequestConfig;
 
@@ -127,13 +128,14 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    originalConfig._retry = true;
+
     if (isRefreshing) {
       return new Promise<AxiosResponse>((resolve, reject) => {
-        queuedRequests.push({ resolve, reject, config: originalConfig });
+        queuedRequests.push({ resolve, reject, config: originalConfig, retryRequest });
       });
     }
 
-    originalConfig._retry = true;
     isRefreshing = true;
 
     try {
@@ -163,7 +165,7 @@ api.interceptors.response.use(
         Authorization: `Bearer ${nextAccessToken}`,
       };
 
-      return api({ ...originalConfig, headers: retriedHeaders });
+      return retryRequest({ ...originalConfig, headers: retriedHeaders });
     } catch (refreshError) {
       flushQueuedRequests(refreshError, null);
       await sessionHandlers.onLogout("refresh_failed");
@@ -171,7 +173,23 @@ api.interceptors.response.use(
     } finally {
       isRefreshing = false;
     }
-  },
+};
+
+export const attachSessionRefreshInterceptor = (client: AxiosInstance) =>
+  client.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => handleUnauthorizedResponse(error, (config) => client(config)),
+  );
+
+// Handle 401s from the shared client.
+attachSessionRefreshInterceptor(api);
+
+// A number of older module APIs still use the default axios export directly.
+// Give those requests the same refresh-and-retry behavior until all modules
+// have migrated to the shared client.
+axios.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => handleUnauthorizedResponse(error, (config) => axios(config)),
 );
 
 export default api;

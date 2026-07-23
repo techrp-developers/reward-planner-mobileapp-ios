@@ -16,12 +16,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
+import OrderItemCard from '../../../../modules/common/order/OrderItemCard';
 import {
   getServiceCancellationReasons,
   requestServiceOrderCancellation,
   type ServiceCancellationReason,
 } from '../../api/OrderAPI';
 import type { HomeStackParamList } from '../../navigation/type';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceCancellationRequest'>;
@@ -30,6 +32,7 @@ const PURPLE = '#7C3AED';
 
 export default function ServiceCancellationRequest() {
   const navigation = useNavigation<Nav>();
+  const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
   const {
     service_order_id,
@@ -105,99 +108,85 @@ export default function ServiceCancellationRequest() {
 
   if (submitted) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <ScrollView contentContainerStyle={styles.confirmScroll}>
-          <LinearGradient
-            colors={['#30205F', '#5B3CB4', '#7C3AED']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.confirmTop}
-          >
+      <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
+        <ScrollView contentContainerStyle={[styles.confirmScroll, { backgroundColor: servicesTheme.colors.background }]}>
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => navigation.navigate('ServiceOrderDetail', { parent_order_id })}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <MaterialCommunityIcons name="close" size={24} color="#FFF" />
+            <MaterialCommunityIcons name="close" size={26} color={servicesTheme.colors.text} />
           </TouchableOpacity>
 
-          <View style={styles.confirmHero}>
+          <View style={styles.confirmCard}>
             <View style={styles.confirmCopy}>
-              <Text style={styles.confirmEyebrow}>REQUEST SUBMITTED</Text>
-              <Text style={styles.confirmTitle}>Cancellation Requested</Text>
-              <Text style={styles.confirmSubtitle}>
-                We’ve received your request and our team will review it shortly.
+              <Text style={[styles.confirmTitle, { color: servicesTheme.colors.textStrong }]}>Order Cancellation Requested</Text>
+              <Text style={[styles.confirmSubtitle, { color: servicesTheme.colors.muted }]}>
+                We've received your request and our team will review it shortly.
               </Text>
               <TouchableOpacity
                 style={styles.confirmLink}
                 activeOpacity={0.75}
                 onPress={() => navigation.navigate('ServiceOrderDetail', { parent_order_id })}
               >
-                <Text style={styles.confirmLinkText}>View Request Details</Text>
-                <MaterialCommunityIcons name="chevron-right" size={22} color="#FFF" />
+                <Text style={[styles.confirmLinkText, { color: servicesTheme.colors.primary }]}>View Cancellation Details</Text>
+                <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.successBadge}>
               <View style={styles.successCircle}>
-                <MaterialCommunityIcons name="clock-check-outline" size={32} color="#FFF" />
+                <MaterialCommunityIcons name="check" size={34} color="#FFFFFF" />
               </View>
               <MaterialCommunityIcons
                 name="star-four-points"
-                size={22}
-                color="#FFF"
+                size={18}
+                color="#18A957"
                 style={styles.sparkleOne}
               />
               <MaterialCommunityIcons
                 name="star-four-points"
-                size={18}
-                color="#FFF"
+                size={14}
+                color="#18A957"
                 style={styles.sparkleTwo}
               />
             </View>
           </View>
-          </LinearGradient>
 
           <View style={styles.confirmContent}>
-            <ServiceSummaryCard
-              serviceName={service_name}
-              variantName={variant_name}
-              orderRef={order_ref}
-              imageUrl={image_url}
+            <OrderItemCard
+              image={
+                image_url ? (
+                  <Image source={{ uri: image_url }} style={styles.productImage} />
+                ) : (
+                  <MaterialCommunityIcons name="file-document-outline" size={34} color={PURPLE} />
+                )
+              }
+              title={service_name || 'Service'}
+              weight={variant_name || 'Cancellation requested'}
+              orderId={order_ref}
             />
-
-            <View style={styles.reviewCard}>
-              <View style={styles.reviewIcon}>
-                <MaterialCommunityIcons name="progress-clock" size={22} color={PURPLE} />
-              </View>
-              <View style={styles.reviewCopy}>
-                <Text style={styles.reviewTitle}>Request under review</Text>
-                <Text style={styles.reviewText}>
-                  Your service remains in request status until the cancellation is reviewed.
-                </Text>
-              </View>
-            </View>
           </View>
 
-          <View style={styles.confirmActions}>
+          <View style={[styles.confirmActions, { backgroundColor: servicesTheme.colors.surface }]}>
             <TouchableOpacity
               style={styles.confirmActionRow}
               onPress={() => navigation.navigate('Home')}
               activeOpacity={0.75}
             >
-              <Text style={styles.confirmActionText}>Keep Shopping</Text>
-              <MaterialCommunityIcons name="chevron-right" size={28} color="#6B7280" />
+              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>Keep Shopping</Text>
+              <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
             </TouchableOpacity>
 
-            <View style={styles.confirmDivider} />
+            <View style={[styles.confirmDivider, { backgroundColor: servicesTheme.colors.divider }]} />
 
             <TouchableOpacity
               style={styles.confirmActionRow}
               onPress={() => navigation.navigate('MyOrder')}
               activeOpacity={0.75}
             >
-              <Text style={styles.confirmActionText}>View All Orders</Text>
-              <MaterialCommunityIcons name="chevron-right" size={28} color="#6B7280" />
+              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>View All Orders</Text>
+              <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -206,37 +195,35 @@ export default function ServiceCancellationRequest() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
       <Header title="Request Cancellation" onBack={() => navigation.goBack()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        <ServiceSummaryCard
-          serviceName={service_name}
-          variantName={variant_name}
-          orderRef={order_ref}
-          imageUrl={image_url}
+        <OrderItemCard
+          image={
+            image_url ? (
+              <Image source={{ uri: image_url }} style={styles.productImage} />
+            ) : (
+              <MaterialCommunityIcons name="file-document-outline" size={34} color={PURPLE} />
+            )
+          }
+          title={service_name || 'Service'}
+          weight={variant_name || 'Service cancellation request'}
+          orderId={order_ref}
         />
 
-        <View style={styles.reasonCard}>
+        <View style={[styles.reasonCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
           <View style={styles.reasonHeader}>
-            <View style={styles.reasonIcon}>
-              <MaterialCommunityIcons name="clipboard-list-outline" size={20} color={PURPLE} />
-            </View>
-            <View style={styles.reasonHeaderCopy}>
-              <Text style={styles.reasonTitle}>Reason For Cancellation</Text>
-              <Text style={styles.reasonSubtitle}>
-                Pick the closest reason so we can process the request smoothly.
-              </Text>
-            </View>
+            <Text style={[styles.reasonTitle, { color: servicesTheme.colors.textStrong }]}>Reason For Cancellation</Text>
           </View>
 
           {loadingReasons ? (
             <View style={styles.loadingReasons}>
-              <ActivityIndicator color={PURPLE} />
-              <Text style={styles.loadingReasonText}>Loading reasons...</Text>
+              <ActivityIndicator color={servicesTheme.colors.primary} />
+              <Text style={[styles.loadingReasonText, { color: servicesTheme.colors.muted }]}>Loading reasons...</Text>
             </View>
           ) : null}
 
@@ -247,19 +234,18 @@ export default function ServiceCancellationRequest() {
               activeOpacity={0.75}
               onPress={() => setSelectedReason(reason)}
             >
-              <View style={styles.radioOuter} />
-              <Text style={styles.reasonText}>{reason.reason_text}</Text>
-              <MaterialCommunityIcons name="chevron-right" size={20} color="#D1D5DB" />
+              <View style={[styles.radioOuter, { borderColor: servicesTheme.colors.border }]} />
+              <Text style={[styles.reasonText, { color: servicesTheme.colors.text }]}>{reason.reason_text}</Text>
             </TouchableOpacity>
           ))}
 
           {!loadingReasons && !selectedReason && reasons.length === 0 ? (
-            <View style={styles.emptyReasonBox}>
-              <Text style={styles.emptyReasonText}>
+            <View style={[styles.emptyReasonBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
+              <Text style={[styles.emptyReasonText, { color: servicesTheme.colors.muted }]}>
                 No cancellation reasons are available right now.
               </Text>
               <TouchableOpacity onPress={loadReasons} style={styles.retryReasonsButton}>
-                <Text style={styles.retryReasonsText}>Retry</Text>
+                <Text style={[styles.retryReasonsText, { color: servicesTheme.colors.primary }]}>Retry</Text>
               </TouchableOpacity>
             </View>
           ) : null}
@@ -271,30 +257,31 @@ export default function ServiceCancellationRequest() {
                 activeOpacity={0.75}
                 onPress={() => setSelectedReason(null)}
               >
-                <View style={[styles.radioOuter, styles.radioOuterActive]}>
+                <View style={[styles.radioOuter, { borderColor: servicesTheme.colors.border }, styles.radioOuterActive]}>
                   <View style={styles.radioInner} />
                 </View>
-                <Text style={styles.reasonText}>{selectedReason.reason_text}</Text>
-                <Text style={styles.changeReasonText}>Change</Text>
+                <Text style={[styles.reasonText, { color: servicesTheme.colors.text }]}>{selectedReason.reason_text}</Text>
               </TouchableOpacity>
-
-              <View style={styles.commentBox}>
-                <Text style={styles.commentLabel}>
-                  Comments{isReasonOther ? '*' : ''}
-                </Text>
-                <TextInput
-                  placeholder="Enter any specific questions or requirements you'd like to share"
-                  placeholderTextColor="#9CA3AF"
-                  value={comment}
-                  onChangeText={setComment}
-                  multiline
-                  textAlignVertical="top"
-                  style={styles.commentInput}
-                />
-              </View>
             </>
           ) : null}
         </View>
+
+        {selectedReason ? (
+          <View style={[styles.commentBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+            <Text style={[styles.commentLabel, { color: servicesTheme.colors.text }]}>
+              Comments{isReasonOther ? '*' : ''}
+            </Text>
+            <TextInput
+              placeholder="Enter any specific questions or requirements you'd like to share"
+              placeholderTextColor={servicesTheme.colors.subtle}
+              value={comment}
+              onChangeText={setComment}
+              multiline
+              textAlignVertical="top"
+              style={[styles.commentInput, { color: servicesTheme.colors.text }]}
+            />
+          </View>
+        ) : null}
 
         <TouchableOpacity
           activeOpacity={0.9}
@@ -302,7 +289,7 @@ export default function ServiceCancellationRequest() {
           onPress={submitCancellation}
         >
           <LinearGradient
-            colors={['#8665FF', '#5B47A3']}
+            colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={[styles.submitButton, isSubmitDisabled && styles.submitButtonDisabled]}
@@ -320,71 +307,18 @@ export default function ServiceCancellationRequest() {
 }
 
 function Header({ title, onBack }: { title: string; onBack: () => void }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <LinearGradient
-      colors={['#30205F', '#5B3CB4', '#7C3AED']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.header}
-    >
+    <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider }]}>
       <TouchableOpacity
         style={styles.headerBack}
         onPress={onBack}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <MaterialCommunityIcons name="arrow-left" size={22} color="#FFF" />
+        <MaterialCommunityIcons name="chevron-left" size={34} color={servicesTheme.colors.text} />
       </TouchableOpacity>
-      <View style={styles.headerCopy}>
-        <Text style={styles.headerEyebrow}>SERVICE REQUEST</Text>
-        <Text style={styles.headerTitle}>{title}</Text>
-      </View>
-      <View style={styles.headerIcon}>
-        <MaterialCommunityIcons name="shield-check-outline" size={21} color="#FFF" />
-      </View>
-    </LinearGradient>
-  );
-}
-
-function ServiceSummaryCard({
-  serviceName,
-  variantName,
-  orderRef,
-  imageUrl,
-}: {
-  serviceName: string;
-  variantName?: string;
-  orderRef: string;
-  imageUrl?: string | null;
-}) {
-  return (
-    <View style={styles.summaryCard}>
-      <View style={styles.summaryAccent} />
-      <View style={styles.summaryTop}>
-        <View style={styles.imageWrap}>
-          {imageUrl ? (
-            <Image source={{ uri: imageUrl }} style={styles.serviceImage} resizeMode="cover" />
-          ) : (
-            <MaterialCommunityIcons name="file-document-outline" size={34} color={PURPLE} />
-          )}
-        </View>
-
-        <View style={styles.summaryInfo}>
-          <Text style={styles.serviceName} numberOfLines={2}>{serviceName}</Text>
-          <Text style={styles.variantName} numberOfLines={2}>
-            {variantName || 'Service cancellation request'}
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.orderRefRow}>
-        <View>
-          <Text style={styles.orderRefLabel}>ORDER ID</Text>
-          <Text style={styles.orderRefText}>#{orderRef}</Text>
-        </View>
-        <View style={styles.copyButton}>
-          <MaterialCommunityIcons name="content-copy" size={16} color="#4F46E5" />
-        </View>
-      </View>
+      <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
     </View>
   );
 }
@@ -392,182 +326,54 @@ function ServiceSummaryCard({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: '#F6F5FB',
+    backgroundColor: '#FFFFFF',
   },
   header: {
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingHorizontal: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E4E4E4',
+    backgroundColor: '#FFFFFF',
   },
   headerBack: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
-  },
-  headerCopy: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  headerEyebrow: {
-    color: 'rgba(255,255,255,0.64)',
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1.2,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFF',
-    marginTop: 1,
-    letterSpacing: -0.4,
-  },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
   },
   scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 36,
-  },
-  summaryCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 22,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#ECE8F3',
-    overflow: 'hidden',
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    elevation: 3,
+    paddingBottom: 32,
   },
-  summaryAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 4,
-    backgroundColor: PURPLE,
-  },
-  summaryTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  imageWrap: {
-    width: 78,
-    height: 78,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F0ECFF',
-    overflow: 'hidden',
-  },
-  serviceImage: {
-    width: '100%',
-    height: '100%',
-  },
-  summaryInfo: {
-    flex: 1,
-    marginLeft: 14,
-  },
-  serviceName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#251B40',
-    letterSpacing: -0.3,
-    lineHeight: 23,
-  },
-  variantName: {
-    fontSize: 13,
-    color: '#817A91',
-    marginTop: 6,
-    lineHeight: 18,
-    fontWeight: '600',
-  },
-  orderRefRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#F1EEF8',
-    paddingTop: 14,
-  },
-  orderRefLabel: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  orderRefText: {
-    fontSize: 14,
-    color: '#251B40',
-    fontWeight: '900',
-    marginTop: 3,
-  },
-  copyButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+  productImage: {
+    width: 48,
+    height: 48,
+    resizeMode: 'contain',
   },
   reasonCard: {
-    marginTop: 14,
+    marginTop: 16,
     backgroundColor: '#FFF',
-    borderRadius: 22,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#ECE8F3',
+    borderColor: '#E5E7EB',
     padding: 16,
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
   },
   reasonHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 14,
-  },
-  reasonIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F0ECFF',
-    marginRight: 12,
-  },
-  reasonHeaderCopy: {
-    flex: 1,
+    marginBottom: 12,
   },
   reasonTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#251B40',
-    letterSpacing: -0.25,
-  },
-  reasonSubtitle: {
-    fontSize: 12,
-    color: '#817A91',
-    lineHeight: 17,
-    marginTop: 4,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#111827',
   },
   loadingReasons: {
     flexDirection: 'row',
@@ -583,43 +389,39 @@ const styles = StyleSheet.create({
   reasonRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 13,
-    paddingHorizontal: 2,
-    borderTopWidth: 1,
-    borderTopColor: '#F4F1FA',
+    paddingVertical: 10,
   },
   reasonRowSelected: {
-    borderTopWidth: 0,
-    backgroundColor: '#F7F3FF',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    marginBottom: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 0,
+    paddingHorizontal: 0,
+    marginBottom: 0,
   },
   radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: '#CBD5E1',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
   radioOuterActive: {
-    borderColor: PURPLE,
+    borderColor: '#6D5AE6',
   },
   radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: PURPLE,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#6D5AE6',
   },
   reasonText: {
     flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#4B4658',
-    fontWeight: '700',
+    fontSize: 13,
+    lineHeight: 18,
+    color: '#374151',
+    fontWeight: '400',
   },
   changeReasonText: {
     fontSize: 12,
@@ -648,211 +450,134 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   commentBox: {
-    marginTop: 14,
+    marginTop: 16,
     borderWidth: 1,
-    borderColor: '#E7DDFD',
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
-    backgroundColor: '#FFFEFF',
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#FFFFFF',
   },
   commentLabel: {
-    fontSize: 13,
-    color: '#251B40',
-    fontWeight: '800',
-    marginBottom: 10,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 6,
   },
   commentInput: {
-    minHeight: 96,
-    fontSize: 14,
-    lineHeight: 20,
+    minHeight: 80,
+    fontSize: 13,
     color: '#111827',
     padding: 0,
   },
   submitButton: {
-    height: 58,
-    marginTop: 20,
-    borderRadius: 16,
+    height: 52,
+    marginTop: 24,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 14,
-    elevation: 4,
   },
   submitButtonDisabled: {
     opacity: 0.5,
   },
   submitText: {
     color: '#FFF',
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 15,
+    fontWeight: '700',
   },
   confirmScroll: {
     flexGrow: 1,
-    backgroundColor: '#F6F5FB',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 32,
   },
-  confirmTop: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 72,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
   closeButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignSelf: 'flex-start',
   },
-  confirmHero: {
-    marginTop: 22,
+  confirmCard: {
+    marginTop: 28,
+    marginBottom: 18,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   confirmCopy: {
-    alignItems: 'center',
-  },
-  confirmEyebrow: {
-    marginTop: 18,
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.66)',
-    fontWeight: '900',
-    letterSpacing: 1.2,
+    flex: 1,
+    alignItems: 'flex-start',
+    paddingRight: 14,
   },
   confirmTitle: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontWeight: '900',
-    color: '#FFF',
-    letterSpacing: -0.7,
-    marginTop: 5,
-    textAlign: 'center',
+    fontSize: 18,
+    lineHeight: 25,
+    fontWeight: '700',
+    color: '#111111',
+    textAlign: 'left',
   },
   confirmSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: 'rgba(255,255,255,0.76)',
-    fontWeight: '600',
-    marginTop: 10,
-    textAlign: 'center',
-    paddingHorizontal: 10,
+    marginTop: 6,
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#6B7280',
+    fontWeight: '500',
   },
   confirmLink: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)',
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(255,255,255,0.14)',
+    marginTop: 12,
   },
   confirmLinkText: {
-    color: '#FFF',
-    fontSize: 13,
-    fontWeight: '900',
+    color: '#8665FF',
+    fontSize: 14,
+    fontWeight: '700',
   },
   successBadge: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.24)',
+    backgroundColor: '#E8F8ED',
   },
   successCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#18A957',
     alignItems: 'center',
     justifyContent: 'center',
   },
   sparkleOne: {
     position: 'absolute',
-    left: 13,
-    top: 15,
+    left: 8,
+    top: 9,
   },
   sparkleTwo: {
     position: 'absolute',
-    right: 10,
-    bottom: 17,
+    right: 7,
+    bottom: 10,
   },
   confirmContent: {
-    marginTop: -46,
-    paddingHorizontal: 20,
-    gap: 14,
-  },
-  reviewCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#ECE8F3',
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
-  },
-  reviewIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F0ECFF',
-    marginRight: 12,
-  },
-  reviewCopy: {
-    flex: 1,
-  },
-  reviewTitle: {
-    fontSize: 14,
-    color: '#251B40',
-    fontWeight: '900',
-  },
-  reviewText: {
-    fontSize: 12,
-    color: '#817A91',
-    fontWeight: '600',
-    lineHeight: 17,
-    marginTop: 4,
+    marginBottom: 10,
   },
   confirmActions: {
-    marginTop: 14,
-    marginHorizontal: 20,
+    marginTop: 12,
     backgroundColor: '#FFF',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: '#ECE8F3',
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 2,
+    paddingHorizontal: 0,
   },
   confirmActionRow: {
-    minHeight: 62,
+    minHeight: 52,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   confirmActionText: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#251B40',
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4D4D4D',
   },
   confirmDivider: {
     height: 1,

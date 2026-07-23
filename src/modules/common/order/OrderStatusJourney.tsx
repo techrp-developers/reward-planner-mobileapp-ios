@@ -1,11 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 export type OrderStatusItem = {
   label: string;
   date?: string;
   completed?: boolean;
+  current?: boolean;
 };
 
 type Props = {
@@ -13,6 +15,7 @@ type Props = {
   headerText?: string;
   statuses: OrderStatusItem[];
   onCancelPress?: () => void;
+  tone?: "success" | "danger";
 };
 
 export default function OrderStatusJourney({
@@ -20,13 +23,16 @@ export default function OrderStatusJourney({
   headerText,
   statuses,
   onCancelPress,
+  tone = "success",
 }: Props) {
+  const { isDark, theme } = useAppTheme();
   const title = headerText || (arrivingBy ? `Status: ${arrivingBy}` : "Order status");
+  const isDanger = tone === "danger";
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Header */}
-      <Text style={styles.arrivalText}>
+      <Text style={[styles.arrivalText, isDanger && styles.dangerText]}>
         {title}
       </Text>
 
@@ -35,6 +41,8 @@ export default function OrderStatusJourney({
         {statuses.map((item, index) => {
           const isLast = index === statuses.length - 1;
           const isDone = item.completed;
+          const isCurrent = item.current && !isDone;
+          const isHighlighted = isDone || isCurrent;
 
           return (
             <View key={index} style={styles.row}>
@@ -43,7 +51,9 @@ export default function OrderStatusJourney({
                 <View
                   style={[
                     styles.circle,
-                    isDone && styles.circleDone,
+                    { backgroundColor: isDark ? "#4B5563" : "#CBD5E1" },
+                    isHighlighted && styles.circleDone,
+                    isHighlighted && isDanger && styles.circleDanger,
                   ]}
                 >
                   {isDone && (
@@ -53,8 +63,11 @@ export default function OrderStatusJourney({
                       color="#fff"
                     />
                   )}
+                  {isCurrent && <View style={styles.currentDot} />}
                 </View>
-                {!isLast && <View style={styles.line} />}
+                {!isLast && (
+                  <View style={[styles.line, { backgroundColor: isDark ? "#4B5563" : "#CBD5E1" }, isDanger && styles.lineDanger]} />
+                )}
               </View>
 
               {/* Right content */}
@@ -62,14 +75,17 @@ export default function OrderStatusJourney({
                 <Text
                   style={[
                     styles.label,
-                    isDone && styles.labelDone,
+                    { color: theme.secondaryText },
+                    isHighlighted && styles.labelDone,
+                    isCurrent && styles.labelCurrent,
+                    isHighlighted && isDanger && styles.dangerText,
                   ]}
                 >
                   {item.label}
                 </Text>
 
                 {!!item.date && (
-                  <Text style={styles.date}>{item.date}</Text>
+                  <Text style={[styles.date, { color: theme.secondaryText }]}>{item.date}</Text>
                 )}
               </View>
             </View>
@@ -79,13 +95,13 @@ export default function OrderStatusJourney({
 
       {onCancelPress ? (
         <>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
           <TouchableOpacity
             activeOpacity={0.7}
             onPress={onCancelPress}
           >
-            <Text style={styles.cancelText}>Cancel Order</Text>
+            <Text style={[styles.cancelText, { color: theme.text }]}>Cancel Order</Text>
           </TouchableOpacity>
         </>
       ) : null}
@@ -129,7 +145,18 @@ const styles = StyleSheet.create({
   },
 
   circleDone: {
-    backgroundColor: "#16A34A", // ✅ FIXED (no gradient string bug)
+    backgroundColor: "#16A34A",
+  },
+
+  circleDanger: {
+    backgroundColor: "#DC2626",
+  },
+
+  currentDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "#FFFFFF",
   },
 
   line: {
@@ -137,6 +164,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#CBD5E1",
     marginTop: 2,
+  },
+
+  lineDanger: {
+    backgroundColor: "#DC2626",
   },
 
   content: {
@@ -160,6 +191,14 @@ const styles = StyleSheet.create({
 
   labelDone: {
     fontWeight: "600",
+  },
+
+  labelCurrent: {
+    color: "#16A34A",
+  },
+
+  dangerText: {
+    color: "#DC2626",
   },
 
   date: {

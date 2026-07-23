@@ -16,12 +16,12 @@ export default function ServiceDetailSkeleton() {
         Animated.timing(pulse, {
           toValue: 1,
           duration: 750,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(pulse, {
           toValue: 0,
           duration: 750,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ]),
     );

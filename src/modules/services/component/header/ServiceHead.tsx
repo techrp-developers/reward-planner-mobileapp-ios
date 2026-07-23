@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import ServiceTop from "../../../../assets/homepage/service_top_nav.png";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 type Props = {
   showSearch?: boolean;
@@ -21,6 +22,7 @@ type Props = {
 };
 
 function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBackPress, autoFocus }: Props) {
+  const servicesTheme = useServicesTheme();
   const { width } = useWindowDimensions();
   const HEADER_HEIGHT = Math.round(width * 0.4);
 
@@ -40,12 +42,21 @@ function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack
       )}
 
       {showSearch && (
-        <View style={styles.searchWrap}>
-          <MaterialCommunityIcons name="magnify" size={20} color="#A654CD" />
+        <View
+          style={[
+            styles.searchWrap,
+            {
+              backgroundColor: servicesTheme.colors.surface,
+              borderColor: servicesTheme.colors.border,
+              shadowColor: servicesTheme.colors.shadow,
+            },
+          ]}
+        >
+          <MaterialCommunityIcons name="magnify" size={20} color={servicesTheme.colors.primary} />
           <TextInput
             placeholder='Search "PAN Card, ITR Filing…"'
-            placeholderTextColor="#6B7280"
-            style={styles.searchInput}
+            placeholderTextColor={servicesTheme.colors.muted}
+            style={[styles.searchInput, { color: servicesTheme.colors.text }]}
             value={search}
             onChangeText={onChangeSearch}
             onFocus={onFocusSearch}
@@ -54,7 +65,7 @@ function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack
           />
           {search && search.length > 0 && (
             <TouchableOpacity onPress={() => onChangeSearch?.("")}>
-              <MaterialCommunityIcons name="close-circle" size={18} color="#9CA3AF" />
+              <MaterialCommunityIcons name="close-circle" size={18} color={servicesTheme.colors.subtle} />
             </TouchableOpacity>
           )}
         </View>

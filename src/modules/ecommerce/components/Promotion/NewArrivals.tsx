@@ -4,7 +4,6 @@ import {
   Text,
   View,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -17,13 +16,15 @@ import HorizontalProductList from "../common/HorizontalProductList";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { queryClient } from "../../../../query/queryClient";
 import { normalizeProduct } from "../../utils/normalizeProduct";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 import {
   PROMO_CARD_WIDTH,
   PROMO_CARD_GAP,
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
+import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
 
-const CACHE_TTL_MS = 30 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 const NEW_ARRIVALS_QUERY_KEY = ["ecommerce", "promotion", "new-arrivals"] as const;
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
@@ -66,63 +67,19 @@ const extractRawList = (res: any): any[] => {
 
   for (const candidate of candidates) {
     if (Array.isArray(candidate) && candidate.length > 0) {
-      if (__DEV__) {
-        const sample = candidate[0];
-        console.log("[NewArrivals] extractRawList found items:", {
-          count: candidate.length,
-          sampleKeys: Object.keys(sample ?? {}),
-          rewardCoins: sample?.rewardCoins,
-          reward_coins: sample?.reward_coins,
-          redeem_coins: sample?.redeem_coins,
-          redeemCoins: sample?.redeemCoins,
-          reward: sample?.reward,
-          points: sample?.points,
-        });
-      }
       return candidate;
     }
   }
 
-  if (__DEV__) {
-    console.warn(
-      "[NewArrivals] extractRawList: no valid array found",
-      Object.keys(res ?? {})
-    );
-  }
   return [];
 };
 
 const fetchNewArrivalsData = async () => {
   const res = await fetchNewArrivals();
-
-  if (__DEV__) {
-    console.log("[NewArrivals] raw API response shape:", {
-      keys: Object.keys(res ?? {}),
-      hasProducts: Array.isArray(res?.products),
-      hasDataProducts: Array.isArray(res?.data?.products),
-      hasItems: Array.isArray(res?.items),
-      hasDataItems: Array.isArray(res?.data?.items),
-      hasData: Array.isArray(res?.data),
-      productsLength: res?.products?.length,
-    });
-  }
-
   const rawList = extractRawList(res);
 
   return rawList.map((item: any, index: number) => {
     const normalized = normalizeProduct(item);
-
-    if (__DEV__ && normalized.rewardCoins === 0 && normalized.redeem_coins === 0) {
-      console.warn("[NewArrivals] 0 coins after normalize:", {
-        id: item?.id ?? item?.product_id,
-        rewardCoins: item?.rewardCoins,
-        reward_coins: item?.reward_coins,
-        redeem_coins: item?.redeem_coins,
-        redeemCoins: item?.redeemCoins,
-        reward: item?.reward,
-        points: item?.points,
-      });
-    }
 
     return {
       ...normalized,
@@ -140,6 +97,7 @@ const fetchNewArrivalsData = async () => {
 
 function NewArrivals() {
   const navigation = useNavigation<Nav>();
+  const { isDark, theme } = useAppTheme();
 
   const { data: products = [], isLoading } = useQuery({
     queryKey: NEW_ARRIVALS_QUERY_KEY,
@@ -151,7 +109,7 @@ function NewArrivals() {
   });
 
   const handleViewAll = useCallback(() => {
-    navigation.navigate("ProductScreen");
+    navigation.navigate("ProductScreen", { source: "newArrivals" });
   }, [navigation]);
 
   const renderCard = useCallback(
@@ -163,29 +121,25 @@ function NewArrivals() {
 
   
   if (isLoading && products.length === 0) {
-    return (
-      <View style={styles.loaderWrap}>
-        <ActivityIndicator size="small" color="#FF3F6C" />
-      </View>
-    );
+    return <HomeSectionSkeleton height={350} backgroundColor={theme.background} />;
   }
 
   if (products.length === 0) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.heading}>New Arrivals</Text>
-          <Text style={styles.subHeading}>The latest trends, just for you</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>New Arrivals</Text>
+          <Text style={[styles.subHeading, { color: theme.secondaryText }]}>The latest trends, just for you</Text>
         </View>
         <TouchableOpacity
           style={styles.exploreBtn}
           activeOpacity={0.7}
           onPress={handleViewAll}
         >
-          <Text style={styles.exploreText}>View All</Text>
-          <MaterialIcons name="chevron-right" size={18} color="#3B82F6" />
+          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
+          <MaterialIcons name="chevron-right" size={18} color={isDark ? "#FFFFFF" : "#111827"} />
         </TouchableOpacity>
       </View>
 
@@ -212,7 +166,8 @@ export const prefetchNewArrivalsSection = async () => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#FFFBF5",
-    paddingVertical: 20,
+    paddingTop: 22,
+    paddingBottom: 8,
   },
   headerRow: {
     flexDirection: "row",

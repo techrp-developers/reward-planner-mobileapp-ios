@@ -56,7 +56,7 @@ export default function HomeCategories() {
 
       {/* All Categories Button */}
       <TouchableOpacity style={styles.allCategoriesButton}>
-        <View style={styles.categoryRow}>
+        <View style={styles.allCategoriesContent}>
           <Image
             source={require('../assets/homepage/menu.png')}
             style={styles.homecategoriesImage}

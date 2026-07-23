@@ -13,11 +13,28 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 type CustomTabBarProps = {
   navigation: any;
+  state: any;
   isAuthenticated: boolean;
 };
 
-function CustomTabBar({ navigation, isAuthenticated }: CustomTabBarProps) {
+const getFocusedRouteName = (state: any): string | undefined => {
+  if (!state?.routes?.length) return undefined;
+
+  const route = state.routes[state.index ?? 0];
+  return getFocusedRouteName(route?.state) ?? route?.name;
+};
+
+function CustomTabBar({ navigation, state, isAuthenticated }: CustomTabBarProps) {
   const { totalQuantity } = useCart();
+  const focusedRouteName = getFocusedRouteName(state);
+  const activeTabKey = React.useMemo(() => {
+    if (focusedRouteName === 'Profile') return 'Profile';
+    if (focusedRouteName === 'Cart') return 'Cart';
+    if (focusedRouteName === 'SearchScreen') return 'Search';
+    if (focusedRouteName === 'TodoList') return 'Notes';
+    return 'Home';
+  }, [focusedRouteName]);
+
   const goTo = React.useCallback(
     (screen: string) => {
       navigation.navigate("HomeTab", { screen });
@@ -39,6 +56,8 @@ function CustomTabBar({ navigation, isAuthenticated }: CustomTabBarProps) {
 
   return (
     <BottomTabs
+      layoutMode="navigator"
+      activeTabKey={activeTabKey}
       cartCount={totalQuantity}
       onTabPress={(tab) => {
         switch (tab) {

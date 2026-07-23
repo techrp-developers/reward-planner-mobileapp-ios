@@ -8,6 +8,9 @@ export const useServiceHome = () => {
     queryKey: SERVICE_HOME_QUERY_KEY,
     queryFn: getServiceHome,
     staleTime: 5 * 60 * 1000, // 5 minutes cache
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     retry: 1,
   });
 };

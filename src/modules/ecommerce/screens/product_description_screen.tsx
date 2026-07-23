@@ -18,7 +18,7 @@ import ProductVariants from "../components/cart/productvariants";
 import AddToCartSheet from "../components/cart/AddToCartSheet";
 import CustomerReviewsView from "../components/product/product_section/CustomerReviewsView";
 import ProductGrid from "../components/home/productgrid";
-import { setWishlistState } from "../api/WishlistApi";
+import { checkWishlist, isWishlistPresent, setWishlistState } from "../api/WishlistApi";
 import { useAuth } from "../../common/auth/context/AuthContext";
 import { useAlert } from "../components/alerts";
 import { useCart } from "../context/CartContext";
@@ -27,6 +27,7 @@ import {
   productDetailsQueryKey,
 } from "../navigation/navigationPerformance";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type RouteT = RouteProp<HomeStackParamList, "ProductDescription">;
 
@@ -34,13 +35,26 @@ const MemoProductHero = React.memo(ProductHero);
 const MemoProductVariants = React.memo(ProductVariants);
 const MemoBuySection = React.memo(BuySection);
 
+const hasWishlistFlag = (item: any) =>
+  item?.is_wishlist !== undefined || item?.is_wishlisted !== undefined;
+
+const getWishlistFlag = (item: any) => {
+  const value = item?.is_wishlisted ?? item?.is_wishlist;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return ["1", "true", "yes", "y"].includes(normalized);
+};
+
 export default function
   ProductDescriptionScreen() {
   const route = useRoute<RouteT>();
   const { productId } = route.params;
   const { isAuthenticated } = useAuth();
   const alert = useAlert();
-  const { addItem, totalQuantity } = useCart();
+  const { addItem, updateQuantity, totalQuantity, items: cartItems } = useCart();
+  const { theme } = useAppTheme();
   const queryClient = useQueryClient();
 
   const [product, setProduct] = useState<any>(null);
@@ -63,8 +77,8 @@ export default function
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
 
@@ -107,7 +121,7 @@ export default function
       qty: Math.max(1, Number(qty) || 1),
     };
 
-    console.log("➡️ Buy Now params:", buyNowParams);
+    __DEV__ && console.log("➡️ Buy Now params:", buyNowParams);
 
     prefetchCheckoutScreenData({
       mode: "buy_now",
@@ -118,7 +132,7 @@ export default function
       // Ignore prefetch errors and continue navigation.
     });
 
-    navigation.navigate("OrderStepUI", buyNowParams);
+    navigation.push("OrderStepUI", buyNowParams);
   }, [isAuthenticated, navigation, product?.product_id, qty, selectedVariant?.variant_id]);
 
 
@@ -137,7 +151,7 @@ export default function
         setProduct({ ...p, variants });
         setSelectedVariant(defaultVariant);
         setSelectedAttrs(defaultVariant?.variant_attributes ?? {});
-        setWishlisted(Boolean(p?.is_wishlisted));
+        setWishlisted(getWishlistFlag(defaultVariant) || getWishlistFlag(p));
       });
     };
 
@@ -149,9 +163,18 @@ export default function
       setLoading(true);
     }
 
+    // Start the network request immediately. Rendering the heavier product
+    // content still waits for the native screen transition to finish below.
+    const productRequest = fetchProductDetailsByID(productId)
+      .then((raw) => ({ raw, error: null }))
+      .catch((error) => ({ raw: null, error }));
+
     const interactionTask = InteractionManager.runAfterInteractions(async () => {
       try {
-        const raw = await fetchProductDetailsByID(productId);
+        const result = await productRequest;
+        if (result.error) throw result.error;
+
+        const raw = result.raw;
 
         if (!raw || typeof raw !== "object") {
           throw new Error("Product details response is empty");
@@ -175,7 +198,7 @@ export default function
         if (!isMounted) return;
         applyProductState(p);
       } catch (error) {
-        console.log("Failed to load product details", error);
+        __DEV__ && console.log("Failed to load product details", error);
         if (!cachedProduct && isMounted) {
           setProduct(null);
         }
@@ -227,8 +250,43 @@ export default function
   }, [selectedVariant]);
 
   useEffect(() => {
-    setWishlisted(Boolean(product?.is_wishlisted));
-  }, [product?.is_wishlisted, productId]);
+    setWishlisted(getWishlistFlag(selectedVariant) || getWishlistFlag(product));
+  }, [
+    product,
+    productId,
+    selectedVariant,
+  ]);
+
+  useEffect(() => {
+    const parsedProductId = Number(product?.product_id ?? productId);
+    const parsedVariantId = Number(selectedVariant?.variant_id ?? product?.default_variant_id);
+
+    if (
+      hasWishlistFlag(selectedVariant) ||
+      hasWishlistFlag(product) ||
+      !isAuthenticated ||
+      !parsedProductId ||
+      !parsedVariantId
+    ) {
+      return;
+    }
+
+    let mounted = true;
+
+    checkWishlist(parsedProductId, parsedVariantId)
+      .then((response) => {
+        if (mounted) {
+          setWishlisted(isWishlistPresent(response));
+        }
+      })
+      .catch(() => {
+        // Keep the product-details flag if the check endpoint is unavailable.
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated, product, productId, selectedVariant]);
 
   useEffect(() => {
     if (!selectedVariant?.variant_id) return;
@@ -253,6 +311,34 @@ export default function
     })();
   }, [selectedVariant]);
 
+  const selectedCartItem = useMemo(() => {
+    const productCartId = Number(product?.product_id ?? productId);
+    const variantCartId = Number(selectedVariant?.variant_id);
+
+    if (!productCartId || !variantCartId) {
+      return undefined;
+    }
+
+    return cartItems.find(
+      (cartItem) =>
+        Number(cartItem.product_id) === productCartId &&
+        Number(cartItem.variant_id) === variantCartId
+    );
+  }, [cartItems, product?.product_id, productId, selectedVariant?.variant_id]);
+
+  useEffect(() => {
+    const cartQuantity = Number(selectedCartItem?.quantity);
+    if (Number.isFinite(cartQuantity) && cartQuantity > 0) {
+      setQty(cartQuantity);
+    }
+  }, [selectedCartItem?.id, selectedCartItem?.quantity]);
+
+  const selectedVariantInCart = useMemo(() => {
+    if (!selectedCartItem) return false;
+
+    return Number(selectedCartItem.quantity) === Number(qty);
+  }, [qty, selectedCartItem]);
+
   const handleAddToCart = useCallback(async () => {
     if (adding) return;
 
@@ -263,8 +349,19 @@ export default function
 
     if (!product?.product_id || !selectedVariant?.variant_id) return;
 
+    if (selectedVariantInCart) {
+      navigation.navigate("Cart");
+      return;
+    }
+
     try {
       setAdding(true);
+
+      if (selectedCartItem?.id && Number(selectedCartItem.quantity) !== Number(qty)) {
+        await updateQuantity(selectedCartItem.id, qty);
+        alert.success("Cart Updated", "Cart quantity updated successfully.", 2500);
+        return;
+      }
 
       await addItem(product.product_id, selectedVariant.variant_id, qty);
 
@@ -289,53 +386,48 @@ export default function
     } finally {
       setAdding(false);
     }
-  }, [adding, isAuthenticated, product?.product_id, selectedVariant?.variant_id, qty, addItem, alert, product?.product_name]);
+  }, [
+    adding,
+    isAuthenticated,
+    product?.product_id,
+    selectedVariant?.variant_id,
+    selectedVariantInCart,
+    selectedCartItem,
+    navigation,
+    qty,
+    updateQuantity,
+    addItem,
+    alert,
+    product?.product_name,
+  ]);
 
   const handleWishlist = useCallback(async () => {
     if (wishLoading) return;
 
     const parsedProductId = Number(product?.product_id ?? productId);
-    const rawVariantId = selectedVariant?.variant_id ?? product?.default_variant_id;
-    const parsedVariantId =
-      rawVariantId !== undefined && rawVariantId !== null ? Number(rawVariantId) : undefined;
-
-    console.log('[Wishlist:PDS] product fields', {
-      product_id: product?.product_id,
-      default_variant_id: product?.default_variant_id,
-      selectedVariant_variant_id: selectedVariant?.variant_id,
-      is_wishlisted: product?.is_wishlisted,
-    });
-    console.log('[Wishlist:PDS] resolved', {
-      parsedProductId,
-      parsedVariantId,
-      currentWishlisted: wishlisted,
-    });
+    const parsedVariantId = Number(
+      selectedVariant?.variant_id ?? product?.default_variant_id
+    );
 
     if (!parsedProductId || Number.isNaN(parsedProductId)) {
       Alert.alert("Wishlist", "Invalid product");
       return;
     }
 
-    if (!parsedVariantId) {
-      Alert.alert("Wishlist", "Please select a variant before adding to wishlist.");
+    if (!parsedVariantId || Number.isNaN(parsedVariantId)) {
+      Alert.alert("Wishlist", "Product variant is missing");
       return;
     }
 
     try {
       setWishLoading(true);
-      console.log('[Wishlist:PDS] calling setWishlistState', { parsedProductId, parsedVariantId, shouldWishlist: !wishlisted });
       const result = await setWishlistState(parsedProductId, parsedVariantId, !wishlisted);
-      console.log('[Wishlist:PDS] result', result);
       setWishlisted(result.wishlisted);
     } catch (error: any) {
-      console.log('[Wishlist:PDS] error', {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-      });
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
+        error?.message ||
         "Failed to update wishlist";
       Alert.alert("Wishlist", String(message));
     } finally {
@@ -343,44 +435,11 @@ export default function
     }
   }, [wishLoading, product?.product_id, productId, selectedVariant?.variant_id, product?.default_variant_id, wishlisted]);
 
-  const handleWriteReview = useCallback((orderId: number) => {
-    const resolvedProductId = Number(product?.product_id ?? productId ?? 0);
-    const resolvedVariantId = Number(
-      selectedVariant?.variant_id ?? product?.default_variant_id ?? 0
-    );
-
-    if (!resolvedProductId || !resolvedVariantId) {
-      Alert.alert("Write Review", "Product details are not ready yet.");
-      return;
-    }
-
-    const rawVariantImage = selectedVariant?.images?.[0];
-    const imagePath =
-      (typeof rawVariantImage === "string" && rawVariantImage) ||
-      rawVariantImage?.image_url ||
-      rawVariantImage?.url ||
-      product?.images?.[0] ||
-      "";
-
-    const reviewImage = /^(https?:)?\/\//i.test(String(imagePath))
-      ? String(imagePath)
-      : getProductImageUrl(String(imagePath));
-
-    navigation.navigate("ReviewScreen", {
-      product_id: resolvedProductId,
-      variant_id: resolvedVariantId,
-      order_id: orderId,
-      product_name: product?.product_name,
-      image: reviewImage,
-      delivered_on: product?.delivered_on,
-    });
-  }, [navigation, product?.default_variant_id, product?.delivered_on, product?.images, product?.product_id, product?.product_name, productId, selectedVariant?.images, selectedVariant?.variant_id]);
-
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
         <ProductHead cartCount={totalQuantity} />
-        <ScrollView contentContainerStyle={styles.skeletonContent}>
+        <ScrollView contentContainerStyle={[styles.skeletonContent, { backgroundColor: theme.background }]}>
           <SkeletonBox pulse={pulse} width="100%" height={320} borderRadius={18} />
           <SkeletonBox pulse={pulse} width="58%" height={20} borderRadius={10} style={styles.skeletonGap} />
           <SkeletonBox pulse={pulse} width="82%" height={14} borderRadius={999} style={styles.skeletonTextGap} />
@@ -391,7 +450,7 @@ export default function
       </View>
     );
   }
-  if (!product) return <Text style={styles.notFoundText}>Product not found</Text>;
+  if (!product) return <Text style={[styles.notFoundText, { color: theme.text, backgroundColor: theme.background }]}>Product not found</Text>;
   const variant = selectedVariant;
 
   const salePrice = variant ? `₹${variant.sale_price}` : "₹0";
@@ -421,10 +480,10 @@ export default function
 
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ProductHead cartCount={totalQuantity} />
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={[styles.content, { backgroundColor: theme.background }]}>
 
         <View>
           <MemoProductHero
@@ -434,7 +493,7 @@ export default function
             loadImages={allowHeroImageLoad}
           />
           <TouchableOpacity
-            style={styles.heartIcon}
+            style={[styles.heartIcon, { backgroundColor: theme.card, borderColor: theme.border }]}
             activeOpacity={0.8}
             onPress={handleWishlist}
             disabled={wishLoading}
@@ -442,23 +501,23 @@ export default function
             <MaterialCommunityIcons
               name={wishlisted ? "heart" : "heart-outline"}
               size={18}
-              color={wishlisted ? "#E53935" : "#4A4A4A"}
+              color={wishlisted ? "#E53935" : theme.secondaryText}
             />
           </TouchableOpacity>
         </View>
         <View style={styles.descriptionWrap}>
           {/* Brand + Product in one row */}
           <View style={styles.titleRow}>
-            <Text style={styles.productTitle}>
+            <Text style={[styles.productTitle, { color: theme.text }]}>
               {product.brand_name}
             </Text>
 
-            <Text style={styles.productName}>
+            <Text style={[styles.productName, { color: theme.text }]}>
               {product.product_name}
             </Text>
           </View>
 
-          <Text style={styles.productSubdescription}>
+          <Text style={[styles.productSubdescription, { color: theme.secondaryText }]}>
             {product?.short_description || productDescription || "No description available"}
           </Text>
         </View>
@@ -487,6 +546,7 @@ export default function
           onAddToCart={handleAddToCart}
           onBuyNow={handleBuyNow}
           isAdding={adding}
+          isInCart={selectedVariantInCart}
         />
 
         {/* <OffersSection /> */}
@@ -510,13 +570,11 @@ export default function
         <View style={styles.descriptionWrap}>
           <CustomerReviewsView
             productId={product?.product_id ?? productId}
-            variantId={selectedVariant?.variant_id}
-            onWriteReview={handleWriteReview}
           />
         </View>
 
         <View style={styles.relatedSection}>
-          <Text style={styles.relatedTitle}>Related Products</Text>
+          <Text style={[styles.relatedTitle, { color: theme.text }]}>Related Products</Text>
           <ProductGrid
             key={`related-${relatedProductId}`}
             useFlatList={false}
@@ -537,12 +595,14 @@ export default function
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 18,
-    marginBottom: 170,
-
+    flex: 1,
+    backgroundColor: "#FFFFFF",
   },
 
-  content: { backgroundColor: "#FFFFFF" },
+  content: {
+    backgroundColor: "#FFFFFF",
+    paddingBottom: 16,
+  },
   skeletonContent: { paddingHorizontal: 14, paddingBottom: 24, backgroundColor: "#FFFFFF" },
   skeletonGap: { marginTop: 14 },
   skeletonTextGap: { marginTop: 10 },

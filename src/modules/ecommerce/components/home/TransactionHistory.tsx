@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   FlatList,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { fetchWalletTransactions } from "../../api/WalleteAPI";
+import {
+  fetchWalletTransactions,
+  type WalletTransactionType,
+} from "../../api/WalleteAPI";
 
 type UITransaction = {
   id: string;
@@ -16,6 +19,7 @@ type UITransaction = {
   title: string;
   subtitle?: string;
   date: string;
+  expiryLabel?: string;
   coins: number;
   icon: string;
   iconBg: string;
@@ -23,19 +27,33 @@ type UITransaction = {
 
 const FILTERS = ["All", "Additions", "Deductions", "Expired"];
 
+const getType = (filter: string): WalletTransactionType => {
+  if (filter === "Additions") return "credit";
+  if (filter === "Deductions") return "debit";
+  if (filter === "Expired") return "expired";
+  return "all";
+};
+
+const formatExpiryLabel = (txn: any) => {
+  if (!txn?.expiry_date) return undefined;
+
+  const formattedDate = new Date(txn.expiry_date).toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+
+  return Number(txn.is_expired) === 1
+    ? `Expired on ${formattedDate}`
+    : `Expires on ${formattedDate}`;
+};
+
 export default function TransactionHistory() {
   const [active, setActive] = useState("All");
   const [data, setData] = useState<UITransaction[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const getType = (filter: string) => {
-    if (filter === "Additions") return "credit";
-    if (filter === "Deductions") return "debit";
-    if (filter === "Expired") return "expired";
-    return "all";
-  };
-
-  const loadTransactions = async (filter: string) => {
+  const loadTransactions = useCallback(async (filter: string) => {
     try {
       setLoading(true);
 
@@ -51,6 +69,7 @@ export default function TransactionHistory() {
           day: "2-digit",
           month: "short",
         }),
+        expiryLabel: formatExpiryLabel(txn),
         coins:
           txn.transaction_type === "credit"
             ? txn.coins
@@ -67,15 +86,15 @@ export default function TransactionHistory() {
 
       setData(mapped);
     } catch (err) {
-      console.log("Transaction error:", err);
+      __DEV__ && console.log("Transaction error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTransactions("All");
-  }, []);
+  }, [loadTransactions]);
 
   return (
     <View style={styles.container}>
@@ -144,6 +163,9 @@ function TransactionCard({ item }: { item: UITransaction }) {
           )}
 
           <Text style={styles.category}>{item.title}</Text>
+          {item.expiryLabel && (
+            <Text style={styles.expiryText}>{item.expiryLabel}</Text>
+          )}
         </View>
       </View>
 
@@ -214,6 +236,12 @@ const styles = StyleSheet.create({
   orderText: { fontSize: 13, fontWeight: "600" },
   subText: { fontSize: 11, color: "#6B7280", marginTop: 2 },
   category: { fontSize: 11, marginTop: 2 },
+  expiryText: {
+    fontSize: 11,
+    color: "#9A6B33",
+    marginTop: 3,
+    fontWeight: "600",
+  },
 
   cardRight: { alignItems: "flex-end" },
 

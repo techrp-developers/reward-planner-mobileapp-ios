@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type BenefitsRowProps = {
   is_returnable?: number | boolean;
@@ -9,6 +10,7 @@ type BenefitsRowProps = {
 };
 
 export default function BenefitsRow(props: BenefitsRowProps) {
+  const { theme } = useAppTheme();
   const isReturnable = Boolean(props.is_returnable);
   const isReplaceable = Boolean(props.is_replaceable);
 
@@ -44,7 +46,7 @@ export default function BenefitsRow(props: BenefitsRowProps) {
 
       <View style={styles.benefitItem}>
         <MaterialCommunityIcons name="flash" size={26} color="#F97316" />
-        <Text style={styles.benefitText}>Fast Delivery</Text>
+        <Text style={[styles.benefitText, { color: theme.secondaryText }]}>Fast Delivery</Text>
       </View>
     </View>
   );

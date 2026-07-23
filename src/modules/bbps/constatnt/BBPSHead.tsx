@@ -2,6 +2,7 @@ import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { useNavigation } from '@react-navigation/native';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
 
@@ -20,6 +21,9 @@ interface Props {
   onHelpPress?: () => void;
   onChangePress?: () => void; // For the "Change" link
 }
+
+const GRAD_H = { x: 0, y: 0 };
+const GRAD_H_END = { x: 1, y: 0 };
 
 const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onChangePress }) => {
   const navigation = useNavigation<any>();
@@ -85,12 +89,19 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
 
         {/* Right Section: Help Button */}
         <TouchableOpacity activeOpacity={0.8} onPress={handleHelpPress} style={styles.helpButtonWrap}>
-          <LinearGradient colors={bbpsTheme.gradients.brand} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.gradientBorder}>
+          <LinearGradient colors={bbpsTheme.gradients.brand} start={GRAD_H} end={GRAD_H_END} style={styles.gradientBorder}>
             <View style={[styles.helpInnerContainer, { backgroundColor: bbpsTheme.colors.surface }]}>
-              <View style={styles.row}>
-                <MaterialIcons name="chat-bubble-outline" size={18} color={bbpsTheme.colors.primary} />
-                <Text style={[styles.helpText, { color: bbpsTheme.colors.primary }]}>Help</Text>
-              </View>
+              <MaskedView
+                style={styles.maskedView}
+                maskElement={
+                  <View style={styles.maskedView}>
+                    <MaterialIcons name="chat-bubble-outline" size={18} color="black" />
+                    <Text style={styles.helpText}>Help</Text>
+                  </View>
+                }
+              >
+                <LinearGradient colors={bbpsTheme.gradients.brand} start={GRAD_H} end={GRAD_H_END} style={styles.gradientFill} />
+              </MaskedView>
             </View>
           </LinearGradient>
         </TouchableOpacity>
@@ -134,8 +145,10 @@ const styles = StyleSheet.create({
   helpButtonWrap: { flexShrink: 0 },
   gradientBorder: { padding: 1.5, borderRadius: 10 },
   helpInnerContainer: { backgroundColor: '#FFFFFF', borderRadius: 8.5, paddingHorizontal: 12, paddingVertical: 7 },
+  maskedView: { flexDirection: 'row', alignItems: 'center', height: 20, width: 64, marginLeft: 8 },
   row: { flexDirection: 'row', alignItems: 'center' },
   helpText: { fontSize: 14, fontWeight: '700', marginLeft: 4 },
+  gradientFill: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0 },
   divider: { height: 1, backgroundColor: '#F3F4F6' },
 });
 

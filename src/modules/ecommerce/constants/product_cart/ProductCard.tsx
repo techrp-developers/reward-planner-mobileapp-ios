@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -15,44 +15,80 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import type { HomeStackParamList } from "../../navigation/types";
 import PointsButton from "./PointsButton";
-import { setWishlistState } from "../../api/WishlistApi";
-import { fetchProductDetailsByID } from "../../api/ProductApi";
+import { checkWishlist, isWishlistPresent, setWishlistState } from "../../api/WishlistApi";
 import OptimizedImage from "../../components/common/OptimizedImage";
 import RPpriceBadge from "./RPpriceBadge";
 import { normalizeProduct } from "../../utils/normalizeProduct";
+import { fetchProductDetailsByID } from "../../api/ProductApi";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 
 const PADDING = screenWidth * 0.03;
 const GAP = screenWidth * 0.02;
 const CARD_WIDTH = (screenWidth - PADDING * 2 - GAP * 2) / 3;
-const STAR_ARRAY = [1, 2, 3, 4, 5];
-
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 type Props = {
   item: any;
   cardWidth?: number;
   shouldLoadImage?: boolean;
+  onProductPress?: (productId: string | number, item: any) => void;
 };
 
-const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props) => {
+const getProductId = (item: any) => item?.id ?? item?.product_id ?? item?.productId;
+const getVariantId = (item: any) =>
+  item?.variant_id ??
+  item?.variantId ??
+  item?.default_variant_id ??
+  item?.variants?.[0]?.variant_id ??
+  item?.variants?.[0]?.id;
+const getProductImage = (item: any) =>
+  item?.image ??
+  item?.image_url ??
+  item?.thumbnail ??
+  (Array.isArray(item?.images) ? item.images[0] : undefined);
+
+const hasWishlistFlag = (item: any) =>
+  item?.is_wishlist !== undefined || item?.is_wishlisted !== undefined;
+
+const getWishlistFlag = (item: any) => {
+  const value = item?.is_wishlisted ?? item?.is_wishlist;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+
+  const normalized = String(value ?? "").trim().toLowerCase();
+  return ["1", "true", "yes", "y"].includes(normalized);
+};
+
+const StarRating = React.memo(function StarRating({
+  starCount,
+}: {
+  starCount: number;
+}) {
+  const filledStars = "★".repeat(starCount);
+  const emptyStars = "★".repeat(Math.max(0, 5 - starCount));
+
+  return (
+    <Text style={styles.starText} numberOfLines={1}>
+      <Text style={styles.starTextFilled}>{filledStars}</Text>
+      <Text style={styles.starTextEmpty}>{emptyStars}</Text>
+    </Text>
+  );
+});
+
+const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProductPress }: Props) => {
   const navigation = useNavigation<Nav>();
+  const { isDark, theme } = useAppTheme();
   const [wishLoading, setWishLoading] = useState(false);
-  const [wishlisted, setWishlisted] = useState(Boolean(item?.is_wishlisted));
-  // Caches the variant_id resolved from a detail-fetch so repeat taps don't re-fetch.
-  // Stored as number when found, 0 when the detail API confirmed no variants exist.
-  const fetchedVariantIdRef = useRef<number | undefined>(undefined);
+  const [wishlisted, setWishlisted] = useState(() => getWishlistFlag(item));
+  const [resolvedVariantId, setResolvedVariantId] = useState<any>(() => getVariantId(item));
 
   const usedCardWidth = cardWidth ?? CARD_WIDTH;
   const normalizedProduct = useMemo(() => normalizeProduct(item), [item]);
 
-  const productId = item?.id ?? item?.product_id ?? item?.productId;
-  const variantId =
-    item?.variant_id ??
-    item?.variantId ??
-    item?.default_variant_id ??
-    item?.variants?.[0]?.variant_id;
+  const productId = getProductId(item);
+  const variantId = getVariantId(item);
 
   // Responsive size calculations based on actual card width
   const calculations = useMemo(() => ({
@@ -69,8 +105,12 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
 
   const goToDetails = useCallback(() => {
     if (!productId) return;
+    if (onProductPress) {
+      onProductPress(productId, item);
+      return;
+    }
     navigation.navigate("ProductDescription", { productId });
-  }, [productId, navigation]);
+  }, [item, navigation, onProductPress, productId]);
 
   const firstImage = useMemo(() => {
     const candidates = [
@@ -83,100 +123,112 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
   }, [item?.image, item?.image_url, item?.images, item?.thumbnail]);
 
   useEffect(() => {
-    setWishlisted(Boolean(item?.is_wishlisted));
-  }, [item?.is_wishlisted, productId, variantId]);
+    setWishlisted(getWishlistFlag(item));
+    setResolvedVariantId(variantId);
+  }, [item, productId, variantId]);
+
+  useEffect(() => {
+    const parsedProductId = Number(productId);
+    const initialVariantId = Number(variantId);
+
+    if (
+      hasWishlistFlag(item) ||
+      !shouldLoadImage ||
+      !parsedProductId ||
+      Number.isNaN(parsedProductId)
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const syncWishlistState = async () => {
+      const candidateVariantIds: number[] = [];
+      const addCandidate = (value: unknown) => {
+        const parsed = Number(value);
+        if (parsed && !Number.isNaN(parsed) && !candidateVariantIds.includes(parsed)) {
+          candidateVariantIds.push(parsed);
+        }
+      };
+
+      addCandidate(initialVariantId);
+
+      if (candidateVariantIds.length === 0) {
+        try {
+          const details = await fetchProductDetailsByID(parsedProductId);
+          addCandidate(details?.default_variant_id);
+          addCandidate(details?.variant_id);
+
+          const variants = Array.isArray(details?.variants) ? details.variants : [];
+          variants.forEach((variant: any) => addCandidate(variant?.variant_id ?? variant?.id));
+        } catch {
+          return;
+        }
+      }
+
+      for (const candidateVariantId of candidateVariantIds) {
+        try {
+          const response = await checkWishlist(parsedProductId, candidateVariantId);
+
+          if (cancelled) return;
+
+          if (isWishlistPresent(response)) {
+            setResolvedVariantId(candidateVariantId);
+            setWishlisted(true);
+            return;
+          }
+        } catch {
+          // Ignore auth/check failures and keep the list-provided flag.
+        }
+      }
+
+      if (!cancelled) {
+        setWishlisted(false);
+      }
+
+      if (!cancelled && candidateVariantIds[0]) {
+        setResolvedVariantId(candidateVariantIds[0]);
+      }
+    };
+
+    syncWishlistState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [item, productId, shouldLoadImage, variantId]);
 
   const handleWishlist = useCallback(async () => {
     if (wishLoading) return;
 
     const parsedProductId = Number(productId);
+    const parsedVariantId = Number(resolvedVariantId ?? variantId);
+
     if (!parsedProductId || Number.isNaN(parsedProductId)) {
       Alert.alert("Wishlist", "Invalid product");
       return;
     }
 
-    setWishLoading(true);
+    if (!parsedVariantId || Number.isNaN(parsedVariantId)) {
+      Alert.alert("Wishlist", "Product variant is missing");
+      return;
+    }
+
     try {
-      // ── Step 1: resolve variant_id ──────────────────────────────────────────
-      // The list API returns products with only `id` and display fields — no
-      // variant information. We first try all known field names on the item, then
-      // fall back to a detail fetch (result is cached in fetchedVariantIdRef so
-      // subsequent taps on the same card don't trigger another request).
-      let resolvedVariantId: number | undefined =
-        variantId !== undefined && variantId !== null ? Number(variantId) : undefined;
-
-      console.log('[Wishlist:ProductCard] item fields', {
-        id: item?.id,
-        product_id: item?.product_id,
-        variant_id: item?.variant_id,
-        variantId: item?.variantId,
-        default_variant_id: item?.default_variant_id,
-        variants_0_variant_id: item?.variants?.[0]?.variant_id,
-      });
-      console.log('[Wishlist:ProductCard] from item props', { parsedProductId, resolvedVariantId });
-
-      if (!resolvedVariantId) {
-        // fetchedVariantIdRef stores the result of a previous detail fetch:
-        //   undefined  → never fetched yet
-        //   0          → fetched, but product has no variants
-        //   >0         → fetched, this is the real variant_id
-        if (fetchedVariantIdRef.current !== undefined) {
-          resolvedVariantId = fetchedVariantIdRef.current || undefined;
-          console.log('[Wishlist:ProductCard] using cached detail-fetch result', fetchedVariantIdRef.current);
-        } else {
-          console.log('[Wishlist:ProductCard] fetching product details to resolve variant', parsedProductId);
-          const details = await fetchProductDetailsByID(parsedProductId);
-          console.log('[Wishlist:ProductCard] raw product details', JSON.stringify(details));
-
-          const fromDetails =
-            details?.variant_id ??
-            details?.default_variant_id ??
-            details?.variants?.[0]?.variant_id ??
-            details?.variants?.[0]?.id ??
-            details?.variants?.[0]?.sku_id;
-
-          console.log('[Wishlist:ProductCard] variant extracted from details', fromDetails);
-
-          if (fromDetails) {
-            resolvedVariantId = Number(fromDetails);
-            fetchedVariantIdRef.current = resolvedVariantId;
-          } else {
-            fetchedVariantIdRef.current = 0; // confirmed: no variants
-          }
-        }
-      }
-
-      console.log('[Wishlist:ProductCard] final resolved', { parsedProductId, resolvedVariantId, shouldWishlist: !wishlisted });
-
-      if (!resolvedVariantId) {
-        // Product genuinely has no variants even after fetching details.
-        // The wishlist backend requires variant_id, so we can't proceed silently.
-        Alert.alert(
-          "Wishlist",
-          "This product has no variant information. Open the product page to wishlist it."
-        );
-        return;
-      }
-
-      // ── Step 2: toggle wishlist ──────────────────────────────────────────────
-      const result = await setWishlistState(parsedProductId, resolvedVariantId, !wishlisted);
-      console.log('[Wishlist:ProductCard] setWishlistState result', result);
+      setWishLoading(true);
+      const result = await setWishlistState(parsedProductId, parsedVariantId, !wishlisted);
       setWishlisted(result.wishlisted);
     } catch (error: any) {
-      console.log('[Wishlist:ProductCard] error', {
-        status: error?.response?.status,
-        data: error?.response?.data,
-        message: error?.message,
-      });
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
+        error?.message ||
         "Failed to update wishlist";
       Alert.alert("Wishlist", String(message));
     } finally {
       setWishLoading(false);
     }
-  }, [productId, variantId, wishLoading, wishlisted, item]);
+  }, [productId, resolvedVariantId, variantId, wishLoading, wishlisted]);
 
   const handleWishlistPress = useCallback(
     (event: GestureResponderEvent) => {
@@ -225,11 +277,22 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
           width: usedCardWidth,
           minHeight: calculations.cardMinHeight,
           borderRadius: calculations.borderRadius,
+          backgroundColor: theme.card,
+          borderWidth: isDark ? 1 : 0,
+          borderColor: theme.border,
         },
       ]}
     >
       <TouchableOpacity activeOpacity={0.85} onPress={goToDetails}>
-        <View style={[styles.imageWrap, { height: calculations.imageWrapHeight, borderRadius: calculations.borderRadius, paddingTop: Math.round(usedCardWidth * 0.1) }]}>
+        <View style={[
+          styles.imageWrap,
+          {
+            height: calculations.imageWrapHeight,
+            borderRadius: calculations.borderRadius,
+            paddingTop: Math.round(usedCardWidth * 0.1),
+            backgroundColor: isDark ? "#303038" : "#F9FAFB",
+          },
+        ]}>
           {!!rp_price && (
             <View style={styles.discountWrap}>
               <RPpriceBadge value={rp_price} />
@@ -237,7 +300,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
           )}
 
           <TouchableOpacity
-            style={styles.heartIcon}
+            style={[styles.heartIcon, { backgroundColor: isDark ? "rgba(38,38,43,0.92)" : "rgba(255,255,255,0.9)" }]}
             activeOpacity={0.85}
             onPress={handleWishlistPress}
             disabled={wishLoading}
@@ -245,7 +308,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
             <FontAwesome
               name={wishlisted ? "heart" : "heart-o"}
               size={14}
-              color={wishlisted ? "#E53935" : "#4A4A4A"}
+              color={wishlisted ? "#E53935" : theme.secondaryText}
             />
           </TouchableOpacity>
 
@@ -270,6 +333,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
             style={[
               styles.productTitle,
               { fontSize: calculations.fontSizeLabel },
+              { color: theme.text },
             ]}
             numberOfLines={2}
             ellipsizeMode="tail"
@@ -279,16 +343,8 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
         </View>
 
         <View style={styles.ratingRow}>
-          {STAR_ARRAY.map((star) => (
-            <FontAwesome
-              key={star}
-              name="star"
-              size={10}
-              color={star <= starCount ? "#FFC514" : "#E5E7EB"}
-              style={styles.starIcon}
-            />
-          ))}
-          <Text style={[styles.reviews, { fontSize: calculations.fontSizeReview }]}>
+          <StarRating starCount={starCount} />
+          <Text style={[styles.reviews, { fontSize: calculations.fontSizeReview, color: theme.secondaryText }]}>
             {reviewText}
           </Text>
         </View>
@@ -314,7 +370,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
           {!!originalPriceText && (
             <Text 
               numberOfLines={1} 
-              style={[styles.original, { fontSize: calculations.fontSizeOriginal }]}
+              style={[styles.original, { fontSize: calculations.fontSizeOriginal, color: theme.secondaryText }]}
             >
               {originalPriceText}
             </Text>
@@ -323,7 +379,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
           {/* Final price */}
           <Text 
             numberOfLines={1} 
-            style={[styles.price, { fontSize: calculations.fontSizePrice }]}
+            style={[styles.price, { fontSize: calculations.fontSizePrice, color: theme.text }]}
           >
             {priceText}
           </Text>
@@ -339,22 +395,35 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true }: Props
 
 // Memoized export
 const ProductCard = React.memo(ProductCardComponent, (prevProps, nextProps) => {
-  const prevNormalized = normalizeProduct(prevProps.item);
-  const nextNormalized = normalizeProduct(nextProps.item);
+  const prevItem = prevProps.item;
+  const nextItem = nextProps.item;
 
   return (
-    prevProps.item?.id === nextProps.item?.id &&
-    prevProps.item?.is_wishlisted === nextProps.item?.is_wishlisted &&
+    getProductId(prevItem) === getProductId(nextItem) &&
+    prevItem?.is_wishlist === nextItem?.is_wishlist &&
+    prevItem?.is_wishlisted === nextItem?.is_wishlisted &&
     prevProps.cardWidth === nextProps.cardWidth &&
-    prevProps.item?.discount === nextProps.item?.discount &&
-    prevProps.item?.rp_price === nextProps.item?.rp_price &&
-    prevProps.item?.price === nextProps.item?.price &&
-    prevProps.item?.originalPrice === nextProps.item?.originalPrice &&
-    prevNormalized.rewardCoins === nextNormalized.rewardCoins &&
-    prevNormalized.redeem_coins === nextNormalized.redeem_coins &&
-    prevProps.item?.image === nextProps.item?.image &&
-    prevProps.item?.product_name === nextProps.item?.product_name &&
-    prevProps.shouldLoadImage === nextProps.shouldLoadImage
+    prevItem?.discount === nextItem?.discount &&
+    prevItem?.discount_percent === nextItem?.discount_percent &&
+    prevItem?.rp_price === nextItem?.rp_price &&
+    prevItem?.rpPrice === nextItem?.rpPrice &&
+    prevItem?.price === nextItem?.price &&
+    prevItem?.selling_price === nextItem?.selling_price &&
+    prevItem?.final_price === nextItem?.final_price &&
+    prevItem?.originalPrice === nextItem?.originalPrice &&
+    prevItem?.original_price === nextItem?.original_price &&
+    prevItem?.mrp === nextItem?.mrp &&
+    prevItem?.rewardCoins === nextItem?.rewardCoins &&
+    prevItem?.reward_coins === nextItem?.reward_coins &&
+    prevItem?.redeem_coins === nextItem?.redeem_coins &&
+    prevItem?.redeemCoins === nextItem?.redeemCoins &&
+    getProductImage(prevItem) === getProductImage(nextItem) &&
+    prevItem?.product_name === nextItem?.product_name &&
+    prevItem?.title === nextItem?.title &&
+    prevItem?.brand === nextItem?.brand &&
+    prevItem?.brand_name === nextItem?.brand_name &&
+    prevProps.shouldLoadImage === nextProps.shouldLoadImage &&
+    prevProps.onProductPress === nextProps.onProductPress
   );
 });
 
@@ -414,8 +483,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 4,
   },
-  starIcon: {
-    marginRight: 1,
+  starText: {
+    fontSize: 10,
+    lineHeight: 12,
+    includeFontPadding: false,
+    letterSpacing: -0.5,
+  },
+  starTextFilled: {
+    color: "#FFC514",
+  },
+  starTextEmpty: {
+    color: "#E5E7EB",
   },
   reviews: {
     color: "#9CA3AF",

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useServicesTheme } from '../../../utils/useServicesTheme';
 
 interface StatItem {
   value: string;
@@ -32,36 +33,41 @@ const PackFooterCTA: React.FC<Props> = ({
   onAddToCart,
   isAddingToCart = false,
 }) => {
+  const servicesTheme = useServicesTheme();
+  const showOriginalPrice = originalPrice > totalPrice;
+
   return (
     <>
       {/* MAIN CTA SECTION */}
       <View style={styles.container}>
         <TouchableOpacity activeOpacity={0.9} onPress={onPrimaryPress}>
           <LinearGradient
-            colors={['#8665FF', '#5B47A3']}
+            colors={servicesTheme.gradients.primary}
             style={styles.primaryBtn}
           >
             <Text style={styles.primaryText}>
               Get the Full Package at ₹{totalPrice}{' '}
-              <Text style={styles.strike}>₹{originalPrice}</Text>
+              {showOriginalPrice && (
+                <Text style={styles.strike}>₹{originalPrice}</Text>
+              )}
             </Text>
           </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.outlineBorder} onPress={onEnquirePress}>
-          <View style={styles.outlineInner}>
-            <Text style={styles.outlineText}>Enquire Now</Text>
+        <TouchableOpacity style={[styles.outlineBorder, { borderColor: servicesTheme.colors.primary }]} onPress={onEnquirePress}>
+          <View style={[styles.outlineInner, { backgroundColor: servicesTheme.colors.surface }]}>
+            <Text style={[styles.outlineText, { color: servicesTheme.colors.primary }]}>Enquire Now</Text>
           </View>
         </TouchableOpacity>
 
         <LinearGradient
-          colors={['#F1EFFF', '#ECEBFF']}
+          colors={servicesTheme.isDark ? ['#18112A', '#111113'] : ['#F1EFFF', '#ECEBFF']}
           style={styles.statsCard}
         >
           {stats.map((item, index) => (
             <View key={index} style={styles.statItem}>
-              <Text style={styles.statValue}>{item.value}</Text>
-              <Text style={styles.statLabel}>{item.label}</Text>
+              <Text style={[styles.statValue, { color: servicesTheme.colors.primary }]}>{item.value}</Text>
+              <Text style={[styles.statLabel, { color: servicesTheme.colors.muted }]}>{item.label}</Text>
             </View>
           ))}
         </LinearGradient>
@@ -69,11 +75,12 @@ const PackFooterCTA: React.FC<Props> = ({
 
       {/* 🔽 BOTTOM ADD TO CART BAR */}
       {showBottomBar && (
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.divider }]}>
           <Pressable
             accessibilityRole="button"
             style={({ pressed }) => [
               styles.addToCartBtn,
+              { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.primary },
               isAddingToCart && styles.addToCartBtnDisabled,
               pressed && styles.addToCartBtnPressed,
               pressed && styles.addToCartBtnScaled,
@@ -81,7 +88,7 @@ const PackFooterCTA: React.FC<Props> = ({
             onPress={onAddToCart}
             disabled={isAddingToCart}
           >
-            <Text style={styles.addToCartText}>
+            <Text style={[styles.addToCartText, { color: servicesTheme.colors.primary }]}>
               {isAddingToCart ? 'Adding...' : 'Add to Cart'}
             </Text>
           </Pressable>

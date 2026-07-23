@@ -209,7 +209,13 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
     if (item.type === 'product') {
       navigation.navigate('ProductDetails', { productId: item.id });
     } else {
-      navigation.navigate('ServiceStack');
+      navigation.navigate('ServiceStack', {
+        screen: 'ServiceDescription',
+        params: {
+          serviceId: item.id,
+          title: item.title,
+        },
+      });
     }
   }, [navigation, onClose]);
 

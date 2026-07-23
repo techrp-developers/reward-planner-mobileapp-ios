@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -13,7 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import BBPSHead from '../constatnt/BBPSHead';
-import { createBillPayOrder, verifyBillPayPayment } from '../api/BillsAPI';
+import { cancelUnpaidBillPayOrder, createBillPayOrder, verifyBillPayPayment } from '../api/BillsAPI';
 import { compareRechargePayloads } from '../utils/rechargeDebug';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAlert } from '../../ecommerce/components/alerts';
@@ -32,7 +32,6 @@ type OrderFailure = {
   payload: Record<string, any>;
 };
 
-const BRAND_START = '#8665FF';
 const BRAND_END = '#5B47A3';
 const PAYMENT_MESSAGE_DURATION_MS = 10000;
 
@@ -50,6 +49,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
   const alert = useAlert();
   const bbpsTheme = useBbpsTheme();
   const [loading, setLoading] = useState(false);
+  const paymentFlowInProgress = useRef(false);
   const [orderFailure, setOrderFailure] = useState<OrderFailure | null>(null);
   const params = useMemo(() => route?.params ?? {}, [route?.params]);
 
@@ -71,6 +71,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
   const amount = getPlanAmount(plan);
 
   const handleCreateOrder = useCallback(async () => {
+    if (paymentFlowInProgress.current) return;
     if (!params.operatorId || !mobile || !params.circleId || !planId) {
       alert.warning('Missing Details', 'Recharge details are incomplete.');
       return;
@@ -78,6 +79,9 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
 
     setOrderFailure(null);
     setLoading(true);
+    paymentFlowInProgress.current = true;
+    let transactionId: string | number | null = null;
+    let razorpaySucceeded = false;
 
     const payload = {
       operator_id: String(params.operatorId),
@@ -116,6 +120,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
 
       // create-order responds with { key, orderId, amount, currency, transaction_id }
       const order = response.data;
+      transactionId = order?.transaction_id ?? null;
 
       if (!order?.key || !order?.orderId) {
         setOrderFailure({
@@ -143,6 +148,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
           color: '#8665FF',
         },
       });
+      razorpaySucceeded = true;
 
       // verify-payment expects only the three razorpay_* fields — no transaction_id.
       const verifyPayload = {
@@ -158,7 +164,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
       // when the payment was captured but bill processing is queued/retrying
       // (HTTP 202) or already resolved by a webhook — the status screen still
       // needs to open so the user can track that in-progress/refund state.
-      const transactionId = verifyResponse?.transaction_id ?? order.transaction_id;
+      transactionId = verifyResponse?.transaction_id ?? order.transaction_id;
 
       if (verifyResponse?.success === false && !transactionId) {
         alert.warning(
@@ -174,16 +180,30 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
       // A rejected verify-payment call (e.g. HTTP 422 when the provider
       // permanently rejected the transaction) still carries a transaction_id —
       // route to the status screen instead of stranding the user on an alert.
-      const transactionId = error?.transaction_id;
-      if (transactionId) {
-        navigation.navigate('TransactionStatusScreen', { transactionId });
+      const errorTransactionId = error?.transaction_id ?? transactionId;
+      if (razorpaySucceeded && errorTransactionId) {
+        navigation.navigate('TransactionStatusScreen', { transactionId: errorTransactionId });
         return;
+      }
+
+      if (!razorpaySucceeded && errorTransactionId) {
+        try {
+          await cancelUnpaidBillPayOrder(errorTransactionId);
+        } catch {
+          // Cancellation is rejected when a payment was attempted/captured.
+          // In that case status tracking is safer than inviting another pay.
+          navigation.navigate('TransactionStatusScreen', {
+            transactionId: errorTransactionId,
+          });
+          return;
+        }
       }
 
       // Razorpay checkout cancellation/failure or verify-payment network error.
       alert.error('Error', error?.message || 'Could not create recharge order.', PAYMENT_MESSAGE_DURATION_MS);
     } finally {
       setLoading(false);
+      paymentFlowInProgress.current = false;
     }
   }, [params.operatorId, params.circleId, params.operatorName, mobile, planId, user, alert, navigation]);
 
@@ -305,7 +325,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
               <View style={[styles.divider, { backgroundColor: bbpsTheme.colors.divider }]} />
               <View style={styles.amountRow}>
                 <Text style={[styles.amountLabel, { color: bbpsTheme.colors.textStrong }]}>Total Amount</Text>
-                <View style={[styles.amountPill, { backgroundColor: bbpsTheme.isDark ? '#18112A' : '#F3EFFF', borderColor: bbpsTheme.colors.border }]}>
+                <View style={[styles.amountPill, { backgroundColor: bbpsTheme.colors.iconBg, borderColor: bbpsTheme.colors.border }]}>
                   <Text style={[styles.amount, { color: bbpsTheme.colors.primary }]}>Rs {amount || '-'}</Text>
                 </View>
               </View>
@@ -389,7 +409,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
 
             <View style={styles.benefitsWrap}>
               {benefits.map((item, index) => (
-                <View key={index} style={[styles.benefitChip, { backgroundColor: bbpsTheme.isDark ? '#18112A' : '#F3EFFF', borderColor: bbpsTheme.colors.border }]}>
+                <View key={index} style={[styles.benefitChip, { backgroundColor: bbpsTheme.colors.iconBg, borderColor: bbpsTheme.colors.border }]}>
                   <MaterialIcons
                     name={item.icon}
                     size={16}
@@ -456,7 +476,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
-    marginLeft: 16,
   },
   headerTextWrap: {
     flex: 1, paddingHorizontal: 18,

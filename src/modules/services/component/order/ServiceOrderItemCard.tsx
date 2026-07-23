@@ -12,6 +12,7 @@ import type { ServiceItem } from '../../api/OrderAPI';
 import ServiceTimelineCard from './ServiceTimelineCard';
 import ServiceFeedbackCard from './ServiceFeedbackCard';
 import ServiceCancellationCard from './ServiceCancellationCard';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
   pending:              { color: '#D97706', bg: '#FFFBEB', label: 'Pending' },
@@ -36,14 +37,17 @@ const CANCELLABLE_STATUSES = new Set([
 type Props = {
   item: ServiceItem;
   onCancelPress: (item: ServiceItem) => void;
+  onCancellationDetailsPress: (item: ServiceItem) => void;
   onFeedbackPress: (item: ServiceItem) => void;
 };
 
 export default function ServiceOrderItemCard({
   item,
   onCancelPress,
+  onCancellationDetailsPress,
   onFeedbackPress,
 }: Props) {
+  const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(false);
   const meta = STATUS_META[item.status] || {
     color: '#6B7280',
@@ -66,10 +70,10 @@ export default function ServiceOrderItemCard({
         />
 
         <View style={styles.info}>
-          <Text style={styles.serviceName} numberOfLines={2}>
+          <Text style={[styles.serviceName, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>
             {item.service_name}
           </Text>
-          <Text style={styles.variantName}>{item.variant_name}</Text>
+          <Text style={[styles.variantName, { color: servicesTheme.colors.subtle }]}>{item.variant_name}</Text>
 
           <View style={styles.metaRow}>
             <View style={[styles.statusPill, { backgroundColor: meta.bg }]}>
@@ -87,16 +91,16 @@ export default function ServiceOrderItemCard({
         <MaterialCommunityIcons
           name={expanded ? 'chevron-up' : 'chevron-down'}
           size={20}
-          color="#9CA3AF"
+          color={servicesTheme.colors.subtle}
         />
       </TouchableOpacity>
 
       {/* ── Expanded detail ────────────────────────────────────────────── */}
       {expanded && (
-        <View style={styles.body}>
+        <View style={[styles.body, { backgroundColor: servicesTheme.colors.surfaceAlt, borderTopColor: servicesTheme.colors.divider }]}>
           {item.timeline.length > 0 && (
             <>
-              <Text style={styles.sectionLabel}>Service progress</Text>
+              <Text style={[styles.sectionLabel, { color: servicesTheme.colors.subtle }]}>Service progress</Text>
               <ServiceTimelineCard steps={item.timeline} />
             </>
           )}
@@ -111,6 +115,7 @@ export default function ServiceOrderItemCard({
             serviceName={item.service_name}
             canCancelByStatus={CANCELLABLE_STATUSES.has(item.status)}
             onCancelPress={() => onCancelPress(item)}
+            onViewDetailsPress={() => onCancellationDetailsPress(item)}
           />
         </View>
       )}

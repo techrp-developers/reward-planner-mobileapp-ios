@@ -245,10 +245,10 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
   const stepsProgress = Math.min(overallSummary.steps / (planOverview.daily_target * 1.2), 1);
 
   const planRows = [
-    { label: "Plan Type",           value: planOverview.plan_type,                          color: "#5B5FBD" },
-    { label: "Total Plan Duration", value: `${planOverview.total_duration_days} days`,      color: "#1A1D3A" },
-    { label: "Today",               value: `Day ${planOverview.current_day}`,                color: "#5B5FBD" },
-    { label: "Daily Target",        value: `${planOverview.daily_target.toLocaleString()} steps`, color: "#1A1D3A" },
+    { label: "Plan Type",           value: planOverview.plan_type,                          color: VD.accentDark },
+    { label: "Total Plan Duration", value: `${planOverview.total_duration_days} days`,      color: VD.white },
+    { label: "Today",               value: `Day ${planOverview.current_day}`,                color: VD.accentDark },
+    { label: "Daily Target",        value: `${planOverview.daily_target.toLocaleString()} steps`, color: VD.white },
   ];
 
   const summaryRows = [
@@ -260,7 +260,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#EDEEF8" />
+      <StatusBar barStyle="light-content" backgroundColor={VD.bg0} />
 
       {/* ── Header ── */}
       <View style={styles.header}>
@@ -348,20 +348,23 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
 
 export default TodayGoalCompletedScreen;
 
-// ─── Violet Dusk palette (mirrors Dashboard.tsx) ─────────────────────────────
+// ─── Step counter dark palette (mirrors Dashboard.tsx) ───────────────────────
 const VD = {
-  bg0:         "#1A1040",
-  bg1:         "#3D2080",
-  accent:      "#C4A8FF",
-  accentFaint: "rgba(196,168,255,0.12)",
-  accentDim:   "rgba(196,168,255,0.25)",
-  cardBg:      "rgba(255,255,255,0.09)",
-  cardBorder:  "rgba(196,168,255,0.18)",
+  bg0:         "#070A16",
+  bg1:         "#111735",
+  bg2:         "#201A3F",
+  accent:      "#8EA2FF",
+  accentDark:  "#EEF1FF",
+  accentFaint: "rgba(142,162,255,0.12)",
+  accentDim:   "rgba(105,118,178,0.44)",
+  cardBg:      "rgba(255,255,255,0.075)",
+  cardBorder:  "rgba(174,188,255,0.16)",
   white:       "#FFFFFF",
-  whiteMid:    "rgba(255,255,255,0.70)",
-  whiteLow:    "rgba(255,255,255,0.45)",
-  success:     "#4ADE80",
-  warning:     "#FBBF24",
+  whiteMid:    "#CDD2EA",
+  whiteLow:    "#979EBC",
+  whiteGhost:  "rgba(255,255,255,0.055)",
+  success:     "#9AAEFF",
+  warning:     "#F5B86B",
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -374,15 +377,15 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 58 : 28,
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: VD.whiteGhost,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: VD.cardBorder,
   },
   backBtn:      { width: 36, alignItems: "flex-start", justifyContent: "center" },
-  backArrow:    { fontSize: 34, color: VD.accent, lineHeight: 38, fontWeight: "300" },
+  backArrow:    { fontSize: 34, color: VD.accentDark, lineHeight: 38, fontWeight: "300" },
   headerCenter: { flex: 1, alignItems: "center" },
   headerTitle:  { fontSize: 16, fontWeight: "800", color: VD.white, letterSpacing: -0.2 },
-  headerSub:    { fontSize: 11.5, fontWeight: "700", color: VD.accent, marginTop: 2, letterSpacing: 0.2 },
+  headerSub:    { fontSize: 11.5, fontWeight: "700", color: VD.whiteMid, marginTop: 2, letterSpacing: 0.2 },
   headerSpacer: { width: 36 },
 
   scroll:         { paddingHorizontal: 14, paddingTop: 10 },
@@ -419,7 +422,7 @@ const styles = StyleSheet.create({
   figureLegRight:{ transform: [{ rotate: "12deg" }] },
 
   illustrationCaption: { fontSize: 13, color: VD.whiteLow, textAlign: "center", lineHeight: 20 },
-  illustrationBold:    { fontWeight: "700", color: VD.accent },
+  illustrationBold:    { fontWeight: "700", color: VD.accentDark },
 
   sectionCard: {
     backgroundColor: VD.cardBg,
@@ -430,7 +433,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: VD.cardBorder,
   },
-  sectionCardHighlighted: { borderColor: VD.accent, borderWidth: 1.5 },
+  sectionCardHighlighted: { borderColor: VD.accentDim, borderWidth: 1.5 },
   sectionTitle: { fontSize: 14.5, fontWeight: "800", color: VD.white, marginBottom: 8 },
 
   infoRow:   { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 9 },
@@ -441,10 +444,10 @@ const styles = StyleSheet.create({
   summaryRow:      { flexDirection: "row", alignItems: "center", paddingVertical: 9 },
   summaryIcon:     { fontSize: 17, width: 26, textAlign: "center", marginRight: 8 },
   summaryLabel:    { flex: 1, fontSize: 13.5, color: VD.whiteLow, fontWeight: "500" },
-  summaryValue:    { fontSize: 13.5, fontWeight: "700", color: VD.accent },
+  summaryValue:    { fontSize: 13.5, fontWeight: "700", color: VD.accentDark },
   gradBarContainer:{ marginTop: 12 },
 
-  gradBarTrack: { height: 8, backgroundColor: "rgba(255,255,255,0.10)", borderRadius: 6, overflow: "hidden" },
+  gradBarTrack: { height: 8, backgroundColor: VD.whiteGhost, borderRadius: 6, overflow: "hidden" },
   gradBarFill:  { height: "100%", borderRadius: 6, backgroundColor: VD.accent },
 
   streakRow:      { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -460,7 +463,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: Platform.OS === "ios" ? 38 : 22,
     paddingTop: 10,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: VD.whiteGhost,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: VD.cardBorder,
   },

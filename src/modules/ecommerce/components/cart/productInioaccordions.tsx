@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -166,16 +167,19 @@ const buildSpecs = (product: any, selectedVariant: any): SpecGroup[] => {
 
 // ─── SpecGroupView ────────────────────────────────────────────────────────────
 
-const SpecGroupView = memo(({ group }: { group: SpecGroup }) => (
+const SpecGroupView = memo(({ group, theme }: { group: SpecGroup; theme: ReturnType<typeof useAppTheme>["theme"] }) => (
   <View style={styles.specGroup}>
-    <Text style={styles.specGroupTitle}>{group.title}</Text>
+    <Text style={[styles.specGroupTitle, { borderBottomColor: theme.border }]}>{group.title}</Text>
     {group.rows.map((row, i) => (
       <View
         key={`${row.label}-${i}`}
-        style={[styles.specRow, i % 2 === 1 && styles.specRowAlt]}
+        style={[
+          styles.specRow,
+          i % 2 === 1 && { backgroundColor: theme.background },
+        ]}
       >
-        <Text style={styles.specLabel}>{row.label}</Text>
-        <Text style={styles.specValue}>{row.value}</Text>
+        <Text style={[styles.specLabel, { color: theme.secondaryText }]}>{row.label}</Text>
+        <Text style={[styles.specValue, { color: theme.text }]}>{row.value}</Text>
       </View>
     ))}
   </View>
@@ -195,6 +199,7 @@ export default function ProductInfoAccordions({
   selectedVariant,
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>("Specifications");
+  const { theme } = useAppTheme();
 
   const specGroups = useMemo(
     () => buildSpecs(product, selectedVariant),
@@ -221,10 +226,10 @@ export default function ProductInfoAccordions({
   const brandPoints   = toPoints(brandDescription,   ["No brand information available"]);
 
   return (
-    <View style={styles.wrap}>
+    <View style={[styles.wrap, { backgroundColor: theme.card, borderColor: theme.border }]}>
 
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { backgroundColor: theme.card, borderBottomColor: theme.border }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -237,7 +242,7 @@ export default function ProductInfoAccordions({
               onPress={() => setActiveTab(tab)}
               style={styles.tab}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+              <Text style={[styles.tabText, { color: theme.secondaryText }, activeTab === tab && styles.tabTextActive]}>
                 {tab}
               </Text>
               {activeTab === tab && <View style={styles.tabUnderline} />}
@@ -247,17 +252,17 @@ export default function ProductInfoAccordions({
       </View>
 
       {/* ── Content area ────────────────────────────────────────────────────── */}
-      <View style={styles.contentArea}>
+      <View style={[styles.contentArea, { backgroundColor: theme.card }]}>
 
         {activeTab === "Specifications" && (
           specGroups.length > 0 ? (
             <View>
               {specGroups.map((g) => (
-                <SpecGroupView key={g.title} group={g} />
+                <SpecGroupView key={g.title} group={g} theme={theme} />
               ))}
             </View>
           ) : (
-            <Text style={styles.emptyText}>No specifications available</Text>
+            <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No specifications available</Text>
           )
         )}
 
@@ -271,7 +276,7 @@ export default function ProductInfoAccordions({
                   color="#22C55E"
                   style={styles.pointIcon}
                 />
-                <Text style={styles.pointText}>{t}</Text>
+                <Text style={[styles.pointText, { color: theme.text }]}>{t}</Text>
               </View>
             ))}
           </View>
@@ -281,8 +286,8 @@ export default function ProductInfoAccordions({
           <View>
             {brandPoints.map((t, i) => (
               <View key={i} style={styles.pointRow}>
-                <Text style={styles.bulletDot}>•</Text>
-                <Text style={styles.pointText}>{t}</Text>
+                <Text style={[styles.bulletDot, { color: theme.secondaryText }]}>•</Text>
+                <Text style={[styles.pointText, { color: theme.text }]}>{t}</Text>
               </View>
             ))}
           </View>

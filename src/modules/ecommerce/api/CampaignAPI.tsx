@@ -92,6 +92,8 @@ export interface CampaignProduct {
   reward?: CampaignProductReward;
   redeem_coins?: number;
   rp_price?: string | number | null;
+  is_wishlist?: boolean | number | string;
+  is_wishlisted?: boolean | number | string;
 }
 
 export interface CampaignProductsResponse {

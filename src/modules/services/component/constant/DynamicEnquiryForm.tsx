@@ -14,6 +14,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { EnquiryField } from '../../types/ServiceTypes';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 interface Props {
   title: string;
@@ -47,6 +48,9 @@ const DynamicEnquiryForm: React.FC<Props> = ({
   isSubmitting = false,
 }) => {
   const [selectState, setSelectState] = useState<SelectState>({ open: false, field: null });
+  const servicesTheme = useServicesTheme();
+  const formSurface = servicesTheme.isDark ? '#000000' : '#FFFFFF';
+  const inputSurface = servicesTheme.isDark ? '#000000' : '#FAF9FF';
 
   const canSubmit =
     !isSubmitting &&
@@ -61,7 +65,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
 
     return (
       <View key={`${field.field_name || 'field'}-${index}`}>
-        <Text style={styles.label}>
+        <Text style={[styles.label, { color: servicesTheme.colors.text }]}>
           {field.label}
           {isRequired && <Text style={styles.star}> *</Text>}
         </Text>
@@ -69,7 +73,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
         {fieldType === 'select' ? (
           /* ── Dropdown ── */
           <Pressable
-            style={styles.inputWrap}
+            style={[styles.inputWrap, { backgroundColor: inputSurface, borderColor: servicesTheme.colors.border }]}
             onPress={() => {
               Keyboard.dismiss();
               setTimeout(() => setSelectState({ open: true, field }), 80);
@@ -77,29 +81,29 @@ const DynamicEnquiryForm: React.FC<Props> = ({
             accessibilityRole="button"
             accessibilityLabel={`Select ${field.label}`}
           >
-            <Text style={[styles.inputText, !value && styles.placeholder]}>
+            <Text style={[styles.inputText, { color: servicesTheme.colors.text }, !value && { color: servicesTheme.colors.subtle }]}>
               {value || `Select ${field.label}`}
             </Text>
             <View style={styles.rightIcon}>
-              <MaterialIcons name="keyboard-arrow-down" size={22} color="#8A8A8A" />
+              <MaterialIcons name="keyboard-arrow-down" size={22} color={servicesTheme.colors.muted} />
             </View>
           </Pressable>
         ) : fieldType === 'textarea' ? (
           /* ── Textarea ── */
-          <View style={[styles.inputWrap, styles.textAreaWrap]}>
+          <View style={[styles.inputWrap, styles.textAreaWrap, { backgroundColor: inputSurface, borderColor: servicesTheme.colors.border }]}>
             <TextInput
               value={value}
               onChangeText={(t) => onChange(field.field_name, t)}
               placeholder={`Enter ${field.label.toLowerCase()}`}
-              placeholderTextColor="#A3A3A3"
-              style={[styles.inputText, styles.textArea]}
+              placeholderTextColor={servicesTheme.colors.subtle}
+              style={[styles.inputText, styles.textArea, { color: servicesTheme.colors.text }]}
               multiline
               textAlignVertical="top"
             />
           </View>
         ) : (
           /* ── Text / Number ── */
-          <View style={styles.inputWrap}>
+          <View style={[styles.inputWrap, { backgroundColor: inputSurface, borderColor: servicesTheme.colors.border }]}>
             <TextInput
               value={value}
               onChangeText={(t) => {
@@ -107,8 +111,8 @@ const DynamicEnquiryForm: React.FC<Props> = ({
                 onChange(field.field_name, sanitized);
               }}
               placeholder={`Enter ${field.label.toLowerCase()}`}
-              placeholderTextColor="#A3A3A3"
-              style={styles.inputTextWithPadding}
+              placeholderTextColor={servicesTheme.colors.subtle}
+              style={[styles.inputTextWithPadding, { color: servicesTheme.colors.text }]}
               keyboardType={getKeyboardType(fieldType)}
               autoCapitalize="none"
               autoCorrect={false}
@@ -120,14 +124,14 @@ const DynamicEnquiryForm: React.FC<Props> = ({
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: formSurface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
       <View style={styles.headerRow}>
-        <View style={styles.headerIcon}>
-          <MaterialIcons name="chat-bubble-outline" size={18} color="#5B47A3" />
+        <View style={[styles.headerIcon, { backgroundColor: servicesTheme.colors.iconBg }]}>
+          <MaterialIcons name="chat-bubble-outline" size={18} color={servicesTheme.colors.primary} />
         </View>
         <View style={styles.headerTextCol}>
-          <Text style={styles.heading}>{title}</Text>
-          <Text style={styles.desc}>{description}</Text>
+          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
+          <Text style={[styles.desc, { color: servicesTheme.colors.muted }]}>{description}</Text>
         </View>
       </View>
 
@@ -139,7 +143,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
         disabled={!canSubmit}
         style={[styles.submitBtnShadow, !canSubmit && styles.submitBtnDisabled]}
       >
-        <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.submitBtn}>
+        <LinearGradient colors={servicesTheme.gradients.primary} style={styles.submitBtn}>
           {isSubmitting ? (
             <ActivityIndicator color="#FFF" size="small" />
           ) : (
@@ -160,9 +164,11 @@ const DynamicEnquiryForm: React.FC<Props> = ({
           style={styles.modalOverlay}
           onPress={() => setSelectState({ open: false, field: null })}
         >
-          <View style={styles.modalCard}>
+          <View style={[styles.modalCard, { backgroundColor: servicesTheme.colors.elevated }]}>
             {!!selectState.field?.label && (
-              <Text style={styles.modalTitle}>{selectState.field.label}</Text>
+              <Text style={[styles.modalTitle, { color: servicesTheme.colors.text, borderBottomColor: servicesTheme.colors.divider }]}>
+                {selectState.field.label}
+              </Text>
             )}
             <FlatList
               data={selectState.field?.options ?? []}
@@ -171,7 +177,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
                 const isSelected = values[selectState.field?.field_name ?? ''] === item;
                 return (
                   <Pressable
-                    style={styles.optionRow}
+                    style={[styles.optionRow, { borderBottomColor: servicesTheme.colors.divider }]}
                     onPress={() => {
                       if (selectState.field) {
                         onChange(selectState.field.field_name, item);
@@ -179,11 +185,15 @@ const DynamicEnquiryForm: React.FC<Props> = ({
                       setSelectState({ open: false, field: null });
                     }}
                   >
-                    <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+                    <Text style={[
+                      styles.optionText,
+                      { color: servicesTheme.colors.text },
+                      isSelected && { color: servicesTheme.colors.primary, fontWeight: '600' },
+                    ]}>
                       {item}
                     </Text>
                     {isSelected && (
-                      <MaterialIcons name="check" size={16} color="#8665FF" />
+                      <MaterialIcons name="check" size={16} color={servicesTheme.colors.primary} />
                     )}
                   </Pressable>
                 );
@@ -205,6 +215,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 16,
+    borderWidth: 1,
     shadowColor: '#1F2937',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,

@@ -6,6 +6,7 @@
 
 import axios from 'axios';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
+import { attachSessionRefreshInterceptor } from '../../common/auth/api/axios';
 
 const CRM_BASE_URL = 'https://rewardplanners.com/api/crm/v1';
 
@@ -21,13 +22,15 @@ export const API = axios.create({
 
 API.interceptors.request.use(
   async (config) => {
-    console.log('🌐 API Request:', config.method?.toUpperCase(), (config.baseURL ?? '') + (config.url ?? ''));
+    __DEV__ && console.log('🌐 API Request:', config.method?.toUpperCase(), (config.baseURL ?? '') + (config.url ?? ''));
     const authHeaders = await getAuthHeaders();
     Object.assign(config.headers, authHeaders || {});
     return config;
   },
   (error) => Promise.reject(error),
 );
+
+attachSessionRefreshInterceptor(API);
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -64,7 +67,7 @@ export const startInsurance = async (
       );
     }
 
-    console.log(
+    __DEV__ && console.log(
       `[CRM] ✅ Created enquiry: ${enquiryId} (uiType: ${insurance_type}, crmType: ${crmType})`,
     );
 
@@ -88,7 +91,7 @@ export const saveStep = async (
   section: string,
   data: any,
 ): Promise<any> => {
-  console.log(
+  __DEV__ && console.log(
     `[CRM] saveStep → enquiry=${enquiry_id}, step=${step}, section=${section}`,
   );
   const res = await API.post('/insurance/save-step', {
@@ -105,7 +108,7 @@ export const saveStep = async (
  */
 export const completeInsurance = async (enquiry_id: number): Promise<any> => {
   const res = await API.post('/insurance/complete', { enquiry_id });
-  console.log(`[CRM] ✅ completeInsurance success for enquiry: ${enquiry_id}`);
+  __DEV__ && console.log(`[CRM] ✅ completeInsurance success for enquiry: ${enquiry_id}`);
   return res.data;
 };
 
@@ -121,7 +124,7 @@ export const getQuotes = async (enquiry_id: number, retries = 8): Promise<any> =
   for (let attempt = 1; attempt <= retries; attempt += 1) {
     try {
       const res = await API.post('/insurance/get-quotes', { enquiry_id });
-      console.log(`[CRM] ✅ getQuotes success for enquiry: ${enquiry_id}`);
+      __DEV__ && console.log(`[CRM] ✅ getQuotes success for enquiry: ${enquiry_id}`);
       return res.data;
     } catch (error: any) {
       const status = error?.response?.status;
@@ -137,7 +140,7 @@ export const getQuotes = async (enquiry_id: number, retries = 8): Promise<any> =
 
       if (routeIssue) {
         try {
-          console.log(`[CRM] getQuotes fallback GET ${attempt}/${retries} for enquiry: ${enquiry_id}`);
+          __DEV__ && console.log(`[CRM] getQuotes fallback GET ${attempt}/${retries} for enquiry: ${enquiry_id}`);
           const getRes = await API.get('/insurance/get-quotes', {
             params: { enquiry_id },
           });
@@ -167,7 +170,7 @@ export const getQuotes = async (enquiry_id: number, retries = 8): Promise<any> =
       }
 
       const delay = Math.min(12000, Math.round(1000 * Math.pow(1.5, attempt - 1)));
-      console.log(
+      __DEV__ && console.log(
         `[CRM] getQuotes retry ${attempt}/${retries} for enquiry ${enquiry_id} in ${delay}ms (reason: ${pendingMsg || 'pending'})`,
       );
       await sleep(delay);

@@ -596,9 +596,9 @@ const styles = StyleSheet.create({
   discountBadgeText: {
     fontSize: 10,
     fontWeight: "900",
+    color: "#333",
     paddingHorizontal: 8,
     paddingVertical: 4,
-    color: "#333",
   },
   heartIcon: {
     position: "absolute",
@@ -647,7 +647,6 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     borderRadius: 8,
-
     alignItems: 'center',
     justifyContent: 'center',
   },

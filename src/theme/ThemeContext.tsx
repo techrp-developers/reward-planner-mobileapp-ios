@@ -1,5 +1,6 @@
 // src/theme/ThemeContext.tsx
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { InteractionManager } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LightTheme, DarkTheme } from "./colors";
 
@@ -30,21 +31,28 @@ export const AppThemeProvider = ({ children }: { children: React.ReactNode }) =>
   const toggleTheme = useCallback(() => {
     setIsDark(prev => {
       const next = !prev;
-      // Persist async without blocking the toggle
-      AsyncStorage.setItem(THEME_KEY, next ? 'dark' : 'light').catch(() => {});
+      // Persist after current UI interactions so the visual toggle wins the frame.
+      InteractionManager.runAfterInteractions(() => {
+        AsyncStorage.setItem(THEME_KEY, next ? 'dark' : 'light').catch(() => {});
+      });
       return next;
     });
   }, []);
+
+  const contextValue = useMemo(
+    () => ({
+      isDark,
+      theme: isDark ? DarkTheme : LightTheme,
+      toggleTheme,
+    }),
+    [isDark, toggleTheme],
+  );
 
   // Wait for AsyncStorage before rendering children — avoids a light→dark flash
   if (!hydrated) return null;
 
   return (
-    <ThemeContext.Provider value={{
-      isDark,
-      theme: isDark ? DarkTheme : LightTheme,
-      toggleTheme,
-    }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

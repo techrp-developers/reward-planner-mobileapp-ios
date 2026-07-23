@@ -19,6 +19,7 @@ import {
 } from "../../../ecommerce/api/TermsConditionAPI";
 import { useAlert } from "../../../ecommerce/components/alerts";
 import { useAuth } from "../context/AuthContext";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 // ─────────────────────────────────────────────────────────────
 // THEME  (same palette as TermsAndConditionsScreen)
@@ -40,17 +41,26 @@ const T = {
 // TERM CARD
 // ─────────────────────────────────────────────────────────────
 
-type TermCardProps = { title: string; content: string; iconText: string };
+type TermCardProps = { title: string; content: string; iconText: string; isDark: boolean };
 
-const TermCard = memo(({ title, content, iconText }: TermCardProps) => (
-  <View style={styles.card}>
+const TermCard = memo(({ title, content, iconText, isDark }: TermCardProps) => (
+  <View
+    style={[
+      styles.card,
+      {
+        backgroundColor: isDark ? "#111113" : T.surface,
+        borderColor: isDark ? "rgba(255,255,255,0.09)" : T.surfaceBd,
+        shadowColor: isDark ? "#000000" : T.accent,
+      },
+    ]}
+  >
     <View style={styles.cardHeader}>
       <View style={styles.iconCircle}>
         <Text style={styles.iconText}>{iconText}</Text>
       </View>
-      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={[styles.cardTitle, { color: isDark ? "#F472B6" : T.primary }]}>{title}</Text>
     </View>
-    <Text style={styles.cardContent}>{content}</Text>
+    <Text style={[styles.cardContent, { color: isDark ? "#D4D4D8" : "#555" }]}>{content}</Text>
   </View>
 ));
 
@@ -61,6 +71,7 @@ const TermCard = memo(({ title, content, iconText }: TermCardProps) => (
 function TermsGateScreenComponent() {
   const { setTermsAccepted } = useAuth();
   const alert = useAlert();
+  const { isDark } = useAppTheme();
 
   const [termsList, setTermsList] = useState<TermItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -130,11 +141,14 @@ function TermsGateScreenComponent() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F0FF" />
+    <View style={[styles.root, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}>
+      <StatusBar
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? "#09090B" : "#F5F0FF"}
+      />
 
       <LinearGradient
-        colors={[...T.gradient]}
+        colors={isDark ? ["#09090B", "#111113"] : [...T.gradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -143,12 +157,12 @@ function TermsGateScreenComponent() {
 
           {/* ── HEADER ──────────────────────────────────────────────── */}
           <View style={styles.header}>
-            <View style={styles.stepBadge}>
-              <Text style={styles.stepBadgeText}>BEFORE YOU START</Text>
+            <View style={[styles.stepBadge, { backgroundColor: isDark ? "rgba(244,114,182,0.12)" : "rgba(133,43,175,0.10)" }]}>
+              <Text style={[styles.stepBadgeText, { color: isDark ? "#F472B6" : T.primary }]}>BEFORE YOU START</Text>
             </View>
-            <Text style={styles.mainTitle}>Terms &</Text>
-            <Text style={styles.mainTitleBold}>Conditions</Text>
-            <Text style={styles.subtitle}>
+            <Text style={[styles.mainTitle, { color: isDark ? "#FFFFFF" : T.primary }]}>Terms &</Text>
+            <Text style={[styles.mainTitleBold, { color: isDark ? "#FFFFFF" : T.primary }]}>Conditions</Text>
+            <Text style={[styles.subtitle, { color: isDark ? "#A1A1AA" : T.textMuted }]}>
               Please read and accept our terms to continue using the app.
             </Text>
           </View>
@@ -156,8 +170,8 @@ function TermsGateScreenComponent() {
           {/* ── BODY ────────────────────────────────────────────────── */}
           {loading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color={T.primary} />
-              <Text style={styles.loadingText}>Loading terms…</Text>
+              <ActivityIndicator size="large" color={isDark ? "#F472B6" : T.primary} />
+              <Text style={[styles.loadingText, { color: isDark ? "#A1A1AA" : T.textMuted }]}>Loading terms...</Text>
             </View>
           ) : (
             <ScrollView
@@ -171,12 +185,13 @@ function TermsGateScreenComponent() {
                   iconText={item.term_no}
                   title={item.title}
                   content={item.content}
+                  isDark={isDark}
                 />
               ))}
 
               {/* ── AGREEMENT FOOTER ──────────────────────────────── */}
               <View style={styles.agreementSection}>
-                <View style={styles.divider} />
+                <View style={[styles.divider, { backgroundColor: isDark ? "rgba(255,255,255,0.10)" : "rgba(133,43,175,0.12)" }]} />
 
                 {/* Checkbox */}
                 <TouchableOpacity
@@ -185,19 +200,28 @@ function TermsGateScreenComponent() {
                   disabled={saving}
                   onPress={handleToggleChecked}
                 >
-                  <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                  <View
+                    style={[
+                      styles.checkbox,
+                      {
+                        backgroundColor: isDark ? "#18181B" : "#FFF",
+                        borderColor: isDark ? "#F472B6" : T.accent,
+                      },
+                      checked && styles.checkboxChecked,
+                    ]}
+                  >
                     {checked && <Text style={styles.checkIcon}>✓</Text>}
                   </View>
-                  <Text style={styles.checkboxText}>
+                  <Text style={[styles.checkboxText, { color: isDark ? "#D4D4D8" : "#444" }]}>
                     I have read and agree to the{" "}
-                    <Text style={styles.checkboxBold}>Terms & Conditions</Text>
+                    <Text style={[styles.checkboxBold, { color: isDark ? "#F472B6" : T.primary }]}>Terms & Conditions</Text>
                     {" "}and{" "}
-                    <Text style={styles.checkboxBold}>Privacy Policy</Text>
+                    <Text style={[styles.checkboxBold, { color: isDark ? "#F472B6" : T.primary }]}>Privacy Policy</Text>
                   </Text>
                 </TouchableOpacity>
 
                 {/* Helper text */}
-                <Text style={styles.helperText}>
+                <Text style={[styles.helperText, { color: isDark ? "#A1A1AA" : "#888" }]}>
                   By continuing, you confirm that you understand and accept
                   our policies and terms of use.
                 </Text>
@@ -433,9 +457,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 0.3,
     paddingVertical: 17,
+
   },
   acceptButtonTextDisabled: {
     color: "#9CA3AF",
+    paddingVertical: 17,
+
   },
 
   bottomSpacer: { height: 40 },

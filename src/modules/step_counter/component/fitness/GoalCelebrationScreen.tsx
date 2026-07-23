@@ -7,7 +7,6 @@ import {
   Animated,
   Dimensions,
   ScrollView,
-  Share,
   Platform,
   ViewStyle,
 } from "react-native";
@@ -303,13 +302,12 @@ const StatsRow: React.FC<{ summary: NonNullable<GoalSyncData["overallSummary"]> 
 const AchievementCard: React.FC<{
   response: GoalSyncData;
   achievementIndex: number;
-  onShare: () => void;
   onNext: () => void;
   isLast: boolean;
   scaleAnim: Animated.Value;
   fadeAnim: Animated.Value;
   showBlast: boolean;
-}> = ({ response, achievementIndex, onShare, onNext, isLast, scaleAnim, fadeAnim, showBlast }) => {
+}> = ({ response, achievementIndex, onNext, isLast, scaleAnim, fadeAnim, showBlast }) => {
   const category    = detectCategory(response, achievementIndex);
   const config      = ACHIEVEMENT_CONFIG[category];
   const achievement = response.unlockedAchievements?.[achievementIndex];
@@ -378,29 +376,6 @@ const AchievementCard: React.FC<{
 
       {response.overallSummary && <StatsRow summary={response.overallSummary} />}
 
-      <View style={styles.shareSection}>
-        <View style={styles.shareDivider} />
-        <Text style={styles.shareLabel}>Share</Text>
-        <View style={styles.shareDivider} />
-      </View>
-      <View style={styles.socialRow}>
-        {[
-          { platform: "instagram", emoji: "📸", bg: "#E1306C" },
-          { platform: "whatsapp",  emoji: "💬", bg: "#25D366" },
-          { platform: "x",         emoji: "✕",  bg: "#000000" },
-          { platform: "facebook",  emoji: "f",  bg: "#1877F2" },
-        ].map((s) => (
-          <TouchableOpacity
-            key={s.platform}
-            style={[styles.socialBtn, { backgroundColor: s.bg }]}
-            onPress={onShare}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.socialIcon}>{s.emoji}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       <TouchableOpacity style={styles.ctaBtn} onPress={onNext} activeOpacity={0.85}>
         <Text style={styles.ctaBtnText}>{isLast ? "Awesome! 🎉" : "Next Achievement →"}</Text>
       </TouchableOpacity>
@@ -416,11 +391,6 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
   // dashboard via the navigator. When rendered as a Dashboard overlay,
   // onDismiss already decides whether to chain into the next overlay
   // (TodayGoalCompletedScreen) — see Dashboard's handleDismissCelebration.
-  const dismiss = useCallback(() => {
-    if (isDirectProps(props)) props.onDismiss();
-    else props.navigation.replace("Dashboard");
-  }, [props]);
-
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showBlast, setShowBlast] = useState(true);
 
@@ -491,14 +461,6 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await Share.share({ message: "I just hit my step goal! 🎉 Check out my achievement on the app!" });
-    } catch {
-      // share cancelled — no-op
-    }
-  };
-
   return (
     <Animated.View style={[styles.overlay, { opacity: bgOpacity }]}>
       <ScrollView
@@ -517,7 +479,6 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
         <AchievementCard
           response={response}
           achievementIndex={currentIndex}
-          onShare={handleShare}
           onNext={handleNext}
           isLast={currentIndex === total - 1}
           scaleAnim={scaleAnim}
@@ -532,9 +493,6 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
           </Text>
         </View>
 
-        <TouchableOpacity onPress={dismiss} style={styles.skipBtn}>
-          <Text style={styles.skipText}>Skip for now</Text>
-        </TouchableOpacity>
       </ScrollView>
     </Animated.View>
   );
@@ -543,18 +501,22 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
 export default GoalCelebrationScreen;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-// ─── Violet Dusk palette ─────────────────────────────────────────────────────
+// ─── Step counter dark palette ────────────────────────────────────────────────
 const VD = {
-  bg0:         "#1A1040",
-  accent:      "#C4A8FF",
-  accentFaint: "rgba(196,168,255,0.12)",
-  accentDim:   "rgba(196,168,255,0.25)",
-  cardBg:      "rgba(255,255,255,0.09)",
-  cardBorder:  "rgba(196,168,255,0.18)",
+  bg0:         "#070A16",
+  bg1:         "#111735",
+  bg2:         "#201A3F",
+  accent:      "#8EA2FF",
+  accentDark:  "#EEF1FF",
+  accentFaint: "rgba(142,162,255,0.12)",
+  accentDim:   "rgba(105,118,178,0.44)",
+  cardBg:      "rgba(255,255,255,0.075)",
+  cardBorder:  "rgba(174,188,255,0.16)",
   white:       "#FFFFFF",
-  whiteMid:    "rgba(255,255,255,0.70)",
-  whiteLow:    "rgba(255,255,255,0.45)",
-  warning:     "#FBBF24",
+  whiteMid:    "#CDD2EA",
+  whiteLow:    "#979EBC",
+  whiteGhost:  "rgba(255,255,255,0.055)",
+  warning:     "#F5B86B",
 };
 
 const styles = StyleSheet.create({
@@ -591,7 +553,7 @@ const styles = StyleSheet.create({
   headerDividerRight:{ flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: VD.cardBorder, marginLeft: 10 },
   categoryLabel: {
     fontSize: 11, fontWeight: "700", letterSpacing: 1.5,
-    color: VD.accent, textTransform: "uppercase",
+    color: VD.accentDark, textTransform: "uppercase",
   },
 
   confettiContainer: {
@@ -646,7 +608,7 @@ const styles = StyleSheet.create({
     textAlign: "center", lineHeight: 28, marginBottom: 8, letterSpacing: -0.2,
   },
   subtext:          { fontSize: 14, color: VD.whiteLow, textAlign: "center", marginBottom: 12 },
-  subtextHighlight: { color: VD.accent, fontWeight: "700" },
+  subtextHighlight: { color: VD.accentDark, fontWeight: "700" },
 
   rewardBadge: {
     backgroundColor: "rgba(251,191,36,0.15)", borderRadius: 20,
@@ -669,13 +631,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.4, textTransform: "uppercase", marginTop: 2,
   },
 
-  shareSection: { flexDirection: "row", alignItems: "center", width: "100%", marginBottom: 14 },
-  shareDivider: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: VD.cardBorder },
-  shareLabel:   { fontSize: 12, color: VD.whiteLow, fontWeight: "600", marginHorizontal: 12, letterSpacing: 0.5 },
-  socialRow:    { flexDirection: "row", gap: 12, marginBottom: 20 },
-  socialBtn:    { width: 48, height: 48, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  socialIcon:   { fontSize: 18, color: VD.white },
-
   ctaBtn: {
     backgroundColor: VD.accent, borderRadius: 16,
     paddingVertical: 14, paddingHorizontal: 40,
@@ -689,8 +644,6 @@ const styles = StyleSheet.create({
     width: SCREEN_WIDTH - 40, alignItems: "center",
     borderWidth: 1, borderColor: VD.cardBorder,
   },
-  totalRewardText:  { fontSize: 14, color: VD.accent, fontWeight: "600" },
+  totalRewardText:  { fontSize: 14, color: VD.accentDark, fontWeight: "600" },
   totalRewardCoins: { fontWeight: "800", color: VD.warning },
-  skipBtn:  { marginTop: 16, paddingVertical: 8, paddingHorizontal: 20 },
-  skipText: { fontSize: 13, color: VD.whiteLow, fontWeight: "500" },
 });

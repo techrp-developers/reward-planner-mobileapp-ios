@@ -14,6 +14,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Logo from "../../../assets/homepage/login_logo.svg";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -149,6 +150,8 @@ export function AppUpdateModal({
   updateUrl,
   onLater,
 }: Props) {
+  const { isDark, theme } = useAppTheme();
+
   // Entry animations
   const contentY = useRef(new Animated.Value(40)).current;
   const contentOpacity = useRef(new Animated.Value(0)).current;
@@ -275,8 +278,9 @@ export function AppUpdateModal({
       "We're polishing things behind the scenes.\nCheck back in a few minutes.",
     force:
       "This version has been retired. Update now to keep your rewards safe and your experience seamless.",
-    optional: `Fresh features and a smoother experience are ready for you on ${Platform.OS === "android" ? "Android" : "iOS"
-      }. Takes just a second.`,
+    optional: `Fresh features and a smoother experience are ready for you on ${
+      Platform.OS === "android" ? "Android" : "iOS"
+    }. Takes just a second.`,
   };
 
   const primaryCTA: Record<State, string> = {
@@ -294,19 +298,36 @@ export function AppUpdateModal({
     optional: ["#A654CD", "#6C63FF"],
   };
 
+  const surfaceColor = isDark ? "#141418" : "rgba(255,255,255,0.72)";
+  const surfaceBorderColor = isDark ? "rgba(255,255,255,0.12)" : "rgba(166,84,205,0.16)";
+  const headlineColor = isDark ? "#FFFFFF" : "#1C1033";
+  const bodyColor = isDark ? "#D4D4D8" : "#62527E";
+  const mutedColor = isDark ? "#A1A1AA" : "#9B7FC0";
+  const rootGradient = isDark
+    ? ["#050507", "#101014", "#18111F"]
+    : ["#FFF9FD", "#F1E8FF", "#F8F4FF"];
+  const accentWash = isDark
+    ? ["rgba(166,84,205,0.20)", "rgba(252,139,173,0.08)"]
+    : ["rgba(166,84,205,0.16)", "rgba(252,139,173,0.08)"];
+  const logoPanelGradient = isDark
+    ? ["rgba(255,255,255,0.10)", "rgba(255,255,255,0.04)"]
+    : ["rgba(255,255,255,0.92)", "rgba(248,244,255,0.70)"];
+
+  if (!visible) return null;
+
   return (
     <Modal
       visible={visible}
       transparent
       animationType="fade"
       statusBarTranslucent
-      onRequestClose={forceUpdate || maintenance ? undefined : onLater}
+      onRequestClose={maintenance ? onLater : undefined}
     >
       {/* ── Layered background ─────────────────────────────────────────── */}
       <View style={styles.root}>
         {/* Base gradient wash */}
         <LinearGradient
-          colors={["#F8F4FF", "#EEE8FF", "#F5F0FF"]}
+          colors={rootGradient}
           start={{ x: 0.1, y: 0 }}
           end={{ x: 0.9, y: 1 }}
           style={StyleSheet.absoluteFillObject}
@@ -315,19 +336,19 @@ export function AppUpdateModal({
         {/* Decorative ambient orbs */}
         <GlowOrb
           size={320}
-          colors={["#C084FC", "#A654CD"]}
+          colors={isDark ? ["#6D28D9", "#EC4899"] : ["#C084FC", "#A654CD"]}
           style={{ top: -60, right: -80 }}
           pulseDelay={0}
         />
         <GlowOrb
           size={260}
-          colors={["#FC8BAD", "#F472B6"]}
+          colors={isDark ? ["#BE185D", "#7C3AED"] : ["#FC8BAD", "#F472B6"]}
           style={{ bottom: 40, left: -80 }}
           pulseDelay={1200}
         />
         <GlowOrb
           size={180}
-          colors={["#818CF8", "#6366F1"]}
+          colors={isDark ? ["#4338CA", "#A21CAF"] : ["#818CF8", "#6366F1"]}
           style={{ top: SCREEN_HEIGHT * 0.38, right: -40 }}
           pulseDelay={600}
         />
@@ -335,13 +356,13 @@ export function AppUpdateModal({
         {/* Subtle floating rings */}
         <FloatingRing
           size={200}
-          color="#A654CD"
+          color={isDark ? "#A78BFA" : "#A654CD"}
           style={{ top: SCREEN_HEIGHT * 0.12, left: -60 }}
           floatDelay={0}
         />
         <FloatingRing
           size={140}
-          color="#FC8BAD"
+          color={isDark ? "#F472B6" : "#FC8BAD"}
           style={{ bottom: SCREEN_HEIGHT * 0.22, right: -30 }}
           floatDelay={700}
         />
@@ -362,7 +383,7 @@ export function AppUpdateModal({
             {/* Halo ring behind logo */}
             <View style={styles.haloOuter}>
               <LinearGradient
-                colors={["rgba(166,84,205,0.12)", "rgba(252,139,173,0.06)"]}
+                colors={accentWash}
                 style={styles.haloGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -370,7 +391,7 @@ export function AppUpdateModal({
             </View>
             <View style={styles.haloInner}>
               <LinearGradient
-                colors={["rgba(166,84,205,0.18)", "rgba(252,139,173,0.10)"]}
+                colors={accentWash}
                 style={styles.haloGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -378,15 +399,15 @@ export function AppUpdateModal({
             </View>
 
             {/* Logo container with glass card */}
-            <View style={styles.logoCard}>
-              {/* <LinearGradient
-                colors={["rgba(255,255,255,0.80)", "rgba(248,244,255,0.60)"]}
+            <View style={[styles.logoCard, { borderColor: surfaceBorderColor, shadowColor: isDark ? "#000000" : "#A654CD" }]}>
+              <LinearGradient
+                colors={logoPanelGradient}
                 style={styles.logoCardGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-              > */}
-              <Logo width={110} height={110} />
-              {/* </LinearGradient> */}
+              >
+                <Logo width={110} height={110} />
+              </LinearGradient>
             </View>
 
             {/* State icon badge on logo */}
@@ -417,10 +438,8 @@ export function AppUpdateModal({
             ]}
           >
             {/* Floating badge pill */}
-            <Animated.View
-              style={{ transform: [{ scale: badgeScale }], opacity: badgeOpacity }}
-            >
-              <View style={styles.pill}>
+            <Animated.View style={{ transform: [{ scale: badgeScale }], opacity: badgeOpacity }}>
+              <View style={[styles.pill, { borderColor: surfaceBorderColor }]}>
                 <LinearGradient
                   colors={[`${badgeGradients[state][0]}22`, `${badgeGradients[state][1]}14`]}
                   style={styles.pillGradient}
@@ -446,10 +465,18 @@ export function AppUpdateModal({
             </Animated.View>
 
             {/* Headline */}
-            <Text style={styles.headline}>{title[state]}</Text>
+            <Text style={[styles.headline, { color: headlineColor }]}>{title[state]}</Text>
 
             {/* Body */}
-            <Text style={styles.bodyText}>{body[state]}</Text>
+            <View style={[styles.messageCard, { backgroundColor: surfaceColor, borderColor: surfaceBorderColor }]}>
+              <Text style={[styles.bodyText, { color: bodyColor }]}>{body[state]}</Text>
+              {!maintenance && (
+                <View style={[styles.promiseRow, { borderTopColor: surfaceBorderColor }]}>
+                  <MaterialCommunityIcons name="shield-check-outline" size={17} color={badgeGradients[state][0]} />
+                  <Text style={[styles.promiseText, { color: theme.text }]}>Secure rewards, faster checkout, smoother experience</Text>
+                </View>
+              )}
+            </View>
           </Animated.View>
 
           {/* 3 ─ Actions */}
@@ -498,34 +525,8 @@ export function AppUpdateModal({
               </TouchableOpacity>
             </Animated.View>
 
-            {/* Divider row */}
-            {!forceUpdate && !maintenance && (
-              <View style={styles.dividerRow}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>or</Text>
-                <View style={styles.dividerLine} />
-              </View>
-            )}
-
-            {/* Secondary "Not Now" */}
-            {!forceUpdate && !maintenance && (
-              <TouchableOpacity
-                activeOpacity={0.55}
-                onPress={onLater}
-                style={styles.secondaryBtn}
-              >
-                <Text style={styles.secondaryBtnText}>Skip for Now</Text>
-                <MaterialCommunityIcons
-                  name="chevron-right"
-                  size={16}
-                  color="#B89FD0"
-                  style={{ marginTop: 1 }}
-                />
-              </TouchableOpacity>
-            )}
-
             {/* Footer legal note */}
-            <Text style={styles.footerNote}>
+            <Text style={[styles.footerNote, { color: mutedColor }]}>
               {maintenance
                 ? "All your rewards & data are safe"
                 : "Your rewards and data are always safe"}
@@ -553,7 +554,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     paddingTop: Platform.OS === "ios" ? 72 : 52,
     paddingBottom: Platform.OS === "ios" ? 52 : 40,
   },
@@ -583,13 +584,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoCard: {
-    // width: 94,
-    // height: 94,
-    // borderRadius: 40,
-
+    width: 138,
+    height: 138,
+    borderRadius: 34,
+    overflow: "hidden",
+    borderWidth: 1,
+    shadowOffset: { width: 0, height: 18 },
+    shadowOpacity: 0.22,
+    shadowRadius: 28,
+    elevation: 14,
   },
   logoCardGradient: {
-    // flex: 1,
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -630,7 +636,8 @@ const styles = StyleSheet.create({
   pillGradient: {
     flexDirection: "row",
     alignItems: "center",
-
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     gap: 7,
   },
   pillDot: {
@@ -642,16 +649,13 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: "700",
     letterSpacing: 1.4,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
   },
   headline: {
     fontSize: 38,
     fontWeight: "800",
-    color: "#1C1033",
     textAlign: "center",
     lineHeight: 46,
-    letterSpacing: -0.8,
+    letterSpacing: 0,
     marginBottom: 16,
     // Subtle text shadow for depth
     textShadowColor: "rgba(166,84,205,0.08)",
@@ -660,12 +664,39 @@ const styles = StyleSheet.create({
   },
   bodyText: {
     fontSize: 15.5,
-    color: "#7260A0",
     textAlign: "center",
     lineHeight: 24,
     letterSpacing: 0.1,
-    paddingHorizontal: 8,
     fontWeight: "400",
+  },
+  messageCard: {
+    width: "100%",
+    borderWidth: 1,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.16,
+    shadowRadius: 26,
+    elevation: 8,
+  },
+  promiseRow: {
+    marginTop: 16,
+    paddingTop: 13,
+    borderTopWidth: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  promiseText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "700",
+    lineHeight: 17,
+    textAlign: "left",
   },
 
   // ── Actions zone ───────────────────────────────────────────────────────
@@ -676,7 +707,7 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     width: "100%",
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: "hidden",
     shadowColor: "#B254CD",
     shadowOffset: { width: 0, height: 10 },
@@ -685,7 +716,8 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   primaryBtnGradient: {
-    borderRadius: 20,
+    paddingVertical: 19,
+    borderRadius: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -707,9 +739,8 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     color: "#fff",
     fontSize: 17,
-    fontWeight: "700",
+    fontWeight: "800",
     letterSpacing: 0.2,
-    paddingVertical: 19,
   },
   dividerRow: {
     flexDirection: "row",

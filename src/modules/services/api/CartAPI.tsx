@@ -57,7 +57,7 @@ export const addServiceToCart = async ({
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-cart/add`;
 
-    console.log('📦 Adding service to cart...', {
+    __DEV__ && console.log('📦 Adding service to cart...', {
       url,
       service_id,
       variant_id,
@@ -91,6 +91,7 @@ const EMPTY_SERVICE_CART = {
   bundles: [],
   individual_items: [],
   total: 0,
+  rewards: { earn_coins: 0, max_redeem_coins: 0 },
 };
 export const getServiceCartItems = async () => {
   const headers = await getAuthHeaders();
@@ -100,9 +101,9 @@ export const getServiceCartItems = async () => {
     `${SERVICE_API_BASE}/service-cart/items`,
   ];
 
-  console.log('📦 Fetching service cart...');
-  console.log('📡 API URL candidates:', primaryUrls);
-  console.log('🔑 Headers:', { hasAuthorization: !!headers?.Authorization });
+  __DEV__ && console.log('📦 Fetching service cart...');
+  __DEV__ && console.log('📡 API URL candidates:', primaryUrls);
+  __DEV__ && console.log('🔑 Headers:', { hasAuthorization: !!headers?.Authorization });
 
   if (!headers.Authorization) {
     console.warn('⚠️ No auth token found, skipping request');
@@ -112,13 +113,14 @@ export const getServiceCartItems = async () => {
   for (const url of primaryUrls) {
     try {
       const res = await getWithRetry(url, { headers }, 2);
-      console.log('✅ Service cart fetched from:', url);
+      __DEV__ && console.log('✅ Service cart fetched from:', url);
       const data = res.data?.data || res.data || EMPTY_SERVICE_CART;
 
       return {
         bundles: data.bundles || [],
         individual_items: data.individual_items || [],
         total: data.total || 0,
+        rewards: data.rewards || EMPTY_SERVICE_CART.rewards,
       };
     } catch (error: any) {
       const status = Number(error?.response?.status || 0);
@@ -153,6 +155,7 @@ export const getServiceCartItems = async () => {
       bundles: data.bundles || [],
       individual_items: data.individual_items || [],
       total: data.total || 0,
+      rewards: data.rewards || EMPTY_SERVICE_CART.rewards,
     };
   } catch (error: any) {
     const status = Number(error?.response?.status || 0);
@@ -177,7 +180,7 @@ export const removeServiceCartItem = async (cartItemId: number) => {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-cart/item/${cartItemId}`;
 
-    console.log('🗑️ Removing cart item...', {
+    __DEV__ && console.log('🗑️ Removing cart item...', {
       url,
       cartItemId,
       hasAuthToken: !!headers?.Authorization,
@@ -210,7 +213,7 @@ export const clearServiceCart = async () => {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-cart/clear`;
 
-    console.log('🧹 Clearing service cart...', {
+    __DEV__ && console.log('🧹 Clearing service cart...', {
       url,
       hasAuthToken: !!headers?.Authorization,
     });
@@ -234,7 +237,7 @@ export const clearServiceCart = async () => {
 // Checkout
 
 // get Buy now (Single buy now)
-export const getBuyNowPreview = async ({ service_id, variant_id }) => {
+export const getBuyNowPreview = async ({ service_id, variant_id, redeem_coins = 0 }) => {
   if (!service_id || !variant_id) {
     throw new Error("Invalid service_id or variant_id");
   }
@@ -243,7 +246,7 @@ export const getBuyNowPreview = async ({ service_id, variant_id }) => {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-checkout/buy-now-preview`;
 
-    console.log('🧾 Fetching buy-now preview...', {
+    __DEV__ && console.log('🧾 Fetching buy-now preview...', {
       url,
       service_id,
       variant_id,
@@ -254,7 +257,7 @@ export const getBuyNowPreview = async ({ service_id, variant_id }) => {
       url,
       {
         headers,
-        params: { service_id, variant_id },
+        params: { service_id, variant_id, redeem_coins },
       }
     );
 
@@ -267,19 +270,19 @@ export const getBuyNowPreview = async ({ service_id, variant_id }) => {
 
 
 // get checkout cart items (Cart Buy now Checkout)
-export const getCheckoutPreview = async () => {
+export const getCheckoutPreview = async (redeem_coins = 0) => {
   try {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-checkout/checkout-preview`;
 
-    console.log('🧾 Fetching service checkout preview...', {
+    __DEV__ && console.log('🧾 Fetching service checkout preview...', {
       url,
       hasAuthToken: !!headers?.Authorization,
     });
 
     const res = await getWithRetry(
       url,
-      { headers }
+      { headers, params: { redeem_coins } }
     );
 
     return res.data;
@@ -316,12 +319,12 @@ export const getCheckoutPreview = async () => {
 };
 
 // place Order
-export const placeCartOrder = async ({ address_id }: { address_id: number }) => {
+export const placeCartOrder = async ({ address_id, redeem_coins = 0 }: { address_id: number; redeem_coins?: number }) => {
   try {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-checkout/cart`;
 
-    console.log('📦 Placing cart service order...', {
+    __DEV__ && console.log('📦 Placing cart service order...', {
       url,
       address_id,
       hasAuthToken: !!headers?.Authorization,
@@ -329,7 +332,7 @@ export const placeCartOrder = async ({ address_id }: { address_id: number }) => 
 
     const res = await axios.post(
       url,
-      { address_id },
+      { address_id, redeem_coins },
       { headers }
     );
 
@@ -349,16 +352,18 @@ export const placeBuyNowOrder = async ({
   service_id,
   variant_id,
   address_id,
+  redeem_coins = 0,
 }: {
   service_id: number;
   variant_id: number;
   address_id: number;
+  redeem_coins?: number;
 }) => {
   try {
     const headers = await getAuthHeaders();
     const url = `${SERVICE_API_BASE}/service-checkout/buy-now`;
 
-    console.log('⚡ Placing buy-now service order...', {
+    __DEV__ && console.log('⚡ Placing buy-now service order...', {
       url,
       service_id,
       variant_id,
@@ -372,6 +377,7 @@ export const placeBuyNowOrder = async ({
         service_id,
         variant_id,
         address_id,
+        redeem_coins,
       },
       { headers }
     );

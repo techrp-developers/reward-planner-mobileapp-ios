@@ -5,24 +5,29 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Image,
   TouchableOpacity,
   Alert,
   RefreshControl,
-  Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
+import Share from 'react-native-share';
 
 // ── Reused ecommerce common components ──────────────────────────────────────
 import DeliveryDetailsCard from '../../../../modules/common/order/DeliveryDetailsCard';
 import PriceDetailsCard from '../../../../modules/common/order/PriceDetailsCard';
+import OrderItemCard from '../../../../modules/common/order/OrderItemCard';
 
 // ── Service-specific components ──────────────────────────────────────────────
 import ServiceOrderItemCard from './ServiceOrderItemCard';
 import ServiceBundleCard from './ServiceBundleCard';
+import YouMayNeedServicesCarousel from '../constant/YouMayNeedServicesCarousel';
+import RecommendedServicesCarousel from '../constant/RecommendedServicesCarousel';
 
 // ── API & types ──────────────────────────────────────────────────────────────
 import {
@@ -32,23 +37,24 @@ import {
   type ServiceItem,
 } from '../../api/OrderAPI';
 import type { HomeStackParamList } from '../../navigation/type';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceOrderDetail'>;
 
 // ── Status label map ─────────────────────────────────────────────────────────
 const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending_payment: 'Payment Pending',
-  in_progress: 'In Progress',
-  completed: 'Completed',
-  cancelled: 'Cancelled',
+  pending_payment:  'Payment Pending',
+  in_progress:      'In Progress',
+  completed:        'Completed',
+  cancelled:        'Cancelled',
 };
 
 const ORDER_STATUS_COLOR: Record<string, string> = {
   pending_payment: '#D97706',
-  in_progress: '#2563EB',
-  completed: '#16A34A',
-  cancelled: '#DC2626',
+  in_progress:     '#2563EB',
+  completed:       '#16A34A',
+  cancelled:       '#DC2626',
 };
 const PURPLE = '#7C3AED';
 
@@ -74,6 +80,7 @@ function formatDate(dateStr: string): string {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ServiceOrderDetail() {
   const navigation = useNavigation<Nav>();
+  const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
   const { parent_order_id } = route.params;
 
@@ -121,6 +128,14 @@ export default function ServiceOrderDetail() {
     });
   };
 
+  const handleCancellationDetailsItem = (item: ServiceItem) => {
+    navigation.navigate('ServiceCancellationDetails', {
+      service_order_id: item.id,
+      parent_order_id: order?.parent_order_id || parent_order_id,
+      service_id: item.service_id,
+    });
+  };
+
   const handleFeedbackItem = (item: ServiceItem) => {
     navigation.navigate('ServiceFeedback', {
       service_order_id: item.id,
@@ -136,14 +151,21 @@ export default function ServiceOrderDetail() {
     try {
       setInvoiceDownloading(true);
       const res = await getServiceInvoiceDetails(parent_order_id);
-      const invoiceUrl = res?.data?.download_url;
 
-      if (!res?.success || !invoiceUrl) {
-        Alert.alert('Invoice unavailable', 'Unable to find invoice for this order.');
+      if (res.success === false) {
+        Alert.alert('Invoice unavailable', res.message || 'Unable to find invoice for this order.');
         return;
       }
 
-      await Linking.openURL(invoiceUrl);
+      await Share.open({
+        title: 'Download Invoice',
+        url: `data:application/pdf;base64,${res.base64}`,
+        type: 'application/pdf',
+        filename: res.fileName.replace(/\.pdf$/i, ''),
+        failOnCancel: false,
+        saveToFiles: Platform.OS === 'ios',
+        ...(Platform.OS === 'android' ? ({ useInternalStorage: true } as Record<string, unknown>) : {}),
+      });
     } catch (err: any) {
       Alert.alert(
         'Download failed',
@@ -157,11 +179,14 @@ export default function ServiceOrderDetail() {
   // ── Loading / error states ────────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <Header onBack={() => navigation.goBack()} />
+      <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
+        <Header
+          onBack={() => navigation.goBack()}
+          onHelp={() => navigation.navigate('HelpForm')}
+        />
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color="#7C3AED" />
-          <Text style={styles.loadingText}>Loading order details…</Text>
+          <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>Loading order details…</Text>
         </View>
       </SafeAreaView>
     );
@@ -169,8 +194,11 @@ export default function ServiceOrderDetail() {
 
   if (error || !order) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <Header onBack={() => navigation.goBack()} />
+      <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
+        <Header
+          onBack={() => navigation.goBack()}
+          onHelp={() => navigation.navigate('HelpForm')}
+        />
         <View style={styles.centered}>
           <MaterialCommunityIcons name="alert-circle-outline" size={52} color="#DC2626" />
           <Text style={styles.errorText}>{error || 'Order not found.'}</Text>
@@ -183,11 +211,11 @@ export default function ServiceOrderDetail() {
   }
 
   // ── Derived data (transforms live in parent, not in components) ───────────
-  const statusLabel = ORDER_STATUS_LABEL[order.status] || order.status;
-  const statusColor = ORDER_STATUS_COLOR[order.status] || '#6B7280';
-  const addressLine = buildAddressLine(order);
+  const statusLabel  = ORDER_STATUS_LABEL[order.status]  || order.status;
+  const statusColor  = ORDER_STATUS_COLOR[order.status]  || '#6B7280';
+  const addressLine  = buildAddressLine(order);
   const hasStandaloneItems = order.items.length > 0;
-  const hasBundles = order.bundles.length > 0;
+  const hasBundles         = order.bundles.length > 0;
   const allServiceItems = [
     ...order.items,
     ...order.bundles.flatMap(bundle => bundle.items),
@@ -199,10 +227,47 @@ export default function ServiceOrderDetail() {
     allServiceItems.find(item => item.documents.some(document => !document.uploaded))?.id ||
     allServiceItems[0]?.id ||
     0;
+  const primaryService = allServiceItems[0];
+  const primaryTitle = primaryService?.service_name || 'Service Order';
+  const primarySubtitle =
+    primaryService?.variant_name ||
+    `${allServiceItems.length} service${allServiceItems.length === 1 ? '' : 's'}`;
+  const primaryImage = primaryService?.image_url;
+  const itemSubtotal = Number(
+    order.subtotal ??
+    order.summary?.subtotal ??
+    allServiceItems.reduce((sum, item) => sum + Number(item.price || 0), 0),
+  );
+  const rewardCoinsUsed = Number(
+    order.reward_coins_used ??
+    order.rewards?.used ??
+    order.reward_discount ??
+    order.summary?.reward_coins_used ??
+    0,
+  );
+  const rewardDiscount = Number(
+    order.reward_discount ??
+    order.summary?.reward_discount ??
+    rewardCoinsUsed,
+  );
+  const rewardCoinsEarned = Number(
+    order.reward_coins_earned ??
+    order.rewards?.earned ??
+    order.summary?.reward_coins_earned ??
+    0,
+  );
+  const orderTotal = Number(
+    order.total_amount ??
+    order.summary?.total ??
+    Math.max(0, itemSubtotal - rewardDiscount),
+  );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <Header onBack={() => navigation.goBack()} />
+    <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
+      <Header
+        onBack={() => navigation.goBack()}
+        onHelp={() => navigation.navigate('HelpForm')}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -216,7 +281,32 @@ export default function ServiceOrderDetail() {
           />
         }
       >
+        <OrderItemCard
+          image={
+            primaryImage ? (
+              <Image source={{ uri: primaryImage }} style={styles.productImage} />
+            ) : (
+              <MaterialCommunityIcons name="file-document-outline" size={34} color="#8665FF" />
+            )
+          }
+          title={primaryTitle}
+          weight={primarySubtitle}
+          orderId={parent_order_id.slice(0, 8).toUpperCase()}
+        />
+
+        <View style={[styles.statusSummaryCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+          <View style={styles.statusSummaryHeader}>
+            <Text style={[styles.statusSummaryTitle, { color: statusColor }]}>
+              {statusLabel}
+            </Text>
+            <Text style={[styles.statusSummaryDate, { color: servicesTheme.colors.muted }]}>{formatDate(order.created_at)}</Text>
+          </View>
+          <Text style={[styles.statusSummaryText, { color: servicesTheme.colors.muted }]}>
+            Track each service below for its individual document and completion timeline.
+          </Text>
+        </View>
         {/* ── Order summary card ─────────────────────────────────────── */}
+        {false && (
         <LinearGradient
           colors={['#30205F', '#6344BD', '#7C3AED']}
           start={{ x: 0, y: 0 }}
@@ -263,6 +353,7 @@ export default function ServiceOrderDetail() {
             </View>
           </View>
         </LinearGradient>
+        )}
 
         {/* ── Standalone service items ───────────────────────────────── */}
         {hasStandaloneItems && (
@@ -275,6 +366,7 @@ export default function ServiceOrderDetail() {
                 <ServiceOrderItemCard
                   item={item}
                   onCancelPress={handleCancelItem}
+                  onCancellationDetailsPress={handleCancellationDetailsItem}
                   onFeedbackPress={handleFeedbackItem}
                 />
               </View>
@@ -291,6 +383,7 @@ export default function ServiceOrderDetail() {
                 bundle={bundle}
                 bundleIndex={i + 1}
                 onCancelItem={handleCancelItem}
+                onCancellationDetailsItem={handleCancellationDetailsItem}
                 onFeedbackItem={handleFeedbackItem}
               />
             ))}
@@ -328,13 +421,13 @@ export default function ServiceOrderDetail() {
         {/* ── Price summary (reused ecommerce component) ────────────── */}
         <SectionCard title="Payment Summary">
           <PriceDetailsCard
-            itemTotal={order.total_amount}
+            itemTotal={itemSubtotal}
             deliveryFee={0}
             bagDiscount={0}
-            rewardDiscount={0}
-            orderTotal={order.total_amount}
-            rewardEarned={0}
-            rewardRedeemed={0}
+            rewardDiscount={rewardDiscount}
+            orderTotal={orderTotal}
+            rewardEarned={rewardCoinsEarned}
+            rewardRedeemed={rewardCoinsUsed}
             paymentMethod="Online"
           />
           <InvoiceDownloadRow
@@ -343,7 +436,11 @@ export default function ServiceOrderDetail() {
           />
         </SectionCard>
 
-
+        <YouMayNeedServicesCarousel />
+        <RecommendedServicesCarousel
+          title="Top Picks for You"
+          subtitle="Popular services customers choose next"
+        />
 
         <View style={styles.bottomPad} />
       </ScrollView>
@@ -352,26 +449,29 @@ export default function ServiceOrderDetail() {
 }
 
 // ── Local layout helpers (not exported — presentational only) ─────────────────
-function Header({ onBack }: { onBack: () => void }) {
+function Header({ onBack, onHelp }: { onBack: () => void; onHelp: () => void }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <LinearGradient
-      colors={['#30205F', '#5B3CB4', '#7C3AED']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.header}
-    >
+    <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider }]}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={onBack}
         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       >
-        <MaterialCommunityIcons name="arrow-left" size={21} color="#FFF" />
+        <MaterialCommunityIcons name="chevron-left" size={28} color={servicesTheme.colors.text} />
       </TouchableOpacity>
-      <View style={styles.headerCopy}>
-        <Text style={styles.headerEyebrow}>SERVICE HUB</Text>
-        <Text style={styles.headerTitle}>Order details</Text>
-      </View>
-    </LinearGradient>
+      <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Order Details</Text>
+      <TouchableOpacity activeOpacity={0.85} onPress={onHelp} style={[styles.helpBtn, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+        <MaterialCommunityIcons
+          name="chat-outline"
+          size={16}
+          color="#EC4899"
+          style={styles.helpIcon}
+        />
+        <Text style={styles.helpText}>Help</Text>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -382,9 +482,11 @@ function SectionCard({
   title?: string;
   children: React.ReactNode;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.section}>
-      {title ? <Text style={styles.sectionTitle}>{title}</Text> : null}
+    <View style={[styles.section, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      {title ? <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text> : null}
       {children}
     </View>
   );
@@ -401,11 +503,12 @@ function OrderDocumentsCard({
   pending: number;
   onUpload: () => void;
 }) {
+  const servicesTheme = useServicesTheme();
   const complete = pending === 0;
 
   return (
-    <View style={styles.documentsCard}>
-      <View style={styles.documentsIcon}>
+    <View style={[styles.documentsCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      <View style={[styles.documentsIcon, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F0ECFF' }]}>
         <MaterialCommunityIcons
           name={complete ? 'file-check-outline' : 'file-upload-outline'}
           size={24}
@@ -413,8 +516,8 @@ function OrderDocumentsCard({
         />
       </View>
       <View style={styles.documentsCopy}>
-        <Text style={styles.documentsTitle}>Documents</Text>
-        <Text style={styles.documentsText}>
+        <Text style={[styles.documentsTitle, { color: servicesTheme.colors.textStrong }]}>Documents</Text>
+        <Text style={[styles.documentsText, { color: servicesTheme.colors.muted }]}>
           {complete
             ? `${uploaded} of ${total} documents uploaded`
             : `${pending} document${pending > 1 ? 's' : ''} still needed`}
@@ -445,9 +548,11 @@ function InvoiceDownloadRow({
   downloading: boolean;
   onDownload: () => void;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.invoiceRow}>
-      <Text style={styles.invoiceText}>Save a copy of your order</Text>
+    <View style={[styles.invoiceRow, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+      <Text style={[styles.invoiceText, { color: servicesTheme.colors.text }]}>Save a copy of your order</Text>
 
       <TouchableOpacity
         style={[styles.invoiceButton, downloading && styles.invoiceButtonDisabled]}
@@ -456,9 +561,9 @@ function InvoiceDownloadRow({
         disabled={downloading}
       >
         {downloading ? (
-          <ActivityIndicator size="small" color={PURPLE} />
+          <ActivityIndicator size="small" color={servicesTheme.colors.primary} />
         ) : (
-          <Text style={styles.invoiceButtonText}>Download Invoice</Text>
+          <Text style={[styles.invoiceButtonText, { color: servicesTheme.colors.primary }]}>Download Invoice</Text>
         )}
       </TouchableOpacity>
     </View>
@@ -466,30 +571,72 @@ function InvoiceDownloadRow({
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#F6F5FB' },
+  safe: { flex: 1, backgroundColor: '#FFFFFF' },
 
   header: {
+    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    backgroundColor: '#FFFFFF',
   },
-  backButton: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.16)' },
+  backButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   headerCopy: { flex: 1, marginLeft: 12 },
-  headerEyebrow: {
-    color: 'rgba(255,255,255,0.64)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2, paddingHorizontal: 20,
-    paddingTop: 12,
+  headerEyebrow: { color: 'rgba(255,255,255,0.64)', fontSize: 10, fontWeight: '800', letterSpacing: 1.2 },
+  headerTitle: { flex: 1, marginLeft: 8, fontSize: 16, fontWeight: '600', color: '#374151' },
+  helpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#FFFFFF',
   },
-  headerTitle: {
-    fontSize: 22, fontWeight: '800', color: '#FFF', marginTop: 1, letterSpacing: -0.3, paddingHorizontal: 20,
-    paddingBottom: 18,
-  },
+  helpIcon: { marginRight: 4 },
+  helpText: { fontSize: 14, fontWeight: '600', color: '#EC4899' },
 
-  scroll: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 8, gap: 14 },
+  scroll: { padding: 16, paddingBottom: 8 },
+  productImage: {
+    width: 48,
+    height: 48,
+    resizeMode: 'contain',
+  },
+  statusSummaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    padding: 14,
+    marginBottom: 12,
+  },
+  statusSummaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  statusSummaryTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  statusSummaryDate: {
+    fontSize: 12,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  statusSummaryText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: '#6B7280',
+  },
 
   summaryCard: {
     borderRadius: 22,
+    padding: 18,
     elevation: 5,
     shadowColor: '#33205E',
     shadowOffset: { width: 0, height: 8 },
@@ -501,20 +648,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
-    marginTop: 14,
   },
-  centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { fontSize: 14, color: '#6B7280', marginTop: 8 },
-  errorText: { fontSize: 14, color: '#DC2626', marginTop: 8, textAlign: 'center' },
-  retryBtn: {
-    marginTop: 12,
-  },
-  orderEyebrow: {
-    color: 'rgba(255,255,255,0.62)', fontSize: 10, fontWeight: '800', letterSpacing: 1.1, marginBottom: 4, paddingHorizontal: 18
-  },
-  orderId: { fontSize: 18, fontWeight: '800', color: '#FFF', letterSpacing: 0.2, paddingHorizontal: 18, },
-  orderDate: { fontSize: 12, color: 'rgba(255,255,255,0.72)', marginTop: 3, fontWeight: '600', paddingHorizontal: 18 },
-  summaryIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.16)', paddingHorizontal: 18 },
+  orderEyebrow: { color: 'rgba(255,255,255,0.62)', fontSize: 10, fontWeight: '800', letterSpacing: 1.1, marginBottom: 4 },
+  orderId: { fontSize: 18, fontWeight: '800', color: '#FFF', letterSpacing: 0.2 },
+  orderDate: { fontSize: 12, color: 'rgba(255,255,255,0.72)', marginTop: 3, fontWeight: '600' },
+  summaryIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.16)' },
 
   statusChip: {
     flexDirection: 'row',
@@ -535,7 +673,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.18)',
     paddingTop: 14,
-    paddingBottom: 12,
   },
   statBox: { flex: 1, alignItems: 'center' },
   statValue: { fontSize: 16, fontWeight: '800', color: '#FFF' },
@@ -544,20 +681,16 @@ const styles = StyleSheet.create({
 
   section: {
     backgroundColor: '#FFF',
-    borderRadius: 18,
+    borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: '#ECE8F3',
-    elevation: 2,
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    borderColor: '#E5E7EB',
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#251B40',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#374151',
     marginBottom: 10,
   },
   documentsCard: {
@@ -565,19 +698,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#E9E3F8',
-    borderRadius: 18,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
     padding: 14,
-    shadowColor: '#35245F',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: 12,
   },
-  documentsIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F0ECFF', alignItems: 'center', justifyContent: 'center' },
+  documentsIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#F0ECFF', alignItems: 'center', justifyContent: 'center' },
   documentsCopy: { flex: 1, marginLeft: 12, marginRight: 8 },
-  documentsTitle: { fontSize: 14, fontWeight: '800', color: '#251B40' },
-  documentsText: { fontSize: 12, color: '#817A91', fontWeight: '600', marginTop: 3 },
+  documentsTitle: { fontSize: 14, fontWeight: '700', color: '#111827' },
+  documentsText: { fontSize: 12, color: '#6B7280', fontWeight: '500', marginTop: 3 },
   documentsDone: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#ECFDF3', paddingHorizontal: 8, paddingVertical: 6, borderRadius: 9 },
   documentsDoneText: { fontSize: 10, color: '#16A34A', fontWeight: '800' },
   uploadDocumentsButton: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: PURPLE, paddingHorizontal: 11, paddingVertical: 9, borderRadius: 10 },
@@ -586,10 +715,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 14,
-    borderRadius: 12,
+    marginTop: 12,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E7E0F2',
+    borderColor: '#E5E7EB',
     backgroundColor: '#FFF',
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -597,8 +726,8 @@ const styles = StyleSheet.create({
   invoiceText: {
     flex: 1,
     fontSize: 12,
-    color: '#2F293D',
-    fontWeight: '600',
+    color: '#374151',
+    fontWeight: '500',
   },
   invoiceButton: {
     paddingLeft: 12,
@@ -610,11 +739,30 @@ const styles = StyleSheet.create({
   },
   invoiceButtonText: {
     fontSize: 12,
-    color: PURPLE,
-    fontWeight: '900',
+    color: '#6366F1',
+    fontWeight: '700',
   },
-
-
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  loadingText: { marginTop: 12, fontSize: 14, color: '#6B7280' },
+  errorText: {
+    fontSize: 14,
+    color: '#B91C1C',
+    textAlign: 'center',
+    marginTop: 10,
+    marginBottom: 14,
+    lineHeight: 20,
+  },
+  retryBtn: {
+    backgroundColor: '#7C3AED',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
   retryText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
 
   itemDivider: {

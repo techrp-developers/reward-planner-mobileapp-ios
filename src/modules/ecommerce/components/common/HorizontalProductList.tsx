@@ -43,12 +43,12 @@ function HorizontalProductList<T extends ListItemBase>({
   itemWidth,
   gap = 12,
   estimatedItemSize,
-  initialVisibleCount = 3,
+  initialVisibleCount = 5,
   contentContainerStyle,
   keyExtractor,
   renderCard,
 }: HorizontalProductListProps<T>) {
-  const [visibleKeys, setVisibleKeys] = useState<Set<string>>(new Set());
+  const [loadedImageKeys, setLoadedImageKeys] = useState<Set<string>>(new Set());
   const ListComponent = FlashListComponent ?? FlatList;
   const listIsFlashList = Boolean(FlashListComponent);
 
@@ -69,7 +69,17 @@ function HorizontalProductList<T extends ListItemBase>({
     data.slice(0, initialVisibleCount).forEach((item, index) => {
       nextKeys.add(resolveKey(item, index));
     });
-    setVisibleKeys(nextKeys);
+    setLoadedImageKeys((previous) => {
+      let didChange = false;
+      const merged = new Set(previous);
+      nextKeys.forEach((key) => {
+        if (!merged.has(key)) {
+          merged.add(key);
+          didChange = true;
+        }
+      });
+      return didChange ? merged : previous;
+    });
   }, [data, initialVisibleCount, resolveKey]);
 
   const onViewableItemsChanged = useRef(
@@ -85,7 +95,18 @@ function HorizontalProductList<T extends ListItemBase>({
       });
 
       if (nextKeys.size > 0) {
-        setVisibleKeys(nextKeys);
+        setLoadedImageKeys((previous) => {
+          let didChange = false;
+          const merged = new Set(previous);
+          nextKeys.forEach((key) => {
+            if (!merged.has(key)) {
+              merged.add(key);
+              didChange = true;
+            }
+          });
+
+          return didChange ? merged : previous;
+        });
       }
     }
   ).current;
@@ -105,12 +126,12 @@ function HorizontalProductList<T extends ListItemBase>({
           {renderCard({
             item,
             index,
-            shouldLoadImage: visibleKeys.has(itemKey),
+            shouldLoadImage: loadedImageKeys.has(itemKey),
           })}
         </View>
       );
     },
-    [itemWidth, renderCard, resolveKey, visibleKeys]
+    [itemWidth, loadedImageKeys, renderCard, resolveKey]
   );
 
   const listProps = useMemo(
@@ -125,10 +146,10 @@ function HorizontalProductList<T extends ListItemBase>({
       onViewableItemsChanged,
       viewabilityConfig,
       removeClippedSubviews: true,
-      initialNumToRender: Math.min(Math.max(initialVisibleCount, 2), 4),
-      maxToRenderPerBatch: 3,
-      updateCellsBatchingPeriod: 80,
-      windowSize: 3,
+      initialNumToRender: Math.min(Math.max(initialVisibleCount, 3), 6),
+      maxToRenderPerBatch: 5,
+      updateCellsBatchingPeriod: 48,
+      windowSize: 5,
       decelerationRate: "fast" as const,
       snapToInterval: itemWidth + gap,
       scrollEventThrottle: 16,

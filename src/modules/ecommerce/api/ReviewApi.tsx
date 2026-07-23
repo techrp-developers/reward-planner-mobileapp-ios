@@ -69,7 +69,7 @@ export const createReview = async (reviewData: CreateReviewPayload) => {
 
     return res.data;
   } catch (error) {
-    console.log("Create Review Error:", error);
+    __DEV__ && console.log("Create Review Error:", error);
     throw error;
   }
 };
@@ -114,7 +114,7 @@ export const uploadReviewMedia = async (
 
     return res.data;
   } catch (error) {
-    console.log("Upload Review Media Error:", error);
+    __DEV__ && console.log("Upload Review Media Error:", error);
     throw error;
   }
 };
@@ -132,7 +132,7 @@ export const fetchProductReviews = async (productId: number | string) => {
 
     return res.data;
   } catch (error) {
-    console.log("Fetch Reviews Error:", error);
+    __DEV__ && console.log("Fetch Reviews Error:", error);
     throw error;
   }
 };
@@ -154,7 +154,7 @@ export const markReviewHelpful = async (reviewId: number | string) => {
 
     return res.data;
   } catch (error) {
-    console.log("Helpful Review Error:", error);
+    __DEV__ && console.log("Helpful Review Error:", error);
     throw error;
   }
 };
@@ -175,7 +175,7 @@ export const removeHelpfulReview = async (reviewId: number | string) => {
 
     return res.data;
   } catch (error) {
-    console.log("Remove Helpful Error:", error);
+    __DEV__ && console.log("Remove Helpful Error:", error);
     throw error;
   }
 };
@@ -192,7 +192,7 @@ export const fetchReviewableOrder = async (variantId: number | string) => {
 
     return res.data;
   } catch (error) {
-    console.log("Fetch Reviewable Order Error:", error);
+    __DEV__ && console.log("Fetch Reviewable Order Error:", error);
     throw error;
   }
 };

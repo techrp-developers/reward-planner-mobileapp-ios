@@ -69,11 +69,11 @@ function useStates() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const load = React.useCallback(async () => {
+  const load = React.useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetchAllStates();
+      const res = await fetchAllStates(forceRefresh);
       setStates(Array.isArray(res?.data) ? res.data : []);
     } catch {
       setStates([]);
@@ -87,7 +87,7 @@ function useStates() {
     load();
   }, [load]);
 
-  return { states, loading, error, retry: () => load() };
+  return { states, loading, error, retry: () => load(true) };
 }
 
 type FormFields = {

@@ -22,10 +22,6 @@ type CacheEntry = {
 const cache = new Map<number, CacheEntry>();
 const inFlight = new Map<number, Promise<NormalizedServiceData | null>>();
 
-let prefetchAttempts = 0;
-let prefetchCacheHits = 0;
-let prefetchNetworkFetches = 0;
-
 /** Read a valid (non-expired) entry or return null. */
 export function getCachedService(serviceId: number): NormalizedServiceData | null {
   const entry = cache.get(serviceId);
@@ -55,54 +51,27 @@ export function invalidateCachedService(serviceId: number): void {
 export async function prefetchServiceDetails(
   serviceId: number,
 ): Promise<NormalizedServiceData | null> {
-  prefetchAttempts += 1;
-
   if (!Number.isFinite(serviceId) || serviceId <= 0) {
-    console.log('[serviceCache] prefetch skipped (invalid id):', serviceId);
     return null;
   }
 
   const cached = getCachedService(serviceId);
   if (cached) {
-    prefetchCacheHits += 1;
-    console.log(
-      '[serviceCache] cache hit for',
-      serviceId,
-      '| attempts:',
-      prefetchAttempts,
-      '| cacheHits:',
-      prefetchCacheHits,
-      '| networkFetches:',
-      prefetchNetworkFetches,
-    );
     return cached;
   }
 
   const running = inFlight.get(serviceId);
   if (running) {
-    console.log('[serviceCache] using in-flight prefetch for', serviceId);
     return running;
   }
 
-  prefetchNetworkFetches += 1;
   const request = getServiceDetails(serviceId)
     .then((res) => {
       const normalized = normalizeServiceData(res);
       setCachedService(serviceId, normalized);
-      console.log(
-        '[serviceCache] network fetch complete for',
-        serviceId,
-        '| attempts:',
-        prefetchAttempts,
-        '| cacheHits:',
-        prefetchCacheHits,
-        '| networkFetches:',
-        prefetchNetworkFetches,
-      );
       return normalized;
     })
-    .catch((err) => {
-      console.log('[serviceCache] prefetch failed for', serviceId, err);
+    .catch(() => {
       return null;
     })
     .finally(() => {

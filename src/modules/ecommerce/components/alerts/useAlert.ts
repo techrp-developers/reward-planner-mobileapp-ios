@@ -8,25 +8,27 @@ export function useAlert() {
     throw new Error("useAlert must be used within AlertProvider");
   }
 
-  // Returning a plain object literal here would give a new reference on every
-  // render. Any useCallback that lists this hook's return value as a dependency
-  // would then be recreated every render, causing infinite re-render loops.
-  // context.show / dismiss / dismissAll are already stable (useCallback in
-  // AlertContext), so memoizing the wrapper object makes the whole hook stable.
+  const { show, dismiss, dismissAll } = context;
+
+  // Memoized on the (stable) context methods so the returned object keeps
+  // the same identity across renders. Without this, every render produced a
+  // brand-new object/functions here, which made any `useCallback`/`useEffect`
+  // depending on `alert` re-run on every render — this was the root cause of
+  // AddressSelectScreen's infinite fetch loop.
   return useMemo(
     () => ({
       success: (title: string, message: string, duration = 3000) =>
-        context.show({ type: "success", title, message, duration }),
+        show({ type: "success", title, message, duration }),
       error: (title: string, message: string, duration = 4000) =>
-        context.show({ type: "error", title, message, duration }),
+        show({ type: "error", title, message, duration }),
       warning: (title: string, message: string, duration = 3500) =>
-        context.show({ type: "warning", title, message, duration }),
+        show({ type: "warning", title, message, duration }),
       info: (title: string, message: string, duration = 3000) =>
-        context.show({ type: "info", title, message, duration }),
-      show: context.show,
-      dismiss: context.dismiss,
-      dismissAll: context.dismissAll,
+        show({ type: "info", title, message, duration }),
+      show,
+      dismiss,
+      dismissAll,
     }),
-    [context.show, context.dismiss, context.dismissAll]
+    [show, dismiss, dismissAll]
   );
 }

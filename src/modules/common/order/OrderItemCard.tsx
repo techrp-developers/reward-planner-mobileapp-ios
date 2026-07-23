@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Props = {
   image: React.ReactNode; // SVG or Image
@@ -20,28 +21,30 @@ export default function OrderItemCard({
   weight,
   orderId,
 }: Props) {
+  const { theme } = useAppTheme();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Image */}
-      <View style={styles.imageWrap}>{image}</View>
+      <View style={[styles.imageWrap, { backgroundColor: theme.background, borderColor: theme.border }]}>{image}</View>
 
       {/* Info */}
       <View style={styles.info}>
-        <Text style={styles.title} numberOfLines={2}>
+        <Text style={[styles.title, { color: theme.text }]} numberOfLines={2}>
           {title}
         </Text>
 
-        <Text style={styles.weight}>{weight}</Text>
+        <Text style={[styles.weight, { color: theme.secondaryText }]}>{weight}</Text>
 
         <View style={styles.orderRow}>
-          <Text style={styles.orderText}>Order ID - #{orderId}</Text>
+          <Text style={[styles.orderText, { color: theme.secondaryText }]}>Order ID - #{orderId}</Text>
 
           {/* UI-only copy icon */}
           <TouchableOpacity style={styles.copyBtn} activeOpacity={0.7}>
             <MaterialCommunityIcons
               name="content-copy"
               size={16}
-              color="#4F46E5"
+              color={theme.primary}
             />
           </TouchableOpacity>
         </View>

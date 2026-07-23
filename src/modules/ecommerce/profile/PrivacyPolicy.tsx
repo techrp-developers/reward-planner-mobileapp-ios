@@ -16,6 +16,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 
 import { TAB_BAR_HEIGHT } from "../../../bottombar/BottomTabs";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 import {
   fetchPrivacyPolicy,
@@ -45,14 +46,16 @@ type PolicyCardProps = {
   title: string;
   content: string;
   number: string;
+  isDark: boolean;
 };
 
 const PolicyCard = ({
   title,
   content,
   number,
+  isDark,
 }: PolicyCardProps) => (
-  <View style={styles.card}>
+  <View style={[styles.card, isDark && darkStyles.card]}>
     <View style={styles.cardHeader}>
       <View style={styles.numberBadge}>
         <Text style={styles.numberText}>
@@ -60,12 +63,12 @@ const PolicyCard = ({
         </Text>
       </View>
 
-      <Text style={styles.sectionTitle}>
+      <Text style={[styles.sectionTitle, isDark && darkStyles.primaryText]}>
         {title}
       </Text>
     </View>
 
-    <Text style={styles.sectionContent}>
+    <Text style={[styles.sectionContent, isDark && darkStyles.bodyText]}>
       {content}
     </Text>
   </View>
@@ -77,6 +80,7 @@ const PolicyCard = ({
 
 const PrivacyPolicyScreen = () => {
   const alert = useAlert();
+  const { isDark, theme } = useAppTheme();
 
   const [loading, setLoading] =
     useState(true);
@@ -131,21 +135,21 @@ const PrivacyPolicyScreen = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [alert]);
 
   // ───────────────────────────────────────────────────────────
   // RENDER
   // ───────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, isDark && darkStyles.root]}>
       <StatusBar
-        barStyle="dark-content"
-        backgroundColor="#F5F0FF"
+        barStyle={isDark ? "light-content" : "dark-content"}
+        backgroundColor={isDark ? "#09090B" : "#F5F0FF"}
       />
 
       <LinearGradient
-        colors={[...T.gradient]}
+        colors={isDark ? ["#09090B", "#18181B"] : [...T.gradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -158,25 +162,23 @@ const PrivacyPolicyScreen = () => {
           <View style={styles.header}>
             <View>
               <Text
-                style={styles.mainTitle}
+                style={[styles.mainTitle, isDark && darkStyles.primaryText]}
               >
                 Privacy
               </Text>
 
               <Text
-                style={
-                  styles.mainTitleBold
-                }
+                style={[styles.mainTitleBold, isDark && darkStyles.primaryText]}
               >
                 Policy
               </Text>
             </View>
 
             <View
-              style={styles.dateBadge}
+              style={[styles.dateBadge, isDark && darkStyles.badge]}
             >
               <Text
-                style={styles.dateText}
+                style={[styles.dateText, isDark && darkStyles.primaryText]}
               >
                 v1.2 • MAR 2026
               </Text>
@@ -203,7 +205,7 @@ const PrivacyPolicyScreen = () => {
               style={styles.introBox}
             >
               <Text
-                style={styles.introText}
+                style={[styles.introText, isDark && darkStyles.mutedText]}
               >
                 Your privacy is our
                 priority. This policy
@@ -224,7 +226,7 @@ const PrivacyPolicyScreen = () => {
               >
                 <ActivityIndicator
                   size="large"
-                  color="#852BAF"
+                  color={theme.primary}
                 />
               </View>
             ) : (
@@ -241,6 +243,7 @@ const PrivacyPolicyScreen = () => {
                     content={
                       item.content
                     }
+                    isDark={isDark}
                   />
                 ))}
               </>
@@ -399,6 +402,19 @@ const styles = StyleSheet.create({
   bottomSpacer: {
     height: 80,
   },
+});
+
+const darkStyles = StyleSheet.create({
+  root: { backgroundColor: "#09090B" },
+  card: {
+    backgroundColor: "#18181B",
+    borderColor: "rgba(255,255,255,0.20)",
+    shadowColor: "#000000",
+  },
+  primaryText: { color: "#C4B5FD" },
+  bodyText: { color: "#E4E4E7" },
+  mutedText: { color: "#A1A1AA" },
+  badge: { backgroundColor: "#27233A" },
 });
 
 export default PrivacyPolicyScreen;

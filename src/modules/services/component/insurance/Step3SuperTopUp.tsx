@@ -80,10 +80,10 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
         // Fetch user info
         const userInfo = await fetchUserInfo();
-        console.log("📱 Step3SuperTopUp - User Info Received:", userInfo);
+        __DEV__ && console.log("📱 Step3SuperTopUp - User Info Received:", userInfo);
         if (userInfo?.user) {
           const user = userInfo.user;
-          console.log("🔍 Step3SuperTopUp - Pre-filling form with extracted user data:", {
+          __DEV__ && console.log("🔍 Step3SuperTopUp - Pre-filling form with extracted user data:", {
             firstName: user.first_name,
             lastName: user.last_name,
             mobileNumber: user.phone,
@@ -221,12 +221,12 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
       try {
         // Step 3: Save basic details
-        console.log("📝 Step 3: Saving basic details...");
+        __DEV__ && console.log("📝 Step 3: Saving basic details...");
         await saveStep(enquiryId, 3, "basic", mapBasicDetails(data));
-        console.log("✅ Basic details saved");
+        __DEV__ && console.log("✅ Basic details saved");
 
         // Step 4: Save super top-up coverage
-        console.log("📝 Step 4: Saving super top-up coverage...");
+        __DEV__ && console.log("📝 Step 4: Saving super top-up coverage...");
         try {
           await saveStep(enquiryId, 4, "super_topup", mapSuperTopupCoverage(coverAmountValue));
         } catch (coverageError: any) {
@@ -245,28 +245,28 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
           // Fallback for CRM variants expecting health section + sum_insured.
           await saveStep(enquiryId, 4, "health", mapHealthCoverage(coverAmountValue));
         }
-        console.log("✅ Coverage saved");
+        __DEV__ && console.log("✅ Coverage saved");
 
         // Step 5: Complete enquiry
-        console.log("📝 Step 5: Completing enquiry...");
+        __DEV__ && console.log("📝 Step 5: Completing enquiry...");
         await completeInsurance(enquiryId);
-        console.log("✅ Enquiry completed");
+        __DEV__ && console.log("✅ Enquiry completed");
 
         await new Promise((resolve) => setTimeout(resolve, 800));
 
         // Step 6: Get quotes from PolicyPlanner as primary source.
-        console.log("📝 Step 6: Fetching PolicyPlanner super top-up quotes...");
+        __DEV__ && console.log("📝 Step 6: Fetching PolicyPlanner super top-up quotes...");
         const policyPayload = buildPolicyPlannerPayload(coverAmountValue);
         successfulPlans = await getAllSuperTopUpPremiums(policyPayload);
 
         // CRM fallback if PolicyPlanner gives no success rows.
         if (!successfulPlans.some((p: any) => p.success)) {
-          console.log("📝 Step 6 fallback: Fetching CRM quotes...");
+          __DEV__ && console.log("📝 Step 6 fallback: Fetching CRM quotes...");
           const quotesResponse = await getQuotes(enquiryId);
           successfulPlans = normalizeQuotesForUi(quotesResponse);
         }
 
-        console.log("✅ Quotes fetched successfully:", successfulPlans.length);
+        __DEV__ && console.log("✅ Quotes fetched successfully:", successfulPlans.length);
 
       } catch (crmFlowError: any) {
         console.error("❌ CRM flow failed:", crmFlowError.message);
@@ -279,7 +279,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
       if (successfulPlans.some((p) => p.success)) {
         const enquiryData = buildSuperTopupEnquiryData(data, coverAmountValue);
-        console.log("[Firebase][SuperTopup] enquiry_data:", enquiryData);
+        __DEV__ && console.log("[Firebase][SuperTopup] enquiry_data:", enquiryData);
 
         await createFirebaseEnquiry({
           service_id: 2,

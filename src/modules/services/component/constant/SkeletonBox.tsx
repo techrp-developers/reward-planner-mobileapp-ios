@@ -23,17 +23,16 @@ export default function SkeletonBox({
   style,
   pulse,
   baseColor = '#ECECEC',
-  highlightColor = '#D5D5D5',
 }: SkeletonBoxProps) {
-  const bg = pulse.interpolate({
+  const opacity = pulse.interpolate({
     inputRange: [0, 1],
-    outputRange: [baseColor, highlightColor],
+    outputRange: [0.58, 1],
   });
 
   return (
     <Animated.View
       style={[
-        { width, height, borderRadius, backgroundColor: bg },
+        { width, height, borderRadius, backgroundColor: baseColor, opacity },
         style,
       ]}
     />

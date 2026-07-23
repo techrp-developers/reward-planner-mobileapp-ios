@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -8,15 +8,17 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { getWishlist, removeWishlist } from "../api/WishlistApi";
-import { getProductImageUrl, fetchProductDetailsByID } from "../api/ProductApi";
-import { handleNavigateWithPrefetch, productDetailsQueryKey } from "../navigation/navigationPerformance";
+import { fetchProductDetailsByID, getProductImageUrl } from "../api/ProductApi";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../navigation/types";
 import ProductHeadColor from "../constants/heading/Poduct_Head_Color";
+import { useCart } from "../context/CartContext";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type WishlistItem = any;
@@ -36,7 +38,7 @@ const resolveProductId = (item: WishlistItem) =>
       item?.product?.productId
   );
 
-const resolveVariantId = (item: WishlistItem, productId?: number) =>
+const resolveVariantId = (item: WishlistItem) =>
   toNumberOrUndefined(
     item?.variant_id ??
       item?.variantId ??
@@ -46,18 +48,33 @@ const resolveVariantId = (item: WishlistItem, productId?: number) =>
       item?.product?.variant_id ??
       item?.product?.default_variant_id ??
       item?.product?.variants?.[0]?.variant_id ??
-      item?.product?.variants?.[0]?.id ??
-      productId
+      item?.product?.variants?.[0]?.id
   );
 
 const getProductField = (item: WishlistItem, key: string) =>
   item?.[key] ?? item?.product?.[key] ?? item?.variant?.[key];
 
+const uniqueIds = (values: unknown[]) => {
+  const seen = new Set<number>();
+
+  return values.reduce<number[]>((ids, value) => {
+    const id = toNumberOrUndefined(value);
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      ids.push(id);
+    }
+    return ids;
+  }, []);
+};
+
 const WishlistScreen = () => {
   const navigation = useNavigation<Nav>();
+  const { addItem, items: cartItems } = useCart();
+  const { isDark, theme } = useAppTheme();
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [cartLoadingKey, setCartLoadingKey] = useState<string | null>(null);
 
   useEffect(() => {
     loadWishlist();
@@ -121,20 +138,65 @@ const WishlistScreen = () => {
       : getProductImageUrl(firstImage);
   };
 
-  const handleNavigateToProduct = useCallback((productId: number) => {
-    handleNavigateWithPrefetch({
-      navigate: () => navigation.navigate("ProductDescription", { productId }),
-      queryKey: productDetailsQueryKey(productId),
-      queryFn: () => fetchProductDetailsByID(productId),
-    });
-  }, [navigation]);
-
-  const handleRemoveWishlist = useCallback(async (item: WishlistItem) => {
+  const handleRemoveWishlist = async (item: WishlistItem) => {
     const productId = resolveProductId(item);
-    const variantId = resolveVariantId(item, productId);
+    const variantId = resolveVariantId(item);
 
     try {
-      await removeWishlist({ productId, variantId });
+      if (!productId) {
+        throw new Error("Product id is required");
+      }
+
+      const candidateVariantIds = uniqueIds([
+        variantId,
+        item?.default_variant_id,
+        item?.product?.default_variant_id,
+        item?.variant?.variant_id,
+        item?.variant?.id,
+        ...(Array.isArray(item?.variants)
+          ? item.variants.map((variant: any) => variant?.variant_id ?? variant?.id)
+          : []),
+        ...(Array.isArray(item?.product?.variants)
+          ? item.product.variants.map((variant: any) => variant?.variant_id ?? variant?.id)
+          : []),
+      ]);
+
+      if (candidateVariantIds.length === 0) {
+        const productDetails = await fetchProductDetailsByID(productId);
+        const variants = Array.isArray(productDetails?.variants) ? productDetails.variants : [];
+        candidateVariantIds.push(
+          ...uniqueIds([
+            productDetails?.default_variant_id,
+            productDetails?.variant_id,
+            ...variants.map((variant: any) => variant?.variant_id ?? variant?.id),
+          ])
+        );
+      }
+
+      if (candidateVariantIds.length === 0) {
+        throw new Error("Variant id is required");
+      }
+
+      let lastError: any = null;
+
+      for (const candidateVariantId of candidateVariantIds) {
+        try {
+          await removeWishlist({
+            productId,
+            variantId: candidateVariantId,
+            strict: true,
+          });
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (lastError) {
+        throw lastError;
+      }
+
       setItems((prev) =>
         prev.filter((x) => Number(x?.wishlist_id ?? x?.id) !== Number(item?.wishlist_id ?? item?.id))
       );
@@ -142,13 +204,81 @@ const WishlistScreen = () => {
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
+        error?.message ||
         "Failed to remove from wishlist";
-      console.log("Wishlist remove failed", message);
+      __DEV__ && console.log("Wishlist remove failed", message);
+      Alert.alert("Wishlist", String(message));
     }
-  }, []);
+  };
 
-  const renderProduct = useCallback(({ item }: { item: WishlistItem }) => {
+  const isItemInCart = (productId?: number, variantId?: number) => {
+    if (!productId) return false;
+
+    return cartItems.some(
+      (cartItem) =>
+        Number(cartItem.product_id) === Number(productId) &&
+        (!variantId || Number(cartItem.variant_id) === Number(variantId))
+    );
+  };
+
+  const resolveCartVariantId = async (item: WishlistItem, productId: number) => {
+    const directVariantId = resolveVariantId(item);
+    if (directVariantId) return directVariantId;
+
+    const productDetails = await fetchProductDetailsByID(productId);
+    const variants = Array.isArray(productDetails?.variants) ? productDetails.variants : [];
+
+    return toNumberOrUndefined(
+      productDetails?.default_variant_id ??
+        productDetails?.variant_id ??
+        variants[0]?.variant_id ??
+        variants[0]?.id
+    );
+  };
+
+  const handleCartAction = async (item: WishlistItem) => {
     const productId = resolveProductId(item);
+    const itemKey = String(item?.wishlist_id ?? item?.id ?? productId ?? "");
+
+    if (!productId) {
+      Alert.alert("Cart", "Product information is incomplete.");
+      return;
+    }
+
+    try {
+      setCartLoadingKey(itemKey);
+      const variantId = await resolveCartVariantId(item, productId);
+
+      if (!variantId) {
+        Alert.alert("Cart", "Product variant is missing.");
+        return;
+      }
+
+      if (isItemInCart(productId, variantId)) {
+        navigation.navigate("Cart");
+        return;
+      }
+
+      await addItem(productId, variantId, 1);
+      Alert.alert("Cart", "Item added to cart.");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Unable to add item to cart.";
+      Alert.alert("Cart", String(message));
+    } finally {
+      setCartLoadingKey(null);
+    }
+  };
+
+  const renderProduct = ({ item }: { item: WishlistItem }) => {
+    const productId = resolveProductId(item);
+    const variantId = resolveVariantId(item);
+    const itemKey = String(item?.wishlist_id ?? item?.id ?? productId ?? "");
+    const inCart = isItemInCart(productId, variantId);
+    const cartBusy = cartLoadingKey === itemKey;
     const salePrice = Number(
       getProductField(item, "sale_price") ??
         getProductField(item, "price") ??
@@ -165,16 +295,32 @@ const WishlistScreen = () => {
     const imageUrl = normalizeImage(item);
     const brand = getProductField(item, "brand_name") || item?.brand || item?.product?.brand || "BRAND";
     const name = getProductField(item, "product_name") || item?.title || item?.product?.title || "Product";
-    const ratingText = getProductField(item, "rating") ? `${getProductField(item, "rating")}` : "4.5";
-    const reviewText = getProductField(item, "reviews") ? `(${getProductField(item, "reviews")})` : "(0)";
+    const rawRating =
+      getProductField(item, "rating") ??
+      getProductField(item, "avg_rating") ??
+      0;
+    const parsedRating = Number(rawRating);
+    const rating = Number.isFinite(parsedRating)
+      ? Math.min(5, Math.max(0, parsedRating))
+      : 0;
+    const reviewCount = Number(
+      getProductField(item, "reviews") ??
+      getProductField(item, "total_reviews") ??
+      0
+    );
+    const reviewText = `(${Number.isFinite(reviewCount) ? reviewCount : 0})`;
 
     return (
-      <TouchableOpacity
-        style={styles.card}
+      <TouchableOpacity 
+        style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]} 
         activeOpacity={0.9}
-        onPress={() => { if (productId) handleNavigateToProduct(productId); }}
+        onPress={() => {
+          if (productId) {
+            navigation.navigate("ProductDescription", { productId });
+          }
+        }}
       >
-        <View style={styles.imageWrapper}>
+        <View style={[styles.imageWrapper, { backgroundColor: isDark ? "#111827" : "#F9FAFB" }]}>
           <Image
             source={{ uri: imageUrl }}
             style={styles.productImage}
@@ -189,8 +335,8 @@ const WishlistScreen = () => {
         </View>
 
         <View style={styles.details}>
-          <Text style={styles.brand} numberOfLines={1}>{String(brand).toUpperCase()}</Text>
-          <Text style={styles.name} numberOfLines={2}>{name}</Text>
+          <Text style={[styles.brand, { color: theme.text }]} numberOfLines={1}>{String(brand).toUpperCase()}</Text>
+          <Text style={[styles.name, { color: theme.secondaryText }]} numberOfLines={2}>{name}</Text>
 
           <View style={styles.ratingRow}>
             {[1, 2, 3, 4, 5].map((star) => (
@@ -198,47 +344,60 @@ const WishlistScreen = () => {
                 key={star}
                 name="star"
                 size={12}
-                color={star <= Math.round(Number(ratingText)) ? "#F5B400" : "#E5E7EB"}
+                color={star <= Math.round(rating) ? "#F5B400" : "#E5E7EB"}
               />
             ))}
-            <Text style={styles.reviewText}>{reviewText}</Text>
+            <Text style={[styles.reviewText, { color: theme.secondaryText }]}>{reviewText}</Text>
           </View>
           
           <View style={styles.priceRow}>
-            <Text style={styles.salePrice}>₹{salePrice || 0}</Text>
-            <Text style={styles.mrp}>₹{mrp || 0}</Text>
+            <Text style={[styles.salePrice, { color: theme.text }]}>₹{salePrice || 0}</Text>
+            <Text style={[styles.mrp, { color: theme.secondaryText }]}>₹{mrp || 0}</Text>
             {discount > 0 && <Text style={styles.discountText}>{discount}% OFF</Text>}
           </View>
 
           <TouchableOpacity
-            style={styles.productNavBtn}
+            style={[
+              styles.productNavBtn,
+              { backgroundColor: inCart ? "#111827" : "#F6D58B" },
+              inCart && styles.goToCartBtn,
+            ]}
             activeOpacity={0.85}
-            onPress={() => { if (productId) handleNavigateToProduct(productId); }}
+            onPress={() => handleCartAction(item)}
+            disabled={cartBusy}
           >
-            <Text style={styles.btnText}>VIEW PRODUCT</Text>
+            {cartBusy ? (
+              <ActivityIndicator size="small" color={inCart ? "#FACC15" : "#111827"} />
+            ) : (
+              <Text style={[styles.btnText, inCart && styles.goToCartText]}>
+                {inCart ? "GO TO CART" : "ADD TO CART"}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
-  }, [handleNavigateToProduct, handleRemoveWishlist, calculateDiscount, normalizeImage]);
+  };
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View style={[styles.centered, { backgroundColor: theme.background }]}>
         <ActivityIndicator size="large" color="#E91E63" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ProductHeadColor
         title="My Wishlist"
         onBackPress={() => navigation.goBack()}
+        showSearch={false}
+        isDark={isDark}
       />
 
       <View style={styles.countRow}>
-        <Text style={styles.itemCount}>{items.length} items</Text>
+        <Text style={[styles.itemCount, { color: theme.secondaryText }]}>{items.length} items</Text>
       </View>
 
       <FlatList
@@ -249,16 +408,16 @@ const WishlistScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadWishlist(true)}
-            tintColor="#8B5CF6"
+            tintColor="#D69A33"
           />
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
             <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="heart-outline" size={80} color="#ddd" />
-                <Text style={styles.emptyText}>Your wishlist is empty</Text>
-                <Text style={styles.emptySubText}>Save products you love to find them quickly.</Text>
+                <MaterialCommunityIcons name="heart-outline" size={80} color={theme.border} />
+                <Text style={[styles.emptyText, { color: theme.text }]}>Your wishlist is empty</Text>
+                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>Save products you love to find them quickly.</Text>
             </View>
         }
       />
@@ -381,16 +540,24 @@ const styles = StyleSheet.create({
   productNavBtn: {
     marginTop: 10,
     borderWidth: 1,
-    borderColor: "#8B5CF6",
+    borderColor: "#111827",
     borderRadius: 8,
     paddingVertical: 8,
     alignItems: "center",
   },
 
+  goToCartBtn: {
+    backgroundColor: "#111827",
+    borderColor: "#FACC15",
+  },
+
   btnText: {
-    color: "#8B5CF6",
+    color: "#111827",
     fontWeight: "700",
     fontSize: 12,
+  },
+  goToCartText: {
+    color: "#FACC15",
   },
   centered: {
     flex: 1,

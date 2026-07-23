@@ -80,7 +80,11 @@ const StepWelcome = () => {
       try {
         const res = await fetchProfileStepStatus();
         if (!mounted) return;
-        if (res.success && res.is_completed) navigation.replace("Dashboard");
+        // Route through StepsTrackerScreen, not directly to Dashboard.
+        // StepsTrackerScreen auto-redirects to Dashboard when HC is ready,
+        // or shows the permission/install UI if HC was reinstalled and
+        // permissions were revoked — the right thing to do in either case.
+        if (res.success && res.is_completed) navigation.replace("StepsTrackerScreen");
       } catch {
         // status check failed — show the welcome screen anyway
       } finally {

@@ -348,6 +348,7 @@ export default function AddressSelectScreen() {
         title="Select Address"
         onBackPress={() => navigation.goBack()}
         showSearch={false}
+        isDark={isDark}
       />
 
 

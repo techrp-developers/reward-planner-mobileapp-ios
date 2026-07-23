@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Props = {
   itemTotal: number;
@@ -23,13 +24,15 @@ export default function PriceDetailsCard({
   rewardRedeemed,
   paymentMethod,
 }: Props) {
+  const { isDark, theme } = useAppTheme();
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Title */}
-      <Text style={styles.title}>Price Details</Text>
+      <Text style={[styles.title, { color: theme.text }]}>Price Details</Text>
 
       {/* Green reward earned banner */}
-      <View style={styles.earnedBanner}>
+      <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
         <Text style={styles.earnedText}>
           {rewardEarned} Reward Coins Earned
         </Text>
@@ -49,27 +52,27 @@ export default function PriceDetailsCard({
         valueStyle={styles.negative}
       />
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       {/* Order total */}
       <View style={styles.rowBetween}>
-        <Text style={styles.totalLabel}>Order Total</Text>
-        <Text style={styles.totalValue}>₹{orderTotal}</Text>
+        <Text style={[styles.totalLabel, { color: theme.text }]}>Order Total</Text>
+        <Text style={[styles.totalValue, { color: theme.text }]}>₹{orderTotal}</Text>
       </View>
 
       {/* Payment method */}
       <View style={styles.rowBetween}>
-        <Text style={styles.paymentLabel}>Payment Method</Text>
-        <Text style={styles.paymentValue}>{paymentMethod}</Text>
+        <Text style={[styles.paymentLabel, { color: theme.secondaryText }]}>Payment Method</Text>
+        <Text style={[styles.paymentValue, { color: theme.text }]}>{paymentMethod}</Text>
       </View>
 
       {/* Purple redeemed banner */}
-      <View style={styles.redeemedBanner}>
-        <MaterialIcons name="auto-awesome" size={18} color="#7C3AED" />
+      <View style={[styles.redeemedBanner, { backgroundColor: isDark ? "#2D2148" : "#F3E8FF" }]}>
+        <MaterialIcons name="auto-awesome" size={18} color={theme.primary} />
         <Text style={styles.redeemedText}>
           {rewardRedeemed} Reward Coins Redeemed
         </Text>
-        <MaterialIcons name="auto-awesome" size={18} color="#7C3AED" />
+        <MaterialIcons name="auto-awesome" size={18} color={theme.primary} />
       </View>
     </View>
   );
@@ -77,10 +80,12 @@ export default function PriceDetailsCard({
 
 /* Row component */
 function Row({ label, value, valueStyle }: any) {
+  const { theme } = useAppTheme();
+
   return (
     <View style={styles.rowBetween}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={[styles.value, valueStyle]}>{value}</Text>
+      <Text style={[styles.label, { color: theme.secondaryText }]}>{label}</Text>
+      <Text style={[styles.value, { color: theme.text }, valueStyle]}>{value}</Text>
     </View>
   );
 }

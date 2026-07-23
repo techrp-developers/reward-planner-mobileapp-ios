@@ -16,6 +16,7 @@ import {
     getMutualFundCategories,
     type MFArticleSummary,
 } from '../../api/MutualFundAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -33,6 +34,7 @@ interface Props {
 const ArticleSeparator = () => <View style={styles.separator} />;
 
 const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
+    const servicesTheme = useServicesTheme();
     const [articles, setArticles] = useState<SliderArticle[]>([]);
     const [loading, setLoading] = useState(true);
     const [_activeIndex, setActiveIndex] = useState(0);
@@ -75,7 +77,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
     // };
 
     const renderItem = ({ item }: { item: SliderArticle }) => (
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
             <View style={styles.thumbContainer}>
                 <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
                 <View style={styles.thumbOverlay} />
@@ -88,10 +90,10 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
                 </View>
             </View>
             <View style={styles.body}>
-                <Text style={styles.title} numberOfLines={3}>{item.title}</Text>
-                <Text style={styles.excerpt} numberOfLines={2}>{item.short_description}</Text>
+                <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
+                <Text style={[styles.excerpt, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{item.short_description}</Text>
                 <TouchableOpacity
-                    style={styles.readMoreRow}
+                    style={[styles.readMoreRow, { backgroundColor: servicesTheme.isDark ? '#111831' : '#EEF1FF' }]}
                     onPress={() => navigation.navigate('ArticleDetails', {
                         articleId: item.id,
                         sectionId: item.sectionId,
@@ -117,8 +119,8 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
     return (
         <View style={styles.section}>
             <View style={styles.header}>
-                <Text style={styles.sectionTitle}>For the Informed Investor</Text>
-                <Text style={styles.sectionSubtitle}>
+                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>For the Informed Investor</Text>
+                <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>
                     Explore fund types, goal planning, and retirement strategies to
                     make smarter investment decisions.
                 </Text>
@@ -161,7 +163,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
 
 export default MFInformedInvestors;
 
-const PURPLE = '#8665FF';
+const PURPLE = '#3545A3';
 
 const styles = StyleSheet.create({
     loaderContainer: { height: 80, alignItems: 'center', justifyContent: 'center', marginBottom: 24 },
@@ -178,13 +180,13 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: 'rgba(134,101,255,0.12)',
-        shadowColor: '#4C2F91',
+        shadowColor: '#080B26',
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.1,
         shadowRadius: 18,
         elevation: 5,
     },
-    thumbContainer: { height: 190, backgroundColor: '#EDE9FF', position: 'relative' },
+    thumbContainer: { height: 190, backgroundColor: '#E8ECFF', position: 'relative' },
     thumb: { width: '100%', height: '100%' },
     thumbOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(36,23,78,0.24)' },
     tagRow: { position: 'absolute', top: 12, left: 12, right: 12 },
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         alignSelf: 'flex-start',
-        backgroundColor: '#F1EBFF',
+        backgroundColor: '#EEF1FF',
         borderRadius: 999,
         paddingHorizontal: 12,
         paddingVertical: 8,

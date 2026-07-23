@@ -7,9 +7,9 @@ import {
   Image,
 } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import { useAppTheme } from '../../../../theme/ThemeContext'
 
 type Props = {
-  checked?: boolean
   title: string
   image: string
   deliveryText: string
@@ -26,7 +26,6 @@ type Props = {
 }
 
 export default function CartItemCard({
-  checked = true,
   title,
   image,
   deliveryText,
@@ -41,67 +40,67 @@ export default function CartItemCard({
   onBuyNow,
   onPress,
 }: Props) {
-  return (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <View style={styles.checkbox}>
-          {checked && <MaterialIcons name="check" size={16} color="#fff" />}
-        </View>
+  const { isDark, theme } = useAppTheme()
 
+  return (
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View style={styles.row}>
         <TouchableOpacity style={styles.mainContent} activeOpacity={0.85} onPress={onPress}>
           {/* ✅ FIXED IMAGE */}
           {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
+            <View style={[styles.imageWrap, { backgroundColor: isDark ? '#18181B' : '#F9FAFB' }]}>
+              <Image source={{ uri: image }} style={styles.image} />
+            </View>
           ) : (
-            <View style={[styles.image, { backgroundColor: '#E6E6E6', justifyContent: 'center', alignItems: 'center' }]}>
-              <Text style={{ fontSize: 12, color: '#999' }}>No Image</Text>
+            <View style={[styles.imageWrap, { backgroundColor: isDark ? '#18181B' : '#E6E6E6' }]}>
+              <Text style={{ fontSize: 12, color: theme.secondaryText }}>No Image</Text>
             </View>
           )}
 
           <View style={styles.info}>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
 
             <View style={styles.deliveryRow}>
-              <MaterialIcons name="local-shipping" size={16} color="#777" />
-              <Text style={styles.deliveryText}>{deliveryText}</Text>
+              <MaterialIcons name="local-shipping" size={16} color={theme.secondaryText} />
+              <Text style={[styles.deliveryText, { color: theme.secondaryText }]}>{deliveryText}</Text>
             </View>
 
             <Text style={styles.returnText}>{returnText}</Text>
 
             <View style={styles.priceRow}>
-              <Text style={styles.mrp}>₹{mrp}</Text>
-              <Text style={styles.price}> ₹{price}</Text>
+              <Text style={[styles.mrp, { color: theme.secondaryText }]}>₹{mrp}</Text>
+              <Text style={[styles.price, { color: theme.text }]}> ₹{price}</Text>
               <Text style={styles.discount}> {discountText}</Text>
             </View>
           </View>
         </TouchableOpacity>
 
-        <View style={styles.qtyBox}>
+        <View style={[styles.qtyBox, { backgroundColor: isDark ? '#18181B' : '#FFFFFF', borderColor: theme.border }]}>
           <TouchableOpacity onPress={onDecrease} style={styles.qtyBtn}>
-            <Text style={styles.qtyText}>−</Text>
+            <Text style={[styles.qtyText, { color: theme.text }]}>−</Text>
           </TouchableOpacity>
 
-          <Text style={styles.qty}>{quantity}</Text>
+          <Text style={[styles.qty, { color: theme.text }]}>{quantity}</Text>
 
           <TouchableOpacity onPress={onIncrease} style={styles.qtyBtn}>
-            <Text style={styles.qtyText}>+</Text>
+            <Text style={[styles.qtyText, { color: theme.text }]}>+</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn} onPress={onRemove}>
-          <MaterialIcons name="delete-outline" size={18} color="#444" />
-          <Text style={styles.actionText}>Remove Item</Text>
+          <MaterialIcons name="delete-outline" size={18} color={theme.secondaryText} />
+          <Text style={[styles.actionText, { color: theme.text }]}>Remove Item</Text>
         </TouchableOpacity>
 
-        <View style={styles.verticalDivider} />
+        <View style={[styles.verticalDivider, { backgroundColor: theme.border }]} />
 
         <TouchableOpacity style={styles.actionBtn} onPress={onBuyNow}>
-          <MaterialIcons name="auto-awesome" size={18} color="#444" />
-          <Text style={styles.actionText}>Buy this Now</Text>
+          <MaterialIcons name="auto-awesome" size={18} color={theme.secondaryText} />
+          <Text style={[styles.actionText, { color: theme.text }]}>Buy this Now</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -124,22 +123,19 @@ const styles = StyleSheet.create({
         padding: 12,
     },
 
-    checkbox: {
-        width: 22,
-        height: 22,
-        borderRadius: 6,
-        backgroundColor: '#2F80ED',
+    imageWrap: {
+        width: 64,
+        height: 64,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 8,
-        marginTop: 4,
+        marginRight: 10,
     },
 
     image: {
-        width: 64,
-        height: 64,
+        width: 58,
+        height: 58,
         resizeMode: 'contain',
-        marginRight: 10,
     },
 
     info: {
@@ -205,23 +201,24 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#D0D5DD',
         borderRadius: 6,
-        height: 32,
-        marginLeft: 8,
+        height: 28,
+        marginLeft: 6,
     },
 
     qtyBtn: {
-        width: 28,
+        width: 24,
         justifyContent: 'center',
         alignItems: 'center',
     },
 
     qtyText: {
-        fontSize: 18,
+        fontSize: 16,
         color: '#333',
     },
 
     qty: {
-        width: 24,
+        width: 20,
+        fontSize: 12,
         textAlign: 'center',
         fontWeight: '600',
     },

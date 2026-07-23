@@ -26,14 +26,14 @@ export const fetchTermsStatus =
     const url =
       `${API_BASE_URL}/v1/terms/current-status`;
 
-    console.log("[Terms] GET", url);
+    __DEV__ && console.log("[Terms] GET", url);
 
     const response =
       await api.get<TermsStatusResponse>(
         "/v1/terms/current-status",
       );
 
-    console.log(
+    __DEV__ && console.log(
       "[Terms] GET response:",
       response.data,
     );
@@ -54,7 +54,7 @@ export const updateTermsAcceptance =
     const url =
       `${API_BASE_URL}/v1/terms/accept-terms`;
 
-    console.log(
+    __DEV__ && console.log(
       "[Terms] POST",
       url,
       payload,
@@ -66,7 +66,7 @@ export const updateTermsAcceptance =
         payload,
       );
 
-    console.log(
+    __DEV__ && console.log(
       "[Terms] POST response:",
       response.data,
     );

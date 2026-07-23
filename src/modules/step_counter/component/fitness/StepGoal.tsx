@@ -14,6 +14,7 @@ import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useQuery } from "@tanstack/react-query";
 
 import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
 import { BORDER_RADIUS, RESPONSIVE, SPACING } from "../../utils/theme";
@@ -23,6 +24,7 @@ import { fetchProfilePlan, selectUserGoal, type ProfilePlanResponse } from "../.
 import { useInvalidateFitnessQueries } from "../../api/useFitnessQueries";
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "StepGoal">;
+const STEP_PROFILE_PLAN_QUERY_KEY = ["fitness", "profile-plan"] as const;
 
 // ─── Violet Dusk palette ──────────────────────────────────────────────────────
 
@@ -52,11 +54,26 @@ const fmt = (n: number) => (Number.isFinite(n) ? n.toLocaleString("en-IN") : "0"
 const StepGoal: React.FC = () => {
   const navigation              = useNavigation<Nav>();
   const invalidateFitnessQueries = useInvalidateFitnessQueries();
-  const [profilePlan, setProfilePlan] = useState<ProfilePlanResponse | null>(null);
   const [selected,    setSelected]    = useState<number | null>(null);
-  const [loading,     setLoading]     = useState(true);
   const [submitting,  setSubmitting]  = useState(false);
-  const [error,       setError]       = useState("");
+  const {
+    data: profilePlan = null,
+    isLoading: loading,
+    error,
+    refetch: loadPlan,
+  } = useQuery<ProfilePlanResponse | null>({
+    queryKey: STEP_PROFILE_PLAN_QUERY_KEY,
+    queryFn: async () => {
+      const res = await fetchProfilePlan();
+      if (res.success && res.data) return res.data;
+      throw new Error(res.message || "Failed to load goals");
+    },
+    staleTime: 30 * 60 * 1000,
+    gcTime: 60 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
 
   const goals = useMemo<GoalOption[]>(() => {
     // Daily reward is flat regardless of the chosen target (matches the
@@ -73,20 +90,16 @@ const StepGoal: React.FC = () => {
 
   const selectedGoal = useMemo(() => goals.find(g => g.id === selected), [goals, selected]);
 
-  const loadPlan = useCallback(async () => {
-    setLoading(true); setError("");
-    const res = await fetchProfilePlan();
-    if (res.success && res.data) {
-      setProfilePlan(res.data);
-      const first = res.data.weekly_plan?.[0];
-      setSelected(first?.week ?? (res.data.recommended_steps ? 1 : null));
-    } else {
-      setError(res.message || "Failed to load goals");
+  useEffect(() => {
+    if (profilePlan) {
+      const first = profilePlan.weekly_plan?.[0];
+      setSelected((previous) => previous ?? first?.week ?? (profilePlan.recommended_steps ? 1 : null));
     }
-    setLoading(false);
-  }, []);
+  }, [profilePlan]);
 
-  useEffect(() => { loadPlan(); }, [loadPlan]);
+  const handleRetry = useCallback(() => {
+    loadPlan();
+  }, [loadPlan]);
 
   const handleSetGoal = useCallback(async () => {
     if (!selectedGoal) { Alert.alert("Select goal", "Please select your daily step goal."); return; }
@@ -130,8 +143,8 @@ const StepGoal: React.FC = () => {
           ) : error ? (
             <View style={ss.stateBox}>
               <MaterialCommunityIcons name="alert-circle-outline" size={28} color={VD.warning} />
-              <Text style={ss.stateText}>{error}</Text>
-              <TouchableOpacity style={ss.retryBtn} onPress={loadPlan} activeOpacity={0.85}>
+              <Text style={ss.stateText}>{(error as Error)?.message || "Failed to load goals"}</Text>
+              <TouchableOpacity style={ss.retryBtn} onPress={handleRetry} activeOpacity={0.85}>
                 <Text style={ss.retryText}>Retry</Text>
               </TouchableOpacity>
             </View>

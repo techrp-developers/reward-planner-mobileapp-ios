@@ -19,6 +19,7 @@ import {
   getProductImageUrl,
 } from "../api/ProductApi";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -45,6 +46,7 @@ interface CategoryWithSubcategories extends Category {
 
 const CategoriesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { isDark, theme } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [selectedCatId, setSelectedCatId] = useState<string | number | null>(null);
   const [isAllMode, setIsAllMode] = useState(true);
@@ -57,8 +59,8 @@ const CategoriesScreen = () => {
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
 
@@ -110,7 +112,7 @@ const CategoriesScreen = () => {
       setAllData(res?.data || []);
 
     } catch (e) {
-      console.log("ALL load error", e);
+      __DEV__ && console.log("ALL load error", e);
     } finally {
       setLoading(false);
     }
@@ -158,23 +160,23 @@ const CategoriesScreen = () => {
   };
   if (loading) {
     return (
-      <View style={styles.screen}>
-        <ProductHeadColor title="All Categories" onBackPress={() => navigation.goBack()} />
+      <View style={[styles.screen, { backgroundColor: theme.background }]}>
+        <ProductHeadColor title="All Categories" onBackPress={() => navigation.goBack()} isDark={isDark} />
         <View style={styles.mainContainer}>
-          <View style={styles.sidebar}>
+          <View style={[styles.sidebar, { backgroundColor: theme.card, borderRightColor: theme.border }]}>
             {Array.from({ length: 5 }).map((_, index) => (
               <View key={`sidebar-skeleton-${index}`} style={styles.sidebarSkeletonItem}>
-                <SkeletonBox pulse={pulse} width={56} height={56} borderRadius={12} />
+                <SkeletonBox pulse={pulse} width={58} height={58} borderRadius={16} />
                 <SkeletonBox pulse={pulse} width={58} height={10} borderRadius={999} style={styles.sidebarSkeletonText} />
               </View>
             ))}
           </View>
-          <View style={styles.contentArea}>
+          <View style={[styles.contentArea, { backgroundColor: theme.background }]}>
             <SkeletonBox pulse={pulse} width="46%" height={18} borderRadius={999} />
             <View style={styles.contentSkeletonGrid}>
               {Array.from({ length: 6 }).map((_, index) => (
                 <View key={`category-skeleton-${index}`} style={styles.contentSkeletonItem}>
-                  <SkeletonBox pulse={pulse} width="100%" height={92} borderRadius={16} />
+                  <SkeletonBox pulse={pulse} width="100%" height={104} borderRadius={16} />
                   <SkeletonBox pulse={pulse} width="82%" height={12} borderRadius={999} style={styles.contentSkeletonText} />
                 </View>
               ))}
@@ -194,41 +196,44 @@ const CategoriesScreen = () => {
   const sidebarCategories = allData;
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <ProductHeadColor
         title="All Categories"
         onBackPress={() => navigation.goBack()}
+        isDark={isDark}
       />
 
-      {/* Left Sidebar Categories + Right Content */}
-      <View style={styles.mainContainer}>
-        <View style={styles.sidebar}>
+      <View style={[styles.mainContainer, { backgroundColor: theme.background }]}>
+        <View style={[styles.sidebar, { backgroundColor: theme.card, borderRightColor: theme.border }]}>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.sidebarScrollContent}
           >
-            {/* All Categories Option */}
             <TouchableOpacity
-              style={[styles.sidebarItem, isAllMode && styles.sidebarItemActive]}
+              style={[
+                styles.sidebarItem,
+                isAllMode && styles.sidebarItemActive,
+                isAllMode && { backgroundColor: isDark ? "#2A1A0C" : "#FFF3B0" },
+              ]}
               onPress={loadAllCategories}
             >
-              <View style={styles.iconContainer}>
-                <AllIcons width={32} height={32} />
+              <View style={[styles.iconContainer, { backgroundColor: isDark ? "#111827" : "#F3F4F6" }]}>
+                <AllIcons width={34} height={34} />
               </View>
-              <Text style={styles.sidebarText}>All</Text>
-            </TouchableOpacity>      
+              <Text style={[styles.sidebarText, { color: theme.text }]}>All</Text>
+            </TouchableOpacity>
 
-            {/* Dynamic Categories */}
             {sidebarCategories.map((category) => (
               <TouchableOpacity
                 key={String(category.id)}
                 style={[
                   styles.sidebarItem,
                   !isAllMode && selectedCatId === category.id && styles.sidebarItemActive,
+                  !isAllMode && selectedCatId === category.id && { backgroundColor: isDark ? "#2A1A0C" : "#FFF3B0" },
                 ]}
                 onPress={() => handleCategoryPress(category.id)}
               >
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { backgroundColor: isDark ? "#111827" : "#F3F4F6" }]}>
                   {category.image ? (
                     <Image
                       source={{ uri: resolveImageUri(category.image) }}
@@ -238,7 +243,7 @@ const CategoriesScreen = () => {
                     <View style={styles.placeholderIcon} />
                   )}
                 </View>
-                <Text style={styles.sidebarText} numberOfLines={2}>
+                <Text style={[styles.sidebarText, { color: theme.text }]} numberOfLines={2}>
                   {category.name?.trim()}
                 </Text>
               </TouchableOpacity>
@@ -246,9 +251,8 @@ const CategoriesScreen = () => {
           </ScrollView>
         </View>
 
-        {/* Right Content Area */}
         <ScrollView
-          style={styles.contentArea}
+          style={[styles.contentArea, { backgroundColor: theme.background }]}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.contentScrollContent}
           onScroll={handleContentScroll}
@@ -266,7 +270,7 @@ const CategoriesScreen = () => {
             />
           ) : (
             <View style={styles.emptyWrap}>
-              <Text style={styles.emptyText}>No subcategories available</Text>
+              <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No subcategories available</Text>
             </View>
           )}
         </ScrollView>
@@ -282,6 +286,8 @@ const AllCategoriesView = ({ data, expanded, onToggle, resolveImageUri, showView
   showViewMore: boolean;
   onSubcategoryPress: (category: CategoryWithSubcategories, subcategory: SubCategory) => void;
 }) => {
+  const { isDark, theme } = useAppTheme();
+
   return (
     <View>
       {data.map((category: any) => {
@@ -292,17 +298,23 @@ const AllCategoriesView = ({ data, expanded, onToggle, resolveImageUri, showView
 
         return (
           <View key={category.id} style={styles.allCategoryBlock}>
-            <Text style={styles.allCategoryTitle}>{category.name}</Text>
+            <Text style={[styles.allCategoryTitle, { color: theme.text }]}>{category.name}</Text>
 
             <View style={styles.allGrid}>
               {visibleSubs.map((sub) => (
                 <TouchableOpacity
                   key={sub.id}
-                  style={styles.allItem}
+                  style={[
+                    styles.allItem,
+                    {
+                      backgroundColor: theme.card,
+                      borderColor: isDark ? theme.border : "rgba(17,24,39,0.06)",
+                    },
+                  ]}
                   onPress={() => onSubcategoryPress(category, sub)}
                   activeOpacity={0.85}
                 >
-                  <View style={styles.allImageWrap}>
+                  <View style={[styles.allImageWrap, { backgroundColor: isDark ? "#0B1220" : "#F8FAFC" }]}>
                     {sub.image ? (
                       <Image
                         source={{ uri: resolveImageUri(sub.image) }}
@@ -312,7 +324,7 @@ const AllCategoriesView = ({ data, expanded, onToggle, resolveImageUri, showView
                       <View style={styles.placeholderImage} />
                     )}
                   </View>
-                  <Text numberOfLines={2} style={styles.allLabel}>
+                  <Text numberOfLines={2} style={[styles.allLabel, { color: theme.text }]}>
                     {sub.name}
                   </Text>
                 </TouchableOpacity>
@@ -320,8 +332,12 @@ const AllCategoriesView = ({ data, expanded, onToggle, resolveImageUri, showView
             </View>
 
             {showViewMore && (category.subcategories || []).length > 3 && (
-              <TouchableOpacity onPress={() => onToggle(category.id)}>
-                <Text style={styles.viewMore}>
+              <TouchableOpacity
+                onPress={() => onToggle(category.id)}
+                style={styles.viewMoreButton}
+                activeOpacity={0.85}
+              >
+                <Text style={[styles.viewMore, { color: isDark ? "#FACC15" : "#111827" }]}>
                   {isExpanded ? "View Less" : "View More"}
                 </Text>
               </TouchableOpacity>
@@ -371,6 +387,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flexDirection: "row",
     flex: 1,
+    backgroundColor: "#F9FAFB",
   },
   // Left Sidebar Styles
   sidebar: {
@@ -389,22 +406,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   sidebarItemActive: {
-    backgroundColor: "#F3E8FF",
+    backgroundColor: "#FFF3B0",
     borderLeftWidth: 3,
-    borderLeftColor: "#7C3AED",
+    borderLeftColor: "#FACC15",
   },
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 60,
+    height: 60,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F3F4F6",
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 8,
+    overflow: "hidden",
   },
   categoryIcon: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
     resizeMode: "contain",
   },
   placeholderIcon: {
@@ -422,7 +440,7 @@ const styles = StyleSheet.create({
   // Right Content Area Styles
   contentArea: {
     flex: 1,
-    padding: 16,
+    padding: 14,
   },
   contentScrollContent: {
     paddingBottom: 100, // Extra bottom padding to prevent content from hiding behind bottom tab
@@ -531,56 +549,60 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   allCategoryTitle: {
-  fontSize: 16,
-  fontWeight: "700",
-  marginBottom: 12,
-  color: "#111827",
-
-},
-
-allCategoryBlock: {
-  marginBottom: 28,
-},
-
-allGrid: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  gap: 12,
-},
-
-allItem: {
-  width: "30%",
-  alignItems: "center",
-},
-
-allImageWrap: {
-  width: "100%",
-  aspectRatio: 1,
-  backgroundColor: "#FFF",
-  borderRadius: 14,
-  justifyContent: "center",
-  alignItems: "center",
-  marginBottom: 6,
-  elevation: 2,
-},
-
-allImage: {
-  width: "80%",
-  height: "80%",
-  resizeMode: "contain",
-},
-
-allLabel: {
-  fontSize: 12,
-  textAlign: "center",
-  fontWeight: "500",
-},
-
-viewMore: {
-  color: "#7C3AED",
-  fontWeight: "600",
-  marginTop: 10,
-},
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 12,
+    color: "#111827",
+  },
+  allCategoryBlock: {
+    marginBottom: 26,
+  },
+  allGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  allItem: {
+    width: "30%",
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 7,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  allImageWrap: {
+    width: "100%",
+    aspectRatio: 1,
+    backgroundColor: "#FFF",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 7,
+    overflow: "hidden",
+  },
+  allImage: {
+    width: "90%",
+    height: "90%",
+    resizeMode: "contain",
+  },
+  allLabel: {
+    fontSize: 12,
+    lineHeight: 16,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  viewMoreButton: {
+    alignSelf: "flex-start",
+    marginTop: 10,
+  },
+  viewMore: {
+    color: "#111827",
+    fontWeight: "700",
+  },
 });
 
 export default CategoriesScreen;

@@ -5,11 +5,13 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import type { ServiceItem, ServiceDetailBundle } from '../../api/OrderAPI';
 import ServiceOrderItemCard from './ServiceOrderItemCard';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Props = {
   bundle: ServiceDetailBundle;
   bundleIndex: number;
   onCancelItem: (item: ServiceItem) => void;
+  onCancellationDetailsItem: (item: ServiceItem) => void;
   onFeedbackItem: (item: ServiceItem) => void;
 };
 
@@ -17,8 +19,10 @@ export default function ServiceBundleCard({
   bundle,
   bundleIndex,
   onCancelItem,
+  onCancellationDetailsItem,
   onFeedbackItem,
 }: Props) {
+  const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -30,7 +34,7 @@ export default function ServiceBundleCard({
         activeOpacity={0.8}
       >
         <LinearGradient
-          colors={['#8665FF', '#5B47A3']}
+          colors={servicesTheme.gradients.primary}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradient}
@@ -42,15 +46,15 @@ export default function ServiceBundleCard({
           </View>
         </LinearGradient>
 
-        <View style={styles.totalRow}>
-          <Text style={styles.totalLabel}>Bundle Total</Text>
-          <Text style={styles.totalAmount}>
+        <View style={[styles.totalRow, { borderBottomColor: servicesTheme.colors.divider }]}>
+          <Text style={[styles.totalLabel, { color: servicesTheme.colors.muted }]}>Bundle Total</Text>
+          <Text style={[styles.totalAmount, { color: servicesTheme.colors.textStrong }]}>
             ₹{bundle.bundle_total.toLocaleString('en-IN')}
           </Text>
           <MaterialCommunityIcons
             name={expanded ? 'chevron-up' : 'chevron-down'}
             size={20}
-            color="#6B7280"
+            color={servicesTheme.colors.muted}
           />
         </View>
       </TouchableOpacity>
@@ -63,6 +67,7 @@ export default function ServiceBundleCard({
               key={item.id}
               item={item}
               onCancelPress={onCancelItem}
+              onCancellationDetailsPress={onCancellationDetailsItem}
               onFeedbackPress={onFeedbackItem}
             />
           ))}

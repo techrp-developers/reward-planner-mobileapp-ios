@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Animated,
   View,
@@ -11,6 +11,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
 import type { HomeStackParamList } from '../../navigation/type';
 
 import {
@@ -20,17 +21,21 @@ import {
 import { prefetchService } from '../../utils/serviceCache';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import SkeletonBox from '../constant/SkeletonBox';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type CardType = 'small' | 'wide' | 'narrow';
+const SERVICE_CATEGORIES_QUERY_KEY = ['services', 'categories'] as const;
+const SERVICE_CATEGORIES_STALE_TIME = 10 * 60 * 1000;
 
 function ServiceHomeSkeleton() {
+  const servicesTheme = useServicesTheme();
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const anim = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 750, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 750, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 750, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 750, useNativeDriver: true }),
       ]),
     );
     anim.start();
@@ -42,7 +47,7 @@ function ServiceHomeSkeleton() {
       {/* Row 1: three equal small cards */}
       <View style={styles.row}>
         {[0, 1, 2].map(i => (
-          <View key={i} style={[styles.card, styles.smallCard, styles.skeletonCard]}>
+          <View key={i} style={[styles.card, styles.smallCard, styles.skeletonCard, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
             <SkeletonBox pulse={pulse} width="65%" height={14} style={styles.skeletonTitle} />
             <SkeletonBox pulse={pulse} width={52} height={52} borderRadius={8} style={styles.skeletonImage} />
           </View>
@@ -50,11 +55,11 @@ function ServiceHomeSkeleton() {
       </View>
       {/* Row 2: wide card + narrow card */}
       <View style={styles.row}>
-        <View style={[styles.card, styles.wideCard, styles.skeletonCard]}>
+        <View style={[styles.card, styles.wideCard, styles.skeletonCard, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
           <SkeletonBox pulse={pulse} width="55%" height={14} style={styles.skeletonTitle} />
           <SkeletonBox pulse={pulse} width={76} height={76} borderRadius={8} style={styles.skeletonImage} />
         </View>
-        <View style={[styles.card, styles.narrowCard, styles.skeletonCard]}>
+        <View style={[styles.card, styles.narrowCard, styles.skeletonCard, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
           <SkeletonBox pulse={pulse} width="70%" height={14} style={styles.skeletonTitle} />
           <SkeletonBox pulse={pulse} width={56} height={56} borderRadius={8} style={styles.skeletonImage} />
         </View>
@@ -74,6 +79,7 @@ const Card = ({
   type: CardType;
   onPress?: () => void;
 }) => {
+  const servicesTheme = useServicesTheme();
   const sizeStyle =
     type === 'wide'
       ? styles.wideCard
@@ -85,16 +91,16 @@ const Card = ({
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={onPress}
-      style={[styles.card, sizeStyle]}
+      style={[styles.card, sizeStyle, { borderColor: servicesTheme.colors.border }]}
     >
       <LinearGradient
-        colors={['#F7F7FF', '#E8E8F9']}
+        colors={servicesTheme.gradients.card}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
-      <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+      <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]} numberOfLines={2} ellipsizeMode="tail">
         {title}
       </Text>
 
@@ -114,8 +120,17 @@ const Card = ({
 
 export default function ServicesHome() {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: categories = [], isLoading: loading } = useQuery({
+    queryKey: SERVICE_CATEGORIES_QUERY_KEY,
+    queryFn: async () => {
+      const data = await getAllServiceCategories();
+      return Array.isArray(data) ? data : [];
+    },
+    staleTime: SERVICE_CATEGORIES_STALE_TIME,
+    gcTime: 30 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   const handleCategoryPress = async (category: any) => {
     const categoryId = Number(category?.id);
@@ -180,19 +195,6 @@ export default function ServicesHome() {
       });
     }
   };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllServiceCategories();
-        setCategories(Array.isArray(data) ? data : []);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   return (
     <View style={styles.container}>

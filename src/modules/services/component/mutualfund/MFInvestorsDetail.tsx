@@ -21,6 +21,7 @@ import {
     type MFArticleSummary,
     type MFChildCategory,
 } from '../../api/MutualFundAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -42,7 +43,7 @@ interface Props {
 
 const THEME = {
     beginners: {
-        accent: '#8665FF',
+        accent: '#3545A3',
         accentLight: '#E8F5F1',
         borderBottom: '#E6F7F3',
         bgPage: '#F7FDFB',
@@ -50,8 +51,8 @@ const THEME = {
         headerSubtitle: 'Simple guides to start investing with confidence',
     },
     informed: {
-        accent: '#8665FF',
-        accentLight: '#EDE9FF',
+        accent: '#3545A3',
+        accentLight: '#E8ECFF',
         borderBottom: '#F0EEFF',
         bgPage: '#F8F7FF',
         headerTitle: 'For the Informed Investor',
@@ -66,34 +67,38 @@ const THEME = {
 const PillToggle: React.FC<{
     value: Tab;
     onChange: (v: Tab) => void;
-}> = ({ value, onChange }) => (
-    <View style={toggle.container}>
-        {(['beginners', 'informed'] as Tab[]).map(tab => {
-            const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
-            const isActive = value === tab;
-            return isActive ? (
-                <LinearGradient
-                    key={tab}
-                    colors={['#8665FF', '#5B47A3']}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={toggle.activeBtn}
-                >
-                    <Text style={toggle.activeText}>{label}</Text>
-                </LinearGradient>
-            ) : (
-                <TouchableOpacity
-                    key={tab}
-                    style={toggle.inactiveBtn}
-                    onPress={() => onChange(tab)}
-                    activeOpacity={0.7}
-                >
-                    <Text style={toggle.inactiveText}>{label}</Text>
-                </TouchableOpacity>
-            );
-        })}
-    </View>
-);
+}> = ({ value, onChange }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
+        <View style={[toggle.container, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+            {(['beginners', 'informed'] as Tab[]).map(tab => {
+                const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
+                const isActive = value === tab;
+                return isActive ? (
+                    <LinearGradient
+                        key={tab}
+                        colors={['#3545A3', '#080B26']}
+                        start={{ x: 0, y: 0.5 }}
+                        end={{ x: 1, y: 0.5 }}
+                        style={toggle.activeBtn}
+                    >
+                        <Text style={toggle.activeText}>{label}</Text>
+                    </LinearGradient>
+                ) : (
+                    <TouchableOpacity
+                        key={tab}
+                        style={toggle.inactiveBtn}
+                        onPress={() => onChange(tab)}
+                        activeOpacity={0.7}
+                    >
+                        <Text style={[toggle.inactiveText, { color: servicesTheme.colors.muted }]}>{label}</Text>
+                    </TouchableOpacity>
+                );
+            })}
+        </View>
+    );
+};
 
 // ─────────────────────────────────────────────
 // ARTICLE CARD
@@ -103,16 +108,20 @@ const ArticleCard: React.FC<{
     item: MFArticleSummary;
     accentLight: string;
     onPress: () => void;
-}> = ({ item, accentLight, onPress }) => (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
-        <View style={[styles.thumbContainer, { backgroundColor: accentLight }]}>
-            <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
-        </View>
-        <View style={styles.cardBody}>
-            <Text style={styles.cardTitle} numberOfLines={3}>{item.title}</Text>
-        </View>
-    </TouchableOpacity>
-);
+}> = ({ item, accentLight, onPress }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
+        <TouchableOpacity style={[styles.card, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]} onPress={onPress} activeOpacity={0.88}>
+            <View style={[styles.thumbContainer, { backgroundColor: accentLight }]}>
+                <Image source={{ uri: item.thumbnail }} style={styles.thumb} resizeMode="cover" />
+            </View>
+            <View style={styles.cardBody}>
+                <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 const CardSeparator = () => <View style={styles.cardSeparator} />;
 
@@ -126,44 +135,49 @@ const SectionRow: React.FC<{
     accentLight: string;
     onArticlePress: (articleId: number, sectionId: number) => void;
     onViewAll: (sectionId: number, sectionTitle: string) => void;
-}> = ({ section, accent, accentLight, onArticlePress, onViewAll }) => (
-    <View style={styles.sectionRow}>
-        <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionCount}>{section.article_count} articles</Text>
+}> = ({ section, accent, accentLight, onArticlePress, onViewAll }) => {
+    const servicesTheme = useServicesTheme();
+
+    return (
+        <View style={styles.sectionRow}>
+            <View style={styles.sectionHeader}>
+                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{section.title}</Text>
+                <Text style={[styles.sectionCount, { color: servicesTheme.colors.muted }]}>{section.article_count} articles</Text>
+            </View>
+
+            <FlatList
+                data={section.articles}
+                keyExtractor={item => item.id.toString()}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.cardListContent}
+                ItemSeparatorComponent={CardSeparator}
+                renderItem={({ item }) => (
+                    <ArticleCard
+                        item={item}
+                        accentLight={accentLight}
+                        onPress={() => onArticlePress(item.id, section.id)}
+                    />
+                )}
+            />
+
+            <TouchableOpacity
+                style={[styles.viewAllBtn, { backgroundColor: accent }]}
+                onPress={() => onViewAll(section.id, section.title)}
+                activeOpacity={0.8}
+            >
+                <Text style={styles.viewAllText}>View All</Text>
+            </TouchableOpacity>
         </View>
-
-        <FlatList
-            data={section.articles}
-            keyExtractor={item => item.id.toString()}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.cardListContent}
-            ItemSeparatorComponent={CardSeparator}
-            renderItem={({ item }) => (
-                <ArticleCard
-                    item={item}
-                    accentLight={accentLight}
-                    onPress={() => onArticlePress(item.id, section.id)}
-                />
-            )}
-        />
-
-        <TouchableOpacity
-            style={[styles.viewAllBtn, { backgroundColor: accent }]}
-            onPress={() => onViewAll(section.id, section.title)}
-            activeOpacity={0.8}
-        >
-            <Text style={styles.viewAllText}>View All</Text>
-        </TouchableOpacity>
-    </View>
-);
+    );
+};
 
 // ─────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────
 
 const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
+    const servicesTheme = useServicesTheme();
     const { categoryId } = route.params;
 
     const [activeTab, setActiveTab] = useState<Tab>(categoryId === 6 ? 'informed' : 'beginners');
@@ -193,11 +207,11 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
     };
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.bgPage }]} edges={['top']}>
-            <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]} edges={['top']}>
+            <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
 
             {/* Header */}
-            <View style={[styles.header, { borderBottomColor: theme.borderBottom }]}>
+            <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider, shadowColor: servicesTheme.colors.shadow }]}>
                 <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.backBtn}
@@ -206,8 +220,8 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     <Text style={[styles.backIcon, { color: theme.accent }]}>‹</Text>
                 </TouchableOpacity>
                 <View style={styles.headerTextWrap}>
-                    <Text style={styles.headerTitle}>{theme.headerTitle}</Text>
-                    <Text style={styles.headerSubtitle}>{theme.headerSubtitle}</Text>
+                    <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{theme.headerTitle}</Text>
+                    <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{theme.headerSubtitle}</Text>
                 </View>
             </View>
 
@@ -228,7 +242,7 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     {/* Sections */}
                     {sections.length === 0 ? (
                         <View style={styles.emptyWrap}>
-                            <Text style={styles.emptyText}>No content available.</Text>
+                            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No content available.</Text>
                         </View>
                     ) : (
                         sections.map(section => (

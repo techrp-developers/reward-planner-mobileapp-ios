@@ -113,7 +113,7 @@ const CartRow = React.memo(function CartRow({
 
 export default function WithoutAddress() {
   const navigation = useNavigation<Nav>()
-  const stickyCTA = useStickyBottomCTA({ tabBarAware: true, extraSpacing: 0 })
+  const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 0 })
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const [useRewards, setUseRewards] = useState(true)
@@ -134,7 +134,7 @@ export default function WithoutAddress() {
       // Ignore prefetch failures and continue navigation.
     })
 
-    navigation.navigate('OrderStepUI', checkoutParams)
+    navigation.push('OrderStepUI', checkoutParams)
   }, [navigation])
 
   useEffect(() => {
@@ -436,7 +436,7 @@ export default function WithoutAddress() {
         showsVerticalScrollIndicator={false}
       />
 
-      <StickyBottomCTA bottomOffset={stickyCTA.bottomOffset} onLayout={stickyCTA.onCtaLayout}>
+      <StickyBottomCTA bottomOffset={0} onLayout={stickyCTA.onCtaLayout}>
       <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
         <TouchableOpacity onPress={() => navigation.navigate('AddressSelect')}>
           <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>

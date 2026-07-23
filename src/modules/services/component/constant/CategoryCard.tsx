@@ -12,8 +12,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/type';
 import { getServiceImageUrl } from '../../utils/serviceImage';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 import Reward from '../../../../assets/product/rewards.svg';
-
 
 type VerticalServiceCardProps = {
   serviceId: number;
@@ -33,6 +33,7 @@ function CategoryCard({
   days,
 }: VerticalServiceCardProps) {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+  const servicesTheme = useServicesTheme();
   const isUrlImage = typeof image === 'string';
   const [imageLoading, setImageLoading] = useState(isUrlImage);
 
@@ -66,16 +67,22 @@ function CategoryCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        {
+          backgroundColor: servicesTheme.colors.surface,
+          shadowColor: servicesTheme.colors.shadow,
+        },
+      ]}
       onPress={handlePress}
       activeOpacity={0.9}
     >
       {/* LEFT: IMAGE SECTION */}
-      <View style={styles.imageBox}>
+      <View style={[styles.imageBox, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
         {isUrlImage ? (
           <>
             {imageLoading && (
-              <View style={styles.imageSkeleton} />
+              <View style={[styles.imageSkeleton, { backgroundColor: servicesTheme.colors.skeleton }]} />
             )}
             <Image
               source={{ uri: imageUri }}
@@ -97,26 +104,26 @@ function CategoryCard({
       {/* RIGHT: CONTENT SECTION */}
       <View style={styles.content}>
         <View>
-          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
-          <Text style={styles.desc} numberOfLines={2}>{description}</Text>
+          <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]} numberOfLines={1} ellipsizeMode="tail">{title}</Text>
+          <Text style={[styles.desc, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{description}</Text>
         </View>
 
         <View style={styles.bottomSection}>
           <View style={styles.metaRow}>
             <View style={styles.ratingChip}>
               <MaterialIcons name="star" size={13} color="#F59E0B" />
-              <Text style={styles.ratingChipText}>0.0</Text>
+              <Text style={[styles.ratingChipText, { color: servicesTheme.isDark ? '#FBBF24' : '#92400E' }]}>0.0</Text>
             </View>
             {!!days && (
-              <View style={styles.daysChip}>
-                <MaterialIcons name="schedule" size={12} color="#6B7280" />
-                <Text style={styles.daysChipText}>{days}</Text>
+              <View style={[styles.daysChip, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+                <MaterialIcons name="schedule" size={12} color={servicesTheme.colors.muted} />
+                <Text style={[styles.daysChipText, { color: servicesTheme.colors.muted }]}>{days}</Text>
               </View>
             )}
           </View>
 
           <LinearGradient
-            colors={['#8E70FF', '#6049C3']}
+            colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={styles.ctaButton}
@@ -239,10 +246,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 13.5,
     fontWeight: '600',
-    paddingHorizontal: 10,
-
+    paddingHorizontal: 14,
   },
   coinIcon: {
-    marginRight: 4,
+    width: 16,
+    height: 16,
+    marginRight: 14,
+
   }
 });

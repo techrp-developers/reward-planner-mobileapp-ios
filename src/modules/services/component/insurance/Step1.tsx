@@ -5,16 +5,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
   Image,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import LinearGradient from "react-native-linear-gradient";
 import GradientButton from "../../constant/GradientButton";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 // Assuming these are your image imports
-import Husband from "../../assete/insurance/Gender (1).png";
-import Wife from "../../assete/insurance/Gender (2).png";
+import Husband from "../../assete/insurance/Gender (1).png"; 
+import Wife from "../../assete/insurance/Gender (2).png"; 
 import Son from "../../assete/insurance/Gender (3).png";
 import Daughter from "../../assete/insurance/Gender (4).png";
 
@@ -40,7 +41,7 @@ const membersList = [
 ];
 
 export default function Step1({ data, setData, onNext }: Props) {
-  const insets = useSafeAreaInsets();
+  const servicesTheme = useServicesTheme();
   // Get appropriate icon based on member type and selected gender
   const getIconForMember = (memberKey: string): any => {
     if (memberKey === 'self') {
@@ -63,7 +64,7 @@ export default function Step1({ data, setData, onNext }: Props) {
     // Initialize count to 1 if adding a child for the first time
     const newCounts = { ...data.memberCounts };
     if (!exists && (member === 'son' || member === 'daughter')) {
-      newCounts[member] = 1;
+        newCounts[member] = 1;
     }
 
     setData({ ...data, members: updated, memberCounts: newCounts });
@@ -82,117 +83,122 @@ export default function Step1({ data, setData, onNext }: Props) {
   const isNextDisabled = data.members.length === 0 || !data.gender;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
       >
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
-          {/* Modern Gender Selection */}
-          <View style={styles.section}>
-            <View style={styles.genderContainer}>
-              {["Male", "Female"].map((g) => {
-                const isActive = data.gender === g;
-                return (
-                  <TouchableOpacity
-                    key={g}
-                    onPress={() => setData({ ...data, gender: g })}
-                    style={[styles.genderOption, isActive && styles.genderOptionActive]}
-                    activeOpacity={0.8}
-                  >
-                    {isActive && (
-                      <LinearGradient
-                        colors={["#8665FF", "#6C4AB6"]}
-                        style={StyleSheet.absoluteFill}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                      />
-                    )}
-                    <Text style={[styles.genderText, isActive && styles.textWhite]}>{g}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        {/* Modern Gender Selection */}
+        <View style={styles.section}>
+          <View style={[styles.genderContainer, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
+            {["Male", "Female"].map((g) => {
+              const isActive = data.gender === g;
+              return (
+                <TouchableOpacity
+                  key={g}
+                  onPress={() => setData({ ...data, gender: g })}
+                  style={[styles.genderOption, isActive && styles.genderOptionActive]}
+                  activeOpacity={0.8}
+                >
+                  {isActive && (
+                    <LinearGradient
+                      colors={["#8665FF", "#6C4AB6"]}
+                      style={StyleSheet.absoluteFill}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                    />
+                  )}
+                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{g}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-
-          {/* Members Selection Grid */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Insure your family</Text>
-              <Text style={styles.sectionSubtitle}>Select everyone you want to protect</Text>
-            </View>
-
-            <View style={styles.grid}>
-              {membersList.map((member) => {
-                const isSelected = data.members.includes(member.key);
-                const count = data.memberCounts?.[member.key] || 1;
-
-                return (
-                  <View key={member.key} style={styles.cardContainer}>
-                    <TouchableOpacity
-                      onPress={() => toggleMember(member.key)}
-                      activeOpacity={0.9}
-                      style={[styles.card, isSelected && styles.cardActive]}
-                    >
-                      <View style={[styles.iconCircle, isSelected && styles.iconCircleActive]}>
-                        <Image source={getIconForMember(member.key)} style={styles.iconImage} />
-                      </View>
-
-                      <Text style={[styles.cardLabel, isSelected && styles.cardLabelActive]}>
-                        {member.label}
-                      </Text>
-
-                      {isSelected && (
-                        <View style={styles.selectedBadge}>
-                          <MaterialIcons name="check" size={12} color="#FFF" />
-                        </View>
-                      )}
-                    </TouchableOpacity>
-
-                    {member.hasCount && isSelected && (
-                      <View style={styles.stepper}>
-                        <TouchableOpacity onPress={() => updateMemberCount(member.key, false)} style={styles.stepBtn}>
-                          <MaterialIcons name="remove" size={14} color="#6C4AB6" />
-                        </TouchableOpacity>
-                        <Text style={styles.stepValue}>{count}</Text>
-                        <TouchableOpacity onPress={() => updateMemberCount(member.key, true)} style={styles.stepBtn}>
-                          <MaterialIcons name="add" size={14} color="#6C4AB6" />
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Modern Summary Box */}
-          {data.members.length > 0 && (
-            <LinearGradient
-              colors={["#F8F7FF", "#EFECFF"]}
-              style={styles.summaryCard}
-            >
-              <MaterialIcons name="info" size={20} color="#8665FF" />
-              <View style={styles.summaryInfo}>
-                <Text style={styles.summaryHeadline}>Review Coverage</Text>
-                <Text style={styles.summaryDesc} numberOfLines={2}>
-                  Insuring {data.members.length} {data.members.length > 1 ? 'members' : 'member'}
-                </Text>
-              </View>
-            </LinearGradient>
-          )}
-        </ScrollView>
-
-        <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
-          <GradientButton
-            title="Continue"
-            onPress={onNext}
-            disabled={isNextDisabled}
-          />
         </View>
+
+        {/* Members Selection Grid */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Insure your family</Text>
+            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>Select everyone you want to protect</Text>
+          </View>
+
+          <View style={styles.grid}>
+            {membersList.map((member) => {
+              const isSelected = data.members.includes(member.key);
+              const count = data.memberCounts?.[member.key] || 1;
+
+              return (
+                <View key={member.key} style={styles.cardContainer}>
+                  <TouchableOpacity
+                    onPress={() => toggleMember(member.key)}
+                    activeOpacity={0.9}
+                    style={[
+                      styles.card,
+                      { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow },
+                      isSelected && styles.cardActive,
+                      isSelected && { backgroundColor: servicesTheme.isDark ? "#18112A" : "#F9F8FF", borderColor: servicesTheme.colors.primary },
+                    ]}
+                  >
+                    <View style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surfaceAlt }, isSelected && styles.iconCircleActive]}>
+                      <Image source={getIconForMember(member.key)} style={styles.iconImage} />
+                    </View>
+                    
+                    <Text style={[styles.cardLabel, { color: servicesTheme.colors.text }, isSelected && { color: servicesTheme.colors.textStrong }]}>
+                      {member.label}
+                    </Text>
+
+                    {isSelected && (
+                      <View style={styles.selectedBadge}>
+                        <MaterialIcons name="check" size={12} color="#FFF" />
+                      </View>
+                    )}
+                  </TouchableOpacity>
+
+                  {member.hasCount && isSelected && (
+                    <View style={[styles.stepper, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
+                      <TouchableOpacity onPress={() => updateMemberCount(member.key, false)} style={styles.stepBtn}>
+                        <MaterialIcons name="remove" size={14} color="#6C4AB6" />
+                      </TouchableOpacity>
+                      <Text style={[styles.stepValue, { color: servicesTheme.colors.textStrong }]}>{count}</Text>
+                      <TouchableOpacity onPress={() => updateMemberCount(member.key, true)} style={styles.stepBtn}>
+                        <MaterialIcons name="add" size={14} color="#6C4AB6" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* Modern Summary Box */}
+        {data.members.length > 0 && (
+          <LinearGradient
+            colors={servicesTheme.isDark ? ["#18112A", "#111113"] : ["#F8F7FF", "#EFECFF"]}
+            style={[styles.summaryCard, { borderColor: servicesTheme.colors.border }]}
+          >
+            <MaterialIcons name="info" size={20} color="#8665FF" />
+            <View style={styles.summaryInfo}>
+              <Text style={[styles.summaryHeadline, { color: servicesTheme.colors.textStrong }]}>Review Coverage</Text>
+              <Text style={[styles.summaryDesc, { color: servicesTheme.colors.muted }]} numberOfLines={2}>
+                Insuring {data.members.length} {data.members.length > 1 ? 'members' : 'member'}
+              </Text>
+            </View>
+          </LinearGradient>
+        )}
+      </ScrollView>
+
+      <View style={[styles.footer, { backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)", borderTopColor: servicesTheme.colors.divider }]}>
+        <GradientButton
+          title="Continue"
+          onPress={onNext}
+          disabled={isNextDisabled}
+        />
+      </View>
       </LinearGradient>
     </SafeAreaView>
   );
@@ -206,7 +212,7 @@ const styles = StyleSheet.create({
   sectionHeader: { marginBottom: 16 },
   sectionTitle: { fontSize: 18, fontWeight: "700", color: "#111111", marginBottom: 4 },
   sectionSubtitle: { fontSize: 13, color: "#1F2937", fontWeight: "500" },
-
+  
   // Gender Pill Styling
   genderContainer: {
     flexDirection: "row",
@@ -284,16 +290,14 @@ const styles = StyleSheet.create({
     marginTop: -15, // Overlap effect
     alignSelf: "center",
     borderRadius: 20,
-
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderWidth: 1,
     borderColor: "#E5E5EA",
     elevation: 3,
   },
   stepBtn: { padding: 4 },
-  stepValue: {
-    fontSize: 14, fontWeight: "bold", color: "#000000", marginHorizontal: 8, paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
+  stepValue: { fontSize: 14, fontWeight: "bold", color: "#000000", marginHorizontal: 8 },
 
   // Summary Card
   summaryCard: {

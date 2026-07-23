@@ -20,6 +20,7 @@ import {
 } from "../api/AuthAPI";
 import { useAlert } from "../../../ecommerce/components/alerts";
 import type { AuthStackParamList } from "../navigation/types";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type OTPScreenNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
 type OTPScreenRouteProp = RouteProp<AuthStackParamList, "OTPScreen">;
@@ -28,6 +29,7 @@ function OTPScreen() {
   const navigation = useNavigation<OTPScreenNavigationProp>();
   const route = useRoute<OTPScreenRouteProp>();
   const alert = useAlert();
+  const { isDark } = useAppTheme();
 
   const email = route.params?.email || "";
   const type = route.params?.type ?? "activation";
@@ -126,17 +128,17 @@ function OTPScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}>
       <View style={styles.logoWrap}>
         <Logo width={160} height={160} />
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.title}>
+      <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
+        <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>
           {isForgotPassword ? "Reset Password OTP" : "Email OTP Verification"}
         </Text>
 
-        <Text style={styles.subText}>
+        <Text style={[styles.subText, { color: isDark ? "#D4D4D8" : "#555" }]}>
           Enter the OTP sent to {email || "your email"}
         </Text>
 
@@ -149,7 +151,14 @@ function OTPScreen() {
               }}
               maxLength={1}
               keyboardType="number-pad"
-              style={styles.otpInput}
+              style={[
+                styles.otpInput,
+                {
+                  backgroundColor: isDark ? "#18181B" : "#F9F9F9",
+                  borderColor: isDark ? "rgba(255,255,255,0.10)" : "#E0E0E0",
+                  color: isDark ? "#FFFFFF" : "#111827",
+                },
+              ]}
               value={otpValues[i]}
               onChangeText={(text) => handleOtpChange(text, i)}
               onKeyPress={(e) => handleOtpKeyPress(e, i)}
@@ -158,14 +167,14 @@ function OTPScreen() {
           ))}
         </View>
 
-        <Text style={styles.timerText}>
+        <Text style={[styles.timerText, { color: isDark ? "#A1A1AA" : "#777" }]}>
           Didn't receive an OTP?{" "}
           {timer > 0 ? (
             <Text>Resend in {timer}s</Text>
           ) : resendLoading ? (
-            <Text style={styles.resend}>Sending...</Text>
+            <Text style={[styles.resend, { color: isDark ? "#F472B6" : "#852BAF" }]}>Sending...</Text>
           ) : (
-            <Text style={styles.resend} onPress={handleResend}>
+            <Text style={[styles.resend, { color: isDark ? "#F472B6" : "#852BAF" }]} onPress={handleResend}>
               Resend
             </Text>
           )}
@@ -199,7 +208,6 @@ export default OTPScreen;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F5F0FF",
   },
 
   logoWrap: {
@@ -210,7 +218,6 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     marginTop: 20,
-    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
@@ -244,10 +251,8 @@ const styles = StyleSheet.create({
     height: 50,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
     textAlign: "center",
     fontSize: 18,
-    backgroundColor: "#F9F9F9",
   },
 
   timerText: {
@@ -257,7 +262,6 @@ const styles = StyleSheet.create({
   },
 
   resend: {
-    color: "#852BAF",
     fontWeight: "600",
   },
 

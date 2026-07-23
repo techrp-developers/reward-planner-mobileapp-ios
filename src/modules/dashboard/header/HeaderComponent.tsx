@@ -115,28 +115,22 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   // ── Layout measurement — drives dropdown top position ─────────────────────
 
   const handleHeaderLayout = useCallback((e: LayoutChangeEvent) => {
-    setHeaderHeight(e.nativeEvent.layout.height);
+    const nextHeight = e.nativeEvent.layout.height;
+    setHeaderHeight((prev) => (Math.abs(prev - nextHeight) < 1 ? prev : nextHeight));
   }, []);
-
-  // Stop the sweep on unmount in case the component disappears while search is open.
-  useEffect(() => {
-    return () => { searchSweep.stopAnimation(); };
-  }, [searchSweep]);
 
   // ── Search animation ──────────────────────────────────────────────────────
 
   const openSearch = useCallback(() => {
     setSearchActive(true);
     onSearchActiveChange?.(true);
-    // Restart the sweep loop only while search is open — not continuously from mount.
     searchSweep.stopAnimation();
     searchSweep.setValue(0);
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(searchSweep, { toValue: 1, duration: 1800, useNativeDriver: true }),
-        Animated.timing(searchSweep, { toValue: 0, duration: 0,    useNativeDriver: true }),
-      ]),
-    ).start();
+    Animated.timing(searchSweep, {
+      toValue: 1,
+      duration: 1800,
+      useNativeDriver: true,
+    }).start();
     Animated.parallel([
       Animated.timing(dateFade,    { toValue: 0, duration: 160, useNativeDriver: true }),
       Animated.timing(searchFade,  { toValue: 1, duration: 240, useNativeDriver: true }),
@@ -226,7 +220,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
         <View style={styles.topRow}>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => navigation.navigate('Profile', { context: 'dashboard' })}
             activeOpacity={0.8}
           >
             <View style={[styles.avatarRing, { backgroundColor: tk.avatarRingBg }]}>

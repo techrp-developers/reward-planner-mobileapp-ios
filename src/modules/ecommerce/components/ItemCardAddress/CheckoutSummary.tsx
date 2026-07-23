@@ -65,7 +65,7 @@ export default function CheckoutSummary({
             <Text style={[styles.items, { color: theme.secondaryText }]}>{count} items selected</Text>
           </View>
 
-          <TouchableOpacity onPress={() => (onProceedToBuy ? onProceedToBuy() : navigation.navigate('OrderStepUI'))}>
+          <TouchableOpacity onPress={() => (onProceedToBuy ? onProceedToBuy() : navigation.push('OrderStepUI', { mode: 'cart' }))}>
             <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
               <Text style={styles.buttonText}>Proceed To Buy</Text>
             </LinearGradient>
@@ -148,7 +148,6 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
-
     borderRadius: 12,
   },
   buttonText: {

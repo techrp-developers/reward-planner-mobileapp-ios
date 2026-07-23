@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -30,7 +30,7 @@ function BuyAgain() {
   const [products, setProducts] = useState<any[]>([]);
   const [sortBy, setSortBy] = useState("recent");
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -41,15 +41,15 @@ function BuyAgain() {
       }
 
     } catch (error) {
-      console.log("Error loading Buy Again", error);
+      __DEV__ && console.log("Error loading Buy Again", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [sortBy]);
 
   useEffect(() => {
     loadProducts();
-  }, [sortBy]);
+  }, [loadProducts]);
 
   const changeSort = () => {
     const index = SORT_OPTIONS.findIndex(o => o.value === sortBy);

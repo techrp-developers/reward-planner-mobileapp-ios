@@ -28,8 +28,8 @@ import {
   createServiceEnquiry,
   type CreateServiceEnquiryPayload,
 } from '../../api/ServiceAPI';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
-const PackBanner = require('../../assete/service/PackBanner.png');
 const FolderService = require('../../assete/service/FolderService.png');
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
@@ -60,6 +60,9 @@ function BundleEnquiryForm() {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
   const alert = useAlert();
+  const servicesTheme = useServicesTheme();
+  const formSurface = servicesTheme.isDark ? '#000000' : '#FFFFFF';
+  const inputSurface = servicesTheme.isDark ? '#000000' : '#FAF9FF';
 
   const initialBundleId = Number(route?.params?.bundleId || 0);
   const [bundleId] = useState(initialBundleId);
@@ -312,7 +315,7 @@ function BundleEnquiryForm() {
       };
     }
 
-    console.log('📦 FINAL ENQUIRY PAYLOAD:', payload);
+    __DEV__ && console.log('📦 FINAL ENQUIRY PAYLOAD:', payload);
 
     const response = await createServiceEnquiry(payload);
 
@@ -332,7 +335,7 @@ function BundleEnquiryForm() {
     });
 
   } catch (error: any) {
-    console.log('❌ ENQUIRY ERROR:', error?.response?.data || error);
+    __DEV__ && console.log('❌ ENQUIRY ERROR:', error?.response?.data || error);
 
     alert.error(
       'Error',
@@ -360,7 +363,10 @@ function BundleEnquiryForm() {
 
     return (
       <View key={key}>
-        <Text style={isRequired ? styles.label : styles.labelOptional}>
+        <Text style={[
+          isRequired ? styles.label : styles.labelOptional,
+          { color: isRequired ? servicesTheme.colors.text : servicesTheme.colors.muted },
+        ]}>
           {field.label || key}
           {isRequired
             ? <Text style={styles.star}> *</Text>
@@ -368,10 +374,14 @@ function BundleEnquiryForm() {
           }
         </Text>
 
-        <View style={[styles.inputWrap, isTextArea && styles.textAreaWrap]}>
+        <View style={[
+          styles.inputWrap,
+          isTextArea && styles.textAreaWrap,
+          { backgroundColor: inputSurface, borderColor: servicesTheme.colors.border },
+        ]}>
           <TextInput
             placeholder={`Enter ${(field.label || key).toLowerCase()} here`}
-            placeholderTextColor="#A3A3A3"
+            placeholderTextColor={servicesTheme.colors.subtle}
             value={form[key] || ''}
             onChangeText={(t) => {
               const sanitized = keyboardType === 'number-pad' ? t.replace(/[^0-9]/g, '') : t;
@@ -383,6 +393,7 @@ function BundleEnquiryForm() {
             multiline={isTextArea}
             style={[
               styles.input,
+              { color: servicesTheme.colors.text },
               icon ? styles.inputWithIcon : undefined,
               isTextArea ? styles.textArea : undefined,
             ]}
@@ -390,7 +401,7 @@ function BundleEnquiryForm() {
 
           {icon && (
             <View style={styles.iconWrapInput}>
-              <MaterialIcons name={icon} size={18} color="#8A8A8A" />
+              <MaterialIcons name={icon} size={18} color={servicesTheme.colors.muted} />
             </View>
           )}
         </View>
@@ -399,7 +410,7 @@ function BundleEnquiryForm() {
   };
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
       <ScreenHeader
         title={bundleTitle}
         onBackPress={() => navigation.goBack()}
@@ -411,20 +422,21 @@ function BundleEnquiryForm() {
       >
         <Banner />
 
-        <Image
-          source={PackBanner}
-          style={styles.packBannerContainer}
-          resizeMode="contain"
-        />
-
-        <View style={styles.card}>
+        <View style={[
+          styles.card,
+          {
+            backgroundColor: formSurface,
+            borderColor: servicesTheme.colors.border,
+            shadowColor: servicesTheme.colors.shadow,
+          },
+        ]}>
           <View style={styles.headerRow}>
-            <View style={styles.headerIcon}>
-              <MaterialIcons name="chat-bubble-outline" size={18} color="#5B47A3" />
+            <View style={[styles.headerIcon, { backgroundColor: servicesTheme.colors.iconBg }]}>
+              <MaterialIcons name="chat-bubble-outline" size={18} color={servicesTheme.colors.primary} />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={styles.heading}>Enquire Now</Text>
-              <Text style={styles.desc}>
+              <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Enquire Now</Text>
+              <Text style={[styles.desc, { color: servicesTheme.colors.muted }]}>
                 Fill out the form below and our team will get in touch with you shortly.
               </Text>
             </View>
@@ -433,7 +445,7 @@ function BundleEnquiryForm() {
           {(isLoadingFields || isPrefilling) && (
             <ActivityIndicator
               size="small"
-              color="#8665FF"
+              color={servicesTheme.colors.primary}
               style={styles.prefillLoader}
             />
           )}
@@ -441,7 +453,7 @@ function BundleEnquiryForm() {
           {enquiryFields.length > 0
             ? enquiryFields.map((field, i) => renderField(field, i))
             : (
-              <Text style={styles.noFieldsText}>
+              <Text style={[styles.noFieldsText, { color: servicesTheme.colors.muted }]}>
                 No form fields available. Please try again.
               </Text>
             )}
@@ -453,7 +465,7 @@ function BundleEnquiryForm() {
             onPress={handleSubmit}
           >
             <LinearGradient
-              colors={['#8665FF', '#5B47A3']}
+              colors={servicesTheme.gradients.primary}
               style={styles.submitBtn}
             >
               {isSubmitting
@@ -496,12 +508,6 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     paddingBottom: 28,
-  },
-
-  packBannerContainer: {
-    height: 120,
-    marginVertical: 10,
-    marginHorizontal: 16,
   },
 
   card: {

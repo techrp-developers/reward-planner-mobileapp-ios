@@ -56,7 +56,7 @@ type ProductImageProps = {
   loadEnabled?: boolean;
 };
 
-export default function ProductImage({
+function ProductImage({
   uri,
   style,
   containerStyle,
@@ -83,7 +83,7 @@ export default function ProductImage({
   }, [normalizedUri]);
 
   useEffect(() => {
-    if (normalizedUri && !hasValidRemoteUrl) {
+    if (__DEV__ && normalizedUri && !hasValidRemoteUrl) {
       console.warn("ProductImage received invalid URL", { uri: normalizedUri });
     }
   }, [hasValidRemoteUrl, normalizedUri]);
@@ -94,10 +94,12 @@ export default function ProductImage({
     loadEnabled && hasValidRemoteUrl && !hasLoadError ? { uri: optimizedUri } : fallbackSource;
 
   const handleError = (event: NativeSyntheticEvent<ImageErrorEventData>) => {
-    console.warn("ProductImage failed to load", {
-      uri: normalizedUri || null,
-      error: event.nativeEvent.error,
-    });
+    if (__DEV__) {
+      console.warn("ProductImage failed to load", {
+        uri: normalizedUri || null,
+        error: event.nativeEvent.error,
+      });
+    }
     setHasLoadError(true);
     onError?.(event);
   };
@@ -118,6 +120,8 @@ export default function ProductImage({
     </View>
   );
 }
+
+export default React.memo(ProductImage);
 
 const styles = StyleSheet.create({
   container: {

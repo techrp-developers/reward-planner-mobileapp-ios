@@ -9,10 +9,9 @@ import React, {
 import {
   Animated,
   Dimensions,
-  FlatList,
+  ScrollView,
   StyleSheet,
   View,
-  type ViewToken,
 } from 'react-native';
 import { rs } from '../../../utils/responsive';
 import { useAppTheme } from '../../../theme/ThemeContext';
@@ -36,26 +35,26 @@ const PaginationDot = memo(({
   active: boolean;
   isDark: boolean;
 }) => {
-  const width = useRef(new Animated.Value(active ? rs(18) : rs(6))).current;
+  const scaleX = useRef(new Animated.Value(active ? 1 : 0.34)).current;
   const activeColor = '#818CF8';
   const inactiveColor = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(49,46,129,0.18)';
   const dotColor = active ? activeColor : inactiveColor;
 
   useEffect(() => {
-    Animated.spring(width, {
-      toValue: active ? rs(18) : rs(6),
+    Animated.spring(scaleX, {
+      toValue: active ? 1 : 0.34,
       tension: 120,
       friction: 10,
-      useNativeDriver: false,
+      useNativeDriver: true,
     }).start();
-  }, [active, width]);
+  }, [active, scaleX]);
 
   return (
     <Animated.View
       style={[
         styles.dot,
         {
-          width,
+          transform: [{ scaleX }],
           backgroundColor: dotColor,
         },
       ]}
@@ -79,9 +78,10 @@ interface Props {
 
 const BirthdayCarousel: React.FC<Props> = ({ birthdays }) => {
   const { isDark } = useAppTheme();
-  const flatListRef   = useRef<FlatList<BirthdayEmployee>>(null);
+  const scrollRef     = useRef<ScrollView>(null);
   const currentIdxRef = useRef(0);
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const jumpTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const jumpPendingRef = useRef(false);
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -91,17 +91,6 @@ const BirthdayCarousel: React.FC<Props> = ({ birthdays }) => {
     if (birthdays.length <= 1) return birthdays;
     return [...birthdays, { ...birthdays[0], id: `__clone_${birthdays[0].id}` }];
   }, [birthdays]);
-
-  // ── getItemLayout ─────────────────────────────────────────────────────────
-  // Required for scrollToIndex to work reliably.
-  const getItemLayout = useCallback(
-    (_: ArrayLike<BirthdayEmployee> | null | undefined, index: number) => ({
-      length: CARD_WIDTH,
-      offset: CARD_WIDTH * index,
-      index,
-    }),
-    [],
-  );
 
   // Mirror mutable values into refs so interval callbacks never close over stale state
   const loopLenRef = useRef(loopData.length);
@@ -120,24 +109,26 @@ const BirthdayCarousel: React.FC<Props> = ({ birthdays }) => {
 
   // ── Tick — reads only from refs, no stale closures ────────────────────────
   const tick = useCallback(() => {
-    if (!flatListRef.current) return;
+    if (!scrollRef.current) return;
     if (jumpPendingRef.current) return;
     if (loopLenRef.current <= 1) return;
 
     const nextIndex = currentIdxRef.current + 1;
 
-    flatListRef.current.scrollToIndex({ index: nextIndex, animated: true, viewPosition: 0 });
+    scrollRef.current.scrollTo({ x: nextIndex * CARD_WIDTH, animated: true });
 
     currentIdxRef.current = nextIndex;
-    setActiveIndex(nextIndex % birthdaysLenRef.current);
+    const nextActiveIndex = nextIndex % birthdaysLenRef.current;
+    setActiveIndex(current => current === nextActiveIndex ? current : nextActiveIndex);
 
     if (nextIndex === loopLenRef.current - 1) {
       jumpPendingRef.current = true;
-      setTimeout(() => {
-        flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+      jumpTimerRef.current = setTimeout(() => {
+        scrollRef.current?.scrollTo({ x: 0, animated: false });
         currentIdxRef.current = 0;
-        setActiveIndex(0);
+        setActiveIndex(current => current === 0 ? current : 0);
         jumpPendingRef.current = false;
+        jumpTimerRef.current = null;
       }, SCROLL_ANIM_MS);
     }
   }, []); // empty deps — everything read from refs
@@ -155,6 +146,11 @@ const BirthdayCarousel: React.FC<Props> = ({ birthdays }) => {
     return () => {
       clearTimeout(firstTick);
       stopAutoScroll();
+      if (jumpTimerRef.current) {
+        clearTimeout(jumpTimerRef.current);
+        jumpTimerRef.current = null;
+      }
+      jumpPendingRef.current = false;
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -168,68 +164,33 @@ const BirthdayCarousel: React.FC<Props> = ({ birthdays }) => {
     if (!jumpPendingRef.current) {
       const index = Math.round(e.nativeEvent.contentOffset.x / CARD_WIDTH);
       currentIdxRef.current = index;
-      setActiveIndex(index % birthdaysLenRef.current);
+      const nextActiveIndex = index % birthdaysLenRef.current;
+      setActiveIndex(current => current === nextActiveIndex ? current : nextActiveIndex);
     }
     startAutoScroll();
   }, [startAutoScroll]);
 
-  // ── Viewability — frozen ref, never reassigned ────────────────────────────
-  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 55 }).current;
-
-  const onViewableItemsChangedRef = useRef(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      const first = viewableItems[0];
-      if (!first || first.index == null) return;
-      if (jumpPendingRef.current) return;
-      currentIdxRef.current = first.index;
-      setActiveIndex(first.index % birthdaysLenRef.current);
-    },
-  );
-
   // ── Render ─────────────────────────────────────────────────────────────────
-  const renderItem = useCallback(
-    ({ item }: { item: BirthdayEmployee }) => (
-      <View style={styles.itemWrap}>
-        <BirthdayCard employee={item} isDark={isDark} />
-      </View>
-    ),
-    [isDark],
-  );
-
-  const keyExtractor = useCallback(
-    (item: BirthdayEmployee, index: number) => `${item.id}-${index}`,
-    [],
-  );
-
   return (
     <View style={styles.container}>
-      <FlatList
-        ref={flatListRef}
-        data={loopData}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
+      <ScrollView
+        ref={scrollRef}
         horizontal
-        pagingEnabled={false}
         showsHorizontalScrollIndicator={false}
         scrollEnabled={birthdays.length > 1}
         snapToInterval={CARD_WIDTH}
         snapToAlignment="start"
         decelerationRate="fast"
-        getItemLayout={getItemLayout}
         onScrollBeginDrag={onScrollBeginDrag}
         onMomentumScrollEnd={onMomentumScrollEnd}
-        onViewableItemsChanged={onViewableItemsChangedRef.current}
-        viewabilityConfig={viewabilityConfig}
-        onScrollToIndexFailed={(info) => {
-          // Fallback: scroll to offset if index-based scroll fails on first render
-          const offset = info.averageItemLength * info.index;
-          flatListRef.current?.scrollToOffset({ offset, animated: false });
-        }}
-        removeClippedSubviews
-        windowSize={3}
-        maxToRenderPerBatch={2}
-        initialNumToRender={1}
-      />
+        nestedScrollEnabled
+      >
+        {loopData.map((item, index) => (
+          <View key={`${item.id}-${index}`} style={styles.itemWrap}>
+            <BirthdayCard employee={item} isDark={isDark} />
+          </View>
+        ))}
+      </ScrollView>
 
       {/* Pagination dots — only shown for multiple birthdays */}
       {birthdays.length > 1 && (
@@ -255,7 +216,7 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
 
-  // Each FlatList item is exactly CARD_WIDTH wide — no margins on items
+  // Each carousel item is exactly CARD_WIDTH wide — no margins on items
   // because snapToInterval is also CARD_WIDTH
   itemWrap: {
     width: CARD_WIDTH,
@@ -270,8 +231,9 @@ const styles = StyleSheet.create({
     gap: rs(5),
   },
 
-  // Base dot style — width is animated per-dot
+  // Base dot style — scaleX is animated with the native driver.
   dot: {
+    width: rs(18),
     height: rs(6),
     borderRadius: rs(3),
   },

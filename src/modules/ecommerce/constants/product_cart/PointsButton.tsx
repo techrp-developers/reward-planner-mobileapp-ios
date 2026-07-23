@@ -4,10 +4,8 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  useWindowDimensions,
-  Platform,
+  Dimensions,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
 import RewardIcon from '../../../../assets/product/rewards.svg';
 
 type Props = {
@@ -16,20 +14,18 @@ type Props = {
   onPress?: () => void;
 };
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const IS_SMALL = SCREEN_WIDTH < 360;
+const IS_TABLET = SCREEN_WIDTH > 768;
+const LABEL_SIZE = IS_TABLET ? 12 : IS_SMALL ? 9 : 8;
+const VALUE_SIZE = IS_TABLET ? 16 : IS_SMALL ? 11 : 12;
+const ICON_SIZE = IS_TABLET ? 14 : IS_SMALL ? 10 : 8;
+
 const PointsButton: React.FC<Props> = ({
   rewardCoins,
   redeemCoins = 0,
   onPress,
 }) => {
-  const { width } = useWindowDimensions();
-
-  const isSmall = width < 360;
-  const isTablet = width > 768;
-
-  const labelSize = isTablet ? 12 : isSmall ? 9 : 8;
-  const valueSize = isTablet ? 16 : isSmall ? 11 : 12;
-  const iconSize = isTablet ? 14 : isSmall ? 10 : 8;
-
   return (
     <Pressable
       onPress={onPress}
@@ -40,16 +36,11 @@ const PointsButton: React.FC<Props> = ({
     >
       {/* Shadow wrapper for iOS — separate from overflow:hidden */}
       <View style={styles.gradientWrapper}>
-        <LinearGradient
-          colors={['#8665FF', '#5B47A3']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.container}
-        >
+        <View style={styles.container}>
           {/* LEFT - EARN */}
           <View style={styles.section}>
             <Text
-              style={[styles.label, { fontSize: labelSize }]}
+              style={[styles.label, { fontSize: LABEL_SIZE }]}
               numberOfLines={1}
               adjustsFontSizeToFit
             >
@@ -57,13 +48,13 @@ const PointsButton: React.FC<Props> = ({
             </Text>
             <View style={styles.valueRow}>
               <Text
-                style={[styles.value, { fontSize: valueSize }]}
+                style={[styles.value, { fontSize: VALUE_SIZE }]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 {rewardCoins}
               </Text>
-              <RewardIcon width={iconSize} height={iconSize} />
+              <RewardIcon width={ICON_SIZE} height={ICON_SIZE} />
             </View>
           </View>
 
@@ -73,7 +64,7 @@ const PointsButton: React.FC<Props> = ({
           {/* RIGHT - REDEEM */}
           <View style={styles.section}>
             <Text
-              style={[styles.label, { fontSize: labelSize }]}
+              style={[styles.label, { fontSize: LABEL_SIZE }]}
               numberOfLines={1}
               adjustsFontSizeToFit
             >
@@ -81,16 +72,16 @@ const PointsButton: React.FC<Props> = ({
             </Text>
             <View style={styles.valueRow}>
               <Text
-                style={[styles.value, { fontSize: valueSize }]}
+                style={[styles.value, { fontSize: VALUE_SIZE }]}
                 numberOfLines={1}
                 adjustsFontSizeToFit
               >
                 {redeemCoins}
               </Text>
-              <RewardIcon width={iconSize} height={iconSize} />
+              <RewardIcon width={ICON_SIZE} height={ICON_SIZE} />
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </View>
     </Pressable>
   );
@@ -101,17 +92,6 @@ const styles = StyleSheet.create({
   pressable: {
     width: '100%',
     borderRadius: 7,
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.15,
-        shadowRadius: 6,
-        shadowOffset: { width: 0, height: 3 },
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
   },
 
   // ─── Inner wrapper: clips gradient to borderRadius ────────────────
@@ -128,6 +108,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 36,          // fixed px — never use paddingVertical for height control
     paddingHorizontal: 4,
+    backgroundColor: '#6952C6',
   },
 
   // ─── Each side (Earn / Redeem) ────────────────────────────────────
@@ -173,4 +154,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PointsButton;
+export default React.memo(PointsButton);

@@ -24,6 +24,7 @@ import {
   getAuthHeaders,
   isAuthenticated,
 } from "../../../common/auth/api/AuthAPI";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 type FormData = {
   gender: string;
@@ -99,7 +100,7 @@ function formatDobInput(raw: string) {
   return `${p1}/${p2}/${p3}`;
 }
 
-export default function Step2PA({ data, setData, onNext, onBack }: Props) {  const insets = useSafeAreaInsets();  const [citySearchTerm, setCitySearchTerm] = useState("");
+export default function Step2PA({ data, setData, onNext, onBack }: Props) {  const insets = useSafeAreaInsets();  const servicesTheme = useServicesTheme();  const [citySearchTerm, setCitySearchTerm] = useState("");
   const [filteredCities, setFilteredCities] = useState<string[]>(CITIES);
   const [isCityDropdownOpen, setIsCityDropdownOpen] = useState(false);
   const [checking, setChecking] = useState(true);
@@ -129,7 +130,7 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
         await getAuthHeaders();
 
         const userInfo = await fetchUserInfo();
-        console.log("📱 Step2PA - User Info Received:", userInfo);
+        __DEV__ && console.log("📱 Step2PA - User Info Received:", userInfo);
 
         if (userInfo?.user) {
           const user = userInfo.user;
@@ -235,10 +236,10 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
 
   if (checking) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
         <View style={styles.centerContainer}>
-          <MaterialIcons name="lock-outline" size={50} color="#8665FF" />
-          <Text style={styles.loadingText}>Verifying authentication...</Text>
+          <MaterialIcons name="lock-outline" size={50} color={servicesTheme.colors.primary} />
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
         </View>
       </SafeAreaView>
     );
@@ -248,9 +249,9 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
   const SCREEN_HEIGHT = Dimensions.get("window").height;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
@@ -270,8 +271,8 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
         extraScrollHeight={Platform.OS === "ios" ? 16 : 120}
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Personal Details</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Details</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
             This information helps us personalize your insurance quotes.
           </Text>
         </View>
@@ -279,11 +280,12 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
         <View style={styles.formContainer}>
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Text style={styles.label}>First Name *</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>First Name *</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="Enter first name"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.firstName}
                     onChangeText={(v) => handleInputChange("firstName", v)}
                   />
@@ -293,11 +295,12 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
               <View style={styles.spacer} />
 
               <View style={styles.flex1}>
-                <Text style={styles.label}>Last Name *</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Last Name *</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="Enter last name"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.lastName}
                     onChangeText={(v) => handleInputChange("lastName", v)}
                   />
@@ -307,16 +310,18 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
 
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Text style={styles.label}>Date of Birth *</Text>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Date of Birth *</Text>
                 <View
                   style={[
                     styles.inputBox,
+                    { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow },
                     !isDobValid && dobDisplay.length > 0 ? styles.inputErrorBox : null,
                   ]}
                 >
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="DD/MM/YYYY"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     keyboardType="number-pad"
                     value={dobDisplay}
                     onChangeText={handleDobChange}
@@ -325,7 +330,7 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
                   <MaterialIcons
                     name="calendar-today"
                     size={18}
-                    color="#8665FF"
+                    color={servicesTheme.colors.primary}
                   />
                 </View>
                 {!isDobValid && dobDisplay.length > 0 && (
@@ -336,11 +341,12 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
               <View style={styles.spacer} />
 
               <View style={styles.flex1}>
-                <Text style={styles.label}>Mobile Number *</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Mobile Number *</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={[styles.textInput, styles.mobileInput]}
+                    style={[styles.textInput, styles.mobileInput, { color: servicesTheme.colors.text }]}
                     placeholder="Enter mobile number"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     keyboardType="phone-pad"
                     maxLength={10}
                     value={data.details.mobileNumber}
@@ -348,18 +354,19 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
                       handleInputChange("mobileNumber", v.replace(/\D/g, ""))
                     }
                   />
-                  <MaterialIcons name="phone" size={18} color="#8665FF" />
+                  <MaterialIcons name="phone" size={18} color={servicesTheme.colors.primary} />
                 </View>
               </View>
             </View>
 
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Text style={styles.label}>Pincode *</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Pincode *</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="Enter pincode"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     keyboardType="numeric"
                     maxLength={6}
                     value={data.details.pincode}
@@ -373,9 +380,9 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
               <View style={styles.spacer} />
 
               <View style={styles.flex1}>
-                <Text style={styles.label}>Zone</Text>
-                <View style={[styles.inputBox, styles.disabledBox]}>
-                  <Text style={[styles.textInput, styles.disabledText]}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Zone</Text>
+                <View style={[styles.inputBox, styles.disabledBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
+                  <Text style={[styles.textInput, styles.disabledText, { color: servicesTheme.colors.subtle }]}>
                     {data.details.zone || "Auto-filled"}
                   </Text>
                 </View>
@@ -383,27 +390,35 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
             </View>
 
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>City *</Text>
-              <View style={styles.inputBox}>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>City *</Text>
+              <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: servicesTheme.colors.text }]}
                   placeholder="Search or select city"
+                  placeholderTextColor={servicesTheme.colors.subtle}
                   value={data.details.city || citySearchTerm}
                   onChangeText={handleCityChange}
                   onFocus={() => setIsCityDropdownOpen(true)}
                 />
                 <TouchableOpacity onPress={() => setIsCityDropdownOpen(true)}>
-                  <MaterialIcons name="location-city" size={18} color="#8665FF" />
+                  <MaterialIcons name="location-city" size={18} color={servicesTheme.colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
       </KeyboardAwareScrollView>
 
-      <View style={[styles.footer, { paddingBottom: 20 + insets.bottom }]}>
+      <View style={[
+        styles.footer,
+        {
+          paddingBottom: 20 + insets.bottom,
+          backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)",
+          borderTopColor: servicesTheme.colors.divider,
+        },
+      ]}>
         <View style={styles.footerRow}>
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <MaterialIcons name="keyboard-backspace" size={24} color="#8665FF" />
+          <TouchableOpacity style={[styles.backButton, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]} onPress={onBack}>
+            <MaterialIcons name="keyboard-backspace" size={24} color={servicesTheme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.footerButtonWrapper}>
             <GradientButton
@@ -427,20 +442,20 @@ export default function Step2PA({ data, setData, onNext, onBack }: Props) {  con
           activeOpacity={1}
           onPress={() => setIsCityDropdownOpen(false)}
         >
-          <View style={styles.modalContent}>
-            <View style={styles.modalBar} />
+          <View style={[styles.modalContent, { backgroundColor: servicesTheme.colors.surface }]}>
+            <View style={[styles.modalBar, { backgroundColor: servicesTheme.colors.divider }]} />
             <FlatList
               data={filteredCities}
               keyExtractor={(item) => item}
               keyboardShouldPersistTaps="handled"
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.modalItem}
+                  style={[styles.modalItem, { borderBottomColor: servicesTheme.colors.divider }]}
                   onPress={() => handleCitySelect(item)}
                 >
-                  <Text style={styles.modalItemText}>{item}</Text>
+                  <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item}</Text>
                   {data.details.city === item && (
-                    <MaterialIcons name="check-circle" size={20} color="#8665FF" />
+                    <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />
                   )}
                 </TouchableOpacity>
               )}

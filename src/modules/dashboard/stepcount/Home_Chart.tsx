@@ -11,7 +11,11 @@ import { rs} from "../../../utils/responsive";
 import { useStepTracker, StepDataState } from "../../step_counter/component/StepCode/useStepTracker";
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const GOAL_STEPS = 7000;
+const DEFAULT_GOAL_STEPS = 5000;
+
+type HomeChartProps = {
+  goalSteps?: number;
+};
 
 // ── StepStatusBanner ───────────────────────────────────────────────────────
 type BannerProps = {
@@ -58,7 +62,7 @@ function StepStatusBanner({ state }: BannerProps) {
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function Home_Chart() {
+export default function Home_Chart({ goalSteps }: HomeChartProps) {
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
 
@@ -70,6 +74,11 @@ export default function Home_Chart() {
     requestStepsPermission,
   } = useStepTracker();
 
+  const targetSteps = useMemo(() => {
+    const value = Number(goalSteps);
+    return Number.isFinite(value) && value > 0 ? Math.round(value) : DEFAULT_GOAL_STEPS;
+  }, [goalSteps]);
+
   const layout = useMemo(() => {
     const horizontalPadding = rs(width >= 768 ? 20 : 16);
     const gap = rs(12);
@@ -80,8 +89,8 @@ export default function Home_Chart() {
   }, [width]);
 
   const progressPercent = useMemo(
-    () => Math.min((totalSteps / GOAL_STEPS) * 100, 100),
-    [totalSteps],
+    () => Math.min((totalSteps / targetSteps) * 100, 100),
+    [totalSteps, targetSteps],
   );
 
   const goToRewards = useCallback(() => {
@@ -107,7 +116,7 @@ export default function Home_Chart() {
       <View style={[styles.row, { maxWidth: layout.contentWidth, gap: layout.gap }]}>
         <StepsCounterCard
           steps={totalSteps}
-          goalSteps={GOAL_STEPS}
+          goalSteps={targetSteps}
           progressPercent={progressPercent}
           stepsToday={totalSteps}
           onPress={goToRewards}

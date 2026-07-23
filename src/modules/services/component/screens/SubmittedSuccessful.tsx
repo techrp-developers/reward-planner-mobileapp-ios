@@ -5,6 +5,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { HomeStackParamList } from '../../navigation/type';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Successfully from '../constant/Successfully';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type SubmittedSuccessfulRoute = RouteProp<HomeStackParamList, 'SubmittedSuccessful'>;
 
@@ -12,6 +13,7 @@ const DEFAULT_REDIRECT_DELAY_MS = 3000;
 
 function SubmittedSuccessful({ navigation }: any) {
   const route = useRoute<SubmittedSuccessfulRoute>();
+  const servicesTheme = useServicesTheme();
 
   const statusText = route.params?.statusText ?? 'Enquiry Confirmed';
   const title = route.params?.title ?? 'Enquiry Submitted Successfully';
@@ -41,13 +43,13 @@ function SubmittedSuccessful({ navigation }: any) {
   }, [redirectToHome, redirectDelayMs, navigation]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: servicesTheme.colors.background }}>
       {/* BACK BUTTON */}
       <TouchableOpacity 
         style={styles.backButton} 
         onPress={() => navigation?.goBack()}
       >
-        <MaterialIcons name="chevron-left" size={32} color="#374151" />
+        <MaterialIcons name="chevron-left" size={32} color={servicesTheme.colors.text} />
       </TouchableOpacity>
 
       <View style={{ flex: 1 }}>
@@ -59,22 +61,22 @@ function SubmittedSuccessful({ navigation }: any) {
         />
 
         {redirectToHome && (
-          <Text style={styles.redirectText}>
+          <Text style={[styles.redirectText, { color: servicesTheme.colors.muted }]}>
             Redirecting to home in {secondsLeft}s…
           </Text>
         )}
 
         {/* APP RATING CARD */}
-        <View style={styles.wrapper}>
+        <View style={[styles.wrapper, { backgroundColor: servicesTheme.isDark ? '#181811' : '#FFFADF' }]}>
           <View style={styles.iconWrap}>
             <MaterialIcons name="star" size={28} color="#FACC15" />
           </View>
 
           <View style={styles.textWrap}>
-            <Text style={styles.title}>
+            <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]}>
               Are you loving your experience with our app so far?
             </Text>
-            <Text style={styles.link}>Give us a rating</Text>
+            <Text style={[styles.link, { color: servicesTheme.colors.primary }]}>Give us a rating</Text>
           </View>
         </View>
       </View>

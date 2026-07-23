@@ -13,8 +13,6 @@ export type ServiceDetailsState = {
   error: string | null;
 };
 
-let cartFetchCallCount = 0;
-
 /**
  * Hook that returns normalised service data for a given serviceId.
  *
@@ -62,7 +60,6 @@ export function useServiceDetails(
     // the initial render and this effect running (e.g. fast prefetch).
     const seededId = Number(initialData?.service?.id || 0);
     if (initialData && seededId === serviceId) {
-      console.log('[useServiceDetails] using route-seeded data for service', serviceId);
       setCachedService(serviceId, initialData);
       setState({ data: initialData, loading: false, error: null });
       return;
@@ -70,16 +67,12 @@ export function useServiceDetails(
 
     const cached = getCachedService(serviceId);
     if (cached) {
-      console.log('[useServiceDetails] cache hit for service', serviceId);
       setState({ data: cached, loading: false, error: null });
       return;
     }
 
     let cancelled = false;
     setState(prev => ({ ...prev, loading: true, error: null }));
-
-    cartFetchCallCount += 1;
-    console.log('[useServiceDetails] fetch call #', cartFetchCallCount, 'for service', serviceId);
 
     prefetchServiceDetails(serviceId)
       .then((normalized) => {

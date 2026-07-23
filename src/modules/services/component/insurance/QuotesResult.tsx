@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useAlert } from "../../../ecommerce/components/alerts/useAlert";
 import GradientButton from "../../constant/GradientButton";
 import { selectPlan } from "../../api/InsuranceApi";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 type QuoteData = {
   url: string;
@@ -42,6 +43,7 @@ const QuotesResult: React.FC<Props> = ({
 }) => {
   const navigation = useNavigation<any>();
   const { warning, info } = useAlert();
+  const servicesTheme = useServicesTheme();
   const successQuotes = quotes.filter((q) => q.success);
 
   const toSafeText = (value: any, fallback = ""): string => {
@@ -271,13 +273,13 @@ const QuotesResult: React.FC<Props> = ({
 
     return (
       <TouchableOpacity 
-        style={styles.quoteCard}
+        style={[styles.quoteCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
         activeOpacity={0.8}
         onPress={handleNavigation}
       >
         {/* Top Section: Company Logo & Name */}
-        <View style={styles.cardHeader}>
-          <View style={styles.logoContainer}>
+        <View style={[styles.cardHeader, { borderBottomColor: servicesTheme.colors.divider }]}>
+          <View style={[styles.logoContainer, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
             {logoUrl ? (
               <Image
                 source={{ uri: logoUrl }}
@@ -296,28 +298,28 @@ const QuotesResult: React.FC<Props> = ({
             )}
           </View>
           <View style={styles.companyInfo}>
-            <Text style={styles.companyName}>{companyName}</Text>
+            <Text style={[styles.companyName, { color: servicesTheme.colors.textStrong }]}>{companyName}</Text>
           </View>
         </View>
 
         {/* Middle Section: Plan Details */}
-        <View style={styles.cardBody}>
-          <Text style={styles.planTitle}>{planName}</Text>
+        <View style={[styles.cardBody, { borderBottomColor: servicesTheme.colors.divider }]}>
+          <Text style={[styles.planTitle, { color: servicesTheme.colors.text }]}>{planName}</Text>
           
           <View style={styles.coverSection}>
-            <View style={styles.coverItem}>
-              <MaterialIcons name="security" size={18} color="#8665FF" />
+            <View style={[styles.coverItem, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
+              <MaterialIcons name="security" size={18} color={servicesTheme.colors.primary} />
               <View style={styles.coverDetail}>
-                <Text style={styles.coverLabel}>Cover Amount</Text>
-                <Text style={styles.coverValue}>{displayCoverAmount}</Text>
+                <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>Cover Amount</Text>
+                <Text style={[styles.coverValue, { color: servicesTheme.colors.textStrong }]}>{displayCoverAmount}</Text>
               </View>
             </View>
             {deductible && (
-              <View style={styles.coverItem}>
-                <MaterialIcons name="receipt-long" size={18} color="#8665FF" />
+              <View style={[styles.coverItem, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
+                <MaterialIcons name="receipt-long" size={18} color={servicesTheme.colors.primary} />
                 <View style={styles.coverDetail}>
-                  <Text style={styles.coverLabel}>Deductible</Text>
-                  <Text style={styles.coverValue}>{deductible}</Text>
+                  <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>Deductible</Text>
+                  <Text style={[styles.coverValue, { color: servicesTheme.colors.textStrong }]}>{deductible}</Text>
                 </View>
               </View>
             )}
@@ -328,16 +330,16 @@ const QuotesResult: React.FC<Props> = ({
             {features.map((feature, idx) => (
               <View key={idx} style={styles.featureItemRow}>
                 <View style={styles.featureDot} />
-                <Text style={styles.featureTextRow} numberOfLines={1}>{feature}</Text>
+                <Text style={[styles.featureTextRow, { color: servicesTheme.colors.muted }]} numberOfLines={1}>{feature}</Text>
               </View>
             ))}
           </View>
         </View>
 
         {/* Bottom Section: Price & CTA */}
-        <View style={styles.cardFooter}>
+        <View style={[styles.cardFooter, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
           <View style={styles.priceSection}>
-            <Text style={styles.priceLabel}>Premium/Year</Text>
+            <Text style={[styles.priceLabel, { color: servicesTheme.colors.muted }]}>Premium/Year</Text>
             <Text style={styles.priceAmount}>{premium}</Text>
           </View>
           
@@ -363,16 +365,16 @@ const QuotesResult: React.FC<Props> = ({
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
         <LinearGradient
-          colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+          colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.backgroundGradient}
         >
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#8665FF" />
-            <Text style={styles.loadingText}>Fetching 22+ Live Quotes...</Text>
+            <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Fetching 22+ Live Quotes...</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -380,26 +382,26 @@ const QuotesResult: React.FC<Props> = ({
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
       >
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider, shadowColor: servicesTheme.colors.shadow }]}>
         <TouchableOpacity onPress={onBack} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#1A1A1A" />
+          <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>
             {insuranceType === "supertopup"
               ? "Super Top-Up Insurance"
               : insuranceType === "personal_accident"
                 ? "Personal Accident Insurance"
                 : "Health Insurance"}
           </Text>
-          <Text style={styles.headerSubtitle}>Found {successQuotes.length} customized plans</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>Found {successQuotes.length} customized plans</Text>
         </View>
       </View>
 
@@ -411,7 +413,7 @@ const QuotesResult: React.FC<Props> = ({
         ListEmptyComponent={
           <View style={styles.centerContainer}>
             <MaterialIcons name="error-outline" size={50} color="#CCC" />
-            <Text style={styles.emptyText}>No plans found for this criteria.</Text>
+            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No plans found for this criteria.</Text>
             <GradientButton title="Adjust Details" onPress={onBack} />
           </View>
         }

@@ -23,6 +23,7 @@ import {
 import type { Permission } from 'react-native-health-connect';
 
 import { syncStepsToServer, type GoalSyncData } from '../api/Stepsapi';
+import { fetchProfileStepStatus } from '../api/ProfileAPI';
 import { fitnessQueryKeys } from '../api/fitnessQueryKeys';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -68,7 +69,17 @@ const HC_PACKAGE = 'com.google.android.healthconnect.controller';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function hasStepsPerm(permissions: any[]): boolean {
-  return permissions.some(p => p.recordType === 'Steps' && p.accessType === 'read');
+  return permissions.some(p => {
+    // Some library versions return raw Android permission strings
+    if (typeof p === 'string') {
+      const s = p.toLowerCase();
+      return s.includes('read_steps') || (s.includes('steps') && s.includes('read'));
+    }
+    // Handle nested shape, and any casing of both fields
+    const rt = String(p.recordType ?? p.permission?.recordType ?? '').toLowerCase();
+    const at = String(p.accessType ?? p.permission?.accessType ?? '').toLowerCase();
+    return rt === 'steps' && at === 'read';
+  });
 }
 
 // toISOString() returns the UTC date, which can be a day off from the
@@ -92,15 +103,17 @@ function buildPayload(steps: number) {
 }
 
 function sumStepRecords(records: any[]): number {
-  const originOf = (record: any) => String(record.metadata?.dataOrigin ?? '').toLowerCase();
-  const googleRecords = records.filter(record => originOf(record).includes('fit') || originOf(record).includes('google'));
-  const samsungRecords = records.filter(record => originOf(record).includes('samsung') || originOf(record).includes('shealth'));
-  const selectedRecords =
-    googleRecords.length > 0 ? googleRecords :
-    samsungRecords.length > 0 ? samsungRecords :
-    records;
-
-  return selectedRecords.reduce((sum, record) => sum + (Number(record.count) || 0), 0);
+  // Group by data origin and take the highest single-origin total.
+  // This avoids double-counting when two apps (e.g. Google Fit + Samsung Health)
+  // both sync the same physical steps to Health Connect, while still using
+  // whichever source recorded the most steps.
+  const byOrigin = new Map<string, number>();
+  for (const record of records) {
+    const origin = String(record.metadata?.dataOrigin ?? 'unknown');
+    byOrigin.set(origin, (byOrigin.get(origin) ?? 0) + (Number(record.count) || 0));
+  }
+  if (byOrigin.size === 0) return 0;
+  return Math.max(...byOrigin.values());
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -113,12 +126,13 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
 
   // ── Refs: never cause re-renders, always current ──────────────────────────
-  const initialized     = useRef(false);
-  const isSyncing       = useRef(false);  // sync lock — prevents concurrent API calls
-  const lastSyncedSteps = useRef(-1);     // -1 = never synced this session
-  const lastSyncedDate  = useRef<string | null>(null);
-  const lastSyncTime    = useRef(0);
-  const stepsRef        = useRef(0);      // mirror of steps state for closures
+  const initialized       = useRef(false);
+  const isSyncing         = useRef(false);  // sync lock — prevents concurrent API calls
+  const lastSyncedSteps   = useRef(-1);     // -1 = never synced this session
+  const lastSyncedDate    = useRef<string | null>(null);
+  const lastSyncTime      = useRef(0);
+  const stepsRef          = useRef(0);      // mirror of steps state for closures
+  const stepDataStateRef  = useRef<StepDataState>('loading'); // sync mirror so callbacks read fresh state
 
   // ── State ─────────────────────────────────────────────────────────────────
   const [steps,               setSteps]               = useState(0);
@@ -135,7 +149,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
 
   // ── Restore persisted state on mount ─────────────────────────────────────
   useEffect(() => {
-    AsyncStorage.multiGet([STORAGE_LAST_SYNC, STORAGE_SETUP]).then(pairs => {
+    AsyncStorage.multiGet([STORAGE_LAST_SYNC, STORAGE_SETUP]).then(async pairs => {
       const [lastSyncPair, setupPair] = pairs;
       const today = localDateString(new Date());
       const rawLastSync = lastSyncPair[1];
@@ -154,7 +168,23 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
           lastSyncedSteps.current = -1;
         }
       }
-      if (setupPair[1] === 'true') setIsSetupComplete(true);
+
+      if (setupPair[1] === 'true') {
+        setIsSetupComplete(true);
+      } else {
+        // AsyncStorage is wiped on reinstall — check the backend so users who
+        // already completed setup on a previous install skip onboarding entirely.
+        try {
+          const status = await fetchProfileStepStatus();
+          if (status.is_completed) {
+            await AsyncStorage.setItem(STORAGE_SETUP, 'true');
+            setIsSetupComplete(true);
+          }
+        } catch {
+          // Network unavailable or auth not ready — leave isSetupComplete false
+          // so the user goes through onboarding (will re-sync local flag then).
+        }
+      }
     }).catch(() => {});
   }, []);
 
@@ -162,10 +192,18 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
   const shouldSync = (count: number): boolean => {
     const today = localDateString(new Date());
     if (count <= 0) return false;
-    if (isSyncing.current) return false;                              // already in flight
-    if (lastSyncedDate.current !== today) return true;                // first sync today
-    if (lastSyncedSteps.current === -1) return true;                  // first sync ever
-    if (count <= lastSyncedSteps.current) return false;               // no increase
+    if (isSyncing.current) return false;
+
+    if (lastSyncedDate.current !== today) {
+      // New day — skip cooldown (fresh start) but still require MIN_STEP_DIFF
+      // so a midnight wakeup with 2 steps doesn't fire an API call.
+      return count >= MIN_STEP_DIFF;
+    }
+    if (lastSyncedSteps.current === -1) {
+      // First sync ever in this session — same threshold applies.
+      return count >= MIN_STEP_DIFF;
+    }
+    if (count <= lastSyncedSteps.current) return false;                // no increase
     if (count - lastSyncedSteps.current < MIN_STEP_DIFF) return false; // < 100 new steps
     if (Date.now() - lastSyncTime.current < COOLDOWN_MS) return false; // inside 15-min window
     return true;
@@ -193,10 +231,12 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         setCelebrationData(res.data);
       }
 
+      setHealthConnectError(null);
       queryClient.invalidateQueries({ queryKey: fitnessQueryKeys.all });
       console.log(`[Steps] Synced ${count} steps ✓`);
-    } catch (e) {
+    } catch (e: any) {
       console.warn('[Steps] Sync failed:', e);
+      setHealthConnectError(`Steps sync failed: ${e?.message || 'network error'}`);
     } finally {
       isSyncing.current = false;
     }
@@ -233,10 +273,15 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
       }
 
       if (total <= 0) {
-        const result = await readRecords('Steps', { timeRangeFilter });
-        records = Array.isArray(result.records) ? result.records : [];
-        total = sumStepRecords(records);
-        console.log(`[Steps] Raw read ${total} steps today (${records.length} records)`);
+        try {
+          const result = await readRecords('Steps', { timeRangeFilter });
+          records = Array.isArray(result?.records) ? result.records :
+                    Array.isArray(result) ? result as any[] : [];
+          total = sumStepRecords(records);
+          console.log(`[Steps] Raw read ${total} steps today (${records.length} records, origins: ${records.map((r: any) => r?.metadata?.dataOrigin).join(', ')})`);
+        } catch (readError: any) {
+          console.warn('[Steps] readRecords failed:', readError?.message);
+        }
       }
 
       if (total <= 0) {
@@ -250,11 +295,14 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
           });
           hasHistory = broad.records.length > 0;
         } catch {}
-        setStepDataState(hasHistory ? 'no_steps_today' : 'no_source');
+        const nextState: StepDataState = hasHistory ? 'no_steps_today' : 'no_source';
+        stepDataStateRef.current = nextState;
+        setStepDataState(nextState);
         setSteps(0);
         return 0;
       }
 
+      stepDataStateRef.current = 'ok';
       setStepDataState('ok');
       setSteps(total);
       await doSync(total);
@@ -273,14 +321,42 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     try {
       if (!initialized.current) {
         console.log('[Steps] Initializing Health Connect SDK (once)');
-        await initialize();
+        // Try Android 14+ built-in HC package first, fall back to standalone app package
+        let ok = await initialize(HC_PACKAGE).catch(() => false as boolean);
+        if (!ok) {
+          ok = await initialize('com.google.android.apps.healthdata').catch(() => false as boolean);
+        }
+        if (!ok) {
+          setHealthConnectError('Health Connect could not be initialized');
+          setStepDataState('no_permission');
+          setLoading(false);
+          return [];
+        }
         initialized.current = true;
       }
 
-      const sdkStatus = await getSdkStatus(HC_PACKAGE);
+      // Check both provider packages: Android 14+ built-in and the standalone app
+      let sdkStatus = await getSdkStatus(HC_PACKAGE).catch(() => SdkAvailabilityStatus.SDK_UNAVAILABLE);
+      if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+        sdkStatus = await getSdkStatus('com.google.android.apps.healthdata').catch(() => SdkAvailabilityStatus.SDK_UNAVAILABLE);
+      }
       setHealthConnectStatus(String(sdkStatus));
 
       if (sdkStatus !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+        // Health Connect is completely uninstalled — if the user previously
+        // completed setup, reset that flag so they are routed back through
+        // onboarding (where they'll be prompted to reinstall HC) instead of
+        // landing on a broken Dashboard with 0 steps and no explanation.
+        // Only do this for SDK_UNAVAILABLE (gone entirely), not for
+        // SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED (installed but needs update —
+        // the user shouldn't lose their onboarding progress in that case).
+        if (sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE) {
+          const wasSetup = await AsyncStorage.getItem(STORAGE_SETUP).catch(() => null);
+          if (wasSetup === 'true') {
+            await AsyncStorage.removeItem(STORAGE_SETUP).catch(() => {});
+            setIsSetupComplete(false);
+          }
+        }
         const msg = sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE
           ? 'Health Connect not installed'
           : 'Health Connect needs setup';
@@ -290,7 +366,17 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         return [];
       }
 
-      const granted = await getGrantedPermissions();
+      let granted = await getGrantedPermissions();
+      console.log('[Steps] getGrantedPermissions raw:', JSON.stringify(granted));
+
+      // On some devices/versions the permission store needs a moment to settle
+      // after initialization — retry once with a short delay if we get nothing back.
+      if (granted.length === 0) {
+        await new Promise<void>(r => setTimeout(r, 1500));
+        granted = await getGrantedPermissions();
+        console.log('[Steps] getGrantedPermissions retry:', JSON.stringify(granted));
+      }
+
       setGrantedPermissions(granted);
 
       if (!hasStepsPerm(granted)) {
@@ -333,6 +419,10 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
 
   const requestStepsPermission = useCallback(async (): Promise<boolean> => {
     try {
+      // Ensure SDK is initialized before calling requestPermission.
+      // On first launch the mount-effect's initAndCheck() may not have completed yet.
+      await initAndCheck();
+
       const perms: Permission[] = [{ accessType: 'read', recordType: 'Steps' }];
       await requestPermission(perms);
       await new Promise<void>(r => setTimeout(r, 1000));
@@ -347,28 +437,41 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const count = await readAndSync();
-      if (count > 0) {
-        await AsyncStorage.setItem(STORAGE_SETUP, 'true');
-        setIsSetupComplete(true);
-        setHealthConnectError(null);
-        return true;
+      await readAndSync();
+
+      // If no fitness app is writing steps to Health Connect at all, keep the user
+      // in onboarding so they can connect a source — completing setup now would
+      // leave them permanently stuck with 0 steps and no way back.
+      // Use the ref (not state) because React state updates are async and would
+      // be stale at this point in the same async call chain.
+      if (stepDataStateRef.current === 'no_source') {
+        setHealthConnectError(
+          'No step data found. Open Google Fit or Samsung Health, enable Health Connect sync, then tap Continue.',
+        );
+        return false;
       }
 
-      setHealthConnectError(
-        'No step data yet. Open Google Fit or Samsung Health, enable Health Connect sync, walk a few steps, then tap Continue.',
-      );
-      return false;
+      // Permission is granted and we have a usable data source — mark setup complete.
+      // Steps may still be 0 for today (user hasn't walked yet); that's fine.
+      await AsyncStorage.setItem(STORAGE_SETUP, 'true');
+      setIsSetupComplete(true);
+      setHealthConnectError(null);
+      return true;
     } catch (err: any) {
       setHealthConnectError(err?.message || String(err));
       return false;
     }
-  }, [readAndSync]);
+  }, [initAndCheck, readAndSync]);
 
   const openHealthConnect = useCallback(async () => {
     try {
+      // Mirror the same two-package fallback used in initAndCheck so Android 9-13
+      // users (standalone HC app) are sent to the data management screen, not the Play Store.
       let status: number = SdkAvailabilityStatus.SDK_UNAVAILABLE;
       try { status = await getSdkStatus(HC_PACKAGE); } catch {}
+      if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
+        try { status = await getSdkStatus('com.google.android.apps.healthdata'); } catch {}
+      }
 
       if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
         try {

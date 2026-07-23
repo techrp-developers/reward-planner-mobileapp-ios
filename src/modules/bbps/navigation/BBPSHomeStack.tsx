@@ -85,7 +85,7 @@ const BBPSHomeStack = React.memo(() => {
       />
       <Stack.Screen
         name="Profile"
-        getComponent={() => require('../../ecommerce/profile/ProfileScreen').default}
+        getComponent={() => require('../../dashboard/dashboard/ProfileScreen').default}
         initialParams={{ context: 'bbps' }}
         options={{ headerShown: false }}
       />
@@ -95,7 +95,8 @@ const BBPSHomeStack = React.memo(() => {
       <Stack.Screen name="PrivacyPolicy" getComponent={() => require('../../ecommerce/profile/PrivacyPolicy').default} options={{ headerShown: false }} />
       <Stack.Screen name="TermsAndConditions" getComponent={() => require('../../ecommerce/profile/TermsandCondition').default} options={{ headerShown: false }} />
       <Stack.Screen name="HelpForm" getComponent={() => require('../../ecommerce/constants/Support/HelpForm').default} options={{ headerShown: false }} />
-<Stack.Screen name="ChangePassword" getComponent={() => require('../../common/auth/screens/ChangePasswordScreen').default} options={{ headerShown: false }} />
+      <Stack.Screen name="MyTickets" getComponent={() => require('../../ecommerce/constants/Support/MyTickets').default} options={{ headerShown: false }} />
+      <Stack.Screen name="ChangePassword" getComponent={() => require('../../common/auth/screens/ChangePasswordScreen').default} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 });

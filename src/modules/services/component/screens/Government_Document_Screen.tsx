@@ -22,6 +22,7 @@ import { useCategoryServices } from '../../hooks/useCategoryServices';
 import { getCachedService, prefetchServiceDetails } from '../../utils/serviceCache';
 import type { CategoryServiceItem } from '../../services/categoryServices';
 import CartHead from '../constant/navbar/CartHead';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type RouteProps = RouteProp<
   HomeStackParamList,
@@ -29,6 +30,7 @@ type RouteProps = RouteProp<
 >;
 
 function GovernmentDocumentSkeleton() {
+  const servicesTheme = useServicesTheme();
   const pulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -37,12 +39,12 @@ function GovernmentDocumentSkeleton() {
         Animated.timing(pulse, {
           toValue: 1,
           duration: 750,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
         Animated.timing(pulse, {
           toValue: 0,
           duration: 750,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
       ]),
     );
@@ -53,7 +55,16 @@ function GovernmentDocumentSkeleton() {
   return (
     <View>
       {[1, 2, 3].map(index => (
-        <View key={'gov-skeleton-' + index} style={styles.skeletonCard}>
+        <View
+          key={'gov-skeleton-' + index}
+          style={[
+            styles.skeletonCard,
+            {
+              backgroundColor: servicesTheme.colors.surface,
+              borderColor: servicesTheme.colors.border,
+            },
+          ]}
+        >
           <SkeletonBox
             pulse={pulse}
             width={112}
@@ -82,6 +93,7 @@ function GovernmentDocumentSkeleton() {
 
 export default function Government_Document_Screen() {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const servicesTheme = useServicesTheme();
   const route = useRoute<RouteProps>();
   const categoryId = Number(route?.params?.categoryId || 0);
   const hasNavigatedRef = useRef(false);
@@ -97,7 +109,7 @@ export default function Government_Document_Screen() {
 
   useEffect(() => {
     effectRunsRef.current += 1;
-    console.log(
+    __DEV__ && console.log(
       '[Government_Document_Screen] direct nav effect run #',
       effectRunsRef.current,
       '| directServiceId:',
@@ -106,14 +118,14 @@ export default function Government_Document_Screen() {
 
     if (!directServiceId || directServiceId <= 0) return;
     if (hasNavigatedRef.current) {
-      console.log('[Government_Document_Screen] navigation skipped (already navigated once).');
+      __DEV__ && console.log('[Government_Document_Screen] navigation skipped (already navigated once).');
       return;
     }
 
     hasNavigatedRef.current = true;
 
     const cached = getCachedService(directServiceId) ?? undefined;
-    console.log(
+    __DEV__ && console.log(
       '[Government_Document_Screen] navigating to ServiceDescription for service',
       directServiceId,
       '| seededFromCache:',
@@ -128,7 +140,7 @@ export default function Government_Document_Screen() {
     });
 
     prefetchServiceDetails(directServiceId).then((prefetched) => {
-      console.log(
+      __DEV__ && console.log(
         '[Government_Document_Screen] prefetch finished for',
         directServiceId,
         '| hasData:',
@@ -159,16 +171,16 @@ export default function Government_Document_Screen() {
 
   if (!Number.isFinite(categoryId) || categoryId <= 0) {
     return (
-      <View style={styles.root}>
+      <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
         <View style={styles.centeredState}>
-          <Text style={styles.stateText}>Unable to open this category.</Text>
+          <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>Unable to open this category.</Text>
         </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
       <CartHead />
 
       {loading ? (
@@ -181,7 +193,7 @@ export default function Government_Document_Screen() {
         </View>
       ) : error ? (
         <View style={styles.centeredState}>
-          <Text style={styles.stateText}>{error}</Text>
+          <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>{error}</Text>
         </View>
       ) : (
         <FlatList
@@ -204,7 +216,7 @@ export default function Government_Document_Screen() {
           ListFooterComponent={<NeedHelpBanner />}
           ListEmptyComponent={
             <View style={styles.centeredState}>
-              <Text style={styles.stateText}>No services found in this category.</Text>
+              <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>No services found in this category.</Text>
             </View>
           }
         />

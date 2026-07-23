@@ -110,7 +110,7 @@ export const getServiceByCategory = async (
       };
     }
 
-    console.log(
+    __DEV__ && console.log(
       '📡 Fetching category:',
       categoryId
     );
@@ -189,7 +189,7 @@ export const getServiceByCategory = async (
 export const getServiceDetails = async (serviceId: number) => {
   try {
     const res = await API.get(`/service/details/${serviceId}`);
-    console.log("✅ Service Details Response:", res.data);
+    __DEV__ && console.log("✅ Service Details Response:", res.data);
     return res.data;
   } catch (error: any) {
     console.error("❌ Service Details Error:", error?.response || error);
@@ -259,7 +259,7 @@ export const createServiceEnquiry = async (payload: CreateServiceEnquiryPayload)
 
     const res = await API.post('/service-enquiry', requestBody);
 
-    console.log('✅ Enquiry Success:', res.data);
+    __DEV__ && console.log('✅ Enquiry Success:', res.data);
     return res.data;
   } catch (error: any) {
     const errorData = error?.response?.data;
@@ -310,7 +310,7 @@ export const getAllServices = async (search = '') => {
 
     return response.data;
   } catch (error) {
-    console.log('Get Services API Error:', error?.response || error);
+    __DEV__ && console.log('Get Services API Error:', error?.response || error);
 
     throw error?.response?.data || {
       success: false,

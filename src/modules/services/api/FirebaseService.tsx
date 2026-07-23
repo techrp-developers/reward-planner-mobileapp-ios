@@ -74,7 +74,7 @@ export const createFirebaseEnquiry = async (
       createdAt: serverTimestamp(),
     });
 
-    console.log('✅ Firebase Enquiry Saved:', {
+    __DEV__ && console.log('✅ Firebase Enquiry Saved:', {
       id: docRef.id,
       service_id: payload.service_id,
       name: payload.name,
@@ -113,7 +113,7 @@ export const getFirebaseInsuranceLeads = async (
       .map((doc) => toInsuranceLead(doc.id, doc.data()))
       .filter((lead): lead is FirebaseInsuranceLead => lead !== null);
 
-    console.log(`✅ Firebase Insurance Leads fetched: ${leads.length}`);
+    __DEV__ && console.log(`✅ Firebase Insurance Leads fetched: ${leads.length}`);
     return leads;
   } catch (error: any) {
     // Fallback path when composite index is not ready.
@@ -135,7 +135,7 @@ export const getFirebaseInsuranceLeads = async (
             return bMs - aMs;
           });
 
-        console.log(`✅ Firebase Insurance Leads fetched (fallback): ${leads.length}`);
+        __DEV__ && console.log(`✅ Firebase Insurance Leads fetched (fallback): ${leads.length}`);
         return leads;
       } catch (fallbackError) {
         console.error('❌ Firebase Insurance Leads fallback error:', fallbackError);

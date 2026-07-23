@@ -13,7 +13,7 @@ const PaymentScreen = () => {
       setLoading(true);
 
       // ✅ Step 1: Create Order from Backend
-      const data = await createPaymentOrder(orderId, 300);
+      const data = await createPaymentOrder(orderId);
 
       const options = {
         key: data.key,
@@ -50,7 +50,7 @@ const PaymentScreen = () => {
             }
 
           } catch (error) {
-            console.log("Verification error:", error);
+            __DEV__ && console.log("Verification error:", error);
             pollPaymentStatus();
           }
         })

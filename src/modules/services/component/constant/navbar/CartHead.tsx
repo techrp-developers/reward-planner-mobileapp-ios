@@ -9,12 +9,14 @@ import type { HomeStackParamList } from '../../../navigation/type';
 import { useServiceCartCount } from '../../../hooks/useServiceCartCount';
 import { fetchUserInfo } from "../../../../common/auth/api/AuthAPI";
 import { useAuth } from "../../../../common/auth/context/AuthContext";
+import { useServicesTheme } from "../../../utils/useServicesTheme";
 type CartHeadProps = {
   onBackPress?: () => void;
 };
 
 function CartHead({ onBackPress }: CartHeadProps) {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
+  const servicesTheme = useServicesTheme();
   const { user, isAuthenticated } = useAuth();
   const authRewardPoints = (user as { rewardPoints?: number } | null)?.rewardPoints;
   const [rewardPoints, setRewardPoints] = useState(0);
@@ -83,15 +85,15 @@ function CartHead({ onBackPress }: CartHeadProps) {
 
       <View style={styles.searchRow}>
         {/* Search Input Container */}
-        <View style={styles.searchContainer}>
+        <View style={[styles.searchContainer, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
           <TouchableOpacity activeOpacity={0.7} style={styles.backButton} onPress={handleBackPress}>
-            <MaterialCommunityIcons name="chevron-left" size={28} color="#6B7280" />
+            <MaterialCommunityIcons name="chevron-left" size={28} color={servicesTheme.colors.muted} />
           </TouchableOpacity>
 
           <TextInput
             placeholder={placeholder}
-            placeholderTextColor="#9CA3AF"
-            style={styles.searchInput}
+            placeholderTextColor={servicesTheme.colors.subtle}
+            style={[styles.searchInput, { color: servicesTheme.colors.text }]}
             showSoftInputOnFocus={false}
             onFocus={() => navigation.navigate('ServiceSearch')}
           />
@@ -100,7 +102,7 @@ function CartHead({ onBackPress }: CartHeadProps) {
         {/* Wallet Container */}
         <TouchableOpacity
           activeOpacity={0.85}
-          style={styles.walletBox}
+          style={[styles.walletBox, { backgroundColor: servicesTheme.colors.surface }]}
           onPress={handleWalletPress}
         >
           <WalletSvg width={18} height={18} />
@@ -111,12 +113,12 @@ function CartHead({ onBackPress }: CartHeadProps) {
 
         {/* Cart Icon */}
         <TouchableOpacity
-          style={styles.iconCircle}
+          style={[styles.iconCircle, { backgroundColor: servicesTheme.colors.surface }]}
           activeOpacity={0.8}
           onPress={handleCartPress}
         >
           <View>
-            <MaterialCommunityIcons name="cart-outline" size={18} color="#111827" />
+            <MaterialCommunityIcons name="cart-outline" size={18} color={servicesTheme.colors.text} />
 
             {totalQuantity > 0 && (
               <View style={styles.badge}>
@@ -134,8 +136,8 @@ function CartHead({ onBackPress }: CartHeadProps) {
 
 const styles = StyleSheet.create({
   headerWrapper: {
-    paddingTop: Platform.OS === 'ios' ? 52 : 46,
-    height: 100,
+    paddingTop: Platform.OS === 'ios' ? 62 : 46,
+    height: 110,
     zIndex: 10,
   },
   svgWrapper: {
@@ -193,25 +195,20 @@ const styles = StyleSheet.create({
   walletTag: {
     position: 'absolute',
     bottom: -7,
-    alignSelf: 'center',
     backgroundColor: '#5F341A',
+    minWidth: 44,
+
     borderRadius: 6,
     borderWidth: 1.25,
     borderColor: '#fff',
-    overflow: 'hidden',
-
+    alignItems: 'center',
   },
   walletTagText: {
-    width: 45,
-
     color: '#fff',
     fontWeight: '800',
     fontSize: 9,
-    paddingHorizontal: 6,
+    paddingHorizontal: 2,
     paddingVertical: 1.5,
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-
   },
   iconCircle: {
     width: 36,

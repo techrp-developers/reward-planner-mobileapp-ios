@@ -113,7 +113,7 @@ const CartRow = React.memo(function CartRow({
 
 export default function WithAddress() {
   const navigation = useNavigation<Nav>()
-  const stickyCTA = useStickyBottomCTA({ tabBarAware: true, extraSpacing: 0 })
+  const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 0 })
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const pulse = useRef(new Animated.Value(0)).current
@@ -133,7 +133,7 @@ export default function WithAddress() {
       // Ignore prefetch failures and continue navigation.
     })
 
-    navigation.navigate('OrderStepUI', checkoutParams)
+    navigation.push('OrderStepUI', checkoutParams)
   }, [navigation])
 
   useEffect(() => {
@@ -458,7 +458,7 @@ export default function WithAddress() {
         total={checkoutTotal}
         count={items.length}
         onProceedToBuy={() => goToCheckout()}
-        bottomOffset={stickyCTA.bottomOffset}
+        bottomOffset={0}
         onLayout={stickyCTA.onCtaLayout}
       />
     </View>

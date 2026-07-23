@@ -22,20 +22,45 @@ import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useGlobalSearch } from "../header/useGlobalSearch";
 import HeaderComponent from "../header/HeaderComponent";
 
+const HEADER_CACHE_TTL_MS = 10 * 60 * 1000;
+let globalSearchHeaderCache: {
+  userName: string;
+  userImage: string | null;
+  companyLogo: string | null;
+  fetchedAt: number;
+} | null = null;
+
 function GlobalSearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { isDark } = useAppTheme();
   const { isAuthenticated, user } = useAuth();
 
   const [search, setSearch] = React.useState("");
-  const [headerUserName, setHeaderUserName] = useState<string>(user?.name ?? "User");
-  const [headerUserImage, setHeaderUserImage] = useState<string | null>(null);
-  const [headerCompanyLogo, setHeaderCompanyLogo] = useState<string | null>(null);
+  const [headerUserName, setHeaderUserName] = useState<string>(
+    () => globalSearchHeaderCache?.userName ?? user?.name ?? "User",
+  );
+  const [headerUserImage, setHeaderUserImage] = useState<string | null>(
+    () => globalSearchHeaderCache?.userImage ?? null,
+  );
+  const [headerCompanyLogo, setHeaderCompanyLogo] = useState<string | null>(
+    () => globalSearchHeaderCache?.companyLogo ?? null,
+  );
 
   const pulse = useRef(new Animated.Value(0)).current;
 
   const loadHeaderInfo = useCallback(async () => {
     if (!isAuthenticated) return;
+
+    if (
+      globalSearchHeaderCache &&
+      Date.now() - globalSearchHeaderCache.fetchedAt < HEADER_CACHE_TTL_MS
+    ) {
+      setHeaderUserName(globalSearchHeaderCache.userName);
+      setHeaderUserImage(globalSearchHeaderCache.userImage);
+      setHeaderCompanyLogo(globalSearchHeaderCache.companyLogo);
+      return;
+    }
+
     try {
       const headers = await getAuthHeaders();
       if (!headers.Authorization) return;
@@ -47,12 +72,23 @@ function GlobalSearchScreen() {
 
       if (userRes.data?.success) {
         const d = userRes.data.data;
-        if (d.name) setHeaderUserName(d.name);
-        if (d.userImage) setHeaderUserImage(d.userImage);
-        if (d.company?.logo) setHeaderCompanyLogo(d.company.logo);
+        const nextUserName = d.name || headerUserName;
+        const nextUserImage = d.userImage ?? headerUserImage;
+        const nextCompanyLogo = d.company?.logo ?? headerCompanyLogo;
+
+        setHeaderUserName((prev) => (prev === nextUserName ? prev : nextUserName));
+        setHeaderUserImage((prev) => (prev === nextUserImage ? prev : nextUserImage));
+        setHeaderCompanyLogo((prev) => (prev === nextCompanyLogo ? prev : nextCompanyLogo));
+
+        globalSearchHeaderCache = {
+          userName: nextUserName,
+          userImage: nextUserImage,
+          companyLogo: nextCompanyLogo,
+          fetchedAt: Date.now(),
+        };
       }
     } catch {}
-  }, [isAuthenticated]);
+  }, [headerCompanyLogo, headerUserImage, headerUserName, isAuthenticated]);
 
   useEffect(() => { loadHeaderInfo(); }, [loadHeaderInfo]);
   useFocusEffect(useCallback(() => { loadHeaderInfo(); }, [loadHeaderInfo]));
@@ -80,8 +116,8 @@ function GlobalSearchScreen() {
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
     animation.start();

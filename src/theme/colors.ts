@@ -8,10 +8,10 @@ export const LightTheme = {
 };
 
 export const DarkTheme = {
-  background: "#111827",
-  card: "#1F2937",
+  background: "#09090B",
+  card: "#26262B",
   text: "#FFFFFF",
-  secondaryText: "#9CA3AF",
-  border: "#374151",
+  secondaryText: "#A1A1AA",
+  border: "rgba(255,255,255,0.14)",
   primary: "#A78BFA",
 };

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 import LinearGradient from 'react-native-linear-gradient';
 import { CalculatorScreen } from './CalculatorScreen';
 import { SliderRow, ResultCard, SectionHeader } from './UIComponents';
@@ -17,9 +18,14 @@ import {
 } from '../utils/calculations';
 
 // ─── Shared Card ──────────────────────────────────────────────────
-const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <View style={cardStyle.card}>{children}</View>
-);
+const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isDark } = useServicesTheme();
+  return (
+    <View style={[cardStyle.card, isDark && cardStyle.cardDark]}>
+      {children}
+    </View>
+  );
+};
 
 const cardStyle = StyleSheet.create({
   card: {
@@ -38,12 +44,16 @@ const cardStyle = StyleSheet.create({
       android: { elevation: 4 },
     }),
   },
+  cardDark: {
+    backgroundColor: '#1C1C26',
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
 });
 
 // ─── Maturity Banner ──────────────────────────────────────────────
 const MaturityBanner: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <LinearGradient
-    colors={['#24174E', '#5B3CB4', '#8B5CF6']}
+    colors={['#3545A3', '#080B26']}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
     style={bannerStyle.banner}

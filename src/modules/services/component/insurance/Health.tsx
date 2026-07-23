@@ -17,6 +17,7 @@ import Step1 from "./Step1";
 import Step2 from "./Step2";
 import Step3 from "./Step3";
 import QuotesResult from "./QuotesResult";
+import { useServicesTheme } from "../../utils/useServicesTheme";
 
 import { startInsurance, saveStep, mapMembersAges, mapMembersConfig } from "../../api/InsuranceApi";
 
@@ -50,6 +51,7 @@ const steps = ["Select Member", "Select Age of Members", "Basic Details"];
 export default function Health() {
   const navigation = useNavigation<any>();
   const { success, info } = useAlert();
+  const servicesTheme = useServicesTheme();
 
   const [step, setStep] = useState(0);
   const [stepLoading, setStepLoading] = useState(false);
@@ -161,7 +163,7 @@ export default function Health() {
   if (showResults) {
     return (
       <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F8F9FF" />
+        <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.background} />
         <QuotesResult
           quotes={quoteResults}
           onBack={handleBackToForm}
@@ -174,23 +176,23 @@ export default function Health() {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
+      <View style={[styles.header, { backgroundColor: servicesTheme.colors.surface, borderBottomColor: servicesTheme.colors.divider }]}>
         <TouchableOpacity onPress={() => navigation?.goBack?.()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back" size={24} color="#1A1A1A" />
+          <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Health Insurance</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Health Insurance</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
             Simple health cover for you and your family
           </Text>
         </View>
       </View>
 
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <StatusBar barStyle={servicesTheme.isDark ? "light-content" : "dark-content"} backgroundColor={servicesTheme.colors.surface} />
 
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.formGradient}
@@ -198,8 +200,8 @@ export default function Health() {
         <StepIndicator steps={steps} currentStep={step} />
 
         {stepLoading && (
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#8665FF" />
+          <View style={[styles.loadingOverlay, { backgroundColor: servicesTheme.isDark ? "rgba(9,9,11,0.74)" : "rgba(255,255,255,0.7)" }]}>
+            <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
           </View>
         )}
 

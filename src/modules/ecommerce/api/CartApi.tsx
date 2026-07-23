@@ -8,7 +8,7 @@ export type AddToCartPayload = {
 };
 
 export const addToCart = async (payload: AddToCartPayload) => {
-  console.log("📦 Sending AddToCart payload:", payload);
+  __DEV__ && console.log("📦 Sending AddToCart payload:", payload);
 
   const candidates: Array<{ endpoint: string; body: Record<string, number> }> = [
     {
@@ -53,7 +53,7 @@ export const addToCart = async (payload: AddToCartPayload) => {
         continue;
       }
 
-      console.log("✅ AddToCart response:", data);
+      __DEV__ && console.log("✅ AddToCart response:", data);
       return data;
     } catch (error: any) {
       lastError = error;
@@ -72,7 +72,7 @@ export const addToCart = async (payload: AddToCartPayload) => {
 
 export const deleteAllCartItems = async () => {
   try {
-    const res = await api.put("/v1/cart/cart-items");
+    const res = await api.delete("/v1/cart/cart-items");
     return res.data;
   } catch (error: any) {
     const status = Number(error?.response?.status || 0);
@@ -92,7 +92,7 @@ export const fetchCartItems = async () => {
   } catch (error: any) {
     const status = Number(error?.response?.status || 0);
     if (status === 503) {
-      console.log("Cart API unavailable (503), returning empty cart fallback");
+      __DEV__ && console.log("Cart API unavailable (503), returning empty cart fallback");
       return { items: [] };
     }
     throw error;
@@ -138,7 +138,7 @@ export const deleteCartItem = async (cart_item_id: number) => {
     try {
       const res = await request();
       const data = res?.data;
-      console.log("✅ Item deleted from cart:", cart_item_id);
+      __DEV__ && console.log("✅ Item deleted from cart:", cart_item_id);
       return data;
     } catch (err: any) {
       lastError = err;

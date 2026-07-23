@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 type Props = {
   title: string;
@@ -19,6 +20,8 @@ export default function SelectableServiceCard({
   selected,
   onPress,
 }: Props) {
+  const servicesTheme = useServicesTheme();
+
   if (selected) {
     return (
       <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
@@ -29,7 +32,10 @@ export default function SelectableServiceCard({
           end={{ x: 1, y: 0.5 }}
           style={styles.gradientBorder}
         >
-          <View style={styles.selectedCard}>
+          <View style={[
+            styles.selectedCard,
+            { backgroundColor: servicesTheme.isDark ? '#18112A' : '#FEF4FF' },
+          ]}>
             <CardContent title={title} planTitle={planTitle} price={price} oldPrice={oldPrice} />
           </View>
         </LinearGradient>
@@ -42,7 +48,13 @@ export default function SelectableServiceCard({
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.85}
-      style={styles.unselectedCard}
+      style={[
+        styles.unselectedCard,
+        {
+          backgroundColor: servicesTheme.colors.surface,
+          borderColor: servicesTheme.colors.border,
+        },
+      ]}
     >
       <CardContent title={title} planTitle={planTitle} price={price} oldPrice={oldPrice} />
     </TouchableOpacity>
@@ -59,14 +71,16 @@ function CardContent({
   price: string;
   oldPrice: string;
 }) {
+  const servicesTheme = useServicesTheme();
+
   return (
     <>
-      <Text style={styles.title}>{title}</Text>
+      <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
       {!!planTitle && (
-        <Text style={styles.planTitle} numberOfLines={2}>{planTitle}</Text>
+        <Text style={[styles.planTitle, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{planTitle}</Text>
       )}
       <View style={styles.priceRow}>
-        <Text style={styles.price}>{price}</Text>
+        <Text style={[styles.price, { color: servicesTheme.colors.textStrong }]}>{price}</Text>
         <Text style={styles.oldPrice}>{oldPrice}</Text>
       </View>
     </>

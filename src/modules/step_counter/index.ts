@@ -2,12 +2,9 @@
  * Step Counter Module Exports
  */
 
-// Screens
-export { default as StepCounterScreen } from './screens/StepCounterScreen';
-export { default as StepCounterScreenWithHook } from './screens/StepCounterScreenWithHook';
-
-// Hooks
-export { useStepCounter } from './hooks/useStepCounter';
+// Current screens / hooks
+export { default as StepsTrackerScreen } from './component/StepCode/StepsTrackerScreen';
+export { useStepTracker } from './component/StepCode/useStepTracker';
 
 // Utilities
 export {

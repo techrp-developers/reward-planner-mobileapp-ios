@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useServicesTheme } from '../../../utils/useServicesTheme';
 interface PackItemCardProps {
   title: string;
   desc: string;
@@ -30,8 +31,18 @@ const PackItemCard: React.FC<PackItemCardProps> = ({
   selected = true,
   onToggleSelect,
 }) => {
+  const servicesTheme = useServicesTheme();
+
   return (
-    <View style={styles.outerCard}>
+    <View
+      style={[
+        styles.outerCard,
+        {
+          backgroundColor: servicesTheme.colors.surface,
+          borderColor: servicesTheme.colors.border,
+        },
+      ]}
+    >
       {/* SAVE BADGE */}
       {Boolean(saveText) && (
         <View style={styles.saveBadge}>
@@ -53,7 +64,7 @@ const PackItemCard: React.FC<PackItemCardProps> = ({
 )}
 
           <LinearGradient
-            colors={['#F3F3F3', '#E3E4FF']}
+            colors={servicesTheme.isDark ? ['#27272A', '#18181B'] : ['#F3F3F3', '#E3E4FF']}
             style={styles.imageWrap}
           >
             {image && (
@@ -68,8 +79,8 @@ const PackItemCard: React.FC<PackItemCardProps> = ({
 
         {/* CONTENT */}
         <View style={styles.content}>
-          <Text numberOfLines={1} style={styles.title}>{title}</Text>
-          <Text numberOfLines={2} style={styles.desc}>{desc}</Text>
+          <Text numberOfLines={1} style={[styles.title, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
+          <Text numberOfLines={2} style={[styles.desc, { color: servicesTheme.colors.muted }]}>{desc}</Text>
 
           <View style={styles.priceRow}>
             {showOldPrice && oldPrice > 0 && (

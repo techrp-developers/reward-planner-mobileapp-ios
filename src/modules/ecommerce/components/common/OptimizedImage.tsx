@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   ImageResizeMode,
   ImageSourcePropType,
@@ -29,7 +29,7 @@ type OptimizedImageProps = {
   loadEnabled?: boolean;
 };
 
-export default function OptimizedImage({
+function OptimizedImage({
   path,
   width,
   height,
@@ -44,7 +44,10 @@ export default function OptimizedImage({
   testID,
   loadEnabled = true,
 }: OptimizedImageProps) {
-  const optimizedUri = getProductImageUrl(path ?? "", sizePreset, quality);
+  const optimizedUri = useMemo(
+    () => getProductImageUrl(path ?? "", sizePreset, quality),
+    [path, quality, sizePreset],
+  );
 
   return (
     <View
@@ -72,6 +75,8 @@ export default function OptimizedImage({
     </View>
   );
 }
+
+export default React.memo(OptimizedImage);
 
 const styles = StyleSheet.create({
   container: {

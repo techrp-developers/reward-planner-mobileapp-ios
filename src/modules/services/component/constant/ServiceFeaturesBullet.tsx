@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 const FolderSafe = require('../../assete/service/FolderService.png');
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 interface FeatureItem {
   title: string;
@@ -36,11 +37,13 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
   safetyTitle = '100% Data Safety',
   safetyText = 'Your personal information is protected and used only for your service request.',
 }) => {
+  const servicesTheme = useServicesTheme();
+
   return (
     <View>
 
       {/* ====== BLOCK 1 : ICON FEATURE LIST ====== */}
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
         {features.map((item, index) => (
           <View
             key={index}
@@ -49,22 +52,22 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
               index === features.length - 1 && styles.featureRowLast,
             ]}
           >
-            <View style={styles.iconCircle}>
+            <View style={[styles.iconCircle, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3E8FF' }]}>
               {item.useCheck ? (
-                <MaterialIcons name="check" size={16} color="#7C3AED" />
+                <MaterialIcons name="check" size={16} color={servicesTheme.colors.primary} />
               ) : (
                 item.Icon && <item.Icon width={18} height={18} />
               )}
             </View>
 
 
-            <Text style={styles.featureText}>{item.title}</Text>
+            <Text style={[styles.featureText, { color: servicesTheme.colors.text }]}>{item.title}</Text>
           </View>
         ))}
       </View>
 
       {/* ====== BLOCK 2 : GRADIENT TITLE + TIMELINE ====== */}
-      <View style={[styles.card, styles.journeyCard]}>
+      <View style={[styles.card, styles.journeyCard, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow, borderLeftColor: servicesTheme.colors.primaryDark }]}>
         <MaskedView
           maskElement={
             <Text style={[styles.header, styles.transparentBg]}>
@@ -72,7 +75,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
             </Text>
           }
         >
-          <LinearGradient colors={['#8665FF', '#5B47A3']}>
+          <LinearGradient colors={servicesTheme.gradients.primary}>
             <Text style={[styles.header, styles.hidden]}>
               {middleTitle}
             </Text>
@@ -94,8 +97,8 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
                   {!isLast && <View style={styles.timelineLine} />}
                 </View>
                 <View style={[styles.timelineContent, !isLast && styles.timelineContentSpacing]}>
-                  <Text style={styles.timelineHeading}>{heading}</Text>
-                  {!!detail && <Text style={styles.timelineDetail}>{detail}</Text>}
+                <Text style={[styles.timelineHeading, { color: servicesTheme.colors.textStrong }]}>{heading}</Text>
+                  {!!detail && <Text style={[styles.timelineDetail, { color: servicesTheme.colors.muted }]}>{detail}</Text>}
                 </View>
               </View>
             );
@@ -106,15 +109,15 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
       {/* ====== BLOCK 2.5 : STATS BLOCK (NEW) ====== */}
       {stats && (
         <LinearGradient
-          colors={['#F1EFFF', '#ECEBFF']}
+          colors={servicesTheme.isDark ? ['#18112A', '#111113'] : ['#F1EFFF', '#ECEBFF']}
           style={styles.statsCard}
         >
           {stats.map((item, index) => (
             <React.Fragment key={index}>
               {index > 0 && <View style={styles.statDivider} />}
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>{item.value}</Text>
-                <Text style={styles.statLabel}>{item.label}</Text>
+                <Text style={[styles.statValue, { color: servicesTheme.colors.primary }]}>{item.value}</Text>
+                <Text style={[styles.statLabel, { color: servicesTheme.colors.muted }]}>{item.label}</Text>
               </View>
             </React.Fragment>
           ))}
@@ -124,12 +127,12 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
       {/* ====== BLOCK 3 : DATA SAFETY (OPTIONAL) ====== */}
       {showSafetyCard && (
         <LinearGradient
-          colors={['#F3F3F3', '#E9FFE3']}
+          colors={servicesTheme.isDark ? ['#111113', '#132016'] : ['#F3F3F3', '#E9FFE3']}
           style={styles.safetyCard}
         >
           <View style={styles.flexOne}>
             <Text style={styles.safetyTitle}>{safetyTitle}</Text>
-            <Text style={styles.safetyText}>
+            <Text style={[styles.safetyText, { color: servicesTheme.colors.muted }]}>
               {safetyText}
             </Text>
           </View>
@@ -144,7 +147,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
         </LinearGradient>
       )}
 
-
+      
 
     </View>
   );
@@ -268,8 +271,10 @@ const styles = StyleSheet.create({
   safetyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-
-    // borderRadius: 18,
+    padding: 16,
+    marginHorizontal: 16,
+    marginBottom: 14,
+    borderRadius: 18,
     shadowColor: '#1F2937',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.06,
@@ -281,10 +286,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: '#1B5E20', // solid green like screenshot
-    marginHorizontal: 16,
-    // marginBottom: 14,|
-    padding: 8,
-    paddingTop: 16,
   },
 
   safetyText: {
@@ -292,9 +293,6 @@ const styles = StyleSheet.create({
     color: '#4B5563',
     marginTop: 6,
     lineHeight: 18,
-    padding: 8,
-    marginHorizontal: 16,
-    marginBottom: 14,
   },
 
   iconWrap: {
@@ -311,7 +309,8 @@ const styles = StyleSheet.create({
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-
+    paddingVertical: 18,
+    paddingHorizontal: 10,
     marginHorizontal: 16,
     marginBottom: 14,
     borderRadius: 18,
@@ -325,7 +324,6 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     flex: 1,
-    paddingVertical: 18,
     paddingHorizontal: 10,
   },
 

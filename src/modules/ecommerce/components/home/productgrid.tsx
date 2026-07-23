@@ -13,6 +13,7 @@ import ProductCard from "../../constants/product_cart/ProductCard";
 import { fetchAllProducts, fetchSimilarProducts } from "../../api/ProductApi";
 import SkeletonBox from "../../../services/component/constant/SkeletonBox";
 import { normalizeProduct } from "../../utils/normalizeProduct";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Props = {
   products?: any[];
@@ -25,6 +26,7 @@ type Props = {
   loadingMore?: boolean;
   hasNextPage?: boolean;
   ListFooterComponent?: React.ReactElement | null;
+  onProductPress?: (productId: string | number, item: any) => void;
 };
 
 const shuffle = (arr: any[]) => [...arr].sort(() => Math.random() - 0.5);
@@ -50,9 +52,11 @@ export default function ProductGrid({
   loadingMore = false,
   hasNextPage = false,
   ListFooterComponent = null,
+  onProductPress,
 }: Props) {
+  const { theme } = useAppTheme();
   const pulse = useRef(new Animated.Value(0)).current;
-  const visibleProductIdsRef = useRef<Set<string>>(new Set());
+  const loadedProductIdsRef = useRef<Set<string>>(new Set());
   const [, forceVisibleTick] = React.useState(0);
   const { width: screenWidth } = useWindowDimensions();
 
@@ -62,8 +66,8 @@ export default function ProductGrid({
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
     animation.start();
@@ -189,20 +193,17 @@ export default function ProductGrid({
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
-      const nextVisible = new Set<string>();
+      let didChange = false;
       viewableItems.forEach((entry) => {
         const product = entry.item as any;
         const key = String(product?.id ?? product?.product_id ?? product?._id ?? "");
-        if (key) nextVisible.add(key);
+        if (key && !loadedProductIdsRef.current.has(key)) {
+          loadedProductIdsRef.current.add(key);
+          didChange = true;
+        }
       });
-      const previousVisible = visibleProductIdsRef.current;
-      const didChange =
-        previousVisible.size !== nextVisible.size ||
-        [...nextVisible].some((key) => !previousVisible.has(key));
 
       if (!didChange) return;
-
-      visibleProductIdsRef.current = nextVisible;
       forceVisibleTick((prev) => prev + 1);
     }
   ).current;
@@ -215,14 +216,19 @@ export default function ProductGrid({
   const renderItem = useCallback(
     ({ item }: { item: any }) => {
       const itemKey = String(item?.id ?? item?.product_id ?? item?._id ?? "");
-      const shouldLoadImage = visibleProductIdsRef.current.has(itemKey);
+      const shouldLoadImage = !useFlatList || loadedProductIdsRef.current.has(itemKey);
       return (
         <View style={[styles.itemWrap, { width: cardWidth }]}>
-          <ProductCard item={item} cardWidth={cardWidth} shouldLoadImage={shouldLoadImage} />
+          <ProductCard
+            item={item}
+            cardWidth={cardWidth}
+            shouldLoadImage={shouldLoadImage}
+            onProductPress={onProductPress}
+          />
         </View>
       );
     },
-    [cardWidth]
+    [cardWidth, onProductPress, useFlatList]
   );
 
   const handleEndReached = useCallback(() => {
@@ -232,11 +238,11 @@ export default function ProductGrid({
 
   if (isLoading) {
     return (
-      <View style={styles.listContent}>
+      <View style={[styles.listContent, { backgroundColor: theme.background }]}>
         <View style={styles.skeletonRow}>
           {skeletonItemStyles.map(({ key, wrapperStyle }) => (
             <View key={key} style={wrapperStyle}>
-              <View style={styles.skeletonCard}>
+              <View style={[styles.skeletonCard, { backgroundColor: theme.card }]}>
                 <SkeletonBox pulse={pulse} width="100%" height={Math.round(cardWidth * 1.08)} borderRadius={12} />
                 <SkeletonBox pulse={pulse} width="88%" height={12} borderRadius={999} style={styles.skeletonText} />
                 <SkeletonBox pulse={pulse} width="56%" height={10} borderRadius={999} style={styles.skeletonTextSmall} />
@@ -251,12 +257,34 @@ export default function ProductGrid({
   if (errorMsg) {
     return (
       <View style={styles.center}>
-        <Text style={styles.errorText}>{errorMsg}</Text>
+        <Text style={[styles.errorText, { color: theme.secondaryText }]}>{errorMsg}</Text>
       </View>
     );
   }
 
   if (!dataToShow.length) return null;
+
+  if (!useFlatList) {
+    return (
+      <View style={[styles.listContent, { backgroundColor: theme.background }]}>
+        <View style={styles.staticGrid}>
+          {dataToShow.map((item, index) => (
+            <React.Fragment key={String(item?.id ?? item?.product_id ?? item?._id ?? index)}>
+              {renderItem({ item })}
+            </React.Fragment>
+          ))}
+        </View>
+        {hasNextPage && !loadingMore && onEndReached ? (
+          <View
+            onLayout={() => {
+              onEndReached();
+            }}
+          />
+        ) : null}
+        {ListFooterComponent}
+      </View>
+    );
+  }
 
   return (
     <FlatList
@@ -265,16 +293,16 @@ export default function ProductGrid({
       keyExtractor={(item, index) => String(item?.id ?? item?.product_id ?? item?._id ?? index)}
       numColumns={columns}
       renderItem={renderItem}
-      contentContainerStyle={styles.listContent}
+      contentContainerStyle={[styles.listContent, { backgroundColor: theme.background }]}
       columnWrapperStyle={styles.columnRow}
       showsVerticalScrollIndicator={false}
       onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={viewabilityConfig}
       removeClippedSubviews={true}
-      windowSize={5}
-      initialNumToRender={Math.max(DEFAULT_INITIAL_RENDER, columns * 3)}
-      maxToRenderPerBatch={columns * 2}
-      updateCellsBatchingPeriod={80}
+      windowSize={7}
+      initialNumToRender={Math.max(DEFAULT_INITIAL_RENDER, columns * 4)}
+      maxToRenderPerBatch={columns * 3}
+      updateCellsBatchingPeriod={48}
       scrollEnabled={useFlatList}
       nestedScrollEnabled={useFlatList}
       onEndReached={handleEndReached}
@@ -304,6 +332,11 @@ columnRow: {
     flexWrap: "wrap",
     alignItems: "flex-start",
     justifyContent: "flex-start",
+  },
+  staticGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: COLUMN_GAP,
   },
   center: {
     padding: 16,

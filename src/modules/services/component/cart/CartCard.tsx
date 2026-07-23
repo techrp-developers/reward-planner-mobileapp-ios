@@ -13,6 +13,7 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import LinearGradient from 'react-native-linear-gradient';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -48,6 +49,7 @@ const CartCard = ({
   removing = false,
   buyingNow = false,
 }: CartCardProps) => {
+  const servicesTheme = useServicesTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleOpen = () => {
@@ -60,7 +62,16 @@ const CartCard = ({
   const hasDocs = Array.isArray(documents) && documents.length > 0;
 
   return (
-    <View style={styles.cardContainer}>
+    <View
+      style={[
+        styles.cardContainer,
+        {
+          backgroundColor: servicesTheme.colors.surface,
+          borderColor: servicesTheme.colors.border,
+          shadowColor: servicesTheme.colors.shadow,
+        },
+      ]}
+    >
       {/* Save badge */}
       {saving > 0 && (
         <View style={styles.bundleBadge}>
@@ -71,25 +82,22 @@ const CartCard = ({
       <View style={styles.productSection}>
         <View style={styles.row}>
           {/* Thumbnail */}
-          <View style={styles.imageWrapper}>
-            <View style={styles.checkboxOverlay}>
-              <MaterialIcons name="check" size={12} color="white" />
-            </View>
+          <View style={[styles.imageWrapper, { backgroundColor: servicesTheme.colors.iconBg }]}>
             {imageUrl ? (
               <Image source={{ uri: getServiceImageUrl(imageUrl) }} style={styles.thumbnail} resizeMode="contain" />
             ) : (
               <View style={styles.imagePlaceholder}>
-                <MaterialIcons name="description" size={34} color="#8665FF" />
+                <MaterialIcons name="description" size={34} color={servicesTheme.colors.primary} />
               </View>
             )}
           </View>
 
           {/* Content */}
           <View style={styles.textContent}>
-            <Text style={styles.title} numberOfLines={2}>{serviceName}</Text>
-            <Text style={styles.variantBadge}>{variantName}</Text>
+            <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{serviceName}</Text>
+            <Text style={[styles.variantBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#EDE9FE', color: servicesTheme.colors.primary }]}>{variantName}</Text>
             {!!description && (
-              <Text style={styles.description} numberOfLines={2}>{description}</Text>
+              <Text style={[styles.description, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{description}</Text>
             )}
             <View style={styles.priceRow}>
               <Text style={styles.price}>₹{price.toLocaleString('en-IN')}</Text>
@@ -107,9 +115,9 @@ const CartCard = ({
       </View>
 
       {/* Action Buttons */}
-      <View style={styles.buttonRow}>
+      <View style={[styles.buttonRow, { borderTopColor: servicesTheme.colors.divider }]}>
         <TouchableOpacity
-          style={[styles.actionButton, styles.borderRight]}
+          style={[styles.actionButton, styles.borderRight, { borderRightColor: servicesTheme.colors.divider }]}
           onPress={onRemove}
           disabled={removing}
         >
@@ -138,13 +146,13 @@ const CartCard = ({
       {/* Documents Dropdown */}
       {hasDocs && (
         <LinearGradient
-          colors={['#F0E2FE', '#FEFEFF', '#FEFDFF']}
+          colors={servicesTheme.isDark ? ['#18112A', '#111113', '#111113'] : ['#F0E2FE', '#FEFEFF', '#FEFDFF']}
           start={{ x: 0, y: 0.5 }}
           end={{ x: 1, y: 0.5 }}
           style={styles.dropdownSection}
         >
           <TouchableOpacity onPress={toggleOpen} style={styles.dropdownHeader} activeOpacity={0.8}>
-            <Text style={styles.dropdownTitle}>Documents Needed to Proceed</Text>
+            <Text style={[styles.dropdownTitle, { color: servicesTheme.colors.textStrong }]}>Documents Needed to Proceed</Text>
             <View style={styles.headerRight}>
               <View style={styles.folderIcon}>
                 <MaterialIcons name="folder" size={18} color="white" />
@@ -152,7 +160,7 @@ const CartCard = ({
               <MaterialIcons
                 name={isOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
                 size={24}
-                color="#333"
+                color={servicesTheme.colors.text}
               />
             </View>
           </TouchableOpacity>
@@ -162,7 +170,7 @@ const CartCard = ({
               {documents!.map((doc, i) => (
                 <View key={i} style={styles.listItem}>
                   <View style={styles.docDot} />
-                  <Text style={styles.listText}>{doc}</Text>
+                  <Text style={[styles.listText, { color: servicesTheme.colors.text }]}>{doc}</Text>
                 </View>
               ))}
             </View>
@@ -215,15 +223,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
     flexShrink: 0,
-  },
-  checkboxOverlay: {
-    position: 'absolute',
-    top: -5,
-    left: -5,
-    backgroundColor: '#7C3AED',
-    borderRadius: 5,
-    padding: 3,
-    zIndex: 1,
   },
   thumbnail: {
     width: 62,

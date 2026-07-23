@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,25 @@ import {
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
-import { CommonActions, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { rs, fs } from '../../../utils/responsive';
 import { useAppTheme } from '../../../theme/ThemeContext';
 
-type TopTab = 'Product' | 'Services' | 'Payments' | 'DineOut';
+export type ExploreServiceTab = 'Product' | 'Services' | 'Payments' | 'DineOut';
+type TopTab = ExploreServiceTab;
+
+type ServicesModuleProps = {
+  onModulePress?: (tab: ExploreServiceTab) => void;
+};
 
 const Categories1 = require('../../../assets/sampleImages/Categories(1).png');
 const Categories2 = require('../../../assets/sampleImages/Categories(2).png');
 const Categories3 = require('../../../assets/sampleImages/Categories(3).png');
-const Categories4 = require('../../../assets/sampleImages/Categories(4).png');
-const Categories5 = require('../../../assets/sampleImages/Categories(5).png');
-const Categories6 = require('../../../assets/sampleImages/Categories(6).png');
-const Categories7 = require('../../../assets/sampleImages/Categories(7).png');
+// const Categories4 = require('../../../assets/sampleImages/Categories(4).png');
+// const Categories5 = require('../../../assets/sampleImages/Categories(5).png');
+// const Categories6 = require('../../../assets/sampleImages/Categories(6).png');
+// const Categories7 = require('../../../assets/sampleImages/Categories(7).png');
 
 type CategoryItem = {
   image: ReturnType<typeof require>;
@@ -33,47 +39,71 @@ const categoriesData: CategoryItem[] = [
   { image: Categories1, tab: 'Product' },
   { image: Categories2, tab: 'Services' },
   { image: Categories3, tab: 'Payments' },
-  { image: Categories4, tab: 'Product' },
-  { image: Categories5, tab: 'Product' },
-  { image: Categories6, tab: 'Product' },
-  { image: Categories7, tab: 'DineOut' },
+  // { image: Categories4, tab: 'Product' },
+  // { image: Categories5, tab: 'Product' },
+  // { image: Categories6, tab: 'Product' },
+  // { image: Categories7, tab: 'DineOut' },
 ];
 
 const TAB_TO_MODULE: Record<TopTab, { screen: string; moduleName: TopTab }> = {
-  Product:  { screen: 'ProductModule',  moduleName: 'Product'  },
+  Product: { screen: 'ProductModule', moduleName: 'Product' },
   Services: { screen: 'ServicesModule', moduleName: 'Services' },
   Payments: { screen: 'PaymentsModule', moduleName: 'Payments' },
-  DineOut:  { screen: 'DineOutModule',  moduleName: 'DineOut'  },
+  DineOut: { screen: 'DineOutModule', moduleName: 'DineOut' },
 };
 
-export default function ServicesModule() {
+function ServicesModule({ onModulePress }: ServicesModuleProps) {
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
+  const isNavigatingRef = useRef(false);
+  const navigationUnlockTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
-  const CARD_WIDTH  = (width - rs(52)) / 3.3;
+  const CARD_WIDTH = (width - rs(52)) / 3.3;
   const CARD_HEIGHT = CARD_WIDTH * 1.08;
 
-  const t = useMemo(() => ({
-    wrapper:     { backgroundColor: 'transparent' } as ViewStyle,
-    headerTitle: { color: isDark ? '#FFFFFF' : '#0F172A' } as TextStyle,
-  }), [isDark]);
+  const t = useMemo(
+    () => ({
+      // wrapper:     { backgroundColor: 'transparent' } as ViewStyle,
+      wrapper: { backgroundColor: 'transparent' } as ViewStyle,
+      headerTitle: { color: isDark ? '#FFFFFF' : '#0F172A' } as TextStyle,
+    }),
+    [isDark],
+  );
 
   const handleCategoryPress = useCallback(
     (tab: TopTab) => {
+      if (isNavigatingRef.current) return;
+      isNavigatingRef.current = true;
+
       const target = TAB_TO_MODULE[tab];
-      navigation.dispatch(
-        CommonActions.navigate({
-          name: 'Home',
-          params: {
-            screen: target.screen,
-            params: { moduleName: target.moduleName },
-            moduleName: target.moduleName,
-          },
-        })
-      );
+      if (onModulePress) {
+        onModulePress(tab);
+      } else {
+        navigation.navigate('Home', {
+          screen: target.screen,
+          params: { moduleName: target.moduleName },
+          moduleName: target.moduleName,
+        });
+      }
+
+      navigationUnlockTimerRef.current = setTimeout(() => {
+        isNavigatingRef.current = false;
+        navigationUnlockTimerRef.current = null;
+      }, 1000);
     },
-    [navigation],
+    [navigation, onModulePress],
+  );
+
+  useEffect(
+    () => () => {
+      if (navigationUnlockTimerRef.current) {
+        clearTimeout(navigationUnlockTimerRef.current);
+      }
+    },
+    [],
   );
 
   const handleViewAll = useCallback(() => {
@@ -83,7 +113,9 @@ export default function ServicesModule() {
   return (
     <View style={[styles.wrapper, t.wrapper]}>
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, t.headerTitle]}>Explore Services</Text>
+        <Text style={[styles.headerTitle, t.headerTitle]}>
+          Explore Services
+        </Text>
         <TouchableOpacity
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           onPress={handleViewAll}
@@ -102,19 +134,38 @@ export default function ServicesModule() {
           <TouchableOpacity
             key={i}
             activeOpacity={0.88}
+            accessibilityRole="button"
             onPress={() => handleCategoryPress(item.tab)}
           >
             <Image
               source={item.image}
-              style={[styles.cardImage, { width: CARD_WIDTH, height: CARD_HEIGHT }]}
+              style={[
+                styles.cardImage,
+                { width: CARD_WIDTH, height: CARD_HEIGHT },
+              ]}
               resizeMode="cover"
             />
           </TouchableOpacity>
         ))}
+
+        <TouchableOpacity
+          activeOpacity={0.88}
+          onPress={handleViewAll}
+          style={[styles.standaloneArrowButton, { height: CARD_HEIGHT }]}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
+          <MaterialCommunityIcons
+            name="arrow-right"
+            size={rs(22)}
+            color={isDark ? '#FFFFFF' : '#111111'}
+          />
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
 }
+
+export default React.memo(ServicesModule);
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -143,10 +194,17 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: rs(16),
     gap: rs(10),
+    alignItems: 'flex-start',
   },
   cardImage: {
     borderRadius: rs(16),
     borderWidth: 1,
     borderColor: 'rgba(148, 163, 184, 0.16)',
+  },
+  standaloneArrowButton: {
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    paddingTop: rs(39),
+    marginLeft: -rs(5),
   },
 });

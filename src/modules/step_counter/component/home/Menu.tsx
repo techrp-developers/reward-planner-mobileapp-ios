@@ -10,7 +10,7 @@ import {
 
 export default function Menu() {
   const [activeTab, setActiveTab] = useState('Home');
-  const [cartItems, setCartItems] = useState(3);
+  const cartItems = 3;
 
   const menuItems = [
     { id: 2, name: 'Home', icon: require('../assets/Menu/Men(1).png') },
@@ -51,7 +51,6 @@ export default function Menu() {
                   activeTab === item.name && styles.activeMenuIcon,
                   item.isLogo && styles.logoIcon,
                 ]}
-                onError={(error) => console.log('Image loading error:', error.nativeEvent.error)}
               />
               {item.badge > 0 && !item.isLogo && (
                 <View style={styles.badge}>
@@ -61,12 +60,6 @@ export default function Menu() {
                 </View>
               )}
               
-              {/* Debug overlay for logo */}
-              {item.isLogo && (
-                <View style={styles.debugOverlay}>
-                  <Text style={styles.debugText}>Logo</Text>
-                </View>
-              )}
             </View>
             {!item.isLogo && (
               <Text
@@ -87,6 +80,9 @@ export default function Menu() {
 
 const styles = StyleSheet.create({
 
+  container: {
+    flex: 1,
+  },
   bottomMenu: {
     position: 'absolute',
     bottom: 0,

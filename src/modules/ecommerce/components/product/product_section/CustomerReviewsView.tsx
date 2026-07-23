@@ -13,15 +13,13 @@ import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import {
   fetchProductReviews,
-  fetchReviewableOrder,
   markReviewHelpful,
   removeHelpfulReview,
 } from "../../../api/ReviewApi";
+import { useAppTheme } from "../../../../../theme/ThemeContext";
 
 type CustomerReviewsViewProps = {
   productId: number | string;
-  variantId?: number | string;
-  onWriteReview?: (orderId: number) => void;
 };
 
 type ReviewItem = {
@@ -134,14 +132,10 @@ const extractReviews = (response: any): ReviewItem[] => {
 
 export default function CustomerReviewsView({
   productId,
-  variantId,
-  onWriteReview,
 }: CustomerReviewsViewProps) {
+  const { theme } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
-  const [checkingReviewable, setCheckingReviewable] = useState(false);
-  const [canReview, setCanReview] = useState(false);
-  const [reviewOrderId, setReviewOrderId] = useState<number | null>(null);
 
   const loadReviews = useCallback(async () => {
     try {
@@ -164,46 +158,6 @@ export default function CustomerReviewsView({
   useEffect(() => {
     loadReviews();
   }, [loadReviews]);
-
-  useEffect(() => {
-    let mounted = true;
-    const reviewTargetId = variantId ?? productId;
-
-    const loadReviewableOrder = async () => {
-      if (!reviewTargetId) {
-        if (!mounted) return;
-        setCanReview(false);
-        setReviewOrderId(null);
-        return;
-      }
-
-      try {
-        setCheckingReviewable(true);
-        const response = await fetchReviewableOrder(reviewTargetId);
-        const payload = response?.data ?? response;
-        const nextCanReview = Boolean(payload?.can_review);
-        const nextOrderId = toNumber(payload?.order_id, 0);
-
-        if (!mounted) return;
-        setCanReview(nextCanReview && nextOrderId > 0);
-        setReviewOrderId(nextOrderId > 0 ? nextOrderId : null);
-      } catch {
-        if (!mounted) return;
-        setCanReview(false);
-        setReviewOrderId(null);
-      } finally {
-        if (mounted) {
-          setCheckingReviewable(false);
-        }
-      }
-    };
-
-    loadReviewableOrder();
-
-    return () => {
-      mounted = false;
-    };
-  }, [productId, variantId]);
 
   const summary = useMemo(() => {
     const total = reviews.length;
@@ -260,41 +214,24 @@ export default function CustomerReviewsView({
     }
   };
 
-  const handleWriteReviewPress = () => {
-    if (checkingReviewable) {
-      return;
-    }
-
-    if (!canReview || !reviewOrderId) {
-      Alert.alert("Write Review", "You can review this product only after a delivered order.");
-      return;
-    }
-
-    if (onWriteReview) {
-      onWriteReview(reviewOrderId);
-      return;
-    }
-    Alert.alert("Write Review", "Review form is not available right now.");
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.mainTitle}>Customer Reviews</Text>
+    <View style={[styles.container, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <Text style={[styles.mainTitle, { color: theme.text }]}>Customer Reviews</Text>
 
       {loading ? (
         <ActivityIndicator style={styles.loader} />
       ) : (
         <>
           <View style={styles.summaryRow}>
-            <Text style={styles.ratingValue}>{summary.average.toFixed(1)}</Text>
-            <Text style={styles.subtitle}>out of 5 • {reviews.length} ratings</Text>
+            <Text style={[styles.ratingValue, { color: theme.text }]}>{summary.average.toFixed(1)}</Text>
+            <Text style={[styles.subtitle, { color: theme.secondaryText }]}>out of 5 • {reviews.length} ratings</Text>
           </View>
 
           <View style={styles.breakdownContainer}>
             {summary.stars.map((item) => (
               <View style={styles.starRow} key={item.star}>
-                <Text style={styles.rowLabel}>{item.star} Star</Text>
-                <View style={styles.progressTrack}>
+                <Text style={[styles.rowLabel, { color: theme.text }]}>{item.star} Star</Text>
+                <View style={[styles.progressTrack, { backgroundColor: theme.background, borderColor: theme.border }]}>
                   {item.percent > 0 && (
                     <LinearGradient
                       colors={["#A855F7", "#EC4899"]}
@@ -304,42 +241,20 @@ export default function CustomerReviewsView({
                     />
                   )}
                 </View>
-                <Text style={styles.rowPercentage}>{item.percent}%</Text>
+                <Text style={[styles.rowPercentage, { color: theme.text }]}>{item.percent}%</Text>
               </View>
             ))}
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.writeReviewBtn,
-              (!canReview || checkingReviewable) && styles.writeReviewBtnDisabled,
-            ]}
-            onPress={handleWriteReviewPress}
-            activeOpacity={0.85}
-            disabled={checkingReviewable || !canReview}
-          >
-            {checkingReviewable ? (
-              <ActivityIndicator size="small" color="#64748B" />
-            ) : (
-              <Text style={styles.writeReviewText}>Write a Review</Text>
-            )}
-          </TouchableOpacity>
-
-          {!checkingReviewable && !canReview && (
-            <Text style={styles.reviewHintText}>
-              Review is available only for delivered orders of this product.
-            </Text>
-          )}
-
           {reviews.slice(0, MAX_VISIBLE).map((review) => (
             <View style={styles.reviewCardContainer} key={String(review.id)}>
               <View style={styles.userHeader}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{review.author.charAt(0).toUpperCase()}</Text>
+                <View style={[styles.avatar, { backgroundColor: theme.background }]}>
+                  <Text style={[styles.avatarText, { color: theme.text }]}>{review.author.charAt(0).toUpperCase()}</Text>
                 </View>
                 <View style={styles.userInfo}>
-                  <Text style={styles.userName}>{review.author}</Text>
-                  <Text style={styles.reviewMeta}>
+                  <Text style={[styles.userName, { color: theme.text }]}>{review.author}</Text>
+                  <Text style={[styles.reviewMeta, { color: theme.secondaryText }]}>
                     {review.createdAt || ""}</Text>
                 </View>
               </View>
@@ -355,38 +270,38 @@ export default function CustomerReviewsView({
                 ))}
               </View>
 
-              {Boolean(review.title) && <Text style={styles.reviewHeadline}>{review.title}</Text>}
-              <Text style={styles.reviewBody}>{review.text || "No comment"}</Text>
+              {Boolean(review.title) && <Text style={[styles.reviewHeadline, { color: theme.text }]}>{review.title}</Text>}
+              <Text style={[styles.reviewBody, { color: theme.secondaryText }]}>{review.text || "No comment"}</Text>
 
               {review.media.length > 0 && (
                 <View style={styles.imageGrid}>
                   {review.media.slice(0, 3).map((image, index) => (
-                    <Image key={`${review.id}-${index}`} source={{ uri: image }} style={styles.reviewContentImage} />
+                    <Image key={`${review.id}-${index}`} source={{ uri: image }} style={[styles.reviewContentImage, { backgroundColor: theme.background }]} />
                   ))}
                 </View>
               )}
 
               <View style={styles.interactionRow}>
-                <TouchableOpacity style={styles.helpfulBtn} onPress={() => toggleHelpful(review)}>
+                <TouchableOpacity style={[styles.helpfulBtn, { backgroundColor: theme.background, borderColor: theme.border }]} onPress={() => toggleHelpful(review)}>
                   <MaterialCommunityIcons
                     name={review.isHelpfulByMe ? "thumb-up" : "thumb-up-outline"}
                     size={16}
-                    color={review.isHelpfulByMe ? "#7C3AED" : "#1E293B"}
+                    color={review.isHelpfulByMe ? "#7C3AED" : theme.text}
                   />
-                  <Text style={styles.btnText}>Helpful ({review.helpfulCount})</Text>
+                  <Text style={[styles.btnText, { color: theme.text }]}>Helpful ({review.helpfulCount})</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.shareBtn} onPress={() => handleShare(review)}>
-                  <MaterialCommunityIcons name="share-variant-outline" size={16} color="#1E293B" />
-                  <Text style={styles.btnText}>Share</Text>
+                  <MaterialCommunityIcons name="share-variant-outline" size={16} color={theme.text} />
+                  <Text style={[styles.btnText, { color: theme.text }]}>Share</Text>
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.bottomDivider} />
+              <View style={[styles.bottomDivider, { backgroundColor: theme.border }]} />
             </View>
           ))}
 
-          {!reviews.length && <Text style={styles.emptyText}>No reviews yet.</Text>}
+          {!reviews.length && <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No reviews yet.</Text>}
         </>
       )}
     </View>
@@ -415,24 +330,6 @@ const styles = StyleSheet.create({
   },
   progressFill: { height: "100%" },
   rowPercentage: { width: 40, fontSize: 12, color: "#1E293B", textAlign: "right", fontWeight: "600" },
-  writeReviewBtn: {
-    paddingVertical: 12,
-    backgroundColor: "#FFFFFF",
-    borderColor: "#D1D5DB",
-    borderWidth: 1,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-  writeReviewBtnDisabled: { opacity: 0.7 },
-  writeReviewText: { fontSize: 15, fontWeight: "700", color: "#1E293B" },
-  reviewHintText: {
-    marginTop: -6,
-    marginBottom: 12,
-    fontSize: 12,
-    color: "#64748B",
-  },
   reviewCardContainer: { paddingTop: 12 },
   userHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   avatar: {

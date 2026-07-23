@@ -19,7 +19,7 @@ export type TodoFilterType = "ALL" | "TODAY" | "PENDING" | "COMPLETED";
 
 export const addTodo = async (payload: TodoPayload) => {
   try {
-    console.log("📦 Sending Todo payload:", payload);
+    __DEV__ && console.log("📦 Sending Todo payload:", payload);
 
     const headers = await getAuthHeaders();
 
@@ -31,7 +31,7 @@ export const addTodo = async (payload: TodoPayload) => {
 
     return res.data;
   } catch (error: any) {
-    console.log("Add Todo Error:", error?.response?.data || error?.message);
+    __DEV__ && console.log("Add Todo Error:", error?.response?.data || error?.message);
     throw error;
   }
 };
@@ -97,7 +97,7 @@ export const updateTodo = async (
 
     return res.data;
   } catch (error: any) {
-    console.log("Update Todo Error:", error?.response?.data || error?.message);
+    __DEV__ && console.log("Update Todo Error:", error?.response?.data || error?.message);
     throw error;
   }
 };
@@ -121,7 +121,7 @@ export const completeTodoApi = async (
 
     return res.data;
   } catch (error: any) {
-    console.log(
+    __DEV__ && console.log(
       "Complete Todo Error:",
       error?.response?.data || error?.message
     );
@@ -149,7 +149,7 @@ export const completeMultipleTodosApi = async (
 
     return res.data;
   } catch (error: any) {
-    console.log(
+    __DEV__ && console.log(
       "Complete Multiple Todos Error:",
       error?.response?.data || error?.message
     );
@@ -178,7 +178,7 @@ export const updateTodoReminder = async (
 
     return res.data;
   } catch (error: any) {
-    console.log(
+    __DEV__ && console.log(
       "Update Reminder Error:",
       error?.response?.data || error?.message
     );
@@ -205,7 +205,7 @@ export const deleteTodoApi = async (
 
     return res.data;
   } catch (error: any) {
-    console.log("Delete Todo Error:", error?.response?.data || error?.message);
+    __DEV__ && console.log("Delete Todo Error:", error?.response?.data || error?.message);
     throw error;
   }
 };
@@ -230,7 +230,7 @@ export const deleteMultipleTodosApi = async (
 
     return res.data;
   } catch (error: any) {
-    console.log(
+    __DEV__ && console.log(
       "Delete Multiple Todos Error:",
       error?.response?.data || error?.message
     );

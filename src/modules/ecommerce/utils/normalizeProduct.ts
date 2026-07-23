@@ -8,7 +8,38 @@ const toStringValue = (value: unknown, fallback = "") => {
   return String(value);
 };
 
+const toBooleanValue = (value: unknown, fallback = false) => {
+  if (value === undefined || value === null) return fallback;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+
+  const normalized = String(value).trim().toLowerCase();
+  if (["1", "true", "yes", "y"].includes(normalized)) return true;
+  if (["0", "false", "no", "n"].includes(normalized)) return false;
+  return fallback;
+};
+
 export const normalizeProduct = (item: any) => {
+  const hasWishlistFlag =
+    item?.is_wishlist !== undefined || item?.is_wishlisted !== undefined;
+
+  const normalizedVariants = Array.isArray(item?.variants)
+    ? item.variants.map((variant: any) => {
+      const hasVariantWishlistFlag =
+        variant?.is_wishlist !== undefined || variant?.is_wishlisted !== undefined;
+
+      return {
+        ...variant,
+        ...(hasVariantWishlistFlag
+          ? {
+            is_wishlist: toBooleanValue(variant?.is_wishlist ?? variant?.is_wishlisted, false),
+            is_wishlisted: toBooleanValue(variant?.is_wishlisted ?? variant?.is_wishlist, false),
+          }
+          : {}),
+      };
+    })
+    : item?.variants;
+
   const rewardCoins = toNumber(
     item?.rewardCoins ??
       item?.reward_coins ??
@@ -28,6 +59,13 @@ export const normalizeProduct = (item: any) => {
 
   return {
     ...item,
+    ...(hasWishlistFlag
+      ? {
+        is_wishlist: toBooleanValue(item?.is_wishlist ?? item?.is_wishlisted, false),
+        is_wishlisted: toBooleanValue(item?.is_wishlisted ?? item?.is_wishlist, false),
+      }
+      : {}),
+    variants: normalizedVariants,
     rewardCoins,
     redeem_coins: redeemCoins,
     price: toStringValue(

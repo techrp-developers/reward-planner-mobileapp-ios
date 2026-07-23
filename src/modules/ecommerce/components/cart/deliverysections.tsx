@@ -9,6 +9,7 @@ import { fetchAllAddress } from "../../api/AddressApi";
 import { addressesQueryKey } from "../../navigation/navigationPerformance";
 import type { HomeStackParamList } from "../../navigation/types";
 import { useAuth } from "../../../common/auth/context/AuthContext";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -35,6 +36,7 @@ type DeliverySectionProps = {
 export default function DeliverySection(props: DeliverySectionProps) {
   const navigation = useNavigation<Nav>();
   const { isAuthenticated, user } = useAuth();
+  const { isDark, theme } = useAppTheme();
 
   const displayName = user?.name || (isAuthenticated ? "User" : "Guest");
 
@@ -73,7 +75,7 @@ export default function DeliverySection(props: DeliverySectionProps) {
     rawShipping.charAt(0).toUpperCase() + rawShipping.slice(1) + " Shipping";
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Row 1 — Address */}
       <TouchableOpacity
         activeOpacity={0.85}
@@ -85,15 +87,15 @@ export default function DeliverySection(props: DeliverySectionProps) {
         </View>
 
         <View style={styles.mid}>
-          <Text style={styles.label}>Deliver to</Text>
-          <Text style={styles.bold} numberOfLines={1}>{displayName}</Text>
-          <Text style={styles.sub} numberOfLines={1}>{displayAddress}</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Deliver to</Text>
+          <Text style={[styles.bold, { color: theme.text }]} numberOfLines={1}>{displayName}</Text>
+          <Text style={[styles.sub, { color: theme.secondaryText }]} numberOfLines={1}>{displayAddress}</Text>
         </View>
 
         <MaterialIcons name="chevron-right" size={22} color="#BDBDBD" />
       </TouchableOpacity>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       {/* Row 2 — Delivery date */}
       <View style={styles.row}>
@@ -102,16 +104,16 @@ export default function DeliverySection(props: DeliverySectionProps) {
         </View>
 
         <View style={styles.mid}>
-          <Text style={styles.label}>Estimated Delivery</Text>
-          <Text style={styles.bold}>{deliveryText}</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>Estimated Delivery</Text>
+          <Text style={[styles.bold, { color: theme.text }]}>{deliveryText}</Text>
         </View>
 
-        <View style={styles.pill}>
-          <Text style={styles.pillText}>{shippingText}</Text>
+        <View style={[styles.pill, { backgroundColor: isDark ? "#27272A" : "#F3F4F6" }]}>
+          <Text style={[styles.pillText, { color: theme.secondaryText }]}>{shippingText}</Text>
         </View>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       {/* Row 3 — Return | Replacement */}
       {/*  */}

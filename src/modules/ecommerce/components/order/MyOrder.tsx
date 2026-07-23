@@ -24,6 +24,7 @@ import FilterBottomSheet from "./FilterBottomSheet";
 import { fetchHistory } from "../../api/OrderApi";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { useAuth } from "../../../common/auth/context/AuthContext";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
@@ -54,6 +55,7 @@ const toTitleCase = (value?: string) => {
 export default function MyOrder() {
     const navigation = useNavigation<Nav>();
     const { isAuthenticated } = useAuth();
+    const { isDark, theme } = useAppTheme();
 
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -107,10 +109,11 @@ export default function MyOrder() {
     }, [loadOrders]);
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
             <OrderHeading
                 title="My Orders"
                 onBackPress={() => navigation.goBack()}
+                isDark={isDark}
             />
 
             <ScrollView
@@ -124,29 +127,29 @@ export default function MyOrder() {
 
                 {/* Search + filter */}
                 <View style={styles.searchRow}>
-                    <View style={styles.searchBox}>
-                        <MaterialCommunityIcons name="magnify" size={20} color="#777" />
+                    <View style={[styles.searchBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                        <MaterialCommunityIcons name="magnify" size={20} color={theme.secondaryText} />
                         <TextInput
                             placeholder="Search your orders here"
-                            placeholderTextColor="#999"
-                            style={styles.searchInput}
+                            placeholderTextColor={theme.secondaryText}
+                            style={[styles.searchInput, { color: theme.text }]}
                             value={searchQuery}
                             onChangeText={setSearchQuery}
                         />
                     </View>
 
                     <TouchableOpacity
-                        style={styles.filterBtn}
+                        style={[styles.filterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
                         onPress={() => setIsFilterVisible(true)}
                     >
-                        <MaterialCommunityIcons name="tune-variant" size={20} color="#555" />
-                        <Text style={styles.filterText}>Filters</Text>
+                        <MaterialCommunityIcons name="tune-variant" size={20} color={theme.text} />
+                        <Text style={[styles.filterText, { color: theme.text }]}>Filters</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Stats */}
                 <View style={styles.statsRow}>
-                    <LinearGradient colors={["#EFFFF4", "#DDFFE8"]} style={styles.statCard}>
+                    <LinearGradient colors={isDark ? ["#102016", "#12351F"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: theme.border }]}>
                         <Text style={styles.statLabel}>Coins Earned Till Date:</Text>
                         <View style={styles.statValueRow}>
                             <Coin width={22} height={22} />
@@ -154,7 +157,7 @@ export default function MyOrder() {
                         </View>
                     </LinearGradient>
 
-                    <LinearGradient colors={["#EFFFF4", "#DDFFE8"]} style={styles.statCard}>
+                    <LinearGradient colors={isDark ? ["#102016", "#12351F"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: theme.border }]}>
                         <Text style={styles.statLabel}>Total Savings Till Date:</Text>
                         <Text style={[styles.statValue, styles.savingsText]}>
                             ₹{summary?.totalSavings || 0}
@@ -166,7 +169,7 @@ export default function MyOrder() {
                 {loading ? (
                     <ActivityIndicator size="large" color="#0D862E" style={styles.loadingIndicator} />
                 ) : orders.length === 0 ? (
-                    <Text style={styles.emptyText}>
+                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
                         No orders found
                     </Text>
                 ) : (
@@ -271,6 +274,10 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 6,
+        height: 46,
+        paddingHorizontal: 12,
+        borderRadius: 10,
+        borderWidth: 1,
     },
 
     filterText: {

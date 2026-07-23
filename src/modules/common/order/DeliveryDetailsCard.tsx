@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Props = {
   addressType?: string;
@@ -15,23 +16,25 @@ export default function DeliveryDetailsCard({
   name,
   phone,
 }: Props) {
+  const { theme } = useAppTheme();
+
   return (
     <View style={styles.wrapper}>
       {/* Section Title */}
-      <Text style={styles.sectionTitle}>Delivery Details</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>Delivery Details</Text>
 
       {/* Card */}
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
         {/* Address Row */}
         <View style={styles.row}>
           <MaterialCommunityIcons
             name="map-marker"
             size={20}
-            color="#A855F7"
+            color={theme.primary}
             style={styles.icon}
           />
-          <Text style={styles.addressText}>
-            <Text style={styles.addressType}>{addressType} – </Text>
+          <Text style={[styles.addressText, { color: theme.secondaryText }]}>
+            <Text style={[styles.addressType, { color: theme.text }]}>{addressType} – </Text>
             {address}
           </Text>
         </View>
@@ -41,10 +44,10 @@ export default function DeliveryDetailsCard({
           <MaterialCommunityIcons
             name="account-circle"
             size={20}
-            color="#A855F7"
+            color={theme.primary}
             style={styles.icon}
           />
-          <Text style={styles.userText}>{name}</Text>
+          <Text style={[styles.userText, { color: theme.secondaryText }]}>{name}</Text>
         </View>
 
         {/* Phone Row */}
@@ -52,10 +55,10 @@ export default function DeliveryDetailsCard({
           <MaterialCommunityIcons
             name="phone-outline"
             size={20}
-            color="#A855F7"
+            color={theme.primary}
             style={styles.icon}
           />
-          <Text style={styles.userText}>{phone}</Text>
+          <Text style={[styles.userText, { color: theme.secondaryText }]}>{phone}</Text>
         </View>
       </View>
     </View>

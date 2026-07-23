@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   Animated,
   ActivityIndicator,
@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
+  FlatList,
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -22,6 +22,106 @@ type NavigationProp = NativeStackNavigationProp<
   "CategoriesScreen"
 >;
 
+const getCategoryId = (item: any) => item?.id ?? item?.category_id;
+const getSubcategoryId = (item: any) => item?.id ?? item?.subcategory_id;
+const CARD_COLUMNS = 3;
+
+const resolveImageUri = (item: any) => {
+  const src =
+    item?.image_url ||
+    item?.image ||
+    item?.icon ||
+    item?.category_image ||
+    item?.subcategory_image;
+
+  if (!src) return "";
+  if (String(src).startsWith("http")) return src;
+  return getProductImageUrl(src);
+};
+
+const CategoryIcon = React.memo(function CategoryIcon({ item }: { item: any }) {
+  const uri = resolveImageUri(item);
+
+  if (uri) {
+    return (
+      <Image
+        source={{ uri }}
+        style={styles.categoryIcon}
+        resizeMode="contain"
+      />
+    );
+  }
+
+  return <View style={styles.categoryIconPlaceholder} />;
+});
+
+const SidebarCategory = React.memo(function SidebarCategory({
+  category,
+  selected,
+  onPress,
+}: {
+  category: any;
+  selected: boolean;
+  onPress: (category: any) => void;
+}) {
+  const handlePress = useCallback(() => onPress(category), [category, onPress]);
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.sidebarItem,
+        selected && styles.sidebarItemActive,
+      ]}
+      activeOpacity={0.8}
+      onPress={handlePress}
+    >
+      <View style={styles.sidebarIconContainer}>
+        <CategoryIcon item={category} />
+      </View>
+      <Text style={styles.sidebarText} numberOfLines={2}>
+        {category.name}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
+const SubcategoryCard = React.memo(function SubcategoryCard({
+  item,
+  onPress,
+}: {
+  item: any;
+  onPress: (item: any) => void;
+}) {
+  const handlePress = useCallback(() => onPress(item), [item, onPress]);
+
+  return (
+    <TouchableOpacity
+      style={styles.gridItem}
+      activeOpacity={0.86}
+      onPress={handlePress}
+    >
+      <View style={styles.gridIconContainer}>
+        <CategoryIcon item={item} />
+      </View>
+      <Text style={styles.gridText} numberOfLines={2}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
+  );
+});
+
+type ContentRow =
+  | { type: "header"; key: string; title: string }
+  | { type: "items"; key: string; items: any[] };
+
+const chunkItems = (items: any[], size: number) => {
+  const rows: any[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    rows.push(items.slice(index, index + size));
+  }
+  return rows;
+};
+
 const CategoriesScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [categories, setCategories] = useState<any[]>([]);
@@ -30,12 +130,13 @@ const CategoriesScreen = () => {
   const [loading, setLoading] = useState(true);
   const [subLoading, setSubLoading] = useState(false);
   const pulse = useRef(new Animated.Value(0)).current;
+  const subcategoryRequestId = useRef(0);
 
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
       ])
     );
 
@@ -72,18 +173,26 @@ const CategoriesScreen = () => {
     if (selectedCatId === null || selectedCatId === undefined) return;
 
     const loadSubcategories = async () => {
+      const requestId = subcategoryRequestId.current + 1;
+      subcategoryRequestId.current = requestId;
+
       try {
         setSubLoading(true);
         const subcategoriesData = await fetchCategoriesBySubCategories(selectedCatId);
+        if (subcategoryRequestId.current !== requestId) return;
+
         const list = Array.isArray(subcategoriesData)
           ? subcategoriesData
           : subcategoriesData?.data || [];
         setSubcategories(list);
       } catch (error) {
+        if (subcategoryRequestId.current !== requestId) return;
         console.error("Error loading subcategories:", error);
         setSubcategories([]);
       } finally {
-        setSubLoading(false);
+        if (subcategoryRequestId.current === requestId) {
+          setSubLoading(false);
+        }
       }
     };
 
@@ -92,34 +201,82 @@ const CategoriesScreen = () => {
 
   const topCategories = useMemo(() => subcategories.slice(0, 3), [subcategories]);
   const newLaunches = useMemo(() => subcategories.slice(3), [subcategories]);
+  const contentRows = useMemo<ContentRow[]>(() => {
+    const rows: ContentRow[] = [];
 
-  const resolveImageUri = (item: any) => {
-    const src =
-      item?.image_url ||
-      item?.image ||
-      item?.icon ||
-      item?.category_image ||
-      item?.subcategory_image;
+    rows.push({ type: "header", key: "top-header", title: "Top Categories For You" });
+    chunkItems(topCategories, CARD_COLUMNS).forEach((items, index) => {
+      rows.push({ type: "items", key: `top-${index}`, items });
+    });
 
-    if (!src) return "";
-    if (String(src).startsWith("http")) return src;
-    return getProductImageUrl(src);
-  };
-
-  const renderCategoryIcon = (category: any) => {
-    const uri = resolveImageUri(category);
-    if (uri) {
-      return (
-        <Image
-          source={{ uri }}
-          style={styles.categoryIcon}
-          resizeMode="contain"
-        />
-      );
+    if (newLaunches.length > 0) {
+      rows.push({ type: "header", key: "launches-header", title: "New & Upcoming Launches" });
+      chunkItems(newLaunches, CARD_COLUMNS).forEach((items, index) => {
+        rows.push({ type: "items", key: `launches-${index}`, items });
+      });
     }
 
-    return <View style={styles.categoryIconPlaceholder} />;
-  };
+    return rows;
+  }, [newLaunches, topCategories]);
+
+  const openSubcategory = useCallback((item: any) => {
+    const categoryId = selectedCatId ?? item?.category_id;
+    const subcategoryId = getSubcategoryId(item);
+    if (categoryId === null || categoryId === undefined || subcategoryId === undefined) return;
+
+    const categoryTitle = categories.find(
+      (category) => getCategoryId(category) === categoryId,
+    )?.name ?? 'Products';
+
+    navigation.navigate('Category', {
+      categoryId,
+      title: categoryTitle,
+      subcategoryId,
+      subcategoryTitle: item?.name,
+    });
+  }, [categories, navigation, selectedCatId]);
+
+  const selectAllCategories = useCallback(() => {
+    subcategoryRequestId.current += 1;
+    setSelectedCatId(null);
+    setSubLoading(false);
+    setSubcategories([]);
+  }, []);
+
+  const selectCategory = useCallback((category: any) => {
+    const nextId = getCategoryId(category);
+    if (nextId === selectedCatId) return;
+    setSelectedCatId(nextId);
+  }, [selectedCatId]);
+
+  const renderSidebarCategory = useCallback(({ item }: { item: any }) => (
+    <SidebarCategory
+      category={item}
+      selected={selectedCatId === getCategoryId(item)}
+      onPress={selectCategory}
+    />
+  ), [selectCategory, selectedCatId]);
+
+  const renderContentRow = useCallback(({ item }: { item: ContentRow }) => {
+    if (item.type === "header") {
+      return <Text style={styles.sectionTitle}>{item.title}</Text>;
+    }
+
+    return (
+      <View style={styles.gridRow}>
+        {item.items.map((subcategory, index) => (
+          <SubcategoryCard
+            key={String(getSubcategoryId(subcategory) ?? `${subcategory?.name}-${index}`)}
+            item={subcategory}
+            onPress={openSubcategory}
+          />
+        ))}
+        {Array.from({ length: CARD_COLUMNS - item.items.length }).map((_, index) => (
+          <View key={`placeholder-${index}`} style={styles.gridItemPlaceholder} />
+        ))}
+      </View>
+    );
+  }, [openSubcategory]);
 
   if (loading) {
     return (
@@ -144,7 +301,7 @@ const CategoriesScreen = () => {
         onBackPress={() => navigation.goBack()}
       />
 
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
         {/* Left Sidebar Categories */}
         <View style={styles.mainContent}>
           <View style={styles.sidebar}>
@@ -154,10 +311,8 @@ const CategoriesScreen = () => {
                 styles.sidebarItem,
                 selectedCatId === null && styles.sidebarItemActive,
               ]}
-              onPress={() => {
-                setSelectedCatId(null);
-                setSubcategories([]);
-              }}
+              activeOpacity={0.8}
+              onPress={selectAllCategories}
             >
               <View style={styles.sidebarIconContainer}>
                 <AllIcons width={32} height={32} />
@@ -166,25 +321,17 @@ const CategoriesScreen = () => {
             </TouchableOpacity>
 
             {/* Dynamic Categories */}
-            {categories.map((category) => (
-              <TouchableOpacity
-                key={String(category.id ?? category.category_id ?? category.name)}
-                style={[
-                  styles.sidebarItem,
-                  selectedCatId === (category.id ?? category.category_id) && styles.sidebarItemActive,
-                ]}
-                onPress={() => {
-                  setSelectedCatId(category.id ?? category.category_id);
-                }}
-              >
-                <View style={styles.sidebarIconContainer}>
-                  {renderCategoryIcon(category)}
-                </View>
-                <Text style={styles.sidebarText} numberOfLines={2}>
-                  {category.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <FlatList
+              data={categories}
+              renderItem={renderSidebarCategory}
+              keyExtractor={(item, index) => String(getCategoryId(item) ?? `${item?.name}-${index}`)}
+              showsVerticalScrollIndicator={false}
+              removeClippedSubviews={true}
+              initialNumToRender={8}
+              maxToRenderPerBatch={6}
+              updateCellsBatchingPeriod={50}
+              windowSize={7}
+            />
           </View>
 
           {/* Right Content Area */}
@@ -194,49 +341,22 @@ const CategoriesScreen = () => {
                 <ActivityIndicator size="small" color="#8B5CF6" />
               </View>
             ) : (
-              <>
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Top Categories For You</Text>
-                  <View style={styles.grid}>
-                    {topCategories.map((item, index) => (
-                      <TouchableOpacity
-                        key={String(item.id ?? item.subcategory_id ?? `${item.name}-${index}`)}
-                        style={styles.gridItem}
-                      >
-                        <View style={styles.gridIconContainer}>
-                          {renderCategoryIcon(item)}
-                        </View>
-                        <Text style={styles.gridText} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>New & Upcoming Launches</Text>
-                  <View style={styles.grid}>
-                    {newLaunches.map((item, index) => (
-                      <TouchableOpacity
-                        key={String(item.id ?? item.subcategory_id ?? `${item.name}-${index}`)}
-                        style={styles.gridItem}
-                      >
-                        <View style={styles.gridIconContainer}>
-                          {renderCategoryIcon(item)}
-                        </View>
-                        <Text style={styles.gridText} numberOfLines={2}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              </>
+              <FlatList
+                data={contentRows}
+                renderItem={renderContentRow}
+                keyExtractor={(item) => item.key}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.contentList}
+                removeClippedSubviews={true}
+                initialNumToRender={4}
+                maxToRenderPerBatch={4}
+                updateCellsBatchingPeriod={40}
+                windowSize={7}
+              />
             )}
           </View>
         </View>
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -300,12 +420,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  section: {
-    marginBottom: 24,
-  },
   subLoadingWrap: {
     paddingTop: 20,
     alignItems: "center",
+  },
+  contentList: {
+    paddingBottom: 20,
   },
   sectionTitle: {
     fontSize: 16,
@@ -313,14 +433,13 @@ const styles = StyleSheet.create({
     color: "#111827",
     marginBottom: 16,
   },
-  grid: {
+  gridRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-    gap: 12,
+    justifyContent: "space-between",
+    marginBottom: 18,
   },
   gridItem: {
-    width: "30%",
+    width: "31%",
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
@@ -330,6 +449,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 2,
+  },
+  gridItemPlaceholder: {
+    width: "31%",
   },
   gridIconContainer: {
     width: 64,

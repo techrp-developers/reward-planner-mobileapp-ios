@@ -10,6 +10,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Logo from "../../../../assets/homepage/login_logo.svg";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type AuthModalStackParamList = {
   Login: undefined;
@@ -19,30 +20,31 @@ type NavigationProp = NativeStackNavigationProp<AuthModalStackParamList, "Login"
 
 function AccountActivationSuccess() {
   const navigation = useNavigation<NavigationProp>();
+  const { isDark } = useAppTheme();
 
   const handleReturnToLogin = () => {
     navigation.navigate("Login");
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}>
       <View style={styles.logoWrap}>
         <Logo width={160} height={160} />
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
         {/* Success Icon */}
-        <View style={styles.successOuter}>
+        <View style={[styles.successOuter, { backgroundColor: isDark ? "rgba(34,197,94,0.16)" : "#E6F7EC" }]}>
           <View style={styles.successInner}>
             <MaterialCommunityIcons name="check" size={40} color="#FFFFFF" />
           </View>
         </View>
 
-        <Text style={styles.title}>
+        <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>
           Account Activated{"\n"}Successfully
         </Text>
 
-        <Text style={styles.subText}>
+        <Text style={[styles.subText, { color: isDark ? "#D4D4D8" : "#666" }]}>
           Your Account has been Activated{"\n"}Successfully!
         </Text>
 
@@ -66,7 +68,6 @@ export default AccountActivationSuccess;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F5F0FF",
   },
 
   logoWrap: {
@@ -77,7 +78,6 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     marginTop: 20,
-    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
-    backgroundColor: "#E6F7EC",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 25,

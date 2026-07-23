@@ -14,12 +14,14 @@ import type { NavigationProp } from '@react-navigation/native';
 import Card from './Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
+import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const LimitedImage = require('../../assete/service/Limited_offer.png');
-const fallbackImg = require('../../assete/gov_documet/aadhar card.png');
+const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png');
 
 export default function LimitedOffer() {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
+  const servicesTheme = useServicesTheme();
   const { data, isLoading, error } = useServiceHome();
 
   const services = useMemo((): ServiceItem[] => {
@@ -45,11 +47,16 @@ export default function LimitedOffer() {
 
   if (error || services.length === 0) return null;
 
+  const getImageSource = (item: ServiceItem) => {
+    const imageUrl = item.variant_image || item.service_image || item.image;
+    return imageUrl ? { uri: imageUrl } : fallbackImg;
+  };
+
   return (
     <View style={styles.wrapper}>
       <View style={styles.headerRow}>
-        <Text style={styles.heading}>Limited Time Offers</Text>
-        <Text style={styles.subheading}>Grab them before they're gone</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Limited Time Offers</Text>
+        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Grab them before they're gone</Text>
       </View>
 
       <View style={styles.shadowWrap}>
@@ -59,7 +66,6 @@ export default function LimitedOffer() {
           end={{ x: 1, y: 1 }}
           style={styles.container}
         >
-          {/* Left: promotional banner image */}
           <View style={styles.left}>
             <Image
               source={LimitedImage}
@@ -68,7 +74,6 @@ export default function LimitedOffer() {
             />
           </View>
 
-          {/* Right: horizontal card scroll */}
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -76,27 +81,24 @@ export default function LimitedOffer() {
             style={styles.right}
           >
             {services.map(item => {
-              const imageUri = item.variant_image || item.service_image || item.image;
-              const imageSource = imageUri ? { uri: imageUri } : fallbackImg;
               const discount =
                 item.discount_percent && item.discount_percent > 0
                   ? `${item.discount_percent}%`
                   : undefined;
-              const coinsText = item.coins ? String(item.coins) : '';
+              const coinsText = item.coins ? `${item.coins}` : '0';
+              const orders = item.total_orders
+                ? `${(item.total_orders / 1000).toFixed(1)}K`
+                : '0';
 
               return (
                 <Card
                   key={`${item.service_id}-${item.variant_id}`}
-                  title={item.name}
-                  image={imageSource}
-                  price={item.price > 0 ? `₹${item.price}` : 'Get Quote'}
-                  oldPrice={
-                    item.mrp && item.mrp > item.price
-                      ? `₹${item.mrp}`
-                      : undefined
-                  }
+                  title={item.title || item.name}
+                  image={getImageSource(item)}
+                  price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
+                  oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
                   rating={item.rating}
-                  users={String(item.total_orders ?? 0)}
+                  users={orders}
                   coins={coinsText}
                   discount={discount}
                   onPress={() =>
