@@ -2,12 +2,26 @@ import api from '../../common/auth/api/axios';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type SearchResultNavigation = {
+  destination: 'category_products' | 'subcategory_products' | 'product_details' | 'service_details';
+  category_id?: number;
+  subcategory_id?: number;
+  product_id?: number;
+  service_id?: number;
+};
+
 export type SearchResultItem = {
-  id:    number;
+  id: number;
   title: string;
   image: string;
-  type:  'product' | 'service';
+  type: 'product' | 'category' | 'subcategory' | 'service';
+  category_id?: number;
+  category_name?: string;
+  subcategory_id?: number;
+  subcategory_name?: string;
+  navigation?: SearchResultNavigation;
 };
+
 
 export type SearchData = {
   products: SearchResultItem[];

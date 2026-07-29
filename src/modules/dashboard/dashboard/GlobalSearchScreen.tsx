@@ -87,7 +87,7 @@ function GlobalSearchScreen() {
           fetchedAt: Date.now(),
         };
       }
-    } catch {}
+    } catch { }
   }, [headerCompanyLogo, headerUserImage, headerUserName, isAuthenticated]);
 
   useEffect(() => { loadHeaderInfo(); }, [loadHeaderInfo]);
@@ -98,17 +98,17 @@ function GlobalSearchScreen() {
 
   // ── Theme tokens (mirrors HeaderComponent's `tk`) ──────────────────────────
   const tk = {
-    screenBg:          isDark ? "#15131C" : "#F8F7FB",
-    cardBg:            isDark ? "#1E1E32" : "#FFFFFF",
-    cardBorder:        isDark ? "rgba(255,255,255,0.08)" : "rgba(124,92,252,0.12)",
-    titleColor:        isDark ? "#F0EFFF" : "#1F1B24",
-    subTextColor:      isDark ? "#9B8FCC" : "#A6A1AE",
-    iconAccent:        isDark ? "#A78BFA" : "#7C5CFC",
-    iconAccentBg:      isDark ? "rgba(167,139,250,0.14)" : "#F3E9FB",
-    thumbBg:           isDark ? "#2A2A3E" : "#F3F0FF",
-    badgeProduct:      "#7C5CFC",
-    badgeService:      "#0EA5E9",
-    skeletonBase:      isDark ? "#2A2A3E" : "#ECE7F5",
+    screenBg: isDark ? "#15131C" : "#F8F7FB",
+    cardBg: isDark ? "#1E1E32" : "#FFFFFF",
+    cardBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(124,92,252,0.12)",
+    titleColor: isDark ? "#F0EFFF" : "#1F1B24",
+    subTextColor: isDark ? "#9B8FCC" : "#A6A1AE",
+    iconAccent: isDark ? "#A78BFA" : "#7C5CFC",
+    iconAccentBg: isDark ? "rgba(167,139,250,0.14)" : "#F3E9FB",
+    thumbBg: isDark ? "#2A2A3E" : "#F3F0FF",
+    badgeProduct: "#7C5CFC",
+    badgeService: "#0EA5E9",
+    skeletonBase: isDark ? "#2A2A3E" : "#ECE7F5",
     skeletonHighlight: isDark ? "#37374F" : "#F8F6FC",
   };
 
@@ -128,11 +128,50 @@ function GlobalSearchScreen() {
     setSearch("");
     reset();
 
-    if (item.type === "product") {
-      navigation.navigate("ProductDescription", { productId: item.id });
+    const destination = item.navigation?.destination;
+
+    if (destination === "category_products" || item.type === "category") {
+      navigation.navigate("Home", {
+        screen: "ProductModule",
+        params: {
+          screen: "Category",
+          params: {
+            categoryId: item.navigation?.category_id ?? item.id,
+            title: item.title,
+          },
+        },
+      });
+    } else if (destination === "subcategory_products" || item.type === "subcategory") {
+      navigation.navigate("Home", {
+        screen: "ProductModule",
+        params: {
+          screen: "Category",
+          params: {
+            categoryId: item.navigation?.category_id,
+            title: item.category_name || item.title,
+            subcategoryId: item.navigation?.subcategory_id ?? item.id,
+            subcategoryTitle: item.title,
+          },
+        },
+      });
+    } else if (destination === "service_details" || item.type === "service") {
+      navigation.navigate("ServiceStack", {
+        screen: "ServiceDescription",
+        params: {
+          serviceId: item.navigation?.service_id ?? item.id,
+          title: item.title,
+        },
+      });
     } else {
-      navigation.navigate("ServiceStack");
+      navigation.navigate("ProductDetails", { productId: item.navigation?.product_id ?? item.id });
     }
+  };
+
+  const badgeMeta: Record<string, { label: string; color: string; icon: "shopping-outline" | "briefcase-outline" | "shape-outline" }> = {
+    product: { label: "Product", color: tk.badgeProduct, icon: "shopping-outline" },
+    category: { label: "Category", color: tk.badgeProduct, icon: "shape-outline" },
+    subcategory: { label: "Subcategory", color: tk.badgeProduct, icon: "shape-outline" },
+    service: { label: "Service", color: tk.badgeService, icon: "briefcase-outline" },
   };
 
   const sections = [
@@ -212,7 +251,7 @@ function GlobalSearchScreen() {
                 <Text style={[styles.sectionHeader, { color: tk.iconAccent }]}>{section.title}</Text>
                 {section.data.map((item, index) => {
                   const isLast = index === section.data.length - 1;
-                  const badgeLabel = item.type === "product" ? "Product" : "Service";
+                  const meta = badgeMeta[item.type] ?? badgeMeta.service;
                   return (
                     <TouchableOpacity
                       key={`${item.type}-${item.id}`}
@@ -228,16 +267,16 @@ function GlobalSearchScreen() {
                         {item.image ? (
                           <Image source={{ uri: item.image }} style={styles.img} resizeMode="cover" />
                         ) : (
-                          <MaterialCommunityIcons name={section.icon} size={20} color={section.badgeColor} />
+                          <MaterialCommunityIcons name={meta.icon} size={20} color={meta.color} />
                         )}
                       </View>
                       <View style={styles.textContainer}>
                         <Text numberOfLines={1} style={[styles.title, { color: tk.titleColor }]}>
                           {item.title}
                         </Text>
-                        <View style={[styles.tagPill, { backgroundColor: section.badgeColor + "1A" }]}>
-                          <Text style={[styles.categoryTag, { color: section.badgeColor }]}>
-                            {badgeLabel}
+                        <View style={[styles.tagPill, { backgroundColor: meta.color + "1A" }]}>
+                          <Text style={[styles.categoryTag, { color: meta.color }]}>
+                            {meta.label}
                           </Text>
                         </View>
                       </View>

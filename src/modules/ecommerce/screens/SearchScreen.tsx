@@ -14,7 +14,17 @@ type SearchSuggestion = {
     id: number;
     title: string;
     image?: string;
-    type?: "product" | "category" | string;
+    type?: "product" | "category" | "subcategory" | string;
+    category_id?: number;
+    category_name?: string;
+    subcategory_id?: number;
+    subcategory_name?: string;
+    navigation?: {
+        destination: "category_products" | "subcategory_products" | "product_details";
+        category_id?: number;
+        subcategory_id?: number;
+        product_id?: number;
+    };
 };
 
 type SearchHistoryItem = string | { keyword?: string; title?: string; q?: string };
@@ -72,27 +82,36 @@ function SearchScreen() {
         loadHistory();
     }, [loadHistory]);
 
-    const handleSelectSuggestion = async (item: SearchSuggestion) => {
+    const handleSelectSuggestion = useCallback(async (item: SearchSuggestion) => {
         setShowSuggest(false);
         setSearch(item.title);
-        const normalizedType = String(item?.type || "product").trim().toLowerCase();
+        const destination = item?.navigation?.destination;
 
-        if (normalizedType === "category") {
+        if (destination === "category_products") {
             navigation.navigate("Category", {
-                categoryId: Number(item.id),
+                categoryId: Number(item.navigation?.category_id ?? item.id),
                 title: item.title,
             });
+        } else if (destination === "subcategory_products") {
+            navigation.navigate("Category", {
+                categoryId: Number(item.navigation?.category_id),
+                title: item.category_name || item.title,
+                subcategoryId: Number(item.navigation?.subcategory_id ?? item.id),
+                subcategoryTitle: item.title,
+            });
         } else {
-            navigation.navigate("ProductDescription", { productId: item.id });
+            navigation.navigate("ProductDescription", {
+                productId: item.navigation?.product_id ?? item.id,
+            });
         }
 
         try {
             await saveSearchHistory(item.title.trim());
             loadHistory();
-        } catch (error) {
-            console.error("Failed to save search history", error);
+        } catch {
+            // swallow — history save is best-effort
         }
-    };
+    }, [navigation, loadHistory]);
 
     const handleHistoryPress = (value: string) => {
         setSearch(value);
@@ -112,14 +131,21 @@ function SearchScreen() {
                 setLoadingSuggest(true);
                 const res = await fetchSearchSuggestions(search);
                 if (res?.success) {
-                    setSuggestions(res.suggestions || []);
+                    const grouped = res.suggestions || {};
+                    const flattened: SearchSuggestion[] = Array.isArray(grouped)
+                        ? grouped
+                        : [
+                            ...(grouped.categories || []),
+                            ...(grouped.subcategories || []),
+                            ...(grouped.products || []),
+                        ];
+                    setSuggestions(flattened);
                     setShowSuggest(true);
                 } else {
                     setSuggestions([]);
                     setShowSuggest(true);
                 }
-            } catch (e) {
-                console.error(e);
+            } catch {
                 setSuggestions([]);
                 setShowSuggest(true);
             } finally {
@@ -128,6 +154,7 @@ function SearchScreen() {
         }, 300);
         return () => clearTimeout(delay);
     }, [search]);
+
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={["left", "right", "bottom"]}>
@@ -167,10 +194,14 @@ function SearchScreen() {
                             </View>
                         ) : (
                             suggestions.map((item) => {
-                                const isCategory = String(item?.type || "product").trim().toLowerCase() === "category";
+                                const normalizedType = String(item?.type || "product").trim().toLowerCase();
+                                const isCategory = normalizedType === "category";
+                                const isSubcategory = normalizedType === "subcategory";
+                                const isCategoryLike = isCategory || isSubcategory;
+                                const tagLabel = isCategory ? "Category" : isSubcategory ? "Subcategory" : "Product";
                                 return (
                                     <TouchableOpacity
-                                        key={item.id}
+                                        key={`${normalizedType}-${item.id}`}
                                         activeOpacity={0.75}
                                         style={[styles.item, { backgroundColor: theme.card, shadowColor: isDark ? "#000000" : "#5B1E7A" }]}
                                         onPress={() => handleSelectSuggestion(item)}
@@ -183,9 +214,9 @@ function SearchScreen() {
                                         </View>
                                         <View style={styles.textContainer}>
                                             <Text numberOfLines={1} style={[styles.title, { color: theme.text }]}>{item.title}</Text>
-                                            <View style={[styles.tagPill, isCategory ? styles.tagPillCategory : styles.tagPillProduct]}>
-                                                <Text style={[styles.categoryTag, isCategory && styles.categoryTagCategory]}>
-                                                    {isCategory ? "Category" : "Product"}
+                                            <View style={[styles.tagPill, isCategoryLike ? styles.tagPillCategory : styles.tagPillProduct]}>
+                                                <Text style={[styles.categoryTag, isCategoryLike && styles.categoryTagCategory]}>
+                                                    {tagLabel}
                                                 </Text>
                                             </View>
                                         </View>
@@ -201,31 +232,31 @@ function SearchScreen() {
             ) : (
                 <View style={styles.content}>
                     <View style={styles.historyHeader}>
-                                <Text style={[styles.historyTitle, { color: theme.text }]}>Past Searches</Text>
+                        <Text style={[styles.historyTitle, { color: theme.text }]}>Past Searches</Text>
                         <View style={styles.historyActions}>
-                          <TouchableOpacity onPress={loadHistory} style={styles.actionButton} activeOpacity={0.75}>
-                            <MaterialCommunityIcons name="refresh" size={17} color={BRAND_PURPLE_LIGHT} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            onPress={async () => {
-                              try {
-                                const res = await clearSearchHistory();
-                                if (res?.success) {
-                                  await loadHistory();
-                                  Alert.alert("Success", "Search history cleared.");
-                                } else {
-                                  throw new Error("Failed to clear history");
-                                }
-                              } catch (error) {
-                                console.error("clearSearchHistory", error);
-                                Alert.alert("Error", "Unable to clear search history. Please try again.");
-                              }
-                            }}
-                            style={[styles.actionButton, styles.actionButtonDanger]}
-                            activeOpacity={0.75}
-                          >
-                            <MaterialCommunityIcons name="trash-can-outline" size={17} color="#EB5757" />
-                          </TouchableOpacity>
+                            <TouchableOpacity onPress={loadHistory} style={styles.actionButton} activeOpacity={0.75}>
+                                <MaterialCommunityIcons name="refresh" size={17} color={BRAND_PURPLE_LIGHT} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    try {
+                                        const res = await clearSearchHistory();
+                                        if (res?.success) {
+                                            await loadHistory();
+                                            Alert.alert("Success", "Search history cleared.");
+                                        } else {
+                                            throw new Error("Failed to clear history");
+                                        }
+                                    } catch (error) {
+                                        console.error("clearSearchHistory", error);
+                                        Alert.alert("Error", "Unable to clear search history. Please try again.");
+                                    }
+                                }}
+                                style={[styles.actionButton, styles.actionButtonDanger]}
+                                activeOpacity={0.75}
+                            >
+                                <MaterialCommunityIcons name="trash-can-outline" size={17} color="#EB5757" />
+                            </TouchableOpacity>
                         </View>
                     </View>
 

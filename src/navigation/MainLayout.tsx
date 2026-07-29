@@ -20,11 +20,17 @@ export type ModuleStackParamList = {
 
 const ModuleStack = createNativeStackNavigator<ModuleStackParamList>();
 
+type RouteParamsLike = {
+  screen?: string;
+  params?: RouteParamsLike;
+};
+
 type RouteStateLike = {
   index: number;
   routes: Array<{
     name: string;
     state?: RouteStateLike;
+    params?: RouteParamsLike;
   }>;
 };
 
@@ -63,14 +69,33 @@ const getRequestedMode = (params?: {
   return null;
 };
 
+// A deep `navigate('Home', { screen: 'ProductModule', params: { screen: 'Category', ... } })`
+// only populates `.state` on intermediate navigators once they've actually
+// mounted — on the first render tick it's still undefined. Falling back to
+// the target chain encoded in `.params` (screen/params.screen/...) mirrors
+// Navbar's own module-detection fallback for the same gap, so the navbar
+// hides immediately instead of flashing before the nested screen settles.
+const getParamsRouteChain = (params?: RouteParamsLike): string[] => {
+  const chain: string[] = [];
+  let current = params;
+  while (current?.screen) {
+    chain.push(current.screen);
+    current = current.params;
+  }
+  return chain;
+};
+
 const getActiveRouteChain = (state?: RouteStateLike): string[] => {
   if (!state?.routes?.length) return [];
 
   const focused = state.routes[state.index] ?? state.routes[0];
   const currentName = focused?.name ? [focused.name] : [];
 
-  if (!focused?.state) return currentName;
-  return [...currentName, ...getActiveRouteChain(focused.state)];
+  if (focused?.state) {
+    return [...currentName, ...getActiveRouteChain(focused.state)];
+  }
+
+  return [...currentName, ...getParamsRouteChain(focused?.params)];
 };
 
 const shouldShowNavbar = (routeChain: string[]): boolean => {
