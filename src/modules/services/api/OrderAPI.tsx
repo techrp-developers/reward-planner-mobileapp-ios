@@ -217,6 +217,7 @@ export interface ServiceItem {
   reward_coins_used?: number;
   reward_coins_earned?: number;
   status: string;
+  payment_status?: string;
   documents: ServiceDocument[];
   timeline: ServiceTimeline[];
   feedback: ServiceFeedback;
