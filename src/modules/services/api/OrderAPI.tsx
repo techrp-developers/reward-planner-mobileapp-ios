@@ -96,6 +96,11 @@ export interface ServiceCancellation {
   status?: string;
   reason?: string | null;
   refund_status?: string | null;
+  timeline?: Array<{
+    event: string;
+    label: string;
+    date: string | null;
+  }>;
 }
 
 export interface ServiceCancellationReason {
@@ -128,6 +133,8 @@ export interface ServiceCancellationDetails {
   };
   cancellation: null | {
     status: string;
+    reason?: string | null;
+    comment?: string | null;
     refund_status?: string | null;
     refund_method?: string | null;
     refund_amount: number;
@@ -222,7 +229,14 @@ export interface ServiceItem {
   timeline: ServiceTimeline[];
   feedback: ServiceFeedback;
   cancellation: ServiceCancellation;
-  refund: any;
+  refund: null | {
+    amount: number;
+    method: 'original' | 'wallet' | 'split';
+    total: number;
+    money_refund: number;
+    coin_refund: number;
+    status: string | null;
+  };
 }
 
 export interface ServiceDetailBundle {
