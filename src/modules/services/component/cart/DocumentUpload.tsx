@@ -39,7 +39,7 @@ type LocalDoc = ServiceDocument & {
   uploadState: 'idle' | 'picking' | 'ready' | 'uploading' | 'done' | 'error';
 };
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getReadableError = (err: any, fallback: string) =>
@@ -86,15 +86,16 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
 
   const ready = isDocReady(doc);
   const isUploading = doc.uploadState === 'uploading';
+  const isPicking = doc.uploadState === 'picking';
   const hasError = doc.uploadState === 'error';
 
   const statusColor = ready
     ? '#16A34A'
     : hasError
-    ? '#DC2626'
-    : doc.is_mandatory
-    ? '#7C3AED'
-    : '#6B7280';
+      ? '#DC2626'
+      : doc.is_mandatory
+        ? '#7C3AED'
+        : '#6B7280';
 
   const cardBorderColor = ready ? '#BBF7D0' : hasError ? '#FECACA' : servicesTheme.colors.border;
   const cardBg = ready
@@ -132,8 +133,8 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
               ready
                 ? 'check-circle'
                 : hasError
-                ? 'alert-circle'
-                : 'file-document-outline'
+                  ? 'alert-circle'
+                  : 'file-document-outline'
             }
             size={22}
             color={statusColor}
@@ -180,13 +181,13 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
             {doc.localName}
           </Text>
         ) : (
-          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>JPG · PNG · PDF · max 5 MB</Text>
+          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>JPG · PNG · PDF · max 10 MB</Text>
         )}
       </View>
 
       {/* Right action */}
       <View style={styles.cardRight}>
-        {isUploading ? (
+        {isUploading || isPicking ? (
           <ActivityIndicator size="small" color="#7C3AED" />
         ) : ready ? (
           isPersistedUpload ? (
@@ -338,6 +339,13 @@ const DocumentUpload = () => {
 
   // ── Pick file ──
   const handlePick = useCallback(async (doc: LocalDoc) => {
+    // Guard against double-taps opening the picker twice for the same doc —
+    // the second call resolving (e.g. as cancelled) could stomp the first
+    // call's successfully-picked file.
+    if (doc.uploadState === 'picking' || doc.uploadState === 'uploading') {
+      return;
+    }
+
     setDocs(prev =>
       prev.map(d =>
         d.document_key === doc.document_key ? { ...d, uploadState: 'picking' } : d
@@ -371,8 +379,18 @@ const DocumentUpload = () => {
 
     const file = result.assets[0] as PickerAsset;
 
+    if (!file.uri) {
+      Alert.alert('Selection Failed', 'Could not read the selected file. Please try again.');
+      setDocs(prev =>
+        prev.map(d =>
+          d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
+        )
+      );
+      return;
+    }
+
     if (file.fileSize && file.fileSize > MAX_FILE_SIZE_BYTES) {
-      Alert.alert('File Too Large', 'Maximum allowed size is 5 MB. Please choose a smaller file.');
+      Alert.alert('File Too Large', 'Maximum allowed size is 10 MB. Please choose a smaller file.');
       setDocs(prev =>
         prev.map(d =>
           d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
@@ -386,13 +404,13 @@ const DocumentUpload = () => {
       prev.map(d =>
         d.document_key === doc.document_key
           ? {
-              ...d,
-              localUri: file.uri,
-              localName: file.fileName || `${doc.document_key}.jpg`,
-              localType: file.type || 'image/jpeg',
-              uploadState: 'ready',
-              uploaded: false, // mark as not-yet-submitted
-            }
+            ...d,
+            localUri: file.uri,
+            localName: file.fileName || `${doc.document_key}.jpg`,
+            localType: file.type || 'image/jpeg',
+            uploadState: 'ready',
+            uploaded: false, // mark as not-yet-submitted
+          }
           : d
       )
     );
@@ -404,14 +422,14 @@ const DocumentUpload = () => {
       prev.map(d =>
         d.document_key === key
           ? {
-              ...d,
-              localUri: undefined,
-              localName: undefined,
-              localType: undefined,
-              uploadState: 'idle',
-              uploaded: false,
-              file_url: null,
-            }
+            ...d,
+            localUri: undefined,
+            localName: undefined,
+            localType: undefined,
+            uploadState: 'idle',
+            uploaded: false,
+            file_url: null,
+          }
           : d
       )
     );
@@ -490,7 +508,7 @@ const DocumentUpload = () => {
 
   // ── Mandatory / optional split ──
   const mandatoryDocs = useMemo(() => docs.filter(d => d.is_mandatory), [docs]);
-  const optionalDocs  = useMemo(() => docs.filter(d => !d.is_mandatory), [docs]);
+  const optionalDocs = useMemo(() => docs.filter(d => !d.is_mandatory), [docs]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Render
