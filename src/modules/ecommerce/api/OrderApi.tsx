@@ -93,6 +93,11 @@ export type OrderDetailsResponse = {
     total_amount: string;
     created_at: string;
     is_reward_credited: boolean;
+    cancellation_grace?: {
+      active: boolean;
+      minutes: number;
+      courier_booking_eligible_at: string | null;
+    };
   };
 
   address?: {
