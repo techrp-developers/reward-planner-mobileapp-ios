@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import OrderHeading from "../constants/heading/OrderHeading";
@@ -14,7 +14,6 @@ import DeliveryDetailsCard from "../../common/order/DeliveryDetailsCard";
 import PriceDetailsCard from "../../common/order/PriceDetailsCard";
 import InvoiceAndServiceBanner from "../../common/order/InvoiceAndServiceBanner";
 import ProductCarousel from "../components/order/ProductCarousel";
-import OrderCancelModal from "../../common/order/OrderCancelModal";
 import { fetchOrderDetails } from "../api/OrderApi";
 import { fetchAllProducts, getProductImageUrl } from "../api/ProductApi";
 import { useAppTheme } from "../../../theme/ThemeContext";
@@ -160,47 +159,47 @@ const toTitleCase = (value?: string) => {
         .join(" ");
 };
 
-const isTerminalStatus = (value?: string) => {
-    const normalized = value?.toLowerCase();
-    return normalized === "cancelled" || normalized === "rejected" || normalized === "delivered";
-};
-
 export default function OrderConfirmedScreen() {
     const navigation = useNavigation<Nav>();
     const route = useRoute<OrderConfirmedRoute>();
     const { isDark, theme } = useAppTheme();
 
-    const [isModalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [orderData, setOrderData] = useState<OrderDetailsResponse | null>(null);
     const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
 
     const orderId = route.params?.order_id;
+    const hasLoadedOnce = useRef(false);
 
-    useEffect(() => {
-        const loadOrderDetails = async () => {
-            if (!orderId) {
-                setError("Order ID not found.");
-                setLoading(false);
-                return;
-            }
-
-            setLoading(true);
-            setError(null);
-
-            const response = (await fetchOrderDetails(orderId)) as OrderDetailsResponse;
-            if (response?.success) {
-                setOrderData(response);
-            } else {
-                setError("Unable to load order details.");
-            }
-
+    const loadOrderDetails = useCallback(async () => {
+        if (!orderId) {
+            setError("Order ID not found.");
             setLoading(false);
-        };
+            return;
+        }
 
-        loadOrderDetails();
+        if (!hasLoadedOnce.current) {
+            setLoading(true);
+        }
+        setError(null);
+
+        const response = (await fetchOrderDetails(orderId)) as OrderDetailsResponse;
+        if (response?.success) {
+            setOrderData(response);
+        } else if (!hasLoadedOnce.current) {
+            setError("Unable to load order details.");
+        }
+
+        hasLoadedOnce.current = true;
+        setLoading(false);
     }, [orderId]);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadOrderDetails();
+        }, [loadOrderDetails])
+    );
 
     useEffect(() => {
         const loadProducts = async () => {
@@ -377,8 +376,6 @@ export default function OrderConfirmedScreen() {
         return `Status: ${toTitleCase(shipmentStatus)}`;
     }, [orderData?.order?.status, orderData?.order_progress, primaryShipment, progressStatus]);
 
-    const canCancelOrder = !isTerminalStatus(orderData?.order?.status);
-
     const itemTotal = Number(orderData?.summary?.item_total ?? 0);
     const shippingTotal = Number(orderData?.summary?.shipping_total ?? 0);
     const rewardDiscount = Number(orderData?.summary?.reward_discount ?? 0);
@@ -489,7 +486,6 @@ export default function OrderConfirmedScreen() {
                     headerText={journeyHeader}
                     statuses={orderStatuses}
                     tone={isCancelledOrder ? "danger" : "success"}
-                    onCancelPress={canCancelOrder ? () => setModalVisible(true) : undefined}
                 />
 
                 {orderData.items?.length ? (
@@ -610,19 +606,6 @@ export default function OrderConfirmedScreen() {
                     <ProductCarousel products={relatedProducts} />
 
                 </View>
-                <OrderCancelModal
-                    visible={isModalVisible}
-                    onClose={() => setModalVisible(false)}
-                    orderId={orderData.order.order_id}
-                    orderRef={orderData.order.order_ref}
-                    productTitle={productTitle}
-                    productWeight={weightOrQuantity}
-                    onCancelConfirm={() => {
-                        setModalVisible(false);
-                        __DEV__ && console.log("Order officially cancelled");
-                    }}
-                />
-
             </ScrollView>
         </SafeAreaView>
     );

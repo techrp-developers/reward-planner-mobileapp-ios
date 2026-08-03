@@ -101,7 +101,7 @@ export default function HomeStack() {
         getComponent={() => require("../components/ItemCardAddress/NewAddressForm").default}
         options={{ presentation: "modal" }}
       />
-      <Stack.Screen name="SelectCancellationReason" getComponent={() => require("../components/order/SelectCancellationReason").default} />
+
       <Stack.Screen name="SelectItemCancellationReason" getComponent={() => require("../components/order/SelectItemCancellationReason").default} />
       <Stack.Screen name="ItemCancellationDetails" getComponent={() => require("../screens/ItemCancellationDetailsScreen").default} />
       <Stack.Screen name="OrderConfirmedScreen" getComponent={() => require("../screens/OrderConfirmedScreen").default} />

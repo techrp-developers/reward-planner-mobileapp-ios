@@ -273,32 +273,6 @@ export const fetchCancellationReasons = async () => {
   }
 };
 
-export const cancelOrder = async (
-  orderId: number,
-  reasonId: number,
-  reasonType?: string,
-  comment?: string
-) => {
-  try {
-    const headers = await getAuthHeaders();
-
-    const res = await axios.post(
-      `${API_BASE_URL}/v1/orders/cancel/${orderId}`,
-      {
-        reason_id: reasonId,
-        reason_type: reasonType ?? "",
-        comment: comment ?? "",
-      },
-      { headers }
-    );
-
-    return res.data;
-  } catch (error) {
-    console.error("Cancel Order Error:", error);
-    return { success: false };
-  }
-};
-
 export const requestItemCancellation = async (
   orderItemId: number,
   reasonId: number,

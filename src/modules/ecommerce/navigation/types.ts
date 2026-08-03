@@ -74,16 +74,10 @@ export type HomeStackParamList = {
           isDefault?: boolean;
         };
       };
-  OrderConfirmedScreen: {
-    order_id: number;
-  };
-    SelectCancellationReason: {
-    orderId: number;
-    orderRef?: string;
-    savings?: number;
-    productTitle?: string;
-    productWeight?: string;
-  };
+    OrderConfirmedScreen: {
+      order_id: number;
+    };
+    
   SelectItemCancellationReason: {
     orderItemId: number;
     orderId: number;
