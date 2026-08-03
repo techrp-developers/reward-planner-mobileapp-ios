@@ -21,7 +21,6 @@ import {
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from "@react-navigation/native";
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import ProductHead from "../constants/heading/Product_Head_Img";
 import { createReview } from "../api/ReviewApi";
@@ -117,7 +116,6 @@ export default function ReviewScreen() {
   const route = useRoute<ReviewRoute>();
   const { isAuthenticated } = useAuth();
   const { isDark, theme } = useAppTheme();
-  const bottomTabHeight = useBottomTabBarHeight();
 
   const {
     product_id,
@@ -305,7 +303,7 @@ export default function ReviewScreen() {
       <ProductHead cartCount={0} />
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: bottomTabHeight + 28 }]}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
