@@ -71,8 +71,14 @@ export default function MyOrder() {
             case "cancelled":
             case "rejected":
                 return "#DC2626";
+            case "partially_cancelled":
+                return "#EA580C";
+            case "partially_delivered":
+                return "#D97706";
             case "pending":
             case "processing":
+            case "shipped":
+            case "out_for_delivery":
                 return "#2563EB";
             default:
                 return "#6B7280";

@@ -17,7 +17,6 @@ import ProductCarousel from "../components/order/ProductCarousel";
 import OrderCancelModal from "../../common/order/OrderCancelModal";
 import { fetchOrderDetails } from "../api/OrderApi";
 import { fetchAllProducts, getProductImageUrl } from "../api/ProductApi";
-import { fetchReviewableOrder } from "../api/ReviewApi";
 import { useAppTheme } from "../../../theme/ThemeContext";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
@@ -29,9 +28,15 @@ type OrderDetailsResponse = {
         order_id: number;
         order_ref: string;
         status: string;
+        cancellation_status?: string | null;
         total_amount: string | number;
         created_at: string;
         is_reward_credited?: boolean;
+        cancellation_grace?: {
+            active: boolean;
+            minutes: number;
+            courier_booking_eligible_at: string | null;
+        };
     };
     address?: {
         type?: string;
@@ -47,6 +52,8 @@ type OrderDetailsResponse = {
     };
     items?: Array<{
         order_item_id: number;
+        vendor_order_id?: number | null;
+        shipment_id?: number | null;
         product_id: number;
         variant_id: number;
         product_name: string;
@@ -57,6 +64,20 @@ type OrderDetailsResponse = {
         price: string | number;
         item_total: number;
         reward_discount?: number;
+        fulfillment_status?: string | null;
+        shipping_status?: string | null;
+        cancellation?: {
+            can_request: boolean;
+            status: string | null;
+            refund_status: string | null;
+            refund_amount: number | null;
+            terminal: boolean;
+        };
+        feedback?: {
+            can_submit: boolean;
+            submitted: boolean;
+            review_id: number | null;
+        };
     }>;
     shipments?: Array<{
         vendor_id?: number;
@@ -81,6 +102,10 @@ type OrderDetailsResponse = {
     }>;
     order_progress?: {
         current_step: number;
+        status?: string;
+        is_partial?: boolean;
+        delivered_shipments?: number;
+        total_shipments?: number;
         steps: Array<{
             key: string;
             label: string;
@@ -94,6 +119,7 @@ type OrderDetailsResponse = {
         reward_discount?: number;
         reward_coins_used?: number;
         reward_coins_earned?: number;
+        reward_coins_potential?: number;
         bag_discount?: number;
         order_total?: string | number;
     };
@@ -109,6 +135,18 @@ const formatDisplayDate = (value?: string) => {
         day: "numeric",
         month: "short",
         year: "numeric",
+    }).format(date);
+};
+
+const formatDisplayTime = (value?: string | null) => {
+    if (!value) return null;
+    const normalized = value.replace(" ", "T");
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) return null;
+    return new Intl.DateTimeFormat("en-IN", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
     }).format(date);
 };
 
@@ -137,7 +175,6 @@ export default function OrderConfirmedScreen() {
     const [error, setError] = useState<string | null>(null);
     const [orderData, setOrderData] = useState<OrderDetailsResponse | null>(null);
     const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
-    const [reviewableVariants, setReviewableVariants] = useState<Record<number, boolean>>({});
 
     const orderId = route.params?.order_id;
 
@@ -184,37 +221,6 @@ export default function OrderConfirmedScreen() {
 
         loadProducts();
     }, []);
-
-    useEffect(() => {
-        const loadReviewableItems = async () => {
-            const isDelivered = orderData?.order?.status?.toLowerCase() === "delivered";
-            const items = orderData?.items || [];
-
-            if (!isDelivered || !items.length) {
-                setReviewableVariants({});
-                return;
-            }
-
-            const entries = await Promise.all(
-                items.map(async (item) => {
-                    try {
-                        const response = await fetchReviewableOrder(item.variant_id);
-                        const payload = response?.data ?? response;
-                        return [
-                            item.order_item_id,
-                            Boolean(payload?.can_review),
-                        ] as const;
-                    } catch {
-                        return [item.order_item_id, false] as const;
-                    }
-                })
-            );
-
-            setReviewableVariants(Object.fromEntries(entries));
-        };
-
-        loadReviewableItems();
-    }, [orderData?.items, orderData?.order?.status]);
 
     const firstItem = orderData?.items?.[0];
     const primaryShipment = orderData?.shipments?.[0];
@@ -309,19 +315,28 @@ export default function OrderConfirmedScreen() {
         ];
     }, [orderData?.order?.created_at, orderData?.order?.status, orderData?.order_progress, orderData?.shipments]);
 
+    const progressStatus = orderData?.order_progress?.status;
+
     const isCancelledOrder = useMemo(() => {
         const orderStatus = orderData?.order?.status?.toLowerCase();
 
-        return orderStatus === "cancelled" || orderData?.shipments?.some((shipment) =>
-            shipment.shipping_status?.toLowerCase() === "cancelled" ||
-            shipment.special_state?.type?.toLowerCase() === "cancelled"
-        ) === true;
-    }, [orderData?.order?.status, orderData?.shipments]);
+        return (
+            orderStatus === "cancelled" ||
+            progressStatus === "cancelled" ||
+            progressStatus === "partially_cancelled" ||
+            orderData?.shipments?.some((shipment) =>
+                shipment.shipping_status?.toLowerCase() === "cancelled" ||
+                shipment.special_state?.type?.toLowerCase() === "cancelled"
+            ) === true
+        );
+    }, [orderData?.order?.status, orderData?.shipments, progressStatus]);
 
     const journeyHeader = useMemo(() => {
         const orderStatus = orderData?.order?.status;
         const shipmentStatus = primaryShipment?.shipping_status || orderStatus;
         const specialMessage = primaryShipment?.special_state?.message;
+        const delivered = orderData?.order_progress?.delivered_shipments ?? 0;
+        const total = orderData?.order_progress?.total_shipments ?? 0;
 
         if (specialMessage) {
             return specialMessage;
@@ -335,8 +350,24 @@ export default function OrderConfirmedScreen() {
             return "Order rejected";
         }
 
-        if (orderStatus?.toLowerCase() === "delivered") {
+        if (orderStatus?.toLowerCase() === "delivered" || progressStatus === "delivered") {
             return "Order delivered";
+        }
+
+        if (progressStatus === "partially_delivered") {
+            return `${delivered} of ${total} items delivered`;
+        }
+
+        if (progressStatus === "partially_cancelled") {
+            return "Part of this order was cancelled";
+        }
+
+        if (progressStatus === "ndr") {
+            return "Delivery attempt failed — action needed";
+        }
+
+        if (progressStatus === "rto") {
+            return "Shipment is being returned to origin";
         }
 
         if (primaryShipment?.expected_delivery_date) {
@@ -344,18 +375,24 @@ export default function OrderConfirmedScreen() {
         }
 
         return `Status: ${toTitleCase(shipmentStatus)}`;
-    }, [orderData?.order?.status, primaryShipment]);
+    }, [orderData?.order?.status, orderData?.order_progress, primaryShipment, progressStatus]);
 
     const canCancelOrder = !isTerminalStatus(orderData?.order?.status);
-    const isDeliveredOrder = orderData?.order?.status?.toLowerCase() === "delivered";
 
     const itemTotal = Number(orderData?.summary?.item_total ?? 0);
     const shippingTotal = Number(orderData?.summary?.shipping_total ?? 0);
     const rewardDiscount = Number(orderData?.summary?.reward_discount ?? 0);
     const rewardCoinsUsed = Number(orderData?.summary?.reward_coins_used ?? 0);
     const rewardCoinsEarned = Number(orderData?.summary?.reward_coins_earned ?? 0);
+    const rewardCoinsPotential = Number(orderData?.summary?.reward_coins_potential ?? 0);
+    const isRewardCredited = Boolean(orderData?.order?.is_reward_credited);
     const bagDiscount = Number(orderData?.summary?.bag_discount ?? 0);
     const orderTotal = Number(orderData?.summary?.order_total ?? orderData?.order?.total_amount ?? 0);
+
+    const cancellationGrace = orderData?.order?.cancellation_grace;
+    const cancellationWindowText = cancellationGrace?.active
+        ? formatDisplayTime(cancellationGrace.courier_booking_eligible_at)
+        : null;
 
     const openReviewScreen = (item: NonNullable<OrderDetailsResponse["items"]>[number]) => {
         navigation.navigate("ReviewScreen", {
@@ -365,6 +402,23 @@ export default function OrderConfirmedScreen() {
             product_name: item.product_name,
             image: item.image ? getProductImageUrl(item.image) : undefined,
             delivered_on: orderData?.order?.created_at,
+        });
+    };
+
+    const openItemCancelScreen = (item: NonNullable<OrderDetailsResponse["items"]>[number]) => {
+        const title = [item.brand_name, item.product_name].filter(Boolean).join(" ");
+        navigation.navigate("SelectItemCancellationReason", {
+            orderItemId: Number(item.order_item_id),
+            orderId: Number(orderData?.order?.order_id),
+            orderRef: orderData?.order?.order_ref,
+            productTitle: title,
+            productWeight: item.attributes?.weight || item.attributes?.size || `Qty: ${item.quantity}`,
+        });
+    };
+
+    const openItemCancellationStatus = (item: NonNullable<OrderDetailsResponse["items"]>[number]) => {
+        navigation.navigate("ItemCancellationDetails", {
+            orderItemId: Number(item.order_item_id),
         });
     };
 
@@ -418,7 +472,7 @@ export default function OrderConfirmedScreen() {
                             <Image
                                 source={{ uri: getProductImageUrl(firstItem.image) }}
                                 style={styles.productImage}
-                                onError={() => {}}
+                                onError={() => { }}
                                 defaultSource={require("../../../assets/product/coming_soon.png")}
                             />
                         ) : (
@@ -438,12 +492,24 @@ export default function OrderConfirmedScreen() {
                     onCancelPress={canCancelOrder ? () => setModalVisible(true) : undefined}
                 />
 
-                {isDeliveredOrder && orderData.items?.length ? (
+                {orderData.items?.length ? (
                     <View style={[styles.reviewSection, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                        <Text style={[styles.reviewSectionTitle, { color: theme.text }]}>Review your products</Text>
+                        <Text style={[styles.reviewSectionTitle, { color: theme.text }]}>Order items</Text>
+
+                        {cancellationWindowText ? (
+                            <View style={[styles.cancelWindowBanner, { backgroundColor: isDark ? "#2A2410" : "#FFF7E0", borderColor: isDark ? "#5C4A16" : "#FDE68A" }]}>
+                                <Text style={[styles.cancelWindowText, { color: isDark ? "#FCD34D" : "#92400E" }]}>
+                                    Free cancellation available until {cancellationWindowText}
+                                </Text>
+                            </View>
+                        ) : null}
+
                         {orderData.items.map((item) => {
-                            const canReview = Boolean(reviewableVariants[item.order_item_id]);
                             const title = [item.brand_name, item.product_name].filter(Boolean).join(" ");
+                            const meta = item.attributes?.weight || item.attributes?.size || `Qty: ${item.quantity}`;
+                            const cancellation = item.cancellation;
+                            const feedback = item.feedback;
+                            const hasCancellationRequest = !!cancellation?.status;
 
                             return (
                                 <View key={item.order_item_id} style={[styles.reviewItemRow, { borderTopColor: theme.border }]}>
@@ -452,26 +518,66 @@ export default function OrderConfirmedScreen() {
                                             {title || "Product"}
                                         </Text>
                                         <Text style={[styles.reviewItemMeta, { color: theme.secondaryText }]} numberOfLines={1}>
-                                            {item.attributes?.weight || item.attributes?.size || `Qty: ${item.quantity}`}
+                                            {meta}
                                         </Text>
+                                        {item.shipping_status ? (
+                                            <Text style={[styles.reviewItemStatus, { color: theme.secondaryText }]} numberOfLines={1}>
+                                                {toTitleCase(item.shipping_status)}
+                                            </Text>
+                                        ) : null}
                                     </View>
-                                    {canReview ? (
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.reviewButton,
-                                                {
-                                                    backgroundColor: isDark ? "#2D2148" : "#F5F3FF",
-                                                    borderColor: isDark ? "#5B4B86" : "#DDD6FE",
-                                                },
-                                            ]}
-                                            activeOpacity={0.82}
-                                            onPress={() => openReviewScreen(item)}
-                                        >
-                                            <Text style={[styles.reviewButtonText, { color: theme.primary }]}>Write Review</Text>
-                                        </TouchableOpacity>
-                                    ) : (
-                                        <Text style={[styles.reviewDoneText, { color: "#16A34A" }]}>Reviewed</Text>
-                                    )}
+
+                                    <View style={styles.itemActions}>
+                                        {hasCancellationRequest ? (
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.reviewButton,
+                                                    {
+                                                        backgroundColor: isDark ? "#2A1618" : "#FFF5F5",
+                                                        borderColor: isDark ? "#7F1D1D" : "#FFB4B4",
+                                                    },
+                                                ]}
+                                                activeOpacity={0.82}
+                                                onPress={() => openItemCancellationStatus(item)}
+                                            >
+                                                <Text style={[styles.reviewButtonText, { color: "#DC2626" }]}>
+                                                    {toTitleCase(cancellation?.status || "")}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ) : cancellation?.can_request ? (
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.reviewButton,
+                                                    {
+                                                        backgroundColor: isDark ? "#2A1618" : "#FFF5F5",
+                                                        borderColor: isDark ? "#7F1D1D" : "#FFB4B4",
+                                                    },
+                                                ]}
+                                                activeOpacity={0.82}
+                                                onPress={() => openItemCancelScreen(item)}
+                                            >
+                                                <Text style={[styles.reviewButtonText, { color: "#DC2626" }]}>Cancel Item</Text>
+                                            </TouchableOpacity>
+                                        ) : null}
+
+                                        {feedback?.can_submit ? (
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.reviewButton,
+                                                    {
+                                                        backgroundColor: isDark ? "#2D2148" : "#F5F3FF",
+                                                        borderColor: isDark ? "#5B4B86" : "#DDD6FE",
+                                                    },
+                                                ]}
+                                                activeOpacity={0.82}
+                                                onPress={() => openReviewScreen(item)}
+                                            >
+                                                <Text style={[styles.reviewButtonText, { color: theme.primary }]}>Write Review</Text>
+                                            </TouchableOpacity>
+                                        ) : feedback?.submitted ? (
+                                            <Text style={[styles.reviewDoneText, { color: "#16A34A" }]}>Reviewed</Text>
+                                        ) : null}
+                                    </View>
                                 </View>
                             );
                         })}
@@ -491,6 +597,8 @@ export default function OrderConfirmedScreen() {
                     rewardDiscount={rewardDiscount}
                     orderTotal={orderTotal}
                     rewardEarned={rewardCoinsEarned}
+                    rewardPotential={rewardCoinsPotential}
+                    isRewardCredited={isRewardCredited}
                     rewardRedeemed={rewardCoinsUsed}
                     paymentMethod="Online"
                 />
@@ -549,6 +657,18 @@ const styles = StyleSheet.create({
         color: "#111827",
         marginBottom: 10,
     },
+    cancelWindowBanner: {
+        borderRadius: 8,
+        borderWidth: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        marginBottom: 10,
+    },
+    cancelWindowText: {
+        fontSize: 12,
+        fontWeight: "600",
+        textAlign: "center",
+    },
     reviewItemRow: {
         minHeight: 52,
         flexDirection: "row",
@@ -572,6 +692,15 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: "#6B7280",
         fontWeight: "500",
+    },
+    reviewItemStatus: {
+        marginTop: 2,
+        fontSize: 12,
+        fontWeight: "600",
+    },
+    itemActions: {
+        alignItems: "flex-end",
+        gap: 8,
     },
     reviewButton: {
         borderRadius: 9,

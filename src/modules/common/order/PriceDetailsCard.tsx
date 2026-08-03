@@ -10,6 +10,8 @@ type Props = {
   rewardDiscount: number;
   orderTotal: number;
   rewardEarned: number;
+  rewardPotential?: number;
+  isRewardCredited?: boolean;
   rewardRedeemed: number;
   paymentMethod: string;
 };
@@ -21,10 +23,15 @@ export default function PriceDetailsCard({
   rewardDiscount,
   orderTotal,
   rewardEarned,
+  rewardPotential = 0,
+  isRewardCredited = false,
   rewardRedeemed,
   paymentMethod,
 }: Props) {
   const { isDark, theme } = useAppTheme();
+
+  const showEarnedBanner = isRewardCredited && rewardEarned > 0;
+  const showPendingBanner = !isRewardCredited && rewardPotential > 0;
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -32,11 +39,26 @@ export default function PriceDetailsCard({
       <Text style={[styles.title, { color: theme.text }]}>Price Details</Text>
 
       {/* Green reward earned banner */}
-      <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
+      {/* <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
         <Text style={styles.earnedText}>
           {rewardEarned} Reward Coins Earned
         </Text>
-      </View>
+      </View> */}
+
+      {/* Green reward earned banner */}
+      {showEarnedBanner ? (
+        <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
+          <Text style={styles.earnedText}>
+            {rewardEarned} Reward Coins Earned
+          </Text>
+        </View>
+      ) : showPendingBanner ? (
+        <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#2A2410" : "#FFF7E0" }]}>
+          <Text style={[styles.earnedText, styles.pendingText]}>
+            You'll earn {rewardPotential} Reward Coins on delivery
+          </Text>
+        </View>
+      ) : null}
 
       {/* Price rows */}
       <Row label="Item Total" value={`₹${itemTotal}`} />
@@ -141,6 +163,10 @@ const styles = StyleSheet.create({
   negative: {
     color: "#16A34A",
     fontWeight: "600",
+  },
+
+  pendingText: {
+    color: "#B45309",
   },
 
   divider: {
