@@ -68,7 +68,7 @@ const YouMayNeedServicesCarousel = () => {
                   : undefined
               }
               rating={item.rating}
-              users={String(item.total_orders ?? 0)}
+              users={String(item.review_count ?? 0)}
               coins={coinsText}
               discount={discount}
               onPress={() =>

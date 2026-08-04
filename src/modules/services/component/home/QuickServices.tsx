@@ -62,9 +62,7 @@ export default function QuickServices() {
 
   const renderItem = ({ item }: { item: ServiceItem; index: number }) => {
     const coinsText = item.coins ? `${item.coins}` : '0';
-    const orders = item.total_orders
-      ? `${(item.total_orders / 1000).toFixed(1)}K`
-      : '0';
+    const reviews = String(item.review_count ?? 0);
     const discount =
       item.discount_percent && item.discount_percent > 0
         ? `${item.discount_percent}%`
@@ -78,7 +76,7 @@ export default function QuickServices() {
           price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
           oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
           rating={item.rating}
-          users={orders}
+          users={reviews}
           coins={coinsText}
           discount={discount}
           onPress={() =>

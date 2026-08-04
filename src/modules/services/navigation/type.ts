@@ -164,6 +164,7 @@ export type ServiceItem = {
   description?: string;
   enquiry?: boolean | number;
   rating?: number;
+  review_count?: number;
   total_orders?: number;
   price: number;
   mrp?: number;

@@ -86,9 +86,7 @@ export default function LimitedOffer() {
                   ? `${item.discount_percent}%`
                   : undefined;
               const coinsText = item.coins ? `${item.coins}` : '0';
-              const orders = item.total_orders
-                ? `${(item.total_orders / 1000).toFixed(1)}K`
-                : '0';
+              const reviews = String(item.review_count ?? 0);
 
               return (
                 <Card
@@ -98,7 +96,7 @@ export default function LimitedOffer() {
                   price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
                   oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
                   rating={item.rating}
-                  users={orders}
+                  users={reviews}
                   coins={coinsText}
                   discount={discount}
                   onPress={() =>
