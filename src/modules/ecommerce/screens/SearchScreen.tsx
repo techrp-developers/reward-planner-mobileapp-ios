@@ -100,7 +100,10 @@ function SearchScreen() {
                 subcategoryTitle: item.title,
             });
         } else {
-            navigation.navigate("ProductDescription", {
+            // Root cause fix: SearchScreen is a transparentModal; navigate() to a regular
+            // card screen (ProductDescription) is silently swallowed by the native stack.
+            // replace() removes the modal from the stack first, then pushes ProductDescription.
+            navigation.replace("ProductDescription", {
                 productId: item.navigation?.product_id ?? item.id,
             });
         }

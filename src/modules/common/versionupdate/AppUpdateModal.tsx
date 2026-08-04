@@ -278,9 +278,8 @@ export function AppUpdateModal({
       "We're polishing things behind the scenes.\nCheck back in a few minutes.",
     force:
       "This version has been retired. Update now to keep your rewards safe and your experience seamless.",
-    optional: `Fresh features and a smoother experience are ready for you on ${
-      Platform.OS === "android" ? "Android" : "iOS"
-    }. Takes just a second.`,
+    optional: `Fresh features and a smoother experience are ready for you on ${Platform.OS === "android" ? "Android" : "iOS"
+      }. Takes just a second.`,
   };
 
   const primaryCTA: Record<State, string> = {
@@ -636,8 +635,6 @@ const styles = StyleSheet.create({
   pillGradient: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
     gap: 7,
   },
   pillDot: {
@@ -649,6 +646,8 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
     fontWeight: "700",
     letterSpacing: 1.4,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
   },
   headline: {
     fontSize: 38,
@@ -716,7 +715,6 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   primaryBtnGradient: {
-    paddingVertical: 19,
     borderRadius: 18,
     flexDirection: "row",
     alignItems: "center",
@@ -741,6 +739,8 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "800",
     letterSpacing: 0.2,
+    paddingVertical: 19,
+
   },
   dividerRow: {
     flexDirection: "row",
