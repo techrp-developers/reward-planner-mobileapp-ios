@@ -49,6 +49,7 @@ export default function Banner() {
       </View>
 
       {/* Balance Card with Gradient */}
+      <View style={styles.balanceCardWrap}>
       <LinearGradient
           colors={['#714DF3', '#4D34A6']}
         style={styles.balanceCard}
@@ -65,6 +66,7 @@ export default function Banner() {
           <Text style={styles.balanceValue}>1500 Coins</Text>
         </View>
       </LinearGradient>
+      </View>
     </View>
   );
 }
@@ -110,22 +112,25 @@ const styles = StyleSheet.create({
   },
 
   /* ⭐ Balance Card Styling with Gradient */
-  balanceCard: {
+  balanceCardWrap: {
     width: '90%',
     alignSelf: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
     borderRadius: 18,
     elevation: 5,
     marginTop: 16,
+    backgroundColor: '#4D34A6',
     shadowColor: '#5B47A3',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     margin: 18,
-    // borderRadius: 16
+  },
+  balanceCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 18,
   },
 
   balanceImage: {

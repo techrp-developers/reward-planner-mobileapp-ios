@@ -96,14 +96,16 @@ export default function OrderConfirmScreen() {
           <View style={styles.content}>
             {/* Green check badge */}
             <View style={styles.checkWrap}>
-              <LinearGradient
-                colors={["#52FF6A", "#0A8F19"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.checkCircle}
-              >
-                <MaterialIcons name="check" size={50} color="#FFFFFF" />
-              </LinearGradient>
+              <View style={styles.checkCircleWrap}>
+                <LinearGradient
+                  colors={["#52FF6A", "#0A8F19"]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.checkCircle}
+                >
+                  <MaterialIcons name="check" size={50} color="#FFFFFF" />
+                </LinearGradient>
+              </View>
             </View>
 
             {/* Title */}
@@ -208,16 +210,22 @@ const styles = StyleSheet.create({
     paddingTop: height * 0.25,
   },
   checkWrap: { marginBottom: 30 },
+  checkCircleWrap: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#0A8F19",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
   checkCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
   },
   title: {
     fontSize: 22,

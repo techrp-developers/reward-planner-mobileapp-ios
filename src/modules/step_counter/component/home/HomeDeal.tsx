@@ -163,16 +163,10 @@ const styles = StyleSheet.create({
     // elevation: 8, 
   },
   trapezoidBackground: {
-   paddingVertical: 8,
-  paddingHorizontal: 20,
-  borderRadius: 14,
-  shadowColor: 'transparent',
-  shadowOffset: { width: 0, height: 0 },
-  shadowOpacity: 0,
-  shadowRadius: 0,
-  elevation: 0,
-    
-  },
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+  },
   dealHead: {
     fontSize: 22,
     fontWeight: '700',
@@ -216,20 +210,19 @@ const styles = StyleSheet.create({
     top: 12,
     left: 12,
     zIndex: 2,
-    borderRadius: 14, // Needs to be here so gradient respects border
-    overflow: 'hidden',
+    borderRadius: 14,
+    backgroundColor: '#F5B924',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   discountGradient: {
     // Gradient style (replaces original discountBadge's visual properties)
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 14,
-    // Add back shadow/elevation for the badge itself
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
   },
   discountBadgeText: { 
     // Text style

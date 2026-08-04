@@ -374,6 +374,7 @@ function FilterBottomSheet({
         <TouchableOpacity
           onPress={() => onApply(selectedTime, selectedStatus)}
           activeOpacity={0.9}
+          style={styles.applyBtnWrap}
         >
           <LinearGradient
             colors={servicesTheme.gradients.primary}
@@ -993,17 +994,21 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontSize: 13,
   },
-  applyBtn: {
-    height: 56,
+  applyBtnWrap: {
     borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
     marginTop: 10,
+    backgroundColor: "#5B47A3",
     shadowColor: "#5B47A3",
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
+  },
+  applyBtn: {
+    height: 56,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
   },
   applyBtnText: {
     color: "#FFFFFF",

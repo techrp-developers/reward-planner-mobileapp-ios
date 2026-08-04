@@ -99,7 +99,7 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
           ))}
         </View>
 
-        <TouchableOpacity onPress={() => onApply(selectedTime, selectedStatus)} activeOpacity={0.9}>
+        <TouchableOpacity onPress={() => onApply(selectedTime, selectedStatus)} activeOpacity={0.9} style={styles.applyBtnWrap}>
           <LinearGradient
             colors={['#8665FF', '#5B47A3']}
             start={{ x: 0, y: 0 }}
@@ -139,14 +139,19 @@ const styles = StyleSheet.create({
   },
   chipText: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
   activeChipText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
-  applyBtn: { 
-    height: 56, borderRadius: 16, 
-    justifyContent: 'center', alignItems: 'center', marginTop: 10,
+  applyBtnWrap: {
+    borderRadius: 16,
+    marginTop: 10,
+    backgroundColor: '#5B47A3',
     shadowColor: '#5B47A3',
     shadowOpacity: 0.3,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 6
+    elevation: 6,
+  },
+  applyBtn: {
+    height: 56, borderRadius: 16,
+    justifyContent: 'center', alignItems: 'center',
   },
   applyBtnText: { color: '#FFF', fontWeight: '800', fontSize: 16 }
 });

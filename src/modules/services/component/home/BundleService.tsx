@@ -39,6 +39,7 @@ function BundleCard({ title, description, price, oldPrice, imageUrl, onPress, se
   const [imgError, setImgError] = useState(false);
 
   return (
+    <View style={styles.cardWrap}>
     <LinearGradient colors={servicesTheme.isDark ? ['#18112A', '#27272A'] : ['#EDE8FF', '#C2B2FF']} style={styles.card}>
       <View style={styles.textContainer}>
         <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
@@ -70,6 +71,7 @@ function BundleCard({ title, description, price, oldPrice, imageUrl, onPress, se
         />
       </View>
     </LinearGradient>
+    </View>
   );
 }
 
@@ -126,13 +128,17 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 16,
   },
+  cardWrap: {
+    borderRadius: 20,
+    marginBottom: 20,
+    backgroundColor: '#C2B2FF',
+    elevation: 4,
+  },
   card: {
     borderRadius: 20,
     paddingTop: 20,
-    marginBottom: 20,
     overflow: 'hidden',
     alignItems: 'center',
-    elevation: 4,
   },
   textContainer: {
     alignItems: 'center',

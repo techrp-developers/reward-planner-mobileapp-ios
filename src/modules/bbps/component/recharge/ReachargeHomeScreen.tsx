@@ -101,6 +101,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleRechargePress(item.number)}
+        style={styles.rechargeBtnWrap}
       >
         <LinearGradient
           colors={['#8665FF', '#5B47A3']}
@@ -272,7 +273,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
             {/* ── Proceed Button (only shown when both fields are filled) ── */}
             {mobileNumber.length === 10 && selectedLocation && (
               <TouchableOpacity
-                style={styles.proceedWrapper}
+                style={[styles.proceedWrapper, styles.proceedBtnWrap]}
                 activeOpacity={0.85}
                 onPress={() => handleRechargePress()}
               >
@@ -398,17 +399,21 @@ const styles = StyleSheet.create({
 
   // Proceed button
   proceedWrapper: { marginHorizontal: 20, marginTop: 16, marginBottom: 4 },
+  proceedBtnWrap: {
+    borderRadius: 14,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 5,
+  },
   proceedBtn: {
     flexDirection: 'row',
     height: 52,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 5,
   },
   proceedBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
 
@@ -456,17 +461,21 @@ const styles = StyleSheet.create({
   contactName: { fontSize: 15, fontWeight: '700', color: '#333' },
   contactNumber: { fontSize: 13, color: '#666', marginVertical: 2 },
   rechargeStatus: { fontSize: 12, color: '#888' },
+  rechargeBtnWrap: {
+    borderRadius: 10,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   rechargeBtn: {
     paddingHorizontal: 18,
     paddingVertical: 9,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 3,
   },
   rechargeBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
   separator: { height: 1, backgroundColor: '#F3F1FC', marginLeft: 60 },

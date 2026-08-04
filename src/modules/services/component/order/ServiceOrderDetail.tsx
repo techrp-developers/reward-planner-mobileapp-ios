@@ -648,14 +648,18 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  summaryCard: {
+  summaryCardWrap: {
     borderRadius: 22,
-    padding: 18,
+    backgroundColor: '#7C3AED',
     elevation: 5,
     shadowColor: '#33205E',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.18,
     shadowRadius: 16,
+  },
+  summaryCard: {
+    borderRadius: 22,
+    padding: 18,
   },
   summaryRow: {
     flexDirection: 'row',

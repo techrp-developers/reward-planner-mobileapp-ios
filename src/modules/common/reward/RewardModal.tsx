@@ -101,14 +101,17 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
                 },
               ]}
             >
-              <LinearGradient
-                colors={BRAND_GRADIENT}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.badgeCircle}
-              >
-                <Reward width={46} height={46} />
-              </LinearGradient>
+              {/* Shadow lives on this solid View so iOS can compute it efficiently */}
+              <View style={styles.badgeCircleShadow}>
+                <LinearGradient
+                  colors={BRAND_GRADIENT}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.badgeCircle}
+                >
+                  <Reward width={46} height={46} />
+                </LinearGradient>
+              </View>
             </Animated.View>
 
             <MaterialCommunityIcons
@@ -139,39 +142,41 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
           <Text style={styles.title}>Welcome to Reward Planners</Text>
           <Text style={styles.subtitle}>Your account is now active</Text>
 
-          {/* Reward Card */}
-          <LinearGradient
-            colors={BRAND_GRADIENT}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.rewardCard}
-          >
-            <View style={styles.rewardBonusRow}>
-              <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
-              <Text style={styles.rewardBonusLabel}>First Login Bonus</Text>
-              <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
-            </View>
-
-            <Text style={styles.rewardAmount}>{points.toLocaleString()}</Text>
-            <Text style={styles.rewardCoinsLabel}>Reward Coins</Text>
-
-            <View style={styles.rewardSuccessPill}>
-              <MaterialCommunityIcons name="check-circle" size={14} color="#FFFFFF" />
-              <Text style={styles.rewardSuccessText}>Successfully Credited</Text>
-            </View>
-
-            <View style={styles.rewardMetaRow}>
-              <View style={styles.rewardMetaItem}>
-                <MaterialCommunityIcons name="wallet-giftcard" size={16} color="#FFFFFF" />
-                <Text style={styles.rewardMetaText}>Reward wallet</Text>
+          {/* Reward Card — shadow on solid wrapper View */}
+          <View style={styles.rewardCardShadow}>
+            <LinearGradient
+              colors={BRAND_GRADIENT}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.rewardCard}
+            >
+              <View style={styles.rewardBonusRow}>
+                <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
+                <Text style={styles.rewardBonusLabel}>First Login Bonus</Text>
+                <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
               </View>
-              <View style={styles.rewardMetaDivider} />
-              <View style={styles.rewardMetaItem}>
-                <MaterialCommunityIcons name="lightning-bolt" size={16} color="#FFFFFF" />
-                <Text style={styles.rewardMetaText}>Ready to use</Text>
+
+              <Text style={styles.rewardAmount}>{points.toLocaleString()}</Text>
+              <Text style={styles.rewardCoinsLabel}>Reward Coins</Text>
+
+              <View style={styles.rewardSuccessPill}>
+                <MaterialCommunityIcons name="check-circle" size={14} color="#FFFFFF" />
+                <Text style={styles.rewardSuccessText}>Successfully Credited</Text>
               </View>
-            </View>
-          </LinearGradient>
+
+              <View style={styles.rewardMetaRow}>
+                <View style={styles.rewardMetaItem}>
+                  <MaterialCommunityIcons name="wallet-giftcard" size={16} color="#FFFFFF" />
+                  <Text style={styles.rewardMetaText}>Reward wallet</Text>
+                </View>
+                <View style={styles.rewardMetaDivider} />
+                <View style={styles.rewardMetaItem}>
+                  <MaterialCommunityIcons name="lightning-bolt" size={16} color="#FFFFFF" />
+                  <Text style={styles.rewardMetaText}>Ready to use</Text>
+                </View>
+              </View>
+            </LinearGradient>
+          </View>
 
           {/* Content */}
           <Text style={styles.description}>
@@ -184,7 +189,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
             Start earning, shopping, and redeeming exciting rewards with Reward Planners.
           </Text>
 
-          {/* CTA */}
+          {/* CTA — shadow on TouchableOpacity (solid View) instead of LinearGradient */}
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={handleClose}
@@ -255,17 +260,24 @@ const styles = StyleSheet.create({
   coinFlip: {
     backfaceVisibility: "hidden",
   },
+  // Solid wrapper carries the shadow so iOS can compute it efficiently
+  badgeCircleShadow: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: "#A654CD",
+    shadowColor: "#A654CD",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.45,
+    shadowRadius: 18,
+    elevation: 12,
+  },
   badgeCircle: {
     width: 88,
     height: 88,
     borderRadius: 44,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#A654CD",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.45,
-    shadowRadius: 18,
-    elevation: 12,
   },
   sparkleTopLeft: { position: "absolute", top: 6, left: 10 },
   sparkleTopRight: { position: "absolute", top: 18, right: 4 },
@@ -302,20 +314,25 @@ const styles = StyleSheet.create({
     color: "#8D7A94",
     marginBottom: 22,
   },
-  rewardCard: {
+  // Solid wrapper carries the shadow; LinearGradient inside has no shadow
+  rewardCardShadow: {
     width: "100%",
     borderRadius: 22,
-    paddingVertical: 22,
-    // paddingHorizontal: 16,
-    alignItems: "center",
     marginBottom: 22,
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.24)",
+    backgroundColor: "#A654CD",
     shadowColor: "#5B1E7A",
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.32,
     shadowRadius: 20,
     elevation: 14,
+  },
+  rewardCard: {
+    width: "100%",
+    borderRadius: 22,
+    paddingVertical: 22,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.24)",
   },
   rewardBonusRow: {
     flexDirection: "row",
@@ -400,8 +417,16 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#A654CD",
   },
+  // Shadow on the TouchableOpacity (solid View) instead of LinearGradient
   buttonContainer: {
     width: "100%",
+    borderRadius: 18,
+    backgroundColor: "#251126",
+    shadowColor: "#251126",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.32,
+    shadowRadius: 16,
+    elevation: 10,
   },
   gradientBtn: {
     borderRadius: 18,
@@ -409,11 +434,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     gap: 8,
-    shadowColor: "#251126",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.32,
-    shadowRadius: 16,
-    elevation: 10,
   },
   btnText: {
     color: "#FFFFFF",
@@ -421,6 +441,5 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.3,
     paddingVertical: 17,
-
   },
 });

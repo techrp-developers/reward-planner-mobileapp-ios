@@ -259,7 +259,8 @@ function Dashbord() {
 
   const t = useMemo(() => StyleSheet.create({
     iconContainer: { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.16)' },
-    card: { shadowColor: isDark ? '#000000' : '#312E81' },
+    card: {},
+    cardWrap: { shadowColor: isDark ? '#000000' : '#312E81', backgroundColor: isDark ? '#18181B' : '#4338CA' },
   }), [isDark]);
 
   return (
@@ -279,6 +280,7 @@ function Dashbord() {
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
+        <View style={styles.topSectionWrap}>
         <LinearGradient
           colors={topSectionGradient}
           start={{ x: 0, y: 0 }}
@@ -300,6 +302,7 @@ function Dashbord() {
           {/* Motivational Quote Banner */}
           <Pressable onPress={dismissSearch}>
             <View style={[styles.bannerOuter, { paddingHorizontal: rs(16), paddingTop: rs(2) }]}>
+              <View style={[styles.cardWrap, t.cardWrap]}>
               <LinearGradient
                 colors={quoteBannerGradient}
                 start={{ x: 0, y: 0.5 }}
@@ -333,9 +336,11 @@ function Dashbord() {
                     : '"Success is the sum of small efforts,\nrepeated day in and day out."'}
                 </Text>
               </LinearGradient>
+              </View>
             </View>
           </Pressable>
         </LinearGradient>
+        </View>
         {hasBirthdays && (
           <Pressable onPress={dismissSearch}>
             <MemoBirthdayCarousel birthdays={birthdays} />
@@ -430,16 +435,22 @@ const styles = StyleSheet.create({
     // paddingBottom set inline so it scales with rs() and TAB_BAR_HEIGHT
   },
 
-  topSection: {
-    paddingBottom: rs(16),
+  topSectionWrap: {
     borderBottomLeftRadius: rs(30),
     borderBottomRightRadius: rs(30),
     zIndex: 20,
+    backgroundColor: '#312E81',
     shadowColor: '#111827',
     shadowOffset: { width: 0, height: rs(12) },
     shadowOpacity: Platform.OS === 'ios' ? 0.16 : 0.22,
     shadowRadius: rs(18),
     elevation: 8,
+  },
+  topSection: {
+    paddingBottom: rs(16),
+    borderBottomLeftRadius: rs(30),
+    borderBottomRightRadius: rs(30),
+    zIndex: 20,
   },
 
   bannerOuter: {
@@ -468,18 +479,20 @@ const styles = StyleSheet.create({
     elevation: 32,
   },
 
-  card: {
+  cardWrap: {
     borderRadius: rs(20),
-
     marginBottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
-    // shadowColor via t.card
+    // shadowColor via t.cardWrap
     shadowOffset: { width: 0, height: rs(10) },
     shadowOpacity: Platform.OS === 'ios' ? 0.18 : 0.24,
     shadowRadius: rs(18),
     elevation: 8,
+  },
+  card: {
+    borderRadius: rs(20),
+    flexDirection: 'row',
+    alignItems: 'center',
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.14)',
   },

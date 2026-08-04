@@ -235,6 +235,7 @@ const StepForm = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
+          <View style={styles.popupCardWrap}>
           <LinearGradient colors={["rgba(255,255,255,0.105)", "rgba(255,255,255,0.06)"]} style={styles.popupCard}>
             <View style={styles.stepRow}>
               <TouchableOpacity
@@ -319,6 +320,7 @@ const StepForm = () => {
               </>
             ) : null}
           </LinearGradient>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -400,19 +402,24 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: SPACING.xxl,
   },
-  popupCard: {
+  popupCardWrap: {
     width: "100%",
     maxWidth: RESPONSIVE.cardMaxWidth,
     borderRadius: BORDER_RADIUS.xl,
-    paddingVertical: SPACING.xl,
-    paddingHorizontal: SPACING.lg,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
+    backgroundColor: 'rgba(255,255,255,0.06)',
     shadowColor: VD.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
     elevation: 6,
+  },
+  popupCard: {
+    width: "100%",
+    borderRadius: BORDER_RADIUS.xl,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
+    borderWidth: 1,
+    borderColor: VD.cardBorder,
   },
   stepRow: {
     flexDirection: "row",

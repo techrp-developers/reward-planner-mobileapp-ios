@@ -47,6 +47,7 @@ export default function MostBookedServices() {
 
   if (isLoading) {
     return (
+      <View style={styles.containerWrap}>
       <LinearGradient
         colors={['#080B26', '#171F59', '#3545A3']}
         start={{ x: 0, y: 0 }}
@@ -56,6 +57,7 @@ export default function MostBookedServices() {
         <Text style={styles.title}>Most Booked Services</Text>
         <ActivityIndicator size="large" color="#FFFFFF" />
       </LinearGradient>
+      </View>
     );
   }
 
@@ -64,6 +66,7 @@ export default function MostBookedServices() {
   }
 
   return (
+    <View style={styles.containerWrap}>
     <LinearGradient
       colors={['#080B26', '#171F59', '#3545A3']}
       start={{ x: 0, y: 0 }}
@@ -144,22 +147,27 @@ export default function MostBookedServices() {
         ))}
       </View>
     </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerWrap: {
     marginTop: 24,
     marginHorizontal: 16,
     borderRadius: 28,
-    paddingTop: 22,
-    paddingBottom: 20,
-    overflow: 'hidden',
+    backgroundColor: '#3545A3',
     shadowColor: '#080B26',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.28,
     shadowRadius: 20,
     elevation: 8,
+  },
+  container: {
+    borderRadius: 28,
+    paddingTop: 22,
+    paddingBottom: 20,
+    overflow: 'hidden',
   },
 
   headerRow: {
