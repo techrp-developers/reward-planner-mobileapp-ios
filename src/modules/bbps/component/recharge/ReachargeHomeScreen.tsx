@@ -101,8 +101,8 @@ function ReachargeHomeScreen({ navigation, route }: any) {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleRechargePress(item.number)}
+        style={styles.rechargeBtnWrap}
       >
-        <View style={styles.rechargeBtnShadow}>
         <LinearGradient
           colors={['#8665FF', '#5B47A3']}
           start={{ x: 0, y: 0 }}
@@ -111,7 +111,6 @@ function ReachargeHomeScreen({ navigation, route }: any) {
         >
           <Text style={styles.rechargeBtnText}>Recharge</Text>
         </LinearGradient>
-        </View>
       </TouchableOpacity>
     </View>
   );
@@ -274,11 +273,10 @@ function ReachargeHomeScreen({ navigation, route }: any) {
             {/* ── Proceed Button (only shown when both fields are filled) ── */}
             {mobileNumber.length === 10 && selectedLocation && (
               <TouchableOpacity
-                style={styles.proceedWrapper}
+                style={[styles.proceedWrapper, styles.proceedBtnWrap]}
                 activeOpacity={0.85}
                 onPress={() => handleRechargePress()}
               >
-                <View style={styles.proceedBtnShadow}>
                 <LinearGradient
                   colors={bbpsTheme.gradients.primary}
                   start={{ x: 0, y: 0 }}
@@ -288,7 +286,6 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                   <Text style={styles.proceedBtnText}>View Plans & Recharge</Text>
                   <Icon name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
                 </LinearGradient>
-                </View>
               </TouchableOpacity>
             )}
 
@@ -402,15 +399,15 @@ const styles = StyleSheet.create({
 
   // Proceed button
   proceedWrapper: { marginHorizontal: 20, marginTop: 16, marginBottom: 4 },
-  proceedBtnShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.28,
-      shadowRadius: 10,
-      elevation: 5,
-      borderRadius: 14,
-    },
-
+  proceedBtnWrap: {
+    borderRadius: 14,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 5,
+  },
   proceedBtn: {
     flexDirection: 'row',
     height: 52,
@@ -464,15 +461,15 @@ const styles = StyleSheet.create({
   contactName: { fontSize: 15, fontWeight: '700', color: '#333' },
   contactNumber: { fontSize: 13, color: '#666', marginVertical: 2 },
   rechargeStatus: { fontSize: 12, color: '#888' },
-  rechargeBtnShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 6,
-      elevation: 3,
-      borderRadius: 10,
-    },
-
+  rechargeBtnWrap: {
+    borderRadius: 10,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 3,
+  },
   rechargeBtn: {
     paddingHorizontal: 18,
     paddingVertical: 9,

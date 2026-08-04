@@ -64,7 +64,6 @@ export default function HomeSubCategories() {
   const renderProductCard = useCallback((item) => (
     <View key={item.id} style={styles.productCard}>
     <View style={styles.discountBadgeWrapper}>
-          <View style={styles.discountGradientShadow}>
           <LinearGradient
             colors={['#FEB014', '#FFE486', '#F5B924']} // Gold/Yellow gradient
             style={styles.discountGradient}
@@ -73,7 +72,6 @@ export default function HomeSubCategories() {
           >
             <Text style={styles.discountBadgeText}>{item.discount}</Text>
           </LinearGradient>
-          </View>
         </View>
 
 
@@ -274,24 +272,19 @@ const styles = StyleSheet.create({
     top: 12,
     left: 12,
     zIndex: 2,
-    borderRadius: 14, // Needs to be here so gradient respects border
-    overflow: 'hidden',
+    borderRadius: 14,
+    backgroundColor: '#F5B924',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  discountGradientShadow: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
-      elevation: 5,
-      borderRadius: 14,
-    },
-
-  discountGradient: {
+  discountGradient: {
     // Gradient style (replaces original discountBadge's visual properties)
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 14,
-    
   },
   discountBadgeText: { 
     // Text style

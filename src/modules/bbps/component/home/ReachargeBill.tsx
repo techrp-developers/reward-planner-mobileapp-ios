@@ -59,7 +59,7 @@ const ServiceItem = ({
 
   return (
     <TouchableOpacity style={styles.itemContainer} activeOpacity={0.75} onPress={onPress}>
-      <View style={styles.iconCircleShadow}>
+      <View style={styles.iconCircleWrap}>
       <LinearGradient
         colors={bbpsTheme.gradients.primary}
         start={{ x: 0, y: 0 }}
@@ -514,15 +514,17 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     paddingHorizontal: 2,
   },
-  iconCircleShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.35,
-      shadowRadius: 8,
-      elevation: 6,
-      borderRadius: 29,
-    },
-
+  iconCircleWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+  },
   iconCircle: {
     width: 58,
     height: 58,

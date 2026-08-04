@@ -108,7 +108,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
 
       {/* ====== BLOCK 2.5 : STATS BLOCK (NEW) ====== */}
       {stats && (
-        <View style={styles.statsCardShadow}>
+        <View style={styles.statsCardWrap}>
         <LinearGradient
           colors={servicesTheme.isDark ? ['#18112A', '#111113'] : ['#F1EFFF', '#ECEBFF']}
           style={styles.statsCard}
@@ -128,7 +128,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
 
       {/* ====== BLOCK 3 : DATA SAFETY (OPTIONAL) ====== */}
       {showSafetyCard && (
-        <View style={styles.safetyCardShadow}>
+        <View style={styles.safetyCardWrap}>
         <LinearGradient
           colors={servicesTheme.isDark ? ['#111113', '#132016'] : ['#F3F3F3', '#E9FFE3']}
           style={styles.safetyCard}
@@ -272,21 +272,21 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  safetyCardShadow: {
-      shadowColor: '#1F2937',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.06,
-      shadowRadius: 14,
-      elevation: 3,
-      borderRadius: 18,
-    },
-
+  safetyCardWrap: {
+    marginHorizontal: 16,
+    marginBottom: 14,
+    borderRadius: 18,
+    backgroundColor: '#E9FFE3',
+    shadowColor: '#1F2937',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    elevation: 3,
+  },
   safetyCard: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 14,
     borderRadius: 18,
   },
 
@@ -314,22 +314,22 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
   },
-  statsCardShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.1,
-      shadowRadius: 14,
-      elevation: 3,
-      borderRadius: 18,
-    },
-
+  statsCardWrap: {
+    marginHorizontal: 16,
+    marginBottom: 14,
+    borderRadius: 18,
+    backgroundColor: '#ECEBFF',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    elevation: 3,
+  },
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 18,
     paddingHorizontal: 10,
-    marginHorizontal: 16,
-    marginBottom: 14,
     borderRadius: 18,
   },
 

@@ -42,21 +42,36 @@ import { useServicesTheme } from '../../utils/useServicesTheme';
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceOrderDetail'>;
 
-// ── Status label map ─────────────────────────────────────────────────────────
-const ORDER_STATUS_LABEL: Record<string, string> = {
-  pending_payment:  'Payment Pending',
-  in_progress:      'In Progress',
-  completed:        'Completed',
-  cancelled:        'Cancelled',
-};
-
-const ORDER_STATUS_COLOR: Record<string, string> = {
-  pending_payment: '#D97706',
-  in_progress:     '#2563EB',
-  completed:       '#16A34A',
-  cancelled:       '#DC2626',
-};
 const PURPLE = '#7C3AED';
+
+// ── Data transforms ──────────────────────────────────────────────────────────
+// Derives the header status from the individual service items rather than the
+// single aggregated `order.status`, which can read "Payment Pending" for the
+// whole order even when only one of several items hasn't been paid for.
+function getOrderStatusSummary(items: ServiceItem[]): { label: string; color: string } {
+  const total = items.length;
+
+  if (total === 0) {
+    return { label: 'Order Placed', color: '#6B7280' };
+  }
+
+  const cancelled = items.filter(item => item.status === 'cancelled').length;
+  if (cancelled === total) {
+    return { label: 'Order Cancelled', color: '#DC2626' };
+  }
+
+  const completed = items.filter(item => item.status === 'completed').length;
+  if (completed === total) {
+    return { label: 'Order Completed', color: '#16A34A' };
+  }
+
+  const confirmed = items.filter(item => item.status !== 'pending_payment').length;
+  if (confirmed < total) {
+    return { label: `${confirmed} of ${total} Services Confirmed`, color: '#D97706' };
+  }
+
+  return { label: `${completed} of ${total} Services Completed`, color: '#2563EB' };
+}
 
 // ── Data transforms ──────────────────────────────────────────────────────────
 function buildAddressLine(order: ServiceOrderDetails): string {
@@ -211,15 +226,14 @@ export default function ServiceOrderDetail() {
   }
 
   // ── Derived data (transforms live in parent, not in components) ───────────
-  const statusLabel  = ORDER_STATUS_LABEL[order.status]  || order.status;
-  const statusColor  = ORDER_STATUS_COLOR[order.status]  || '#6B7280';
-  const addressLine  = buildAddressLine(order);
+  const addressLine = buildAddressLine(order);
   const hasStandaloneItems = order.items.length > 0;
-  const hasBundles         = order.bundles.length > 0;
+  const hasBundles = order.bundles.length > 0;
   const allServiceItems = [
     ...order.items,
     ...order.bundles.flatMap(bundle => bundle.items),
   ];
+  const { label: statusLabel, color: statusColor } = getOrderStatusSummary(allServiceItems);
   const allDocuments = allServiceItems.flatMap(item => item.documents);
   const pendingDocumentCount = allDocuments.filter(document => !document.uploaded).length;
   const uploadedDocumentCount = allDocuments.length - pendingDocumentCount;
@@ -307,54 +321,52 @@ export default function ServiceOrderDetail() {
         </View>
         {/* ── Order summary card ─────────────────────────────────────── */}
         {false && (
-        <View style={styles.summaryCardShadow}>
-        <LinearGradient
-          colors={['#30205F', '#6344BD', '#7C3AED']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.summaryCard}
-        >
-          <View style={styles.summaryRow}>
-            <View>
-              <Text style={styles.orderEyebrow}>SERVICE ORDER</Text>
-              <Text style={styles.orderId}>
-                #{parent_order_id.slice(0, 8).toUpperCase()}
-              </Text>
-              <Text style={styles.orderDate}>{formatDate(order.created_at)}</Text>
+          <LinearGradient
+            colors={['#30205F', '#6344BD', '#7C3AED']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.summaryCard}
+          >
+            <View style={styles.summaryRow}>
+              <View>
+                <Text style={styles.orderEyebrow}>SERVICE ORDER</Text>
+                <Text style={styles.orderId}>
+                  #{parent_order_id.slice(0, 8).toUpperCase()}
+                </Text>
+                <Text style={styles.orderDate}>{formatDate(order.created_at)}</Text>
+              </View>
+              <View style={styles.summaryIcon}>
+                <MaterialCommunityIcons name="clipboard-text-outline" size={25} color="#FFF" />
+              </View>
             </View>
-            <View style={styles.summaryIcon}>
-              <MaterialCommunityIcons name="clipboard-text-outline" size={25} color="#FFF" />
-            </View>
-          </View>
 
-          <View style={styles.statusChip}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-            <Text style={styles.statusLabel}>{statusLabel}</Text>
-          </View>
+            <View style={styles.statusChip}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={styles.statusLabel}>{statusLabel}</Text>
+            </View>
 
-          {/* ── Quick stats ───────────────────────────────────────────── */}
-          <View style={styles.statsRow}>
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>
-                {order.items.length + order.bundles.reduce((s, b) => s + b.items.length, 0)}
-              </Text>
-              <Text style={styles.statLabel}>Services</Text>
+            {/* ── Quick stats ───────────────────────────────────────────── */}
+            <View style={styles.statsRow}>
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>
+                  {order.items.length + order.bundles.reduce((s, b) => s + b.items.length, 0)}
+                </Text>
+                <Text style={styles.statLabel}>Services</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>
+                  ₹{order.total_amount.toLocaleString('en-IN')}
+                </Text>
+                <Text style={styles.statLabel}>Total Paid</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statBox}>
+                <Text style={styles.statValue}>{order.bundles.length || '—'}</Text>
+                <Text style={styles.statLabel}>Bundles</Text>
+              </View>
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>
-                ₹{order.total_amount.toLocaleString('en-IN')}
-              </Text>
-              <Text style={styles.statLabel}>Total Paid</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statBox}>
-              <Text style={styles.statValue}>{order.bundles.length || '—'}</Text>
-              <Text style={styles.statLabel}>Bundles</Text>
-            </View>
-          </View>
-        </LinearGradient>
-        </View>
+          </LinearGradient>
         )}
 
         {/* ── Standalone service items ───────────────────────────────── */}
@@ -636,15 +648,15 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  summaryCardShadow: {
-      shadowColor: '#33205E',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.18,
-      shadowRadius: 16,
-      elevation: 5,
-      borderRadius: 22,
-    },
-
+  summaryCardWrap: {
+    borderRadius: 22,
+    backgroundColor: '#7C3AED',
+    elevation: 5,
+    shadowColor: '#33205E',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+  },
   summaryCard: {
     borderRadius: 22,
     padding: 18,

@@ -52,7 +52,6 @@ export default function HomeDeal() {
       <View style={styles.productCard}>
        {/* Discount Badge - Now using LinearGradient */}
         <View style={styles.discountBadgeWrapper}>
-          <View style={styles.discountGradientShadow}>
           <LinearGradient
             colors={['#FEB014', '#FFE486', '#F5B924']} // Gold/Yellow gradient
             style={styles.discountGradient}
@@ -61,7 +60,6 @@ export default function HomeDeal() {
           >
             <Text style={styles.discountBadgeText}>{item.discount}</Text>
           </LinearGradient>
-          </View>
         </View>
 
         {/* Product Image with Shadow */}
@@ -113,7 +111,6 @@ export default function HomeDeal() {
       {/* Section Header with Trapezoid Design */}
       <View style={styles.sectionHeader}>
         <View style={styles.trapezoidContainer}>
-          <View style={styles.trapezoidBackgroundShadow}>
           <LinearGradient
             colors={['#FFFFFF', '#FCE2FF']}
             style={styles.trapezoidBackground}
@@ -122,7 +119,6 @@ export default function HomeDeal() {
           >
             <Text style={styles.dealHead}>Blockbuster Deals</Text>
           </LinearGradient>
-          </View>
         </View>
       </View>
 
@@ -166,21 +162,11 @@ const styles = StyleSheet.create({
     // --- REMOVED SHADOW/ELEVATION HERE ---
     // elevation: 8, 
   },
-  trapezoidBackgroundShadow: {
-      shadowColor: 'transparent',
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0,
-      shadowRadius: 0,
-      elevation: 0,
-      borderRadius: 14,
-    },
-
-  trapezoidBackground: {
-   paddingVertical: 8,
-  paddingHorizontal: 20,
-  borderRadius: 14,
-    
-  },
+  trapezoidBackground: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+  },
   dealHead: {
     fontSize: 22,
     fontWeight: '700',
@@ -224,24 +210,19 @@ const styles = StyleSheet.create({
     top: 12,
     left: 12,
     zIndex: 2,
-    borderRadius: 14, // Needs to be here so gradient respects border
-    overflow: 'hidden',
+    borderRadius: 14,
+    backgroundColor: '#F5B924',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
-  discountGradientShadow: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 3,
-      elevation: 5,
-      borderRadius: 14,
-    },
-
-  discountGradient: {
+  discountGradient: {
     // Gradient style (replaces original discountBadge's visual properties)
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 14,
-    
   },
   discountBadgeText: { 
     // Text style

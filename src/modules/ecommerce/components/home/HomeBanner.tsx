@@ -14,7 +14,7 @@ function HomeBanner() {
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.bannerBoxShadow}>
+      <View style={styles.bannerBoxWrap}>
       <LinearGradient
         colors={isDark ? ['#18181B', '#3B0764', '#BE185D'] : ['#A95ACD', '#FC8BAD']}
         start={{ x: 0, y: 0 }}
@@ -47,15 +47,15 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
 
-  bannerBoxShadow: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.2,
-      shadowRadius: 5,
-      elevation: 4,
-      borderRadius: 22,
-    },
-
+  bannerBoxWrap: {
+    borderRadius: 22,
+    backgroundColor: '#FC8BAD',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+  },
   bannerBox: {
     height: BANNER_HEIGHT,
     flexDirection: 'row',

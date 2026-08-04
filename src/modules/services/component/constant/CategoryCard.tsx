@@ -22,6 +22,8 @@ type VerticalServiceCardProps = {
   image: string | React.ComponentType<{ width?: number; height?: number }>;
   priceText?: string;
   days?: string;
+  rating?: number;
+  reviewCount?: number;
 };
 
 function CategoryCard({
@@ -31,6 +33,8 @@ function CategoryCard({
   image,
   priceText,
   days,
+  rating,
+  reviewCount,
 }: VerticalServiceCardProps) {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
@@ -64,6 +68,9 @@ function CategoryCard({
   const primaryButtonText = hasPositivePrice
     ? `${priceText} + Get Start`
     : 'Get Started';
+
+  const parsedRating = Number(rating);
+  const hasRating = rating !== undefined && rating !== null && Number.isFinite(parsedRating);
 
   return (
     <TouchableOpacity
@@ -110,10 +117,19 @@ function CategoryCard({
 
         <View style={styles.bottomSection}>
           <View style={styles.metaRow}>
-            <View style={styles.ratingChip}>
-              <MaterialIcons name="star" size={13} color="#F59E0B" />
-              <Text style={[styles.ratingChipText, { color: servicesTheme.isDark ? '#FBBF24' : '#92400E' }]}>0.0</Text>
-            </View>
+            {(hasRating || !!reviewCount) && (
+              <View style={styles.ratingChip}>
+                {hasRating && (
+                  <>
+                    <MaterialIcons name="star" size={13} color="#F59E0B" />
+                    <Text style={[styles.ratingChipText, { color: servicesTheme.isDark ? '#FBBF24' : '#92400E' }]}>{parsedRating.toFixed(1)}</Text>
+                  </>
+                )}
+                {!!reviewCount && (
+                  <Text style={[styles.ratingChipText, { color: servicesTheme.isDark ? '#FBBF24' : '#92400E' }]}>({reviewCount})</Text>
+                )}
+              </View>
+            )}
             {!!days && (
               <View style={[styles.daysChip, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
                 <MaterialIcons name="schedule" size={12} color={servicesTheme.colors.muted} />
@@ -122,7 +138,7 @@ function CategoryCard({
             )}
           </View>
 
-          <View style={styles.ctaButtonShadow}>
+          <View style={styles.ctaButtonWrap}>
           <LinearGradient
             colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
@@ -230,23 +246,23 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '600',
   },
-  ctaButtonShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 8,
-      elevation: 3,
-      borderRadius: 10,
-    },
-
+  ctaButtonWrap: {
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+    minWidth: 130,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   ctaButton: {
     borderRadius: 10,
     height: 38,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    alignSelf: 'flex-start',
-    minWidth: 130,
   },
   ctaText: {
     color: '#FFFFFF',

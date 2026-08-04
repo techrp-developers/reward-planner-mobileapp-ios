@@ -89,9 +89,15 @@ export type OrderDetailsResponse = {
     order_id: number;
     order_ref: string;
     status: string;
+    cancellation_status?: string | null;
     total_amount: string;
     created_at: string;
     is_reward_credited: boolean;
+    cancellation_grace?: {
+      active: boolean;
+      minutes: number;
+      courier_booking_eligible_at: string | null;
+    };
   };
 
   address?: {
@@ -109,6 +115,8 @@ export type OrderDetailsResponse = {
 
   items?: Array<{
     order_item_id: number;
+    vendor_order_id?: number | null;
+    shipment_id?: number | null;
     product_id: number;
     variant_id: number;
     product_name: string;
@@ -119,6 +127,20 @@ export type OrderDetailsResponse = {
     price: number;
     item_total: number;
     reward_discount: number;
+    fulfillment_status?: string | null;
+    shipping_status?: string | null;
+    cancellation?: {
+      can_request: boolean;
+      status: string | null;
+      refund_status: string | null;
+      refund_amount: number | null;
+      terminal: boolean;
+    };
+    feedback?: {
+      can_submit: boolean;
+      submitted: boolean;
+      review_id: number | null;
+    };
   }>;
 
   shipments?: Array<{
@@ -145,6 +167,10 @@ export type OrderDetailsResponse = {
 
   order_progress?: {
     current_step: number;
+    status?: string;
+    is_partial?: boolean;
+    delivered_shipments?: number;
+    total_shipments?: number;
 
     steps: Array<{
       key: string;
@@ -160,6 +186,7 @@ export type OrderDetailsResponse = {
     reward_discount: number;
     reward_coins_used: number;
     reward_coins_earned: number;
+    reward_coins_potential: number;
     bag_discount: number;
     order_total: number;
   };
@@ -251,28 +278,71 @@ export const fetchCancellationReasons = async () => {
   }
 };
 
-export const cancelOrder = async (
-  orderId: number,
+export const requestItemCancellation = async (
+  orderItemId: number,
   reasonId: number,
-  reasonType?: string,
   comment?: string
 ) => {
   try {
     const headers = await getAuthHeaders();
 
     const res = await axios.post(
-      `${API_BASE_URL}/v1/orders/cancel/${orderId}`,
+      `${API_BASE_URL}/v1/orders/items/${orderItemId}/cancel`,
       {
         reason_id: reasonId,
-        reason_type: reasonType ?? "",
         comment: comment ?? "",
       },
       { headers }
     );
 
     return res.data;
+  } catch (error: any) {
+    console.error("Cancel Item Error:", error);
+    return {
+      success: false,
+      message: error?.response?.data?.message || "Unable to submit cancellation request",
+    };
+  }
+};
+
+export type ItemCancellationDetails = {
+  success: boolean;
+  data?: {
+    item: {
+      id: number;
+      order_item_id: number;
+      status: string;
+      reason_text?: string | null;
+      comment?: string | null;
+      product_name?: string;
+      quantity?: number;
+      final_price?: number;
+      reward_coins_used?: number;
+      created_at?: string;
+    };
+    timeline: Array<{ event: string; created_at: string }>;
+    refunds: Array<{
+      refund_amount: number;
+      refund_method: string;
+      status: string;
+    }>;
+  };
+};
+
+export const fetchItemCancellationDetails = async (
+  orderItemId: number
+): Promise<ItemCancellationDetails> => {
+  try {
+    const headers = await getAuthHeaders();
+
+    const res = await axios.get(
+      `${API_BASE_URL}/v1/orders/items/${orderItemId}/cancellation`,
+      { headers }
+    );
+
+    return res.data;
   } catch (error) {
-    console.error("Cancel Order Error:", error);
+    console.error("Item cancellation details error", error);
     return { success: false };
   }
 };

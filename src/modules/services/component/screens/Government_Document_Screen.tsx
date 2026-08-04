@@ -164,6 +164,8 @@ export default function Government_Document_Screen() {
           image={getServiceImageUrl(item.service_image, 'small')}
           priceText={`₹${item.price}`}
           days={`${item.estimated_days} Days`}
+          rating={item.rating}
+          reviewCount={item.review_count}
         />
       </View>
     );

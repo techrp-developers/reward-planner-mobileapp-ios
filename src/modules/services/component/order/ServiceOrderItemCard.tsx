@@ -15,20 +15,18 @@ import ServiceCancellationCard from './ServiceCancellationCard';
 import { useServicesTheme } from '../../utils/useServicesTheme';
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
-  pending:              { color: '#D97706', bg: '#FFFBEB', label: 'Pending' },
-  pending_payment:      { color: '#D97706', bg: '#FFFBEB', label: 'Payment Pending' },
-  payment_done:         { color: '#16A34A', bg: '#F0FDF4', label: 'Payment Done' },
-  pending_documents:    { color: '#D97706', bg: '#FFFBEB', label: 'Docs Pending' },
-  documents_pending:    { color: '#D97706', bg: '#FFFBEB', label: 'Docs Pending' },
-  documents_uploaded:   { color: '#7C3AED', bg: '#EDE9FE', label: 'Docs Uploaded' },
-  in_progress:          { color: '#2563EB', bg: '#EFF6FF', label: 'In Progress' },
-  completed:            { color: '#16A34A', bg: '#F0FDF4', label: 'Completed' },
-  cancelled:            { color: '#DC2626', bg: '#FEF2F2', label: 'Cancelled' },
+  pending: { color: '#D97706', bg: '#FFFBEB', label: 'Pending' },
+  pending_payment: { color: '#D97706', bg: '#FFFBEB', label: 'Payment Pending' },
+  payment_done: { color: '#16A34A', bg: '#F0FDF4', label: 'Payment Done' },
+  pending_documents: { color: '#D97706', bg: '#FFFBEB', label: 'Docs Pending' },
+  documents_pending: { color: '#D97706', bg: '#FFFBEB', label: 'Docs Pending' },
+  documents_uploaded: { color: '#7C3AED', bg: '#EDE9FE', label: 'Docs Uploaded' },
+  in_progress: { color: '#2563EB', bg: '#EFF6FF', label: 'In Progress' },
+  completed: { color: '#16A34A', bg: '#F0FDF4', label: 'Completed' },
+  cancelled: { color: '#DC2626', bg: '#FEF2F2', label: 'Cancelled' },
 };
 
 const CANCELLABLE_STATUSES = new Set([
-  'pending_payment',
-  'payment_done',
   'documents_pending',
   'documents_uploaded',
   'in_progress',
@@ -125,7 +123,7 @@ export default function ServiceOrderItemCard({
 
 const styles = StyleSheet.create({
   card: {
-    
+
     overflow: 'hidden',
   },
 

@@ -49,7 +49,7 @@ export default function Banner() {
       </View>
 
       {/* Balance Card with Gradient */}
-      <View style={styles.balanceCardShadow}>
+      <View style={styles.balanceCardWrap}>
       <LinearGradient
           colors={['#714DF3', '#4D34A6']}
         style={styles.balanceCard}
@@ -112,26 +112,25 @@ const styles = StyleSheet.create({
   },
 
   /* ⭐ Balance Card Styling with Gradient */
-  balanceCardShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
-      borderRadius: 18,
-    },
-
-  balanceCard: {
+  balanceCardWrap: {
     width: '90%',
     alignSelf: 'center',
+    borderRadius: 18,
+    elevation: 5,
+    marginTop: 16,
+    backgroundColor: '#4D34A6',
+    shadowColor: '#5B47A3',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    margin: 18,
+  },
+  balanceCard: {
     paddingVertical: 12,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 18,
-    marginTop: 16,
-    margin: 18,
-    // borderRadius: 16
   },
 
   balanceImage: {

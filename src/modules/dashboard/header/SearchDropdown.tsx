@@ -32,6 +32,15 @@ type Section = {
   data: SearchResultItem[];
 };
 
+// ─── Result type metadata (badge + icon) ───────────────────────────────────────
+
+const TYPE_META: Record<string, { label: string; color: string; icon: string }> = {
+  product: { label: 'Product', color: '#7C5CFC', icon: 'shopping-outline' },
+  category: { label: 'Category', color: '#7C5CFC', icon: 'shape-outline' },
+  subcategory: { label: 'Subcategory', color: '#7C5CFC', icon: 'shape-outline' },
+  service: { label: 'Service', color: '#0EA5E9', icon: 'briefcase-outline' },
+};
+
 // ─── Query highlight ──────────────────────────────────────────────────────────
 
 const HighlightedText = memo(({
@@ -91,10 +100,11 @@ const ResultItem = memo(({
   titleColor: string;
   separatorColor: string;
 }) => {
-  const isProduct = item.type === 'product';
-  const badgeColor = isProduct ? '#7C5CFC' : '#0EA5E9';
-  const badgeLabel = isProduct ? 'Product' : 'Service';
-  const badgeIcon = isProduct ? 'shopping-outline' : 'briefcase-outline';
+  const meta = TYPE_META[item.type] ?? TYPE_META.service;
+  const badgeColor = meta.color;
+  const badgeLabel = meta.label;
+  const badgeIcon = meta.icon;
+
 
   return (
     <TouchableOpacity
@@ -206,16 +216,42 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   // ── Navigation handler ────────────────────────────────────────────────────────
   const handlePress = useCallback((item: SearchResultItem) => {
     onClose();
-    if (item.type === 'product') {
-      navigation.navigate('ProductDetails', { productId: item.id });
-    } else {
+    const destination = item.navigation?.destination;
+
+    if (destination === 'category_products' || item.type === 'category') {
+      navigation.navigate('Home', {
+        screen: 'ProductModule',
+        params: {
+          screen: 'Category',
+          params: {
+            categoryId: item.navigation?.category_id ?? item.id,
+            title: item.title,
+          },
+        },
+      });
+    } else if (destination === 'subcategory_products' || item.type === 'subcategory') {
+      navigation.navigate('Home', {
+        screen: 'ProductModule',
+        params: {
+          screen: 'Category',
+          params: {
+            categoryId: item.navigation?.category_id,
+            title: item.category_name || item.title,
+            subcategoryId: item.navigation?.subcategory_id ?? item.id,
+            subcategoryTitle: item.title,
+          },
+        },
+      });
+    } else if (destination === 'service_details' || item.type === 'service') {
       navigation.navigate('ServiceStack', {
         screen: 'ServiceDescription',
         params: {
-          serviceId: item.id,
+          serviceId: item.navigation?.service_id ?? item.id,
           title: item.title,
         },
       });
+    } else {
+      navigation.navigate('ProductDetails', { productId: item.navigation?.product_id ?? item.id });
     }
   }, [navigation, onClose]);
 

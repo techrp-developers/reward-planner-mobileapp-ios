@@ -104,7 +104,7 @@ function Card({
           )}
 
           {/* CTA */}
-          <View style={styles.ctaShadow}>
+          <View style={styles.ctaWrap}>
           <LinearGradient
             colors={servicesTheme.gradients.primary}
             start={{ x: 0, y: 0 }}
@@ -215,15 +215,15 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginLeft: 4,
   },
-  ctaShadow: {
-      shadowColor: '#5B47A3',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.25,
-      shadowRadius: 8,
-      elevation: 3,
-      borderRadius: 12,
-    },
-
+  ctaWrap: {
+    borderRadius: 12,
+    backgroundColor: '#5B47A3',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   cta: {
     flexDirection: 'row',
     borderRadius: 12,

@@ -9,6 +9,8 @@ export type CategoryServiceItem = {
   price: string;
   estimated_days: number;
   service_image: string;
+  rating?: number;
+  review_count?: number;
 };
 
 export type CategoryServicesResult =
@@ -42,6 +44,8 @@ function normalizeListPayload(response: any, categoryId: number): CategoryServic
       price: String(s?.price || '0'),
       estimated_days: Number(s?.estimated_days || 0),
       service_image: s?.service_image || response?.category?.icon || '',
+      rating: Number(s?.rating || 0),
+      review_count: Number(s?.review_count || 0),
     }));
 
     return {
@@ -59,6 +63,8 @@ function normalizeListPayload(response: any, categoryId: number): CategoryServic
     price: String(v?.price || '0'),
     estimated_days: Number(v?.estimated_days || 0),
     service_image: response?.service?.service_image || response?.category?.icon || '',
+    rating: Number(response?.service?.rating || 0),
+    review_count: Number(response?.service?.review_count || 0),
   }));
 
   return {

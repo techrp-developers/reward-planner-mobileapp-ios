@@ -47,7 +47,7 @@ export default function MostBookedServices() {
 
   if (isLoading) {
     return (
-      <View style={styles.containerShadow}>
+      <View style={styles.containerWrap}>
       <LinearGradient
         colors={['#080B26', '#171F59', '#3545A3']}
         start={{ x: 0, y: 0 }}
@@ -66,7 +66,7 @@ export default function MostBookedServices() {
   }
 
   return (
-    <View style={styles.containerShadow}>
+    <View style={styles.containerWrap}>
     <LinearGradient
       colors={['#080B26', '#171F59', '#3545A3']}
       start={{ x: 0, y: 0 }}
@@ -121,7 +121,7 @@ export default function MostBookedServices() {
                   : undefined
               }
               rating={item.rating}
-              users={String(item.total_orders ?? 0)}
+              users={String(item.review_count ?? 0)}
               coins={coinsText}
               discount={discount}
               onPress={() =>
@@ -152,18 +152,18 @@ export default function MostBookedServices() {
 }
 
 const styles = StyleSheet.create({
-  containerShadow: {
-      shadowColor: '#080B26',
-      shadowOffset: { width: 0, height: 12 },
-      shadowOpacity: 0.28,
-      shadowRadius: 20,
-      elevation: 8,
-      borderRadius: 28,
-    },
-
-  container: {
+  containerWrap: {
     marginTop: 24,
     marginHorizontal: 16,
+    borderRadius: 28,
+    backgroundColor: '#3545A3',
+    shadowColor: '#080B26',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.28,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  container: {
     borderRadius: 28,
     paddingTop: 22,
     paddingBottom: 20,

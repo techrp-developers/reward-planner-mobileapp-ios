@@ -277,7 +277,7 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.heroBtnGhost} />
           </View>
 
-          <View style={styles.profilePanelShadow}>
+          <View style={styles.profilePanelWrap}>
           <LinearGradient
             colors={isDark ? ['#18181B', '#27233A', '#312E81'] : ['#111827', '#312E81', '#4F46E5']}
             start={{ x: 0, y: 0 }}
@@ -711,15 +711,15 @@ const styles = StyleSheet.create({
     height: 38,
   },
 
-  profilePanelShadow: {
-      shadowColor: '#0F172A',
-      shadowOffset: { width: 0, height: rs(12) },
-      shadowOpacity: 0.22,
-      shadowRadius: rs(18),
-      elevation: 8,
-      borderRadius: rs(24),
-    },
-
+  profilePanelWrap: {
+    borderRadius: rs(24),
+    backgroundColor: '#4F46E5',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: rs(12) },
+    shadowOpacity: 0.22,
+    shadowRadius: rs(18),
+    elevation: 8,
+  },
   profilePanel: {
     flexDirection: 'row',
     alignItems: 'center',
