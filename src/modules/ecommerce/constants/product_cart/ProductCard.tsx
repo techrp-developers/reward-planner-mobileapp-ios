@@ -270,7 +270,9 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
   }, [item, normalizedProduct]);
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={goToDetails}
       style={[
         styles.card,
         {
@@ -283,8 +285,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.85} onPress={goToDetails}>
-        <View style={[
+      <View style={[
           styles.imageWrap,
           {
             height: calculations.imageWrapHeight,
@@ -325,7 +326,6 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
             fallbackBackgroundColor="transparent"
           />
         </View>
-      </TouchableOpacity>
 
       <View style={styles.details}>
         <View style={styles.titleRow}>
@@ -389,7 +389,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
           <PointsButton rewardCoins={rewardCoins} redeemCoins={redeemCoins} onPress={goToDetails} />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

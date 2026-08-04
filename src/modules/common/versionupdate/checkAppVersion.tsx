@@ -6,7 +6,7 @@ const APP_SETTINGS_API =
 
 const STORE_URLS = {
   android: 'https://play.google.com/store/apps/details?id=com.rewardsplanners',
-  ios: 'https://apps.apple.com/app/idYOUR_APP_ID',
+  ios: 'https://apps.apple.com/in/app/reward-planners/id6763531257',
 };
 
 export type AppVersionResult = {
