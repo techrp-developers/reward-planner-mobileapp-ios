@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 22,
     paddingVertical: 22,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     alignItems: "center",
     marginBottom: 22,
     borderWidth: 1,
@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
   rewardBonusRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 6,
     marginBottom: 10,
   },
@@ -329,12 +330,14 @@ const styles = StyleSheet.create({
     color: "#FFE9F4",
     letterSpacing: 1.2,
     textTransform: "uppercase",
+    textAlign: "center",
   },
   rewardAmount: {
     fontSize: 44,
     fontWeight: "900",
     color: "#FFFFFF",
     letterSpacing: 0.5,
+    textAlign: "center",
   },
   rewardCoinsLabel: {
     fontSize: 13,
@@ -344,6 +347,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginTop: 2,
     marginBottom: 14,
+    textAlign: "center",
   },
   rewardSuccessPill: {
     flexDirection: "row",
@@ -400,7 +404,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   gradientBtn: {
-    paddingVertical: 17,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
@@ -417,5 +420,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "800",
     letterSpacing: 0.3,
+    paddingVertical: 17,
+
   },
 });
