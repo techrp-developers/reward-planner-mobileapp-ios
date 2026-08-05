@@ -277,7 +277,6 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.heroBtnGhost} />
           </View>
 
-          <View style={styles.profilePanelWrap}>
           <LinearGradient
             colors={isDark ? ['#18181B', '#27233A', '#312E81'] : ['#111827', '#312E81', '#4F46E5']}
             start={{ x: 0, y: 0 }}
@@ -349,9 +348,7 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
           </LinearGradient>
-          </View>
         </LinearGradient>
-
         {/* ════════════════════════════════════
             STATS ROW — Reward pts (big) + company logo
         ════════════════════════════════════ */}
