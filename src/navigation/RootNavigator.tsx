@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../modules/common/auth/context/AuthContext";
+import { setupFCM } from "../modules/notifications/FCMService";
 import { checkAppVersion } from "../modules/common/versionupdate/checkAppVersion";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
 import { RewardModal } from "../modules/common/reward/RewardModal";
@@ -111,7 +112,7 @@ function AppNavigator() {
         <AppStack.Screen
           name="Home"
           component={MainLayout}
-          options={{ animation: "none" }}
+          options={{ animation: "fade" }}
         />
 
         <AppStack.Screen
@@ -327,6 +328,19 @@ const MODAL_HIDDEN: VersionModalState = {
 export default function RootNavigator() {
   const { isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
   const [versionModal, setVersionModal] = useState<VersionModalState>(MODAL_HIDDEN);
+  const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fcmUnsubscribeRef.current = setupFCM();
+    } else {
+      fcmUnsubscribeRef.current?.();
+      fcmUnsubscribeRef.current = null;
+    }
+    return () => {
+      fcmUnsubscribeRef.current?.();
+    };
+  }, [isAuthenticated]);
 
   useEffect(() => {
     let mounted = true;

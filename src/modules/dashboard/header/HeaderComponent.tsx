@@ -41,6 +41,7 @@ interface HeaderProps {
   companyLogoUri?:        string;
   surface?:               'solid' | 'transparent';
   dismissSignal?:         number;
+  notificationBadge?:     number;
   onNotificationPress?:   () => void;
   onAIToggle?:            (value: boolean) => void;
   onSearchSubmit?:        (query: string) => void;
@@ -57,6 +58,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   companyLogoUri,
   surface = 'solid',
   dismissSignal = 0,
+  notificationBadge = 0,
   onNotificationPress,
   onSearchSubmit,
   onSearchActiveChange,
@@ -357,6 +359,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
                 activeOpacity={0.75}
               >
                 <MaterialCommunityIcons name="bell-outline" size={19} color={tk.iconTint} />
+                {notificationBadge > 0 && <View style={styles.badgeDot} />}
               </TouchableOpacity>
             )}
           </View>
@@ -533,6 +536,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.18)',
+  },
+  badgeDot: {
+    position: 'absolute',
+    top: 7,
+    right: 7,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#EF4444',
+    borderWidth: 1.5,
+    borderColor: '#111827',
   },
 
   // Dropdown container — absolute, overlays content below header

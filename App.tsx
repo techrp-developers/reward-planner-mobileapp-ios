@@ -9,6 +9,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/query/queryClient';
 import { AuthProvider } from './src/modules/common/auth/context/AuthContext';
 import { AppThemeProvider } from './src/theme/ThemeContext';
+import { navigationRef } from './src/navigation/navigationRef';
+import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
 
 type AuthModalStackParamList = {
   Login: undefined;
@@ -93,9 +95,11 @@ export default function App() {
             <AlertProvider>
               <AuthProvider>
                 <CartProvider>
-                  <NavigationContainer linking={linking}>
+                  <NavigationContainer linking={linking} ref={navigationRef}>
                     <AlertContainer />
-                    <RootNavigator />
+                    <NetworkGuard>
+                      <RootNavigator />
+                    </NetworkGuard>
                   </NavigationContainer>
                 </CartProvider>
               </AuthProvider>

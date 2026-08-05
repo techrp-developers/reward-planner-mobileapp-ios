@@ -1,26 +1,26 @@
 {
-  "root": "/Users/ppbuddy/Desktop/RewardsPlanner",
-  "reactNativePath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native",
+  "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code",
+  "reactNativePath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native",
   "reactNativeVersion": "0.82",
   "dependencies": {
     "@react-native-async-storage/async-storage": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-async-storage/async-storage",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-async-storage/async-storage",
       "name": "@react-native-async-storage/async-storage",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-async-storage/async-storage/RNCAsyncStorage.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-async-storage/async-storage/RNCAsyncStorage.podspec",
           "version": "2.2.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-async-storage/async-storage/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-async-storage/async-storage/android",
           "packageImportPath": "import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;",
           "packageInstance": "new AsyncStoragePackage()",
           "buildTypes": [],
           "libraryName": "rnasyncstorage",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -29,23 +29,23 @@
       }
     },
     "@react-native-community/geolocation": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/geolocation",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/geolocation",
       "name": "@react-native-community/geolocation",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/geolocation/react-native-geolocation.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/geolocation/react-native-geolocation.podspec",
           "version": "3.4.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/geolocation/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/geolocation/android",
           "packageImportPath": "import com.reactnativecommunity.geolocation.GeolocationPackage;",
           "packageInstance": "new GeolocationPackage()",
           "buildTypes": [],
           "libraryName": "RNCGeolocationSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/geolocation/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/geolocation/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -54,23 +54,82 @@
       }
     },
     "@react-native-community/netinfo": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/netinfo",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/netinfo",
       "name": "@react-native-community/netinfo",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/netinfo/react-native-netinfo.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/netinfo/react-native-netinfo.podspec",
           "version": "12.0.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/netinfo/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/netinfo/android",
           "packageImportPath": "import com.reactnativecommunity.netinfo.NetInfoPackage;",
           "packageInstance": "new NetInfoPackage()",
           "buildTypes": [],
           "libraryName": "RNCNetInfoSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-community/netinfo/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/netinfo/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "@react-native-firebase/app": {
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/app",
+      "name": "@react-native-firebase/app",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/app/RNFBApp.podspec",
+          "version": "26.1.0",
+          "configurations": [],
+          "scriptPhases": [
+            {
+              "name": "[RNFB] Core Configuration",
+              "path": "./ios_config.sh",
+              "execution_position": "after_compile",
+              "input_files": [
+                "$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)"
+              ]
+            }
+          ]
+        },
+        "android": {
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/app/android",
+          "packageImportPath": "import io.invertase.firebase.app.ReactNativeFirebaseAppPackage;",
+          "packageInstance": "new ReactNativeFirebaseAppPackage()",
+          "buildTypes": [],
+          "libraryName": "RNFBAppTurboModules",
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/app/android/src/reactnative/java/io/invertase/firebase/app/generated/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
+    "@react-native-firebase/messaging": {
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/messaging",
+      "name": "@react-native-firebase/messaging",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/messaging/RNFBMessaging.podspec",
+          "version": "26.1.0",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/messaging/android",
+          "packageImportPath": "import io.invertase.firebase.messaging.ReactNativeFirebaseMessagingPackage;",
+          "packageInstance": "new ReactNativeFirebaseMessagingPackage()",
+          "buildTypes": [],
+          "libraryName": "RNFBMessagingTurboModules",
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-firebase/messaging/android/src/main/java/io/invertase/firebase/messaging/generated/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -79,22 +138,22 @@
       }
     },
     "@react-native-masked-view/masked-view": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-masked-view/masked-view",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-masked-view/masked-view",
       "name": "@react-native-masked-view/masked-view",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-masked-view/masked-view/RNCMaskedView.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-masked-view/masked-view/RNCMaskedView.podspec",
           "version": "0.3.2",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-masked-view/masked-view/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-masked-view/masked-view/android",
           "packageImportPath": "import org.reactnative.maskedview.RNCMaskedViewPackage;",
           "packageInstance": "new RNCMaskedViewPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-masked-view/masked-view/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-masked-view/masked-view/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -103,23 +162,23 @@
       }
     },
     "@react-native-vector-icons/fontawesome": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-vector-icons/fontawesome",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-vector-icons/fontawesome",
       "name": "@react-native-vector-icons/fontawesome",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-vector-icons/fontawesome/react-native-vector-icons-fontawesome.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-vector-icons/fontawesome/react-native-vector-icons-fontawesome.podspec",
           "version": "13.1.2",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-vector-icons/fontawesome/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-vector-icons/fontawesome/android",
           "packageImportPath": "import com.reactnativevectoricons.fontawesome.VectorIconsFontAwesomePackage;",
           "packageInstance": "new VectorIconsFontAwesomePackage()",
           "buildTypes": [],
           "libraryName": "VectorIconsFontAwesome",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/@react-native-vector-icons/fontawesome/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-vector-icons/fontawesome/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -128,22 +187,22 @@
       }
     },
     "react-native-device-info": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-device-info",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-device-info",
       "name": "react-native-device-info",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-device-info/RNDeviceInfo.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-device-info/RNDeviceInfo.podspec",
           "version": "15.0.2",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-device-info/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-device-info/android",
           "packageImportPath": "import com.learnium.RNDeviceInfo.RNDeviceInfo;",
           "packageInstance": "new RNDeviceInfo()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-device-info/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-device-info/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -152,17 +211,17 @@
       }
     },
     "react-native-gesture-handler": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-gesture-handler",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-gesture-handler",
       "name": "react-native-gesture-handler",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-gesture-handler/RNGestureHandler.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-gesture-handler/RNGestureHandler.podspec",
           "version": "2.32.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-gesture-handler/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-gesture-handler/android",
           "packageImportPath": "import com.swmansion.gesturehandler.RNGestureHandlerPackage;",
           "packageInstance": "new RNGestureHandlerPackage()",
           "buildTypes": [],
@@ -171,7 +230,7 @@
             "RNGestureHandlerButtonComponentDescriptor",
             "RNGestureHandlerRootViewComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -180,18 +239,18 @@
       }
     },
     "react-native-health-connect": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-health-connect",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-health-connect",
       "name": "react-native-health-connect",
       "platforms": {
         "ios": null,
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-health-connect/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-health-connect/android",
           "packageImportPath": "import dev.matinzd.healthconnect.HealthConnectPackage;",
           "packageInstance": "new HealthConnectPackage()",
           "buildTypes": [],
           "libraryName": "RNHealthConnectSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-health-connect/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-health-connect/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -200,23 +259,23 @@
       }
     },
     "react-native-html-to-pdf": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-html-to-pdf",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-html-to-pdf",
       "name": "react-native-html-to-pdf",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-html-to-pdf/HtmlToPdf.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-html-to-pdf/HtmlToPdf.podspec",
           "version": "1.3.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-html-to-pdf/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-html-to-pdf/android",
           "packageImportPath": "import com.htmltopdf.HtmlToPdfPackage;",
           "packageInstance": "new HtmlToPdfPackage()",
           "buildTypes": [],
           "libraryName": "HtmlToPdfSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-html-to-pdf/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-html-to-pdf/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -225,23 +284,23 @@
       }
     },
     "react-native-image-picker": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-image-picker",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-image-picker",
       "name": "react-native-image-picker",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-image-picker/react-native-image-picker.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-image-picker/react-native-image-picker.podspec",
           "version": "8.2.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-image-picker/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-image-picker/android",
           "packageImportPath": "import com.imagepicker.ImagePickerPackage;",
           "packageInstance": "new ImagePickerPackage()",
           "buildTypes": [],
           "libraryName": "RNImagePickerSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-image-picker/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -250,22 +309,22 @@
       }
     },
     "react-native-linear-gradient": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-linear-gradient",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-linear-gradient",
       "name": "react-native-linear-gradient",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-linear-gradient/BVLinearGradient.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-linear-gradient/BVLinearGradient.podspec",
           "version": "2.8.3",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-linear-gradient/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-linear-gradient/android",
           "packageImportPath": "import com.BV.LinearGradient.LinearGradientPackage;",
           "packageInstance": "new LinearGradientPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-linear-gradient/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-linear-gradient/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -274,17 +333,17 @@
       }
     },
     "react-native-maps": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-maps",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-maps",
       "name": "react-native-maps",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-maps/react-native-maps.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-maps/react-native-maps.podspec",
           "version": "1.29.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-maps/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-maps/android",
           "packageImportPath": "import com.rnmaps.maps.MapsPackage;",
           "packageInstance": "new MapsPackage()",
           "buildTypes": [],
@@ -303,7 +362,7 @@
             "RNMapsUrlTileComponentDescriptor",
             "RNMapsWMSTileComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-maps/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-maps/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -312,23 +371,23 @@
       }
     },
     "react-native-permissions": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-permissions",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-permissions",
       "name": "react-native-permissions",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-permissions/RNPermissions.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-permissions/RNPermissions.podspec",
           "version": "5.6.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-permissions/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-permissions/android",
           "packageImportPath": "import com.zoontek.rnpermissions.RNPermissionsPackage;",
           "packageInstance": "new RNPermissionsPackage()",
           "buildTypes": [],
           "libraryName": "RNPermissionsSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-permissions/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-permissions/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -337,22 +396,22 @@
       }
     },
     "react-native-razorpay": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-razorpay",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-razorpay",
       "name": "react-native-razorpay",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-razorpay/react-native-razorpay.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-razorpay/react-native-razorpay.podspec",
           "version": "2.3.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-razorpay/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-razorpay/android",
           "packageImportPath": "import com.razorpay.rn.RazorpayPackage;",
           "packageInstance": "new RazorpayPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-razorpay/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-razorpay/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -361,23 +420,23 @@
       }
     },
     "react-native-reanimated": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-reanimated",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-reanimated",
       "name": "react-native-reanimated",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-reanimated/RNReanimated.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-reanimated/RNReanimated.podspec",
           "version": "4.3.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-reanimated/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-reanimated/android",
           "packageImportPath": "import com.swmansion.reanimated.ReanimatedPackage;",
           "packageInstance": "new ReanimatedPackage()",
           "buildTypes": [],
           "libraryName": "rnreanimated",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-reanimated/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -386,11 +445,11 @@
       }
     },
     "react-native-render-html": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-render-html",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-render-html",
       "name": "react-native-render-html",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-render-html/react-native-render-html.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-render-html/react-native-render-html.podspec",
           "version": "6.3.4",
           "configurations": [],
           "scriptPhases": []
@@ -399,17 +458,17 @@
       }
     },
     "react-native-safe-area-context": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-safe-area-context",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-safe-area-context",
       "name": "react-native-safe-area-context",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-safe-area-context/react-native-safe-area-context.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-safe-area-context/react-native-safe-area-context.podspec",
           "version": "5.8.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-safe-area-context/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-safe-area-context/android",
           "packageImportPath": "import com.th3rdwave.safeareacontext.SafeAreaContextPackage;",
           "packageInstance": "new SafeAreaContextPackage()",
           "buildTypes": [],
@@ -418,7 +477,7 @@
             "RNCSafeAreaProviderComponentDescriptor",
             "RNCSafeAreaViewComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-safe-area-context/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -427,17 +486,17 @@
       }
     },
     "react-native-screens": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-screens",
       "name": "react-native-screens",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens/RNScreens.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-screens/RNScreens.podspec",
           "version": "4.26.2",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-screens/android",
           "packageImportPath": "import com.swmansion.rnscreens.RNScreensPackage;",
           "packageInstance": "new RNScreensPackage()",
           "buildTypes": [],
@@ -461,7 +520,7 @@
             "RNSStackHeaderSubviewComponentDescriptor",
             "RNSFormSheetHostComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-screens/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -470,17 +529,17 @@
       }
     },
     "react-native-send-intent": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-send-intent",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-send-intent",
       "name": "react-native-send-intent",
       "platforms": {
         "ios": null,
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-send-intent/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-send-intent/android",
           "packageImportPath": "import com.burnweb.rnsendintent.RNSendIntentPackage;",
           "packageInstance": "new RNSendIntentPackage()",
           "buildTypes": [],
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-send-intent/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-send-intent/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -489,23 +548,23 @@
       }
     },
     "react-native-share": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-share",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-share",
       "name": "react-native-share",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-share/RNShare.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-share/RNShare.podspec",
           "version": "12.3.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-share/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-share/android",
           "packageImportPath": "import cl.json.RNSharePackage;",
           "packageInstance": "new RNSharePackage()",
           "buildTypes": [],
           "libraryName": "RNShareSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-share/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-share/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -514,17 +573,17 @@
       }
     },
     "react-native-svg": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-svg",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-svg",
       "name": "react-native-svg",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-svg/RNSVG.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-svg/RNSVG.podspec",
           "version": "15.15.5",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-svg/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-svg/android",
           "packageImportPath": "import com.horcrux.svg.SvgPackage;",
           "packageInstance": "new SvgPackage()",
           "buildTypes": [],
@@ -560,7 +619,7 @@
             "RNSVGTSpanComponentDescriptor",
             "RNSVGUseComponentDescriptor"
           ],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-svg/android/src/main/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-svg/android/src/main/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -569,23 +628,23 @@
       }
     },
     "react-native-vector-icons": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-vector-icons",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-vector-icons",
       "name": "react-native-vector-icons",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-vector-icons/RNVectorIcons.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-vector-icons/RNVectorIcons.podspec",
           "version": "10.3.0",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-vector-icons/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-vector-icons/android",
           "packageImportPath": "import com.oblador.vectoricons.VectorIconsPackage;",
           "packageInstance": "new VectorIconsPackage()",
           "buildTypes": [],
           "libraryName": "RNVectorIconsSpec",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-vector-icons/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -594,23 +653,23 @@
       }
     },
     "react-native-worklets": {
-      "root": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-worklets",
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-worklets",
       "name": "react-native-worklets",
       "platforms": {
         "ios": {
-          "podspecPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-worklets/RNWorklets.podspec",
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-worklets/RNWorklets.podspec",
           "version": "0.8.1",
           "configurations": [],
           "scriptPhases": []
         },
         "android": {
-          "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-worklets/android",
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-worklets/android",
           "packageImportPath": "import com.swmansion.worklets.WorkletsPackage;",
           "packageInstance": "new WorkletsPackage()",
           "buildTypes": [],
           "libraryName": "rnworklets",
           "componentDescriptors": [],
-          "cmakeListsPath": "/Users/ppbuddy/Desktop/RewardsPlanner/node_modules/react-native-worklets/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-worklets/android/build/generated/source/codegen/jni/CMakeLists.txt",
           "cxxModuleCMakeListsModuleName": null,
           "cxxModuleCMakeListsPath": null,
           "cxxModuleHeaderName": null,
@@ -781,7 +840,7 @@
         {
           "name": "--path <path>",
           "description": "Path to the React Native project root.",
-          "default": "/Users/ppbuddy/Desktop/RewardsPlanner/ios"
+          "default": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/ios"
         },
         {
           "name": "--platform <string>",
@@ -1081,7 +1140,7 @@
   "assets": [],
   "project": {
     "ios": {
-      "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/ios",
+      "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/ios",
       "xcodeProject": {
         "name": "RewardsPlanners.xcworkspace",
         "path": ".",
@@ -1090,7 +1149,7 @@
       "assets": []
     },
     "android": {
-      "sourceDir": "/Users/ppbuddy/Desktop/RewardsPlanner/android",
+      "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/android",
       "appName": "app",
       "packageName": "com.rewardsplanners",
       "applicationId": "com.rewardsplanners",

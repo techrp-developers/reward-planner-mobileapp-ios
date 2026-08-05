@@ -5,6 +5,10 @@
 import { AppRegistry, LogBox } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
+import { registerBackgroundHandler } from './src/modules/notifications/FCMService';
+
+// Must be called before AppRegistry so Firebase can handle background/quit messages.
+registerBackgroundHandler();
 
 // Catch every unhandled JS exception so the crash reason appears in Metro
 // console even when the native bridge dies before React can show a red screen.

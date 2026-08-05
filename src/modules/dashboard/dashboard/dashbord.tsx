@@ -16,6 +16,8 @@ import SearchDropdown from '../header/SearchDropdown';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
 import axios from 'axios';
+import { getNotificationBadge } from '../notification/NotificationAPI';
+import { notificationEvents } from '../../notifications/notificationEvents';
 import Home_Chart from '../stepcount/Home_Chart';
 import ModuleBanner from '../explore/ModuleBanner';
 import { rs, fs } from '../../../utils/responsive';
@@ -36,12 +38,6 @@ const MODULE_ROUTE: Record<ExploreServiceTab, string> = {
   DineOut: 'DineOutModule',
 };
 
-const MODULE_LAUNCH_COLOR: Record<ExploreServiceTab, string> = {
-  Product: '#5F341A',
-  Services: '#4F6BFF',
-  Payments: '#7C3AED',
-  DineOut: '#DC2626',
-};
 
 type DashboardHeaderCache = {
   userName: string;
@@ -90,8 +86,20 @@ function Dashbord() {
   const [birthdays, setBirthdays] = useState<BirthdayEmployee[]>(
     () => dashboardHeaderCache?.birthdays ?? [],
   );
-  const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
+  const [notificationBadge, setNotificationBadge] = useState(0);
   const hasBirthdays = birthdays.length > 0;
+
+  const loadNotificationBadge = useCallback(async () => {
+    if (!isAuthenticated) return;
+    try {
+      const res = await getNotificationBadge();
+      setNotificationBadge(res.count);
+    } catch { }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    return notificationEvents.onBadgeRefresh(loadNotificationBadge);
+  }, [loadNotificationBadge]);
 
   const loadHeaderInfo = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -196,22 +204,15 @@ function Dashbord() {
   }, []);
 
   useFocusEffect(useCallback(() => {
-    setOpeningModule(null);
     loadHeaderInfo();
-  }, [loadHeaderInfo]));
+    loadNotificationBadge();
+  }, [loadHeaderInfo, loadNotificationBadge]));
 
   const handleExploreModulePress = useCallback((tab: ExploreServiceTab) => {
-    setOpeningModule(tab);
-
-    // Let the lightweight module shell paint before mounting the destination.
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        navigation.navigate('Home', {
-          screen: MODULE_ROUTE[tab],
-          params: { moduleName: tab },
-          moduleName: tab,
-        });
-      }, 0);
+    navigation.navigate('Home', {
+      screen: MODULE_ROUTE[tab],
+      params: { moduleName: tab },
+      moduleName: tab,
     });
   }, [navigation]);
 
@@ -296,6 +297,7 @@ function Dashbord() {
             onSearchActiveChange={setIsSearchOpen}
             onSearchOverlayChange={setSearchOverlay}
             onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
+            notificationBadge={notificationBadge}
             onNotificationPress={() => navigation.navigate('Notification')}
           />
 
@@ -379,41 +381,6 @@ function Dashbord() {
         onTabPress={handleTabPress}
         onCenterPress={handleCenterPress}
       />
-      {openingModule && (
-        <View
-          style={[
-            styles.moduleLaunchOverlay,
-            { backgroundColor: MODULE_LAUNCH_COLOR[openingModule] },
-          ]}
-        >
-          <Text style={styles.moduleLaunchTitle}>{openingModule}</Text>
-          <View
-            style={[
-              styles.moduleLaunchContent,
-              { backgroundColor: isDark ? '#09090B' : '#F8FAFC' },
-            ]}
-          >
-            <View
-              style={[
-                styles.moduleLaunchLineWide,
-                { backgroundColor: isDark ? '#27272A' : '#E2E8F0' },
-              ]}
-            />
-            <View
-              style={[
-                styles.moduleLaunchLine,
-                { backgroundColor: isDark ? '#27272A' : '#E2E8F0' },
-              ]}
-            />
-            <View
-              style={[
-                styles.moduleLaunchCard,
-                { backgroundColor: isDark ? '#18181B' : '#E2E8F0' },
-              ]}
-            />
-          </View>
-        </View>
-      )}
       {/* <FloatingBottomBar/> */}
     </LinearGradient>
   );
@@ -534,42 +501,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: rs(14),
   },
 
-  moduleLaunchOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 300,
-    elevation: 40,
-    justifyContent: 'flex-start',
-    paddingTop: rs(80),
-    paddingHorizontal: rs(20),
-  },
-  moduleLaunchTitle: {
-    color: '#fff',
-    fontSize: fs(22),
-    fontWeight: '800',
-    marginBottom: rs(20),
-  },
-  moduleLaunchContent: {
-    borderRadius: rs(16),
-    padding: rs(16),
-    gap: rs(12),
-  },
-  moduleLaunchLineWide: {
-    height: rs(14),
-    borderRadius: rs(7),
-    width: '80%',
-  },
-  moduleLaunchLine: {
-    height: rs(14),
-    borderRadius: rs(7),
-    width: '55%',
-  },
-  moduleLaunchCard: {
-    height: rs(120),
-    borderRadius: rs(16),
-    marginTop: rs(8),
-  },
 });

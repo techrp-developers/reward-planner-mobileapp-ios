@@ -413,13 +413,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    paddingVertical: 17,
   },
   btnText: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '900',
     letterSpacing: 0.2,
+    paddingVertical: 17,
+
   },
   helperText: {
     marginTop: 14,

@@ -110,7 +110,7 @@ export default function ServiceSearchScreen({ navigation }: Props) {
         showSearch
         search={search}
         onChangeSearch={setSearch}
-        onBackPress={() => navigation.goBack()}
+        onBackPress={() => navigation.pop()}
         autoFocus
       />
 

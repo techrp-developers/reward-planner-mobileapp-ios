@@ -166,6 +166,7 @@ function SearchScreen() {
                 search={search}
                 onChangeSearch={setSearch}
                 onFocusSearch={() => search.length >= 2 && setShowSuggest(true)}
+                onBack={() => navigation.pop()}
             />
 
             {showSuggest ? (

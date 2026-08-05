@@ -6,21 +6,25 @@ import {
   TextInput,
   StyleSheet,
   Image,
+  TouchableOpacity,
 } from "react-native";
 import BackgroundImage from "../../../../navbar/assete/Background1.jpeg";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   showSearch?: boolean;
   search?: string;
   onChangeSearch?: (v: string) => void;
   onFocusSearch?: () => void;
+  onBack?: () => void;
 };
 
-function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch }: Props) {
+function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack }: Props) {
   const { width } = useWindowDimensions();
   const { isDark, theme } = useAppTheme();
+  const insets = useSafeAreaInsets();
   const HEADER_HEIGHT = Math.round(width * 0.4);
 
   return (
@@ -32,6 +36,16 @@ function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch }: Props)
         style={styles.absoluteFill}
         resizeMode="cover"
       />
+
+      {onBack && (
+        <TouchableOpacity
+          onPress={onBack}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+          style={[styles.backBtn, { top: insets.top + 10 }]}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+      )}
 
       {showSearch && (
         <View
@@ -74,6 +88,16 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "100%",
     height: "100%",
+  },
+  backBtn: {
+    position: "absolute",
+    left: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "rgba(0,0,0,0.28)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   searchWrap: {
     position: "absolute",

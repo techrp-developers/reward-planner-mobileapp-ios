@@ -193,12 +193,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 9,
-    paddingHorizontal: 20,
   },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 19,
     fontWeight: '800',
+    paddingHorizontal: 20,
+
   },
   landscape: {
     position: 'absolute',

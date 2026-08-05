@@ -119,6 +119,20 @@ export const markAllNotificationsAsRead = async () => {
   }
 };
 
+export const registerFCMToken = async (fcmToken: string): Promise<void> => {
+  try {
+    const headers = await getAuthHeaders();
+
+    await axios.put(
+      `${BASE_API_URL}/auth/update-fcm-token`,
+      { fcm_token: fcmToken },
+      { headers },
+    );
+  } catch (error: any) {
+    console.warn('[FCM] registerFCMToken error:', error?.response || error);
+  }
+};
+
 export const deleteNotification = async (notificationId: number) => {
   try {
     const headers = await getAuthHeaders();

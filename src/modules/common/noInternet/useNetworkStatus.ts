@@ -8,14 +8,14 @@ export interface NetworkStatus {
 }
 
 // ─── Derive effective online/offline from a NetInfoState ─────────────────────
-// isConnected=false  →  definitely offline
-// isInternetReachable=false  →  connected to router/mobile but no internet
-// null values during transitions are treated as "not yet known" (pass-through)
+// isConnected=false  →  definitely offline (airplane mode, no signal)
+// isInternetReachable is NOT used: on iOS it stays null unless NetInfo is
+// configured with a reachabilityUrl, making it unreliable for gate logic.
 function deriveStatus(state: NetInfoState): NetworkStatus {
   return {
-    isConnected:        !(state.isConnected === false || state.isInternetReachable === false),
+    isConnected:         state.isConnected !== false,
     isInternetReachable: state.isInternetReachable ?? null,
-    connectionType:     state.type,
+    connectionType:      state.type,
   };
 }
 

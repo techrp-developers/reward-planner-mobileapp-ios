@@ -53,9 +53,18 @@ end
 
 $react_native_path = nil
 
+# Firebase: disable SPM so Firebase resolves via CocoaPods (required for static linking)
+$RNFirebaseDisableSPM = true
+
+# Firebase Swift pods (FirebaseCoreInternal) require GoogleUtilities to expose module maps
+
 target 'RewardsPlanners' do
   $config = use_native_modules!
   $react_native_path = $config[:reactNativePath]
+
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
 
   use_react_native!(
     :path => $react_native_path,
@@ -69,6 +78,46 @@ post_install do |installer|
     $react_native_path,
     :mac_catalyst_enabled => false,
   )
+
+  # ========================================================================
+  # MODULE MAP SYMLINK FIX
+  # ========================================================================
+  # use_react_native! adds -fmodule-map-file= flags in OTHER_CFLAGS that
+  # point to Headers/Public/<module_name>/<target>.modulemap.
+  # Without global use_modular_headers! those symlinks are never created,
+  # so Xcode fails with "module map file not found".
+  #
+  # We create the missing symlinks here using each pod's PRODUCT_MODULE_NAME
+  # to locate the right Headers/Public subdirectory.  This avoids the global
+  # use_modular_headers! that causes "redefinition of module" errors with
+  # Xcode 26 and React Native's own module system.
+  # ========================================================================
+  require 'fileutils'
+  require 'pathname'
+
+  pods_root      = installer.sandbox.root.to_s
+  headers_public = File.join(pods_root, 'Headers', 'Public')
+
+  installer.pods_project.targets.each do |target|
+    tsf_map = File.join(pods_root, 'Target Support Files', target.name, "#{target.name}.modulemap")
+    next unless File.exist?(tsf_map)
+
+    debug_config = target.build_configurations.find { |c| c.name == 'Debug' } ||
+                   target.build_configurations.first
+    next unless debug_config
+
+    module_name = debug_config.build_settings['PRODUCT_MODULE_NAME'] ||
+                  target.name.gsub(/[-.]/, '_')
+
+    pub_dir = File.join(headers_public, module_name)
+    next unless Dir.exist?(pub_dir)
+
+    dest = File.join(pub_dir, "#{target.name}.modulemap")
+    next if File.exist?(dest) || File.symlink?(dest)
+
+    relative = Pathname.new(tsf_map).relative_path_from(Pathname.new(pub_dir))
+    FileUtils.ln_sf(relative.to_s, dest)
+  end
 
   # Resolve node at pod-install time (nvm is active in this shell).
   # This absolute path is then baked into the hermes-engine script phase so

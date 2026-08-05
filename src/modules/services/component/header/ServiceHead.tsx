@@ -11,6 +11,7 @@ import {
 import ServiceTop from "../../../../assets/homepage/service_top_nav.png";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
   showSearch?: boolean;
@@ -24,6 +25,7 @@ type Props = {
 function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBackPress, autoFocus }: Props) {
   const servicesTheme = useServicesTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const HEADER_HEIGHT = Math.round(width * 0.4);
 
   return (
@@ -35,7 +37,7 @@ function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack
         <TouchableOpacity
           onPress={onBackPress}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          style={styles.backBtn}
+          style={[styles.backBtn, { top: insets.top + 10 }]}
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
@@ -120,7 +122,6 @@ const styles = StyleSheet.create({
   },
   backBtn: {
     position: "absolute",
-    top: 14,
     left: 14,
     width: 36,
     height: 36,

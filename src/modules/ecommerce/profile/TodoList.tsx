@@ -1097,36 +1097,36 @@ const TodoListScreen = () => {
                 )}
               </TouchableOpacity>
             </ScrollView>
+
+            {timePickerVisible && (
+              <View style={styles.timePickerOverlay}>
+                <View style={[styles.timePickerModal, themed.surface]}>
+                  <Text style={[styles.modalTitle, themed.text]}>
+                    Select {timeTarget === "start" ? "Start" : "End"} Time
+                  </Text>
+
+                  <ScrollView style={styles.timeList}>
+                    {timeOptions.map(item => (
+                      <TouchableOpacity
+                        key={item}
+                        style={[styles.timeOption, themed.divider]}
+                        onPress={() => selectTime(item)}
+                      >
+                        <Text style={[styles.timeOptionText, themed.text]}>{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  <TouchableOpacity
+                    style={[styles.cancelFullButton, themed.softButton]}
+                    onPress={() => setTimePickerVisible(false)}
+                  >
+                    <Text style={[styles.cancelText, themed.text]}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
           </SafeAreaView>
-        </View>
-      </Modal>
-
-      <Modal visible={timePickerVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.timePickerModal, themed.surface]}>
-            <Text style={[styles.modalTitle, themed.text]}>
-              Select {timeTarget === "start" ? "Start" : "End"} Time
-            </Text>
-
-            <ScrollView style={styles.timeList}>
-              {timeOptions.map(item => (
-                <TouchableOpacity
-                  key={item}
-                  style={[styles.timeOption, themed.divider]}
-                  onPress={() => selectTime(item)}
-                >
-                  <Text style={[styles.timeOptionText, themed.text]}>{item}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <TouchableOpacity
-              style={[styles.cancelFullButton, themed.softButton]}
-              onPress={() => setTimePickerVisible(false)}
-            >
-              <Text style={[styles.cancelText, themed.text]}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </Modal>
 
@@ -1736,6 +1736,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 13,
     fontWeight: "700",
+  },
+
+  timePickerOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    zIndex: 999,
   },
 
   modalOverlay: {

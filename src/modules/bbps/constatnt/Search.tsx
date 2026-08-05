@@ -10,7 +10,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SvgProps } from 'react-native-svg';
 import LinearGradient from 'react-native-linear-gradient';
@@ -102,6 +102,7 @@ const SearchResultIcon = ({ categoryName }: { categoryName: string }) => {
 function Search({ navigation }: any) {
   const bbpsTheme = useBbpsTheme();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [search, setSearch] = useState('');
   const [categories, setCategories] = useState<BillCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,9 +161,9 @@ function Search({ navigation }: any) {
         <Image source={PaymentTop} style={styles.headerImage} resizeMode="cover" />
 
         <TouchableOpacity
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.pop()}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
-          style={styles.backButton}
+          style={[styles.backButton, { top: insets.top + 10 }]}
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
@@ -285,7 +286,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: 'absolute',
-    top: 14,
     left: 14,
     width: 36,
     height: 36,
