@@ -315,8 +315,7 @@ const styles = StyleSheet.create({
 
     confirmBtn: {
         marginTop: 20,
-        paddingVertical: 14,
-        paddingHorizontal: 24,
+
         borderRadius: 10,
         alignItems: "center",
     },
@@ -325,6 +324,8 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontSize: 15,
         fontWeight: "700",
+        paddingVertical: 14,
+        paddingHorizontal: 24,
     },
 
     // ── Success screen ────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useServicesTheme } from "../utils/useServicesTheme";
 
 interface StepProps {
   steps: string[];
@@ -8,6 +9,8 @@ interface StepProps {
 }
 
 const StepIndicator: React.FC<StepProps> = ({ steps, currentStep }) => {
+  const servicesTheme = useServicesTheme();
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.indicatorContainer}>
@@ -23,6 +26,7 @@ const StepIndicator: React.FC<StepProps> = ({ steps, currentStep }) => {
                 <View
                   style={[
                     styles.connector,
+                    { backgroundColor: servicesTheme.colors.divider },
                     isCompleted && styles.connectorCompleted,
                   ]}
                 />
@@ -33,6 +37,7 @@ const StepIndicator: React.FC<StepProps> = ({ steps, currentStep }) => {
                 <View
                   style={[
                     styles.stepCircle,
+                    { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.divider },
                     isCompleted && styles.circleCompleted,
                     isActive && styles.circleActive,
                   ]}
@@ -40,7 +45,7 @@ const StepIndicator: React.FC<StepProps> = ({ steps, currentStep }) => {
                   {isCompleted ? (
                     <MaterialIcons name="check" size={18} color="#FFF" />
                   ) : (
-                    <Text style={[styles.stepNumber, (isActive || isCompleted) && styles.textWhite]}>
+                    <Text style={[styles.stepNumber, { color: servicesTheme.colors.text }, (isActive || isCompleted) && styles.textWhite]}>
                       {index + 1}
                     </Text>
                   )}
@@ -48,6 +53,7 @@ const StepIndicator: React.FC<StepProps> = ({ steps, currentStep }) => {
                 <Text
                   style={[
                     styles.stepLabel,
+                    { color: servicesTheme.colors.muted },
                     isActive && styles.labelActive,
                     isCompleted && styles.labelCompleted,
                   ]}
@@ -85,21 +91,19 @@ const styles = StyleSheet.create({
   stepContent: {
     alignItems: "center",
     zIndex: 1,
-    width: 60, 
+    width: 60,
   },
   stepCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#FFF",
     borderWidth: 2,
-    borderColor: "#E2E8F0",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
   },
   circleActive: {
-    backgroundColor: "#8665FF", 
+    backgroundColor: "#8665FF",
     borderColor: "#8665FF",
     shadowColor: "#8665FF",
     shadowOffset: { width: 0, height: 4 },
@@ -113,7 +117,6 @@ const styles = StyleSheet.create({
   stepNumber: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#111111",
   },
   textWhite: {
     color: "#FFF",
@@ -121,7 +124,6 @@ const styles = StyleSheet.create({
   stepLabel: {
     fontSize: 11,
     fontWeight: "500",
-    color: "#111111",
     textAlign: "center",
     position: "absolute",
     top: 45,
@@ -136,11 +138,10 @@ const styles = StyleSheet.create({
   },
   connector: {
     position: "absolute",
-    top: 18, // Half of circle height
-    left: 30, // Start from middle of first circle
-    right: -30, // Extend to middle of next circle
+    top: 18,
+    left: 30,
+    right: -30,
     height: 3,
-    backgroundColor: "#E2E8F0",
     zIndex: 0,
   },
   connectorCompleted: {

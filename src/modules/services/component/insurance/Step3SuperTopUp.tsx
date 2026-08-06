@@ -13,7 +13,8 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import GradientButton from "../../constant/GradientButton";
-import { 
+import { useServicesTheme } from "../../utils/useServicesTheme";
+import {
   saveStep,
   completeInsurance,
   getQuotes,
@@ -53,6 +54,7 @@ type Props = {
 };
 
 export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }: Props) {
+  const servicesTheme = useServicesTheme();
   const [dropdownVisibleFor, setDropdownVisibleFor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [citySearchTerm, setCitySearchTerm] = useState("");
@@ -317,16 +319,16 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
   if (checking) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
         <LinearGradient
-          colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+          colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.backgroundGradient}
         >
         <View style={styles.centerContainer}>
-          <MaterialIcons name="lock-outline" size={50} color="#8665FF" />
-          <Text style={styles.loadingText}>Verifying authentication...</Text>
+          <MaterialIcons name="lock-outline" size={50} color={servicesTheme.colors.primary} />
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
         </View>
         </LinearGradient>
       </SafeAreaView>
@@ -334,29 +336,30 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: servicesTheme.colors.background }]}>
       <LinearGradient
-        colors={["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
+        colors={servicesTheme.isDark ? ["#09090B", "#111113", "#18181B"] : ["#F7F3FF", "#EFE7FF", "#EDE9FE"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.backgroundGradient}
       >
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          
+
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Personal Details</Text>
-            <Text style={styles.headerSubtitle}>This information helps us personalize your insurance quotes.</Text>
+            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Details</Text>
+            <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>This information helps us personalize your insurance quotes.</Text>
           </View>
 
           <View style={styles.formContainer}>
             {/* Name Row */}
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Text style={styles.label}>First Name</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>First Name</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="John"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.firstName}
                     onChangeText={(v) => handleInputChange("firstName", v)}
                   />
@@ -364,11 +367,12 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
               </View>
               <View style={styles.spacer} />
               <View style={styles.flex1}>
-                <Text style={styles.label}>Last Name</Text>
-                <View style={styles.inputBox}>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Last Name</Text>
+                <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { color: servicesTheme.colors.text }]}
                     placeholder="Doe"
+                    placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.lastName}
                     onChangeText={(v) => handleInputChange("lastName", v)}
                   />
@@ -378,27 +382,29 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
             {/* Mobile Number */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Mobile Number</Text>
-              <View style={styles.inputBox}>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Mobile Number</Text>
+              <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
-                  style={[styles.textInput, styles.mobileInput]}
+                  style={[styles.textInput, styles.mobileInput, { color: servicesTheme.colors.text }]}
                   placeholder="9876543210"
+                  placeholderTextColor={servicesTheme.colors.subtle}
                   keyboardType="phone-pad"
                   maxLength={10}
                   value={data.details.mobileNumber}
                   onChangeText={(v) => handleInputChange("mobileNumber", v)}
                 />
-                <MaterialIcons name="phone" size={18} color="#8665FF" />
+                <MaterialIcons name="phone" size={18} color={servicesTheme.colors.primary} />
               </View>
             </View>
 
             {/* Pincode */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Pincode</Text>
-              <View style={styles.inputBox}>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Pincode</Text>
+              <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: servicesTheme.colors.text }]}
                   placeholder="411004"
+                  placeholderTextColor={servicesTheme.colors.subtle}
                   keyboardType="numeric"
                   maxLength={6}
                   value={data.details.pincode}
@@ -407,43 +413,47 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
               </View>
             </View>
 
-            {/* City - with both input and dropdown */}
+            {/* City */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>City</Text>
-              <View style={styles.inputBox}>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>City</Text>
+              <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
-                  style={styles.textInput}
+                  style={[styles.textInput, { color: servicesTheme.colors.text }]}
                   placeholder="Search or select city"
+                  placeholderTextColor={servicesTheme.colors.subtle}
                   value={data.details.city || citySearchTerm}
                   onChangeText={handleCityChange}
                   onFocus={() => setDropdownVisibleFor("city")}
                 />
                 <TouchableOpacity onPress={() => setDropdownVisibleFor("city")}>
-                  <MaterialIcons name="location-city" size={18} color="#8665FF" />
+                  <MaterialIcons name="location-city" size={18} color={servicesTheme.colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Cover Amount */}
             <View style={styles.fieldWrapper}>
-              <Text style={styles.label}>Required Cover Amount</Text>
-              <TouchableOpacity style={styles.dropdownBox} onPress={() => setDropdownVisibleFor("coverAmount")}>
-                <Text style={[styles.dropdownText, !data.details.coverAmount && styles.placeholderText]}>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Required Cover Amount</Text>
+              <TouchableOpacity
+                style={[styles.dropdownBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
+                onPress={() => setDropdownVisibleFor("coverAmount")}
+              >
+                <Text style={[styles.dropdownText, { color: data.details.coverAmount ? servicesTheme.colors.text : servicesTheme.colors.subtle }]}>
                   {data.details.coverAmount || "Select coverage"}
                 </Text>
-                <MaterialIcons name="shield" size={18} color="#FF8C42" />
+                <MaterialIcons name="shield" size={18} color={servicesTheme.colors.primary} />
               </TouchableOpacity>
             </View>
 
             {/* Terms */}
-            <TouchableOpacity 
-              style={styles.termsRow} 
+            <TouchableOpacity
+              style={styles.termsRow}
               onPress={() => handleInputChange("agreeToTerms", !data.details.agreeToTerms)}
             >
-              <View style={[styles.customCheckbox, data.details.agreeToTerms && styles.checkboxChecked]}>
+              <View style={[styles.customCheckbox, { borderColor: servicesTheme.colors.border }, data.details.agreeToTerms && styles.checkboxChecked]}>
                 {data.details.agreeToTerms && <MaterialIcons name="check" size={14} color="#FFF" />}
               </View>
-              <Text style={styles.termsLabel}>
+              <Text style={[styles.termsLabel, { color: servicesTheme.colors.muted }]}>
                 I agree to the <Text style={styles.boldLink}>Terms & Conditions</Text>
               </Text>
             </TouchableOpacity>
@@ -452,10 +462,10 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
         </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)", borderTopColor: servicesTheme.colors.divider }]}>
         <View style={styles.footerRow}>
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <MaterialIcons name="keyboard-backspace" size={24} color="#8665FF" />
+          <TouchableOpacity style={[styles.backButton, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]} onPress={onBack}>
+            <MaterialIcons name="keyboard-backspace" size={24} color={servicesTheme.colors.primary} />
           </TouchableOpacity>
           <View style={styles.footerButtonWrapper}>
             <GradientButton
@@ -471,19 +481,19 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
       {/* Dropdown Modal */}
       <Modal visible={dropdownVisibleFor !== null} transparent animationType="slide">
         <TouchableOpacity style={styles.modalOverlay} onPress={() => setDropdownVisibleFor(null)}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalBar} />
-            
+          <View style={[styles.modalContent, { backgroundColor: servicesTheme.colors.surface }]}>
+            <View style={[styles.modalBar, { backgroundColor: servicesTheme.colors.divider }]} />
+
             {dropdownVisibleFor === "city" && (
               <ScrollView keyboardShouldPersistTaps="handled">
                 {filteredCities.map((item, idx) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={`${item}_${idx}`}
-                    style={styles.modalItem} 
+                    style={[styles.modalItem, { borderBottomColor: servicesTheme.colors.divider }]}
                     onPress={() => handleCitySelect(item)}
                   >
-                    <Text style={styles.modalItemText}>{item}</Text>
-                    {data.details.city === item && <MaterialIcons name="check-circle" size={20} color="#FF8C42" />}
+                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item}</Text>
+                    {data.details.city === item && <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />}
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -492,16 +502,16 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
             {dropdownVisibleFor === "coverAmount" && (
               <ScrollView keyboardShouldPersistTaps="handled">
                 {SUPER_COVER_AMOUNTS.map((item: CoverAmount, idx: number) => (
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     key={`${item.label}_${idx}`}
-                    style={styles.modalItem} 
+                    style={[styles.modalItem, { borderBottomColor: servicesTheme.colors.divider }]}
                     onPress={() => {
                       handleInputChange("coverAmount", item.label);
                       setDropdownVisibleFor(null);
                     }}
                   >
-                    <Text style={styles.modalItemText}>{item.label}</Text>
-                    {data.details.coverAmount === item.label && <MaterialIcons name="check-circle" size={20} color="#FF8C42" />}
+                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                    {data.details.coverAmount === item.label && <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />}
                   </TouchableOpacity>
                 ))}
               </ScrollView>

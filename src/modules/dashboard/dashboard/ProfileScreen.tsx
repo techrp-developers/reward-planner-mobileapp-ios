@@ -277,7 +277,6 @@ const ProfileScreen: React.FC = () => {
             <View style={styles.heroBtnGhost} />
           </View>
 
-          <View style={styles.profilePanelWrap}>
           <LinearGradient
             colors={isDark ? ['#18181B', '#27233A', '#312E81'] : ['#111827', '#312E81', '#4F46E5']}
             start={{ x: 0, y: 0 }}
@@ -349,7 +348,6 @@ const ProfileScreen: React.FC = () => {
               </View>
             </View>
           </LinearGradient>
-          </View>
         </LinearGradient>
 
         {/* ════════════════════════════════════
@@ -690,9 +688,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(148,163,184,0.16)',
   },
-  heroBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 10, elevation: 10 },
+  heroBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: rs(16), paddingBottom: rs(14), zIndex: 10, elevation: 10 },
   heroTitle: {
-    fontSize: fs(16), fontWeight: '800', letterSpacing: 0, paddingHorizontal: rs(20), marginBottom: rs(16),
+    fontSize: fs(16), fontWeight: '800', letterSpacing: 0,
   },
   heroBtn: {
     width: 38,
@@ -703,7 +701,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(148,163,184,0.20)',
-    top: -80,
     zIndex: 10,
   },
   heroBtnGhost: {

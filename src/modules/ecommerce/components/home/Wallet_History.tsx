@@ -18,6 +18,7 @@ import {
   fetchWalletTransactions,
 } from "../../api/WalleteAPI";
 import ProductHeadColor from "../../constants/heading/Poduct_Head_Color";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
 type Transaction = {
   id: string;
@@ -34,6 +35,7 @@ type Transaction = {
 const FILTERS = ["All Transactions", "Additions", "Deductions", "Expired"];
 
 export default function WalletHistoryScreen({ navigation }: any) {
+  const { isDark, theme } = useAppTheme();
   const [activeFilter, setActiveFilter] = useState("All Transactions");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [balance, setBalance] = useState(0);
@@ -82,7 +84,6 @@ export default function WalletHistoryScreen({ navigation }: any) {
     setTransactions(mapTransactions(txnRes.data));
   };
 
-  // Initial load: fetch balance + transactions together, full-screen loader.
   useEffect(() => {
     (async () => {
       try {
@@ -96,7 +97,6 @@ export default function WalletHistoryScreen({ navigation }: any) {
     })();
   }, []);
 
-  // Filter switch: only refetch transactions, keep card/list mounted (no flicker).
   const onFilterChange = async (filter: string) => {
     setActiveFilter(filter);
     try {
@@ -125,7 +125,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
       {/* WALLET CARD */}
       <View style={styles.cardWrapper}>
         <LinearGradient
-          colors={["#2A1B5E", "#5B3FD9", "#8B6BF0"]}
+          colors={isDark ? ["#1A0E3E", "#3B2899", "#6B50D4"] : ["#2A1B5E", "#5B3FD9", "#8B6BF0"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.walletTop}
@@ -136,11 +136,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
           <View style={styles.walletTopRow}>
             <Text style={styles.cardKicker}>REWARD WALLET</Text>
             <View style={styles.chipBadge}>
-              <MaterialCommunityIcons
-                name="shield-check"
-                size={12}
-                color="#FFE9A8"
-              />
+              <MaterialCommunityIcons name="shield-check" size={12} color="#FFE9A8" />
               <Text style={styles.chipBadgeText}>Premium</Text>
             </View>
           </View>
@@ -150,7 +146,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
               <Reward width={30} height={30} />
             </View>
             <View style={styles.balanceBlock}>
-              <Text style={styles.label}>My Balance</Text>
+              <Text style={styles.balanceLabel}>My Balance</Text>
               <Text style={styles.balance}>{balance.toLocaleString("en-IN")}</Text>
             </View>
           </View>
@@ -164,21 +160,22 @@ export default function WalletHistoryScreen({ navigation }: any) {
         </LinearGradient>
 
         {/* EXPIRY STRIP */}
-        <View style={styles.expiryStrip}>
+        <View style={[
+          styles.expiryStrip,
+          {
+            backgroundColor: isDark ? "#1C1208" : "#FFF8F0",
+            borderTopColor: isDark ? "#3D2810" : "#FDE9D0",
+          },
+        ]}>
           <View style={styles.expiryLeft}>
-            <View style={styles.expiryIconWrap}>
-              <MaterialCommunityIcons
-                name="clock-alert-outline"
-                size={15}
-                color="#F97316"
-              />
+            <View style={[styles.expiryIconWrap, { backgroundColor: isDark ? "#3D2810" : "#FFE9D2" }]}>
+              <MaterialCommunityIcons name="clock-alert-outline" size={15} color="#F97316" />
             </View>
-            <Text style={styles.expiryText}>
+            <Text style={[styles.expiryText, { color: isDark ? "#FB923C" : "#7C4A12" }]}>
               {expiringCoins} Coins Expiring
             </Text>
           </View>
-
-          <Text style={styles.expiryDate}>
+          <Text style={[styles.expiryDate, { color: isDark ? "#D97706" : "#9A6B33" }]}>
             {expiryDate
               ? new Date(expiryDate).toLocaleDateString("en-GB", {
                 day: "numeric",
@@ -191,7 +188,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
       </View>
 
       {/* TITLE */}
-      <Text style={styles.sectionHeading}>Transaction History</Text>
+      <Text style={[styles.sectionHeading, { color: theme.text }]}>Transaction History</Text>
 
       {/* FILTERS */}
       <FlatList
@@ -205,12 +202,14 @@ export default function WalletHistoryScreen({ navigation }: any) {
             onPress={() => onFilterChange(item)}
             style={[
               styles.filterChip,
+              { borderColor: theme.border, backgroundColor: theme.card },
               activeFilter === item && styles.filterChipActive,
             ]}
           >
             <Text
               style={[
                 styles.filterText,
+                { color: theme.secondaryText },
                 activeFilter === item && styles.filterTextActive,
               ]}
             >
@@ -222,26 +221,25 @@ export default function WalletHistoryScreen({ navigation }: any) {
 
       {txnLoading && (
         <View style={styles.inlineLoadingRow}>
-          <ActivityIndicator size="small" color="#5B3FD9" />
+          <ActivityIndicator size="small" color={theme.primary} />
         </View>
       )}
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* ✅ HEADER */}
       <ProductHeadColor
         title="Wallet"
         onBackPress={() => navigation.goBack()}
         showSearch={false}
       />
 
-      <View style={styles.screen}>
+      <View style={[styles.screen, { backgroundColor: theme.background }]}>
         {loading ? (
-          <Text style={styles.loading}>Loading...</Text>
+          <Text style={[styles.loading, { color: theme.secondaryText }]}>Loading...</Text>
         ) : (
           <FlatList
             data={transactions}
@@ -250,9 +248,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
             refreshing={refreshing}
             onRefresh={onRefresh}
             contentContainerStyle={styles.listContent}
-            renderItem={({ item }) => (
-              <TransactionCard item={item} />
-            )}
+            renderItem={({ item }) => <TransactionCard item={item} />}
           />
         )}
       </View>
@@ -262,15 +258,20 @@ export default function WalletHistoryScreen({ navigation }: any) {
 
 /* TRANSACTION CARD */
 function TransactionCard({ item }: { item: Transaction }) {
+  const { isDark, theme } = useAppTheme();
   const isPositive = item.coins > 0;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: theme.card, shadowColor: isDark ? "#000" : "#000" }]}>
       <View style={styles.cardLeft}>
         <View
           style={[
             styles.iconBox,
-            { backgroundColor: isPositive ? "#ECFDF5" : "#FEF2F2" },
+            {
+              backgroundColor: isPositive
+                ? (isDark ? "#052E1A" : "#ECFDF5")
+                : (isDark ? "#2D0A10" : "#FEF2F2"),
+            },
           ]}
         >
           <MaterialCommunityIcons
@@ -281,11 +282,11 @@ function TransactionCard({ item }: { item: Transaction }) {
         </View>
 
         <View style={styles.textBlock}>
-          <Text style={styles.orderText}>Order No. {item.orderNo}</Text>
+          <Text style={[styles.orderText, { color: theme.text }]}>Order No. {item.orderNo}</Text>
           {item.txnId && (
-            <Text style={styles.subText}>Txn Id: {item.txnId}</Text>
+            <Text style={[styles.subText, { color: theme.secondaryText }]}>Txn Id: {item.txnId}</Text>
           )}
-          <Text style={styles.categoryText}>{item.title}</Text>
+          <Text style={[styles.categoryText, { color: theme.secondaryText }]}>{item.title}</Text>
         </View>
       </View>
 
@@ -301,7 +302,7 @@ function TransactionCard({ item }: { item: Transaction }) {
             {isPositive ? `+${item.coins}` : item.coins}
           </Text>
         </View>
-        <Text style={styles.dateText}>{item.date}</Text>
+        <Text style={[styles.dateText, { color: theme.secondaryText }]}>{item.date}</Text>
       </View>
     </View>
   );
@@ -309,18 +310,16 @@ function TransactionCard({ item }: { item: Transaction }) {
 
 /* STYLES */
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F9FAFB" },
-  screen: { flex: 1, paddingHorizontal: 16, backgroundColor: "#F9FAFB" },
+  safe: { flex: 1 },
+  screen: { flex: 1, paddingHorizontal: 16 },
 
-  loading: { textAlign: "center", marginTop: 40, color: "#9CA3AF" },
+  loading: { textAlign: "center", marginTop: 40 },
 
   headerContainer: { paddingTop: 10 },
 
   cardWrapper: {
     borderRadius: 20,
     overflow: "hidden",
-    // marginTop: 12,
-    // marginBottom: 22,
     elevation: 8,
     shadowColor: "#4D34A6",
     shadowOffset: { width: 0, height: 6 },
@@ -340,7 +339,6 @@ const styles = StyleSheet.create({
     height: 140,
     borderRadius: 70,
     backgroundColor: "rgba(255,255,255,0.08)",
-
   },
 
   cardGlowBottom: {
@@ -373,7 +371,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.15)",
-
     borderRadius: 20,
   },
 
@@ -401,7 +398,7 @@ const styles = StyleSheet.create({
 
   balanceBlock: { marginLeft: 12 },
 
-  label: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: "500" },
+  balanceLabel: { color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: "500" },
   balance: { color: "#fff", fontSize: 28, fontWeight: "800", letterSpacing: 0.3 },
 
   cardBottomRow: {
@@ -414,23 +411,23 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.18)",
-
     borderRadius: 8,
   },
   rateText: {
-    color: "#fff", fontSize: 12, fontWeight: "600", paddingHorizontal: 10,
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "600",
+    paddingHorizontal: 10,
     paddingVertical: 5,
   },
 
   expiryStrip: {
-    backgroundColor: "#FFF8F0",
     paddingVertical: 12,
     paddingHorizontal: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     borderTopWidth: 1,
-    borderTopColor: "#FDE9D0",
   },
 
   expiryLeft: { flexDirection: "row", alignItems: "center" },
@@ -439,21 +436,18 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: "#FFE9D2",
     justifyContent: "center",
     alignItems: "center",
   },
 
   expiryText: {
     fontSize: 13,
-    color: "#7C4A12",
     marginLeft: 8,
     fontWeight: "600",
   },
 
   expiryDate: {
     fontSize: 12,
-    color: "#9A6B33",
     fontWeight: "500",
   },
 
@@ -461,7 +455,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     marginBottom: 14,
-    color: "#1F2937",
+    marginTop: 20,
   },
 
   filterList: { marginBottom: 20 },
@@ -477,8 +471,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 25,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    backgroundColor: "#FAFAFA",
     marginRight: 10,
   },
 
@@ -487,7 +479,7 @@ const styles = StyleSheet.create({
     borderColor: "#5B3FD9",
   },
 
-  filterText: { fontSize: 13, color: "#6B7280", fontWeight: "500" },
+  filterText: { fontSize: 13, fontWeight: "500" },
 
   filterTextActive: {
     color: "#fff",
@@ -497,14 +489,12 @@ const styles = StyleSheet.create({
   listContent: { paddingBottom: 40 },
 
   card: {
-    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 12,
     elevation: 2,
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 6,
@@ -522,11 +512,11 @@ const styles = StyleSheet.create({
 
   textBlock: { marginLeft: 12, flex: 1 },
 
-  orderText: { fontSize: 14, fontWeight: "600", color: "#1F2937" },
+  orderText: { fontSize: 14, fontWeight: "600" },
 
-  subText: { fontSize: 12, color: "#9CA3AF", marginTop: 2 },
+  subText: { fontSize: 12, marginTop: 2 },
 
-  categoryText: { fontSize: 12, color: "#6B7280", marginTop: 4 },
+  categoryText: { fontSize: 12, marginTop: 4 },
 
   cardRight: { alignItems: "flex-end" },
 
@@ -538,5 +528,5 @@ const styles = StyleSheet.create({
 
   debit: { color: "#F43F5E" },
 
-  dateText: { fontSize: 11, color: "#9CA3AF", marginTop: 4 },
-}); 
+  dateText: { fontSize: 11, marginTop: 4 },
+});

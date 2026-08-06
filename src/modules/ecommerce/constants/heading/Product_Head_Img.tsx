@@ -6,6 +6,7 @@ import {
   useWindowDimensions,
   Image,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BackgroundImage from "../../../../navbar/assete/Background1.jpeg";
 import AppIconButton from "../icons/AppIconButton";
 import { useNavigation } from "@react-navigation/native";
@@ -39,6 +40,7 @@ export default function ProductHead({
 }) {
   const navigation = useNavigation<Nav>();
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const { totalQuantity: cartCount } = useCart();
   const { isDark, theme } = useAppTheme();
 
@@ -100,7 +102,7 @@ export default function ProductHead({
         style={[
           styles.topBar,
           {
-            marginTop: (HEADER_HEIGHT - topSpacing) * 0.38 + topSpacing,
+            marginTop: Math.max(insets.top + 8, (HEADER_HEIGHT - topSpacing) * 0.38 + topSpacing),
             paddingHorizontal: width * 0.055,
           },
         ]}

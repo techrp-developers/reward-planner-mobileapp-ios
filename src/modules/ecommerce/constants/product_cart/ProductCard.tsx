@@ -270,7 +270,9 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
   }, [item, normalizedProduct]);
 
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={goToDetails}
       style={[
         styles.card,
         {
@@ -283,49 +285,47 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
         },
       ]}
     >
-      <TouchableOpacity activeOpacity={0.85} onPress={goToDetails}>
-        <View style={[
-          styles.imageWrap,
-          {
-            height: calculations.imageWrapHeight,
-            borderRadius: calculations.borderRadius,
-            paddingTop: Math.round(usedCardWidth * 0.1),
-            backgroundColor: isDark ? "#303038" : "#F9FAFB",
-          },
-        ]}>
-          {!!rp_price && (
-            <View style={styles.discountWrap}>
-              <RPpriceBadge value={rp_price} />
-            </View>
-          )}
+      <View style={[
+        styles.imageWrap,
+        {
+          height: calculations.imageWrapHeight,
+          borderRadius: calculations.borderRadius,
+          paddingTop: Math.round(usedCardWidth * 0.1),
+          backgroundColor: isDark ? "#303038" : "#F9FAFB",
+        },
+      ]}>
+        {!!rp_price && (
+          <View style={styles.discountWrap}>
+            <RPpriceBadge value={rp_price} />
+          </View>
+        )}
 
-          <TouchableOpacity
-            style={[styles.heartIcon, { backgroundColor: isDark ? "rgba(38,38,43,0.92)" : "rgba(255,255,255,0.9)" }]}
-            activeOpacity={0.85}
-            onPress={handleWishlistPress}
-            disabled={wishLoading}
-          >
-            <FontAwesome
-              name={wishlisted ? "heart" : "heart-o"}
-              size={14}
-              color={wishlisted ? "#E53935" : theme.secondaryText}
-            />
-          </TouchableOpacity>
-
-          <OptimizedImage
-            path={firstImage}
-            width={calculations.imageDynamicSize}
-            height={calculations.imageDynamicSize}
-            resizeMode="contain"
-            sizePreset="thumbnail"
-            priority="high"
-            quality={40}
-            loadEnabled={shouldLoadImage}
-            style={styles.productImage}
-            fallbackBackgroundColor="transparent"
+        <TouchableOpacity
+          style={[styles.heartIcon, { backgroundColor: isDark ? "rgba(38,38,43,0.92)" : "rgba(255,255,255,0.9)" }]}
+          activeOpacity={0.85}
+          onPress={handleWishlistPress}
+          disabled={wishLoading}
+        >
+          <FontAwesome
+            name={wishlisted ? "heart" : "heart-o"}
+            size={14}
+            color={wishlisted ? "#E53935" : theme.secondaryText}
           />
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+
+        <OptimizedImage
+          path={firstImage}
+          width={calculations.imageDynamicSize}
+          height={calculations.imageDynamicSize}
+          resizeMode="contain"
+          sizePreset="thumbnail"
+          priority="high"
+          quality={40}
+          loadEnabled={shouldLoadImage}
+          style={styles.productImage}
+          fallbackBackgroundColor="transparent"
+        />
+      </View>
 
       <View style={styles.details}>
         <View style={styles.titleRow}>
@@ -389,7 +389,7 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
           <PointsButton rewardCoins={rewardCoins} redeemCoins={redeemCoins} onPress={goToDetails} />
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
