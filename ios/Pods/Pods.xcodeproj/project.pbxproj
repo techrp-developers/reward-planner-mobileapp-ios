@@ -1133,9 +1133,9 @@
 		46EB2E0001B6A0 /* RNGestureHandler-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E0001B690 /* RNGestureHandler-dummy.m */; };
 		46EB2E0001B7B0 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 46EB2E00015300 /* PrivacyInfo.xcprivacy */; };
 		46EB2E0001B7E0 /* RNPermissions.mm in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000042B0 /* RNPermissions.mm */; settings = {COMPILER_FLAGS = "-DRCT_NEW_ARCH_ENABLED=1"; }; };
-		46EB2E0001B7F0 /* RNPermissionHandlerLocationWhenInUse.mm in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000042E0 /* RNPermissionHandlerLocationWhenInUse.mm */; settings = {COMPILER_FLAGS = "-DRCT_NEW_ARCH_ENABLED=1"; }; };
+		46EB2E0001B7F0 /* RNPermissionHandlerNotifications.mm in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E000042E0 /* RNPermissionHandlerNotifications.mm */; settings = {COMPILER_FLAGS = "-DRCT_NEW_ARCH_ENABLED=1"; }; };
 		46EB2E0001B800 /* RNPermissions.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E000042A0 /* RNPermissions.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		46EB2E0001B810 /* RNPermissionHandlerLocationWhenInUse.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E000042D0 /* RNPermissionHandlerLocationWhenInUse.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		46EB2E0001B810 /* RNPermissionHandlerNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 46EB2E000042D0 /* RNPermissionHandlerNotifications.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		46EB2E0001B860 /* RNPermissions-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E0001B850 /* RNPermissions-dummy.m */; };
 		46EB2E0001B8F0 /* REAKeyboardEventObserver.mm in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00004320 /* REAKeyboardEventObserver.mm */; settings = {COMPILER_FLAGS = "-Wno-documentation  -DRCT_NEW_ARCH_ENABLED=1"; }; };
 		46EB2E0001B900 /* NativeProxy.mm in Sources */ = {isa = PBXBuildFile; fileRef = 46EB2E00004350 /* NativeProxy.mm */; settings = {COMPILER_FLAGS = "-Wno-documentation  -DRCT_NEW_ARCH_ENABLED=1"; }; };
@@ -14807,8 +14807,8 @@
 		46EB2E00004290 /* RNRootViewGestureRecognizer.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = RNRootViewGestureRecognizer.m; path = apple/RNRootViewGestureRecognizer.m; sourceTree = "<group>"; };
 		46EB2E000042A0 /* RNPermissions.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = RNPermissions.h; path = ios/RNPermissions.h; sourceTree = "<group>"; };
 		46EB2E000042B0 /* RNPermissions.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = RNPermissions.mm; path = ios/RNPermissions.mm; sourceTree = "<group>"; };
-		46EB2E000042D0 /* RNPermissionHandlerLocationWhenInUse.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RNPermissionHandlerLocationWhenInUse.h; sourceTree = "<group>"; };
-		46EB2E000042E0 /* RNPermissionHandlerLocationWhenInUse.mm */ = {isa = PBXFileReference; includeInIndex = 1; path = RNPermissionHandlerLocationWhenInUse.mm; sourceTree = "<group>"; };
+		46EB2E000042D0 /* RNPermissionHandlerNotifications.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RNPermissionHandlerNotifications.h; sourceTree = "<group>"; };
+		46EB2E000042E0 /* RNPermissionHandlerNotifications.mm */ = {isa = PBXFileReference; includeInIndex = 1; path = RNPermissionHandlerNotifications.mm; sourceTree = "<group>"; };
 		46EB2E00004310 /* REAKeyboardEventObserver.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = REAKeyboardEventObserver.h; sourceTree = "<group>"; };
 		46EB2E00004320 /* REAKeyboardEventObserver.mm */ = {isa = PBXFileReference; includeInIndex = 1; path = REAKeyboardEventObserver.mm; sourceTree = "<group>"; };
 		46EB2E00004340 /* NativeProxy.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = NativeProxy.h; sourceTree = "<group>"; };
@@ -21714,7 +21714,7 @@
 				46EB2E00015300 /* PrivacyInfo.xcprivacy */,
 				46EB2E000042A0 /* RNPermissions.h */,
 				46EB2E000042B0 /* RNPermissions.mm */,
-				46EB2E000042C0 /* LocationWhenInUse */,
+				46EB2E000042C0 /* Notifications */,
 				46EB2E00015610 /* Pod */,
 				46EB2E0001B7C0 /* Support Files */,
 			);
@@ -25050,14 +25050,14 @@
 			path = apple/Handlers;
 			sourceTree = "<group>";
 		};
-		46EB2E000042C0 /* LocationWhenInUse */ = {
+		46EB2E000042C0 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				46EB2E000042D0 /* RNPermissionHandlerLocationWhenInUse.h */,
-				46EB2E000042E0 /* RNPermissionHandlerLocationWhenInUse.mm */,
+				46EB2E000042D0 /* RNPermissionHandlerNotifications.h */,
+				46EB2E000042E0 /* RNPermissionHandlerNotifications.mm */,
 			);
-			name = LocationWhenInUse;
-			path = ios/LocationWhenInUse;
+			name = Notifications;
+			path = ios/Notifications;
 			sourceTree = "<group>";
 		};
 		46EB2E000042F0 /* apple */ = {
@@ -32520,7 +32520,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E0001B810 /* RNPermissionHandlerLocationWhenInUse.h in Headers */,
+				46EB2E0001B810 /* RNPermissionHandlerNotifications.h in Headers */,
 				46EB2E0001B800 /* RNPermissions.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -38995,7 +38995,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				46EB2E0001B7F0 /* RNPermissionHandlerLocationWhenInUse.mm in Sources */,
+				46EB2E0001B7F0 /* RNPermissionHandlerNotifications.mm in Sources */,
 				46EB2E0001B7E0 /* RNPermissions.mm in Sources */,
 				46EB2E0001B860 /* RNPermissions-dummy.m in Sources */,
 			);

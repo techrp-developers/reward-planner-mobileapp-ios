@@ -10,6 +10,8 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { fetchAllCategories, fetchCategoriesByID, getProductImageUrl } from "../api/ProductApi";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
@@ -17,6 +19,7 @@ import ProductGrid from "../components/home/productgrid";
 import { normalizeProduct } from "../utils/normalizeProduct";
 import { queryClient } from "../../../query/queryClient";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import type { HomeStackParamList } from "../navigation/types";
 
 type Category = {
   id: number;
@@ -135,9 +138,15 @@ const CategoryItem = React.memo(({ cat, isActive, onPress, theme }: CategoryItem
 CategoryItem.displayName = "CategoryItem";
 
 const ProductCategory = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const pulse = useRef(new Animated.Value(0)).current;
   const { theme } = useAppTheme();
+
+  const handleProductPress = useCallback((productId: string | number) => {
+    if (!productId) return;
+    navigation.navigate("ProductDescription", { productId });
+  }, [navigation]);
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -284,6 +293,7 @@ const ProductCategory = () => {
           onEndReachedThreshold={0.4}
           loadingMore={isFetchingNextPage}
           hasNextPage={Boolean(hasNextPage)}
+          onProductPress={handleProductPress}
           ListFooterComponent={
             isFetchingNextPage ? (
               <View style={styles.footerLoaderWrap}>

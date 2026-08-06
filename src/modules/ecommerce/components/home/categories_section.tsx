@@ -7,7 +7,6 @@ import {
   useWindowDimensions,
   Image,
   FlatList,
-  InteractionManager,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -123,7 +122,7 @@ export default function CategoriesSection() {
   React.useEffect(() => {
     if (!categories.length) return;
 
-    const task = InteractionManager.runAfterInteractions(() => {
+    const id = requestIdleCallback(() => {
       categories.slice(0, layout.numColumns).forEach((item) => {
         const imageUrl = getProductImageUrl(item.image, "thumbnail", 45);
         if (imageUrl) {
@@ -132,7 +131,7 @@ export default function CategoriesSection() {
       });
     });
 
-    return () => task.cancel();
+    return () => cancelIdleCallback(id);
   }, [categories, layout.numColumns]);
 
   const renderItem = React.useCallback(

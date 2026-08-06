@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { Alert, Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { RESULTS } from "react-native-permissions";
 
 import { useAuth } from "../modules/common/auth/context/AuthContext";
-import { setupFCM } from "../modules/notifications/FCMService";
+import {
+  setupFCM,
+  getNotificationPermissionStatus,
+  openNotificationSettings,
+} from "../modules/notifications/FCMService";
 import { checkAppVersion } from "../modules/common/versionupdate/checkAppVersion";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
 import { RewardModal } from "../modules/common/reward/RewardModal";
@@ -329,10 +335,30 @@ export default function RootNavigator() {
   const { isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
   const [versionModal, setVersionModal] = useState<VersionModalState>(MODAL_HIDDEN);
   const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
+  const deniedAlertShownRef = useRef(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fcmUnsubscribeRef.current = setupFCM();
+
+      if (Platform.OS === 'ios' && !deniedAlertShownRef.current) {
+        getNotificationPermissionStatus().then((status) => {
+          if (status === RESULTS.DENIED || status === RESULTS.BLOCKED) {
+            deniedAlertShownRef.current = true;
+            Alert.alert(
+              'Notifications Disabled',
+              'Turn on notifications to receive order updates, delivery alerts, and reward credits.',
+              [
+                { text: 'Not Now', style: 'cancel' },
+                {
+                  text: 'Open Settings',
+                  onPress: openNotificationSettings,
+                },
+              ],
+            );
+          }
+        });
+      }
     } else {
       fcmUnsubscribeRef.current?.();
       fcmUnsubscribeRef.current = null;

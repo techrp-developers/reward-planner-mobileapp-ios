@@ -46,11 +46,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func application(_ application: UIApplication,
                    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
     Messaging.messaging().apnsToken = deviceToken
+    print("[APNs] Device token set: \(deviceToken.map { String(format: "%02x", $0) }.joined())")
   }
 
   func application(_ application: UIApplication,
                    didFailToRegisterForRemoteNotificationsWithError error: Error) {
     print("[APNs] Registration failed: \(error.localizedDescription)")
+  }
+
+  // Required for Firebase to receive data-only (silent) background messages.
+  func application(_ application: UIApplication,
+                   didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+                   fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    print("[APNs] didReceiveRemoteNotification: \(userInfo)")
+    Messaging.messaging().appDidReceiveMessage(userInfo)
+    completionHandler(.newData)
   }
 }
 

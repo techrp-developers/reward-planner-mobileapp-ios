@@ -42,7 +42,7 @@ prepare_react_native_project!
 # Only include the permissions used by the app.
 # This excludes AppTrackingTransparency (ATT) entirely.
 setup_permissions([
-  'LocationWhenInUse',
+  'Notifications',
 ])
 
 linkage = ENV['USE_FRAMEWORKS']

@@ -53,6 +53,8 @@
 
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to upload images for your orders and profile.</string>
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

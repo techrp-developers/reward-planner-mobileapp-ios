@@ -1,7 +1,9 @@
-import { Platform } from 'react-native';
+import { Platform, Linking } from 'react-native';
 import {
   getMessaging,
   getToken,
+  deleteToken,
+  getAPNSToken,
   onTokenRefresh,
   onMessage,
   setBackgroundMessageHandler,
@@ -10,7 +12,7 @@ import {
   getInitialNotification,
 } from '@react-native-firebase/messaging';
 import type { RemoteMessage } from '@react-native-firebase/messaging';
-import { requestNotifications, RESULTS } from 'react-native-permissions';
+import { requestNotifications, checkNotifications, RESULTS } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerFCMToken } from '../dashboard/notification/NotificationAPI';
 import { navigate } from '../../navigation/navigationRef';
@@ -18,25 +20,89 @@ import { notificationEvents } from './notificationEvents';
 
 const FCM_TOKEN_KEY = '@rewardsplanners_fcm_token';
 
+// Returns true if granted or limited, false if denied or unavailable.
 async function requestIOSPermission(): Promise<boolean> {
   if (Platform.OS !== 'ios') return true;
 
+  // Check current status first so we know if we should direct user to Settings.
+  const { status: currentStatus } = await checkNotifications();
+  console.log('[FCM] Current notification status:', currentStatus);
+
+  if (currentStatus === RESULTS.DENIED) {
+    // Permission has been previously denied — the system will NOT show the dialog.
+    // The app must direct the user to iOS Settings manually.
+    console.warn('[FCM] Notification permission was previously denied. User must enable it in Settings.');
+    return false;
+  }
+
+  if (currentStatus === RESULTS.BLOCKED) {
+    console.warn('[FCM] Notification permission is blocked. User must enable it in iOS Settings > RewardsPlanners > Notifications.');
+    return false;
+  }
+
+  if (currentStatus === RESULTS.GRANTED || currentStatus === RESULTS.LIMITED) {
+    return true;
+  }
+
+  // Status is UNAVAILABLE or UNDETERMINED — request the permission now.
   const { status } = await requestNotifications(['alert', 'sound', 'badge']);
+  console.log('[FCM] Requested notification permission, result:', status);
   return status === RESULTS.GRANTED || status === RESULTS.LIMITED;
+}
+
+// Call this when permission is denied/blocked to send user to iOS Settings.
+export async function openNotificationSettings(): Promise<void> {
+  await Linking.openURL('app-settings:');
+}
+
+// Returns 'granted' | 'denied' | 'blocked' | 'unavailable' | 'limited'.
+// Use this to check status without triggering the system dialog.
+export async function getNotificationPermissionStatus(): Promise<string> {
+  if (Platform.OS !== 'ios') return 'granted';
+  const { status } = await checkNotifications();
+  return status;
+}
+
+// Call this on every logout path (voluntary, 401 force-logout, session restore failure).
+// Invalidates the FCM token on Firebase's side so the device stops receiving
+// push notifications for the logged-out user.
+export async function cleanupFCMOnLogout(): Promise<void> {
+  try {
+    await deleteToken(getMessaging());
+    await AsyncStorage.removeItem(FCM_TOKEN_KEY);
+    console.log('[FCM] Token deleted on logout');
+  } catch (err) {
+    console.warn('[FCM] deleteToken error:', err);
+  }
 }
 
 async function getAndRegisterToken(): Promise<string | null> {
   try {
     const granted = await requestIOSPermission();
     if (!granted) {
-      console.log('[FCM] Permission denied');
+      console.log('[FCM] Permission not granted — skipping token registration');
       return null;
     }
 
     // iOS requires explicit APNs registration before getToken works.
     await registerDeviceForRemoteMessages(getMessaging());
 
+    // Verify APNs token is present — if null on a real device, APNs is broken.
+    if (Platform.OS === 'ios') {
+      const apnsToken = await getAPNSToken(getMessaging());
+      console.log('[FCM] APNs token:', apnsToken ?? 'NULL — check Push Notifications capability and provisioning profile');
+      if (!apnsToken) {
+        console.warn('[FCM] APNs token is null. Cannot get FCM token. Possible causes:\n' +
+          '  1. Running on Simulator (APNs not supported)\n' +
+          '  2. Push Notifications capability missing in Xcode\n' +
+          '  3. Provisioning profile does not include push entitlement\n' +
+          '  4. APNs Auth Key not uploaded in Firebase Console');
+        return null;
+      }
+    }
+
     const token = await getToken(getMessaging());
+    console.log('[FCM] FCM token:', token ?? 'null');
     if (!token) return null;
 
     const cached = await AsyncStorage.getItem(FCM_TOKEN_KEY);
@@ -56,12 +122,17 @@ function handleNotificationTap(_message: RemoteMessage): void {
   navigate('Notification');
 }
 
-// Called once when the user logs in. Returns an unsubscribe function.
+// Call this after the user logs in. Returns an unsubscribe function.
 export function setupFCM(): () => void {
-  getAndRegisterToken();
+  getAndRegisterToken().then((token) => {
+    if (token) {
+      console.log('[FCM] Setup complete. Token registered.');
+    }
+  });
 
   const unsubscribeTokenRefresh = onTokenRefresh(getMessaging(), async (token) => {
     try {
+      console.log('[FCM] Token refreshed:', token);
       await registerFCMToken(token);
       await AsyncStorage.setItem(FCM_TOKEN_KEY, token);
     } catch (err) {
@@ -69,8 +140,7 @@ export function setupFCM(): () => void {
     }
   });
 
-  // Foreground: iOS native layer shows the banner via AppDelegate.
-  // Emit badge refresh so the bell dot updates immediately.
+  // Foreground: show badge refresh so notification bell updates immediately.
   const unsubscribeForeground = onMessage(
     getMessaging(),
     async (_message: RemoteMessage) => {
@@ -78,7 +148,7 @@ export function setupFCM(): () => void {
     },
   );
 
-  // Background tap: user tapped the notification while app was suspended.
+  // Background tap: user tapped while app was suspended.
   const unsubscribeBackgroundTap = onNotificationOpenedApp(
     getMessaging(),
     (message: RemoteMessage) => {

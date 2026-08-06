@@ -20,9 +20,9 @@
   },
   "source_files": [
     "ios/*.{h,mm}",
-    "ios/LocationWhenInUse/*.{h,mm,swift}"
+    "ios/Notifications/*.{h,mm,swift}"
   ],
-  "frameworks": "CoreLocation",
+  "frameworks": "UserNotifications",
   "compiler_flags": "-DRCT_NEW_ARCH_ENABLED=1",
   "dependencies": {
     "React-Core": [],

@@ -12,6 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import api, { API_BASE_URL, setSessionHandlers } from "../api/axios";
 import { clearAuthToken, persistAuthToken } from "../api/AuthAPI";
+import { cleanupFCMOnLogout } from "../../../notifications/FCMService";
 import { fetchTermsStatus } from "../../../ecommerce/api/TermsConditionAPI";
 import { isTokenExpiringSoon } from "../utils/jwtUtils";
 import { parseLoginIdentifier } from "../utils/loginIdentifier";
@@ -177,6 +178,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await Promise.all([
       clearAuthToken(),
       secureDeleteItem(REFRESH_TOKEN_KEY),
+      cleanupFCMOnLogout(),
     ]);
   }, [updateAccessToken]);
 
