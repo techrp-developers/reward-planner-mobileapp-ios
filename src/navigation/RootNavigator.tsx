@@ -343,7 +343,7 @@ export default function RootNavigator() {
 
       if (Platform.OS === 'ios' && !deniedAlertShownRef.current) {
         getNotificationPermissionStatus().then((status) => {
-          if (status === RESULTS.DENIED || status === RESULTS.BLOCKED) {
+          if (status === RESULTS.BLOCKED) {
             deniedAlertShownRef.current = true;
             Alert.alert(
               'Notifications Disabled',

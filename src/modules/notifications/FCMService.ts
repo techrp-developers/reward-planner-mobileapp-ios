@@ -28,13 +28,8 @@ async function requestIOSPermission(): Promise<boolean> {
   const { status: currentStatus } = await checkNotifications();
   console.log('[FCM] Current notification status:', currentStatus);
 
-  if (currentStatus === RESULTS.DENIED) {
-    // Permission has been previously denied — the system will NOT show the dialog.
-    // The app must direct the user to iOS Settings manually.
-    console.warn('[FCM] Notification permission was previously denied. User must enable it in Settings.');
-    return false;
-  }
-
+  // BLOCKED = user explicitly denied AFTER seeing the system dialog.
+  // The OS will not show the dialog again; must direct user to Settings.
   if (currentStatus === RESULTS.BLOCKED) {
     console.warn('[FCM] Notification permission is blocked. User must enable it in iOS Settings > RewardsPlanners > Notifications.');
     return false;
@@ -44,7 +39,9 @@ async function requestIOSPermission(): Promise<boolean> {
     return true;
   }
 
-  // Status is UNAVAILABLE or UNDETERMINED — request the permission now.
+  // DENIED on iOS (react-native-permissions v5) = "not yet requested" (initial state).
+  // This is NOT the same as the user having denied — we must call requestNotifications()
+  // to trigger the system dialog and create the Notifications entry in iOS Settings.
   const { status } = await requestNotifications(['alert', 'sound', 'badge']);
   console.log('[FCM] Requested notification permission, result:', status);
   return status === RESULTS.GRANTED || status === RESULTS.LIMITED;
