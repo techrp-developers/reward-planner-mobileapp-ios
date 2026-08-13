@@ -7,18 +7,20 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
-import api, { API_BASE_URL, setSessionHandlers } from "../api/axios";
-import { clearAuthToken, persistAuthToken } from "../api/AuthAPI";
-import { cleanupFCMOnLogout } from "../../../notifications/FCMService";
-import { fetchTermsStatus } from "../../../ecommerce/api/TermsConditionAPI";
+import { setSessionHandlers } from "../api/axios";
+import {
+  fetchUserInfo,
+  isOnboardingComplete,
+  logout as logoutRequest,
+  restoreSession as restoreAuthSession,
+  VerifyOtpResponse,
+} from "../api/AuthAPI";
+import {
+  clearSession,
+  getRefreshToken,
+  updateAccessToken as persistAccessTokenInKeychain,
+} from "../../../../utils/tokenStorage";
 import { isTokenExpiringSoon } from "../utils/jwtUtils";
-import { parseLoginIdentifier } from "../utils/loginIdentifier";
-
-const REFRESH_TOKEN_KEY = "@rewardsplanners_refresh_token";
-const DEVICE_ID_KEY = "@rewardsplanners_device_id";
 
 type AuthUser = {
   user_id: number;
@@ -27,21 +29,6 @@ type AuthUser = {
   phone?: string;
   status?: number;
   is_verified?: number;
-};
-
-type RegisterPayload = {
-  name: string;
-  email: string;
-  phone?: string;
-  password: string;
-  cpassword: string;
-};
-
-type LoginPayload = {
-  identifier: string;
-  email?: string;
-  phone?: string;
-  password: string;
 };
 
 type AuthContextValue = {
@@ -56,10 +43,7 @@ type AuthContextValue = {
   // null = no pending popup; number = reward coins to show once, post-login.
   firstLoginReward: number | null;
   markFirstLoginRewardShown: () => void;
-  register: (payload: RegisterPayload) => Promise<any>;
-  verifyEmail: (token: string) => Promise<boolean>;
-  resendVerification: (email: string) => Promise<any>;
-  login: (payload: LoginPayload) => Promise<any>;
+  authenticateWithTokens: (result: VerifyOtpResponse) => Promise<void>;
   bootstrapSession: () => Promise<void>;
   restoreSession: () => Promise<void>;
   logout: () => Promise<void>;
@@ -67,84 +51,12 @@ type AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-const loadSecureStore = () => {
-  try {
-    const SecureStore = require("expo-secure-store");
-
-    if (
-      SecureStore &&
-      typeof SecureStore.getItemAsync === "function" &&
-      typeof SecureStore.setItemAsync === "function" &&
-      typeof SecureStore.deleteItemAsync === "function"
-    ) {
-      return SecureStore;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-const secureStore = loadSecureStore();
-
-const secureSetItem = async (key: string, value: string) => {
-  if (secureStore) {
-    await secureStore.setItemAsync(key, value);
-    return;
-  }
-
-  await AsyncStorage.setItem(key, value);
-};
-
-const secureGetItem = async (key: string) => {
-  if (secureStore) {
-    return secureStore.getItemAsync(key);
-  }
-
-  return AsyncStorage.getItem(key);
-};
-
-const secureDeleteItem = async (key: string) => {
-  if (secureStore) {
-    await secureStore.deleteItemAsync(key);
-    return;
-  }
-
-  await AsyncStorage.removeItem(key);
-};
-
 const extractUser = (payload: any): AuthUser | null => {
   const user = payload?.user || payload?.data?.user || payload?.data || null;
 
   if (!user) return null;
 
   return user;
-};
-
-const generateDeviceId = () => {
-  const randomPart = Math.random().toString(36).substring(2, 12);
-  const timePart = Date.now().toString(36);
-
-  return `rp-${Platform.OS}-${timePart}-${randomPart}`;
-};
-
-const getDeviceName = () => {
-  if (Platform.OS === "android") return "android";
-  if (Platform.OS === "ios") return "ios";
-  return "unknown";
-};
-
-const getOrCreateDeviceId = async () => {
-  const existingDeviceId = await secureGetItem(DEVICE_ID_KEY);
-
-  if (existingDeviceId) {
-    return existingDeviceId;
-  }
-
-  const newDeviceId = generateDeviceId();
-  await secureSetItem(DEVICE_ID_KEY, newDeviceId);
-  return newDeviceId;
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -173,115 +85,43 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const clearLocalSession = useCallback(async () => {
     updateAccessToken(null);
     setUser(null);
-    setTermsAccepted(null); // reset so next login re-checks
+    setTermsAccepted(null);
     setFirstLoginReward(null);
-    await Promise.all([
-      clearAuthToken(),
-      secureDeleteItem(REFRESH_TOKEN_KEY),
-      cleanupFCMOnLogout(),
-    ]);
+    await clearSession();
   }, [updateAccessToken]);
 
   const fetchProfile = useCallback(async () => {
-    const profileRes = await api.get("/v1/auth/user-info");
-    const nextUser = extractUser(profileRes.data);
+    const profileRes = await fetchUserInfo();
+    const nextUser = extractUser(profileRes || {});
     setUser(nextUser);
     return nextUser;
   }, []);
 
-  // Check terms acceptance once after auth is established.
-  // On network error: default true — don't block returning users for a failed fetch.
-  const checkTerms = useCallback(async () => {
-    try {
-      const res = await fetchTermsStatus();
-      setTermsAccepted(!!res.terms_accepted);
-    } catch {
-      setTermsAccepted(true);
-    }
+  const syncOnboardingState = useCallback(async (payload: any) => {
+    const user = extractUser(payload);
+    setUser(user);
+    setTermsAccepted(isOnboardingComplete(user));
+    return user;
   }, []);
 
-  const register = useCallback(async (payload: RegisterPayload) => {
-    setLoading(true);
-    try {
-      const response = await api.post("/v1/auth/register", payload);
-      return response.data;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const verifyEmail = useCallback(async (token: string) => {
-    if (!token?.trim()) return false;
-
-    const response = await axios.get(`${API_BASE_URL}/v1/auth/verify-email`, {
-      params: { token: token.trim() },
-      responseType: "text",
-    });
-
-    return response.status >= 200 && response.status < 300;
-  }, []);
-
-  const resendVerification = useCallback(async (email: string) => {
-    const response = await api.post("/v1/auth/resend-verification", { email });
-    return response.data;
-  }, []);
-
-  const login = useCallback(
-    async (payload: LoginPayload) => {
+  const authenticateWithTokens = useCallback(
+    async (result: VerifyOtpResponse) => {
       setLoading(true);
       try {
-        const deviceId   = await getOrCreateDeviceId();
-        const deviceName = getDeviceName();
-        const parsedIdentifier = parseLoginIdentifier(payload.identifier);
-        const identifier = String(payload.identifier || "").trim();
-        const email =
-          payload.email?.trim().toLowerCase() ||
-          (parsedIdentifier.kind === "email" ? parsedIdentifier.normalized : undefined);
-        const phone =
-          payload.phone?.trim() ||
-          (parsedIdentifier.kind === "phone" ? parsedIdentifier.normalized : undefined);
-
-        const response = await api.post("/v1/auth/login", {
-          identifier,
-          login:       identifier,
-          email,
-          phone,
-          password:    payload.password,
-          device_id:   deviceId,
-          device_name: deviceName,
-        });
-
-        const nextAccessToken  = response.data?.accessToken  || null;
-        const nextRefreshToken = response.data?.refreshToken || null;
-
-        if (!nextAccessToken || !nextRefreshToken) {
-          throw new Error("Invalid login response");
+        if (!result?.accessToken || !result?.refreshToken) {
+          throw new Error("Invalid OTP verification response");
         }
 
-        updateAccessToken(nextAccessToken);
-        await persistAuthToken(nextAccessToken);
-
-        await secureSetItem(REFRESH_TOKEN_KEY, nextRefreshToken);
-        await fetchProfile();
-
-        // Check terms AFTER profile is loaded so the gate screen
-        // already has the user's context available.
-        await checkTerms();
-
-        // The backend tracks first-login state itself: `awarded` is only
-        // true once, ever, per account — subsequent logins return
-        // awarded: false, so no local "already shown" bookkeeping needed.
-        const reward = response.data?.firstLoginReward;
-        if (reward?.awarded === true && reward?.coins > 0) {
-          setFirstLoginReward(reward.coins);
-        }
-
-        return response.data;
+        // verifyOtp() already persisted the session (Keychain + cached
+        // username) — this just brings in-memory state up to match. Do NOT
+        // call clearSession() here: it wipes the tokens verifyOtp just saved.
+        updateAccessToken(result.accessToken);
+        await syncOnboardingState(result);
       } finally {
         setLoading(false);
       }
     },
-    [fetchProfile, checkTerms, updateAccessToken],
+    [syncOnboardingState, updateAccessToken],
   );
 
   const markFirstLoginRewardShown = useCallback(() => {
@@ -291,58 +131,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const restoreSession = useCallback(async () => {
     const currentAccessToken = accessTokenRef.current;
 
-    // If the in-memory token is still valid and not expiring soon, skip the
-    // refresh call entirely and just re-validate profile/terms.
     if (currentAccessToken && !isTokenExpiringSoon(currentAccessToken)) {
       await fetchProfile();
-      await checkTerms();
       return;
     }
 
-    const refreshToken = await secureGetItem(REFRESH_TOKEN_KEY);
+    const refreshToken = await getRefreshToken();
 
     if (!refreshToken) {
       updateAccessToken(null);
       setUser(null);
+      setTermsAccepted(null);
       return;
     }
 
     try {
-      const refreshRes = await axios.post(`${API_BASE_URL}/v1/auth/refresh`, {
-        refreshToken,
-      });
-
-      const nextAccessToken = refreshRes.data?.accessToken || null;
+      const refreshRes = await restoreAuthSession();
+      const nextAccessToken = refreshRes?.accessToken || null;
 
       if (!nextAccessToken) {
         throw new Error("Missing access token from refresh");
       }
 
       updateAccessToken(nextAccessToken);
-      await persistAuthToken(nextAccessToken);
-
-      await fetchProfile();
-
-      // Re-check terms on every session restore so the gate shows
-      // correctly if the user was previously mid-onboarding.
-      await checkTerms();
+      await persistAccessTokenInKeychain(nextAccessToken);
+      const profile = await fetchProfile();
+      setTermsAccepted(isOnboardingComplete(profile as any));
     } catch (error: any) {
       const status = error?.response?.status;
 
-      // Only clear the local session on a definitive auth failure
-      // (401/403). Network blips and timeouts should not log the user out.
       if (status === 401 || status === 403) {
         await clearLocalSession();
       }
       throw error;
     }
-  }, [clearLocalSession, fetchProfile, checkTerms, updateAccessToken]);
+  }, [clearLocalSession, fetchProfile, updateAccessToken]);
 
   const bootstrapSession = useCallback(async () => {
     try {
       await restoreSession();
-    } catch {
+    } catch (error) {
       // Fallback to AuthStack on restore failure.
+      if (__DEV__) console.log("[AuthContext] bootstrapSession restore failed", error);
     } finally {
       setIsInitializing(false);
     }
@@ -352,11 +182,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSessionHandlers({
       getAccessToken: () => accessTokenRef.current,
 
-      getRefreshToken: async () => secureGetItem(REFRESH_TOKEN_KEY),
+      getRefreshToken: async () => getRefreshToken(),
 
       onAccessTokenRefresh: async (nextAccessToken) => {
         updateAccessToken(nextAccessToken);
-        await persistAuthToken(nextAccessToken);
+        await persistAccessTokenInKeychain(nextAccessToken);
       },
 
       onLogout: async () => {
@@ -380,13 +210,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
 
     try {
-      const refreshToken = await secureGetItem(REFRESH_TOKEN_KEY);
-
-      await api.post("/v1/auth/logout", {
-        refreshToken: refreshToken || undefined,
-      });
-    } catch {
-      // logout local session even if API fails
+      await logoutRequest();
+    } catch (error) {
+      if (__DEV__) console.log("[AuthContext] logout failed, clearing local session anyway", error);
     } finally {
       await clearLocalSession();
       isLoggingOutRef.current = false;
@@ -405,10 +231,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setTermsAccepted,
       firstLoginReward,
       markFirstLoginRewardShown,
-      register,
-      verifyEmail,
-      resendVerification,
-      login,
+      authenticateWithTokens,
       bootstrapSession,
       restoreSession,
       logout,
@@ -421,10 +244,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       termsAccepted,
       firstLoginReward,
       markFirstLoginRewardShown,
-      register,
-      verifyEmail,
-      resendVerification,
-      login,
+      authenticateWithTokens,
       bootstrapSession,
       restoreSession,
       logout,

@@ -430,14 +430,14 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
       // then navigates inside ModuleStack) and from within MainLayout (already on Home –
       // React Navigation detects the screen is focused and updates the nested state directly).
       // No handleNavigateWithPrefetch wrapper so the switch is instant (<1 frame).
-       if (onModuleChange) {
-         onModuleChange(tab);
-       } else {
-         (navigation as any).navigate("Home", {
-           screen: SCREEN[tab],
-           params: { moduleName: tab },
-         });
-       }
+      if (onModuleChange) {
+        onModuleChange(tab);
+      } else {
+        (navigation as any).navigate("Home", {
+          screen: SCREEN[tab],
+          params: { moduleName: tab },
+        });
+      }
 
       requestAnimationFrame(() => {
         isNavigatingRef.current = false;

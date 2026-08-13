@@ -14,7 +14,6 @@ src/
         screens/
           SplashScreen.tsx
           LoginScreen.tsx
-          RegisterScreen.tsx
           VerifyEmailScreen.tsx
         AUTH_ARCHITECTURE.md
       navigation/

@@ -1,41 +1,47 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  ScrollView,
   ActivityIndicator,
-  FlatList,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import type { ServiceItem } from '../../navigation/type';
 import Card from '../constant/Card';
+import { getServiceImageSource, getDiscount } from '../../utils/serviceUtils';
 import { useServicesTheme } from '../../utils/useServicesTheme';
-
-const HORIZONTAL_PADDING = 16;
-
-// Fixed typo from 'assete' to 'assets'
-const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png');
 
 export default function QuickServices() {
   const navigation = useNavigation<any>();
   const servicesTheme = useServicesTheme();
   const { data: homeData, isLoading, error } = useServiceHome();
 
-  // Extract the Quick Services section
-  const quickServicesSection = useMemo(() => {
-    if (!homeData?.data || !Array.isArray(homeData.data)) return null;
-    return homeData.data.find(
-      section => section.section_key === 'quick_services',
-    );
+  const { section, items } = useMemo(() => {
+    if (!homeData?.data || !Array.isArray(homeData.data)) {
+      return { section: null, items: [] as ServiceItem[] };
+    }
+    const found = homeData.data.find(s => s.section_key === 'quick_services');
+    return {
+      section: found ?? null,
+      items: (found?.items as ServiceItem[]) ?? [],
+    };
   }, [homeData]);
 
-  const items = (quickServicesSection?.items as ServiceItem[]) || [];
+  const handleServicePress = (service: ServiceItem) => {
+    (navigation as any).navigate('ServiceDescription', {
+      serviceId: service.service_id,
+      title: service.name,
+    });
+  };
 
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Quick & Easy Services</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
+          Quick &amp; Easy Services
+        </Text>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
         </View>
@@ -43,92 +49,56 @@ export default function QuickServices() {
     );
   }
 
-  if (error) {
-    console.error('QuickServices Error:', error);
-    return null;
-  }
-
-  if (!items || items.length === 0) {
-    return null;
-  }
-
-  const getImageSource = (item: ServiceItem) => {
-    const imageUrl = item.variant_image || item.service_image || item.image;
-    if (imageUrl) {
-      return { uri: imageUrl };
-    }
-    return fallbackImg;
-  };
-
-  const renderItem = ({ item }: { item: ServiceItem; index: number }) => {
-    const coinsText = item.coins ? `${item.coins}` : '0';
-    const reviews = String(item.review_count ?? 0);
-    const discount =
-      item.discount_percent && item.discount_percent > 0
-        ? `${item.discount_percent}%`
-        : undefined;
-
-    return (
-      <View style={[styles.cardWrapper]}>
-        <Card
-          title={item.title || item.name}
-          image={getImageSource(item)}
-          price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
-          oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
-          rating={item.rating}
-          users={reviews}
-          coins={coinsText}
-          discount={discount}
-          onPress={() =>
-            navigation.navigate('ServiceDescription', {
-              serviceId: item.service_id,
-              title: item.name,
-            })
-          }
-        />
-      </View>
-    );
-  };
+  if (error || items.length === 0) return null;
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <View>
-          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
-            {quickServicesSection?.title || 'Quick & Easy Services'}
-          </Text>
-          <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Quick and easy</Text>
-        </View>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
+          {section?.title || 'Quick & Easy Services'}
+        </Text>
+        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>
+          Quick and easy
+        </Text>
       </View>
 
-      <FlatList<ServiceItem>
-        data={items}
-        keyExtractor={item => `${item.service_id}-${item.variant_id}`}
-        renderItem={renderItem}
+      <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        // Manual sliding snapping configurations
-        decelerationRate="fast"
-        disableIntervalMomentum={true}
-        contentContainerStyle={styles.horizontalContent}
-      />
+        contentContainerStyle={styles.slider}
+      >
+        {items.map((service, index) => (
+          <Card
+            key={`${service.service_id}-${index}`}
+            title={service.title || service.name}
+            image={getServiceImageSource(service)}
+            price={service.price > 0 ? `₹${service.price}` : 'Get Quote'}
+            oldPrice={service.mrp && service.mrp > service.price ? `₹${service.mrp}` : undefined}
+            rating={service.rating}
+            users={String(service.review_count ?? 0)}
+            coins={service.coins ? String(service.coins) : ''}
+            discount={getDiscount(service)}
+            onPress={() => handleServicePress(service)}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
-    marginTop: 16,
+    marginTop: 24,
+    paddingTop: 4,
   },
   headerRow: {
-    paddingHorizontal: HORIZONTAL_PADDING,
+    paddingHorizontal: 16,
     marginBottom: 14,
   },
   heading: {
     fontSize: 19,
     fontWeight: '800',
-    color: '#1F2937', // Deeper contrast typography
+    color: '#1F2937',
     letterSpacing: -0.2,
   },
   subheading: {
@@ -142,12 +112,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  horizontalContent: {
-    paddingLeft: HORIZONTAL_PADDING,
-    paddingRight: 4,
-  },
-  cardWrapper: {
-    justifyContent: 'flex-start',
-    paddingBottom: 4, // Prevents Android card shadow clipping
+  slider: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    gap: 12,
   },
 });

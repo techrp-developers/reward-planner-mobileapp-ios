@@ -2,10 +2,24 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
-import { SvgProps } from 'react-native-svg';
+import { Svg, Polygon, SvgProps } from 'react-native-svg';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useQuery } from '@tanstack/react-query';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useAppTheme } from '../../../../theme/ThemeContext';
+
+const RIBBON = 44;
+function TricolorCornerRibbon() {
+  const r = RIBBON;
+  return (
+    <Svg width={r} height={r} style={ribbonStyle} pointerEvents="none">
+      <Polygon points={`${r},0 0,0 ${r},${r}`} fill="#138808" />
+      <Polygon points={`${r},0 ${Math.round(r * 0.65)},0 ${r},${Math.round(r * 0.65)}`} fill="#FFFFFF" />
+      <Polygon points={`${r},0 ${Math.round(r * 0.33)},0 ${r},${Math.round(r * 0.33)}`} fill="#FF9933" />
+    </Svg>
+  );
+}
+const ribbonStyle = { position: 'absolute' as const, top: 0, right: 0, zIndex: 10 };
 
 // Asset Imports
 import Recharge from '../../assets/BBPS_Service/Recharge.svg';
@@ -292,6 +306,7 @@ const RechargeBillSkeleton = ({ bbpsTheme }: { bbpsTheme: BbpsTheme }) => {
 function RechargeBill() {
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
+  const { isFestive } = useAppTheme();
   const { data: categories = [], isLoading: loading } = useQuery({
     queryKey: BILL_CATEGORIES_QUERY_KEY,
     queryFn: fetchBillsCategories,
@@ -356,9 +371,11 @@ function RechargeBill() {
           {
             backgroundColor: bbpsTheme.colors.surface,
             borderColor: bbpsTheme.colors.border,
+            overflow: 'hidden',
           },
         ]}
       >
+        {isFestive && <TricolorCornerRibbon />}
         <LinearGradient
           colors={bbpsTheme.gradients.primary}
           start={{ x: 0, y: 0 }}

@@ -187,7 +187,12 @@ const CenterButton = React.memo(function CenterButton({
   activeMode: AppMode;
   onPress: () => void;
 }) {
-  const centerTheme = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
+  const { isFestive, theme } = useAppTheme();
+  const base = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
+  const centerTheme =
+    activeMode === "Product" && isFestive
+      ? { background: theme.saffron, border: "#FFFFFF", icon: "#FFFFFF", shadow: theme.saffron }
+      : base;
 
   return (
     <TouchableOpacity
@@ -230,7 +235,7 @@ function BottomTabs({
 }: Props) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
-  const { isDark, theme } = useAppTheme();
+  const { isDark, isFestive, theme } = useAppTheme();
   const bottomInset = Math.max(insets.bottom, 8);
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
@@ -253,7 +258,11 @@ function BottomTabs({
     : activeMode === "Payments"
       ? PAYMENT_TABS
       : TABS;
-  const tabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
+  const baseTabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
+  const tabTheme =
+    activeMode === "Product" && isFestive
+      ? { ...baseTabTheme, activeIcon: theme.saffron }
+      : baseTabTheme;
   const inactiveColor = isDark ? theme.secondaryText : INACTIVE_COLOR;
   const barBackgroundColor = isDark ? theme.card : "#FFFFFF";
   const barBorderColor = isDark ? theme.border : "rgba(17,24,39,0.08)";

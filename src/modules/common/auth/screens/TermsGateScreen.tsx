@@ -26,13 +26,13 @@ import { useAppTheme } from "../../../../theme/ThemeContext";
 // ─────────────────────────────────────────────────────────────
 
 const T = {
-  primary: "#852BAF",
-  accent: "#A654CD",
-  text: "#1E1B2E",
-  textMuted: "#6B7280",
-  surface: "#FFFFFF",
-  surfaceBd: "#EEE7FF",
-  gradient: ["#F5F0FF", "#FFF0F7"] as const,
+  primary:     "#852BAF",
+  accent:      "#A654CD",
+  text:        "#1E1B2E",
+  textMuted:   "#6B7280",
+  surface:     "#FFFFFF",
+  surfaceBd:   "#EEE7FF",
+  gradient:    ["#F5F0FF", "#FFF0F7"] as const,
   btnGradient: ["#FC8BAD", "#A654CD"] as const,
   btnDisabled: ["#D1D5DB", "#E5E7EB"] as const,
 } as const;
@@ -74,9 +74,9 @@ function TermsGateScreenComponent() {
   const { isDark } = useAppTheme();
 
   const [termsList, setTermsList] = useState<TermItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [checked, setChecked] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [loading,   setLoading]   = useState(true);
+  const [checked,   setChecked]   = useState(false);
+  const [saving,    setSaving]    = useState(false);
 
   const mountedRef = useRef(true);
 
@@ -274,47 +274,47 @@ export default TermsGateScreen;
 // ─────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#F5F0FF" },
-  gradient: { flex: 1 },
+  root:      { flex: 1, backgroundColor: "#F5F0FF" },
+  gradient:  { flex: 1 },
   container: { flex: 1 },
 
   // ── Header ───────────────────────────────────────────────────
 
   header: {
     paddingHorizontal: 24,
-    paddingTop: 28,
-    paddingBottom: 16,
+    paddingTop:        28,
+    paddingBottom:     16,
   },
   stepBadge: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(133,43,175,0.10)",
-    paddingVertical: 4,
+    alignSelf:         "flex-start",
+    backgroundColor:   "rgba(133,43,175,0.10)",
+    paddingVertical:   4,
     paddingHorizontal: 10,
-    borderRadius: 8,
-    marginBottom: 10,
+    borderRadius:      8,
+    marginBottom:      10,
   },
   stepBadgeText: {
-    fontSize: 10,
-    fontWeight: "800",
-    color: T.primary,
+    fontSize:      10,
+    fontWeight:    "800",
+    color:         T.primary,
     letterSpacing: 1.2,
   },
   mainTitle: {
-    fontSize: 32,
+    fontSize:   32,
     fontWeight: "300",
-    color: T.primary,
+    color:      T.primary,
     lineHeight: 38,
   },
   mainTitleBold: {
-    fontSize: 32,
+    fontSize:   32,
     fontWeight: "900",
-    color: T.primary,
-    marginTop: -4,
+    color:      T.primary,
+    marginTop:  -4,
   },
   subtitle: {
-    fontSize: 14,
-    color: T.textMuted,
-    marginTop: 8,
+    fontSize:   14,
+    color:      T.textMuted,
+    marginTop:  8,
     lineHeight: 20,
     fontWeight: "500",
   },
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
   // ── Loading ───────────────────────────────────────────────────
 
   loadingContainer: {
-    flex: 1,
+    flex:           1,
     justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
+    alignItems:     "center",
+    gap:            12,
   },
   loadingText: {
-    fontSize: 14,
-    color: T.textMuted,
+    fontSize:   14,
+    color:      T.textMuted,
     fontWeight: "600",
   },
 
@@ -337,50 +337,50 @@ const styles = StyleSheet.create({
 
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom:     16,
   },
 
   card: {
     backgroundColor: T.surface,
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: T.surfaceBd,
-    shadowColor: T.accent,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    elevation: 3,
+    borderRadius:    20,
+    padding:         18,
+    marginBottom:    14,
+    borderWidth:     1,
+    borderColor:     T.surfaceBd,
+    shadowColor:     T.accent,
+    shadowOffset:    { width: 0, height: 5 },
+    shadowOpacity:   0.07,
+    shadowRadius:    12,
+    elevation:       3,
   },
   cardHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    alignItems:    "center",
+    marginBottom:  10,
   },
   iconCircle: {
     backgroundColor: T.accent,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
+    width:           32,
+    height:          32,
+    borderRadius:    16,
+    justifyContent:  "center",
+    alignItems:      "center",
+    marginRight:     10,
   },
   iconText: {
-    color: "#FFF",
-    fontSize: 11,
+    color:      "#FFF",
+    fontSize:   11,
     fontWeight: "900",
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize:   15,
     fontWeight: "800",
-    color: T.primary,
-    flex: 1,
+    color:      T.primary,
+    flex:       1,
   },
   cardContent: {
-    fontSize: 13,
-    color: "#555",
+    fontSize:   13,
+    color:      "#555",
     lineHeight: 21,
   },
 
@@ -388,53 +388,53 @@ const styles = StyleSheet.create({
 
   agreementSection: {
     marginTop: 8,
-    gap: 14,
+    gap:       14,
   },
   divider: {
-    height: 1,
+    height:          1,
     backgroundColor: "rgba(133,43,175,0.12)",
-    marginBottom: 4,
+    marginBottom:    4,
   },
 
   checkboxRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems:    "flex-start",
   },
   checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: T.accent,
+    width:           22,
+    height:          22,
+    borderRadius:    6,
+    borderWidth:     2,
+    borderColor:     T.accent,
     backgroundColor: "#FFF",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-    marginTop: 2,
+    justifyContent:  "center",
+    alignItems:      "center",
+    marginRight:     10,
+    marginTop:       2,
   },
   checkboxChecked: {
     backgroundColor: T.accent,
-    borderColor: T.accent,
+    borderColor:     T.accent,
   },
   checkIcon: {
-    color: "#FFF",
-    fontSize: 13,
+    color:      "#FFF",
+    fontSize:   13,
     fontWeight: "900",
   },
   checkboxText: {
-    flex: 1,
-    fontSize: 14,
-    color: "#444",
+    flex:       1,
+    fontSize:   14,
+    color:      "#444",
     lineHeight: 21,
   },
   checkboxBold: {
-    color: T.primary,
+    color:      T.primary,
     fontWeight: "700",
   },
 
   helperText: {
-    fontSize: 12,
-    color: "#888",
+    fontSize:   12,
+    color:      "#888",
     lineHeight: 18,
     fontWeight: "500",
   },
@@ -445,24 +445,21 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   acceptButton: {
-    width: "100%",
-    borderRadius: 16,
-    alignItems: "center",
+    width:          "100%",
+    paddingVertical: 17,
+    borderRadius:   16,
+    alignItems:     "center",
     justifyContent: "center",
-    overflow: "hidden",
+    overflow:       "hidden",
   },
   acceptButtonText: {
-    color: "#FFF",
-    fontWeight: "800",
-    fontSize: 15,
+    color:         "#FFF",
+    fontWeight:    "800",
+    fontSize:      15,
     letterSpacing: 0.3,
-    paddingVertical: 17,
-
   },
   acceptButtonTextDisabled: {
     color: "#9CA3AF",
-    paddingVertical: 17,
-
   },
 
   bottomSpacer: { height: 40 },

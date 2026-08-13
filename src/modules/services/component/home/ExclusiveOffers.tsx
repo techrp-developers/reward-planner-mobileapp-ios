@@ -1,20 +1,21 @@
 import { useMemo } from 'react';
 import {
     View,
-    FlatList,
+    Text,
     Image,
     StyleSheet,
+    ScrollView,
     ActivityIndicator,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import type { NavigationProp } from '@react-navigation/native';
 
-import Card from '../constant/Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
-
-const exclusiveOffer = require('../../assete/ServiceData/exclusive.png');
+import Card from '../constant/Card';
+import { getServiceImageSource, getDiscount } from '../../utils/serviceUtils';
+import exclusiveOffer from '../../assete/ServiceData/exclusive.png';
 
 export default function ExclusiveOffers() {
     const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
@@ -25,6 +26,13 @@ export default function ExclusiveOffers() {
         const section = data.data.find(s => s.section_key === 'exclusive_offers');
         return (section?.items as ServiceItem[]) ?? [];
     }, [data]);
+
+    const handleServicePress = (service: ServiceItem) => {
+        (navigation as any).navigate('ServiceDescription', {
+            serviceId: service.service_id,
+            title: service.name,
+        });
+    };
 
     if (isLoading) {
         return (
@@ -46,56 +54,41 @@ export default function ExclusiveOffers() {
             end={{ x: 1, y: 1 }}
             style={styles.container}
         >
-            <View style={styles.row}>
-                {/* Left promo banner */}
+            {/* Header */}
+            <View style={styles.headerRow}>
+                <View style={styles.headerText}>
+                    <Text style={styles.title}>Exclusive Offers</Text>
+                    <Text style={styles.subtitle}>Best deals just for you</Text>
+                </View>
                 <Image
                     source={exclusiveOffer}
-                    style={styles.banner}
+                    style={styles.headerBanner}
                     resizeMode="contain"
                 />
-
-                {/* Right scrollable Card components */}
-                <FlatList
-                    horizontal
-                    data={services}
-                    keyExtractor={item => `${item.service_id}-${item.variant_id}`}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.listContent}
-                    nestedScrollEnabled
-                    renderItem={({ item }) => {
-                        const imageUri = item.variant_image || item.service_image || item.image;
-                        const imageSource = imageUri ? { uri: imageUri } : null;
-                        const discount =
-                            item.discount_percent && item.discount_percent > 0
-                                ? `${item.discount_percent}%`
-                                : '50%';
-                        const coinsText = item.coins ? String(item.coins) : '';
-
-                        return (
-                            <Card
-                                title={item.name}
-                                image={imageSource}
-                                price={item.price > 0 ? `₹${item.price}` : 'Get Quote'}
-                                oldPrice={
-                                    item.mrp && item.mrp > item.price
-                                        ? `₹${item.mrp}`
-                                        : undefined
-                                }
-                                rating={item.rating}
-                                users={String(item.review_count ?? 0)}
-                                coins={coinsText}
-                                discount={discount}
-                                onPress={() =>
-                                    navigation.navigate('ServiceDescription', {
-                                        serviceId: item.service_id,
-                                        title: item.name,
-                                    })
-                                }
-                            />
-                        );
-                    }}
-                />
             </View>
+
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.slider}
+            >
+                {services.map((service, index) => (
+                    <Card
+                        key={`${service.service_id}-${index}`}
+                        title={service.title || service.name}
+                        image={getServiceImageSource(service)}
+                        price={service.price > 0 ? `₹${service.price}` : 'Get Quote'}
+                        oldPrice={service.mrp && service.mrp > service.price ? `₹${service.mrp}` : undefined}
+                        rating={service.rating}
+                        users={String(service.review_count ?? 0)}
+                        coins={service.coins ? String(service.coins) : ''}
+                        discount={getDiscount(service, '50%')}
+                        onPress={() => handleServicePress(service)}
+                    />
+                ))}
+            </ScrollView>
+
+            <View style={styles.bottomPad} />
         </LinearGradient>
     );
 }
@@ -103,27 +96,48 @@ export default function ExclusiveOffers() {
 const styles = StyleSheet.create({
     container: {
         marginTop: 20,
+        paddingTop: 20,
         overflow: 'hidden',
     },
     loadingBox: {
-        height: 200,
+        height: 220,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    row: {
+    headerRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 16,
-
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        marginBottom: 16,
     },
-    banner: {
-        width: 130,
-        height: 210,
-        marginLeft: 12,
+    headerText: {
+        flex: 1,
         marginRight: 8,
+    },
+    title: {
+        fontSize: 20,
+        fontWeight: '800',
+        color: '#1E1B4B',
+        letterSpacing: -0.2,
+    },
+    subtitle: {
+        fontSize: 12.5,
+        color: 'rgba(30,27,75,0.65)',
+        marginTop: 4,
+        fontWeight: '500',
+    },
+    headerBanner: {
+        width: 72,
+        height: 72,
         flexShrink: 0,
     },
-    listContent: {
-        paddingRight: 12,
+    slider: {
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+        gap: 12,
+    },
+    bottomPad: {
+        height: 20,
     },
 });

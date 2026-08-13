@@ -19,14 +19,11 @@ import { StepTrackerProvider } from "../modules/step_counter/context/StepTracker
 import MainLayout from "./MainLayout";
 import SplashScreen from "../modules/common/auth/screens/SplashScreen";
 import TermsGateScreen from "../modules/common/auth/screens/TermsGateScreen";
+import WelcomeScreen from "../modules/common/auth/screens/WelcomeScreen";
 import LoginScreen from "../modules/common/auth/screens/LoginScreen";
-import AccountActivate from "../modules/common/auth/screens/AccountActivate";
+import LocationAccessScreen from "../modules/common/auth/screens/LocationAccessScreen";
 import OTPScreen from "../modules/common/auth/screens/OTPScreen";
-import SetNewPassword from "../modules/common/auth/screens/SetNewPassword";
-import AccountActivationSuccess from "../modules/common/auth/screens/AccountActivationSuccess";
-import VerifyEmailScreen from "../modules/common/auth/screens/VerifyEmailScreen";
-import ForgotPasswordScreen from "../modules/common/auth/screens/ForgotPasswordScreen";
-import PasswordUpdatedSuccess from "../modules/common/auth/screens/PasswordUpdatedSuccess";
+import OnboardingScreen from "../modules/common/auth/screens/OnboardingScreen";
 import type { AuthStackParamList } from "../modules/common/auth/navigation/types";
 import Dashbord from "../modules/dashboard/dashboard/dashbord";
 export type { AuthStackParamList };
@@ -44,7 +41,6 @@ export type AppStackParamList = {
   AddressSelect: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   AddAddressMap: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   AddressDetails: undefined | { mode?: 'add' | 'edit'; addressId?: number; manageOnly?: boolean; initialData?: any };
-  ChangePassword: undefined;
   Profile: { context?: 'dashboard' } | undefined;
   ServiceStack: undefined;
   RewardStack: undefined;
@@ -89,15 +85,12 @@ const defaultScreenOptions = {
 
 function AuthNavigator() {
   return (
-    <AuthStack.Navigator screenOptions={defaultScreenOptions}>
+    <AuthStack.Navigator screenOptions={defaultScreenOptions} initialRouteName="Welcome">
+      <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
       <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="AccountActivate" component={AccountActivate} />
       <AuthStack.Screen name="OTPScreen" component={OTPScreen} />
-      <AuthStack.Screen name="SetNewPassword" component={SetNewPassword} />
-      <AuthStack.Screen name="AccountActivationSuccess" component={AccountActivationSuccess} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <AuthStack.Screen name="PasswordSuccess" component={PasswordUpdatedSuccess} />
-      <AuthStack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
+      <AuthStack.Screen name="LocationAccess" component={LocationAccessScreen} />
+      <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
     </AuthStack.Navigator>
   );
 }
@@ -267,12 +260,7 @@ function AppNavigator() {
             require("../modules/ecommerce/components/ItemCardAddress/NewAddressForm").default
           }
         />
-        <AppStack.Screen
-          name="ChangePassword"
-          getComponent={() =>
-            require("../modules/common/auth/screens/ChangePasswordScreen").default
-          }
-        />
+
         <AppStack.Screen
           name="GlobalSearchScreen"
           getComponent={() =>

@@ -94,7 +94,6 @@ export type HomeStackParamList = {
   Support: undefined;
   HelpForm: undefined;
   MyTickets: undefined;
-  ChangePassword: undefined;
 };
 
 export type MainTabParamList = {

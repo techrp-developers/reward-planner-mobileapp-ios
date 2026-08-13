@@ -1,4 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { Svg, Polygon } from 'react-native-svg';
 import {
   View,
   Text,
@@ -58,8 +59,20 @@ const MemoModuleBanner = memo(ModuleBanner);
 const MemoRewardsOverview = memo(RewardsOverview);
 const MemoBirthdayCarousel = memo(BirthdayCarousel);
 
+const RIBBON = 52;
+const TricolorCornerRibbon = memo(function TricolorCornerRibbon() {
+  return (
+    <Svg width={RIBBON} height={RIBBON} style={tricolorStyle} pointerEvents="none">
+      <Polygon points={`${RIBBON},0 0,0 ${RIBBON},${RIBBON}`} fill="#138808" />
+      <Polygon points={`${RIBBON},0 ${Math.round(RIBBON * 0.62)},0 ${RIBBON},${Math.round(RIBBON * 0.62)}`} fill="#FFFFFF" />
+      <Polygon points={`${RIBBON},0 ${Math.round(RIBBON * 0.31)},0 ${RIBBON},${Math.round(RIBBON * 0.31)}`} fill="#FF9933" />
+    </Svg>
+  );
+});
+const tricolorStyle = { position: 'absolute' as const, top: 0, right: 0, zIndex: 2 };
+
 function Dashbord() {
-  const { isDark } = useAppTheme();
+  const { isDark, isFestive } = useAppTheme();
   const iconSize = rs(26);
   const navigation = useNavigation<any>();
   const { totalQuantity } = useCart();
@@ -246,22 +259,29 @@ function Dashbord() {
     setSearchDismissSignal((value) => value + 1);
   }, [isSearchOpen]);
 
-  const quoteBannerGradient: string[] = isDark
+  const quoteBannerGradient = useMemo<string[]>(() => isDark
     ? ['#18181B', '#27233A', '#4338CA']
-    : ['#111827', '#312E81', '#4F46E5'];
+    : ['#111827', '#312E81', '#4F46E5'],
+    [isDark]);
 
-  const topSectionGradient: string[] = isDark
+  const topSectionGradient = useMemo<string[]>(() => isDark
     ? ['#09090B', '#111827', '#18181B']
-    : ['#111827', '#1E1B4B', '#312E81'];
+    : ['#111827', '#1E1B4B', '#312E81'],
+    [isDark]);
 
-  const rootGradient = isDark
+  // Page background: stays normal — festive accent lives only in the hero section
+  const rootGradient = useMemo<string[]>(() => isDark
     ? ['#09090B', '#111827', '#151526']
-    : ['#F8FAFC', '#EEF2FF', '#FFFFFF'];
+    : ['#F8FAFC', '#EEF2FF', '#FFFFFF'],
+    [isDark]);
 
   const t = useMemo(() => StyleSheet.create({
     iconContainer: { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.16)' },
     card: {},
-    cardWrap: { shadowColor: isDark ? '#000000' : '#312E81', backgroundColor: isDark ? '#18181B' : '#4338CA' },
+    cardWrap: {
+      shadowColor: isDark ? '#000000' : '#312E81',
+      backgroundColor: isDark ? '#18181B' : '#4338CA',
+    },
   }), [isDark]);
 
   return (
@@ -282,66 +302,67 @@ function Dashbord() {
         bounces
       >
         <View style={styles.topSectionWrap}>
-        <LinearGradient
-          colors={topSectionGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.topSection}
-        >
-          <HeaderComponent
-            userName={headerUserName}
-            userImageUri={headerUserImage ?? undefined}
-            companyLogoUri={headerCompanyLogo ?? undefined}
-            surface="transparent"
-            dismissSignal={searchDismissSignal}
-            onSearchActiveChange={setIsSearchOpen}
-            onSearchOverlayChange={setSearchOverlay}
-            onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
-            notificationBadge={notificationBadge}
-            onNotificationPress={() => navigation.navigate('Notification')}
-          />
+          <LinearGradient
+            colors={topSectionGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.topSection}
+          >
+            <HeaderComponent
+              userName={headerUserName}
+              userImageUri={headerUserImage ?? undefined}
+              companyLogoUri={headerCompanyLogo ?? undefined}
+              surface="transparent"
+              dismissSignal={searchDismissSignal}
+              onSearchActiveChange={setIsSearchOpen}
+              onSearchOverlayChange={setSearchOverlay}
+              onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
+              notificationBadge={notificationBadge}
+              onNotificationPress={() => navigation.navigate('Notification')}
+            />
 
-          {/* Motivational Quote Banner */}
-          <Pressable onPress={dismissSearch}>
-            <View style={[styles.bannerOuter, { paddingHorizontal: rs(16), paddingTop: rs(2) }]}>
-              <View style={[styles.cardWrap, t.cardWrap]}>
-              <LinearGradient
-                colors={quoteBannerGradient}
-                start={{ x: 0, y: 0.5 }}
-                end={{ x: 1, y: 0.5 }}
-                style={[styles.card, t.card]}
-              >
-                <LinearGradient
-                  colors={[
-                    'rgba(255,255,255,0)',
-                    'rgba(255,255,255,0.035)',
-                    'rgba(255,255,255,0.10)',
-                  ]}
-                  locations={[0, 0.58, 1]}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 1, y: 0.5 }}
-                  style={styles.quoteHighlight}
-                  pointerEvents="none"
-                />
+            {/* Motivational Quote Banner */}
+            <Pressable onPress={dismissSearch}>
+              <View style={[styles.bannerOuter, { paddingHorizontal: rs(16), paddingTop: rs(2) }]}>
+                <View style={[styles.cardWrap, t.cardWrap]}>
+                  <LinearGradient
+                    colors={quoteBannerGradient}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={[styles.card, t.card]}
+                  >
+                    {isFestive && <TricolorCornerRibbon />}
+                    <LinearGradient
+                      colors={[
+                        'rgba(255,255,255,0)',
+                        'rgba(255,255,255,0.035)',
+                        'rgba(255,255,255,0.10)',
+                      ]}
+                      locations={[0, 0.58, 1]}
+                      start={{ x: 0, y: 0.5 }}
+                      end={{ x: 1, y: 0.5 }}
+                      style={styles.quoteHighlight}
+                      pointerEvents="none"
+                    />
 
-                <View style={[styles.iconContainer, t.iconContainer]}>
-                  <MaterialCommunityIcons
-                    name="lightbulb-on-outline"
-                    size={iconSize}
-                    color={isDark ? '#FFFFFF' : '#9B3DD8'}
-                  />
+                    <View style={[styles.iconContainer, t.iconContainer]}>
+                      <MaterialCommunityIcons
+                        name="lightbulb-on-outline"
+                        size={iconSize}
+                        color={isFestive ? '#FFD27A' : isDark ? '#FFFFFF' : '#9B3DD8'}
+                      />
+                    </View>
+
+                    <Text style={styles.quote}>
+                      {thought
+                        ? `"${thought}"`
+                        : '"Success is the sum of small efforts,\nrepeated day in and day out."'}
+                    </Text>
+                  </LinearGradient>
                 </View>
-
-                <Text style={styles.quote}>
-                  {thought
-                    ? `"${thought}"`
-                    : '"Success is the sum of small efforts,\nrepeated day in and day out."'}
-                </Text>
-              </LinearGradient>
               </View>
-            </View>
-          </Pressable>
-        </LinearGradient>
+            </Pressable>
+          </LinearGradient>
         </View>
         {hasBirthdays && (
           <Pressable onPress={dismissSearch}>

@@ -1,15 +1,16 @@
-// src/theme/ThemeContext.tsx
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { InteractionManager } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LightTheme, DarkTheme } from "./colors";
+import { LightTheme, DarkTheme, IndependenceLightTheme, IndependenceDarkTheme } from "./colors";
+import { isFestivePeriod } from "../utils/festiveTheme";
 
-const THEME_KEY = '@rewardsplanners_dark_theme';
+const THEME_KEY = "@rewardsplanners_dark_theme";
 
 type ThemeColors = typeof LightTheme;
 
 interface ThemeContextType {
   isDark: boolean;
+  isFestive: boolean;
   theme: ThemeColors;
   toggleTheme: () => void;
 }
@@ -17,38 +18,39 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export const AppThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isDark, setIsDark]     = useState(false);
+  const [isDark, setIsDark] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  // Load persisted preference once on mount — prevents theme flash
+  // Computed once per session — app restart picks up date change.
+  const isFestive = useMemo(() => isFestivePeriod(), []);
+
   useEffect(() => {
     AsyncStorage.getItem(THEME_KEY)
-      .then(val => { if (val === 'dark') setIsDark(true); })
+      .then((val) => {
+        if (val === "dark") setIsDark(true);
+      })
       .catch(() => {})
       .finally(() => setHydrated(true));
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setIsDark(prev => {
+    setIsDark((prev) => {
       const next = !prev;
-      // Persist after current UI interactions so the visual toggle wins the frame.
       InteractionManager.runAfterInteractions(() => {
-        AsyncStorage.setItem(THEME_KEY, next ? 'dark' : 'light').catch(() => {});
+        AsyncStorage.setItem(THEME_KEY, next ? "dark" : "light").catch(() => {});
       });
       return next;
     });
   }, []);
 
-  const contextValue = useMemo(
-    () => ({
-      isDark,
-      theme: isDark ? DarkTheme : LightTheme,
-      toggleTheme,
-    }),
-    [isDark, toggleTheme],
-  );
+  const contextValue = useMemo(() => {
+    const theme = isFestive
+      ? isDark ? IndependenceDarkTheme : IndependenceLightTheme
+      : isDark ? DarkTheme : LightTheme;
 
-  // Wait for AsyncStorage before rendering children — avoids a light→dark flash
+    return { isDark, isFestive, theme, toggleTheme };
+  }, [isDark, isFestive, toggleTheme]);
+
   if (!hydrated) return null;
 
   return (

@@ -149,7 +149,7 @@ export const prefetchFeaturesProductSection = () =>
 const styles = StyleSheet.create({
   fullScreen: {
     flex: 1,
-    marginTop: 12,
+    paddingTop: 20,
   },
   contentWrap: { paddingBottom: 8 },
   headerCurve: {
