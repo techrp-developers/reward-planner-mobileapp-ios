@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
-import Logo from "../../../../assets/homepage/login_logo.svg";
+import GiftBanner from "../../../../assets/homepage/banner_gift.svg";
 import AuthButton from "../../components/AuthButton";
 import AuthTextInput from "../../components/AuthTextInput";
 import { useAppTheme } from "../../../../theme/ThemeContext";
@@ -70,8 +70,8 @@ function LoginScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}>
-      <View style={styles.logoWrapper}>
-        <Logo width={150} height={150} />
+      <View style={styles.illustrationWrapper}>
+        <GiftBanner width={220} height={156} opacity={0.16} />
       </View>
 
       <TouchableOpacity
@@ -110,6 +110,7 @@ function LoginScreen() {
           onPress={handleLogin}
           loading={submitting}
           disabled={!identifier.trim()}
+          icon={<MaterialCommunityIcons name="login" size={21} color="#FFFFFF" />}
         />
       </View>
     </View>
@@ -122,12 +123,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  logoWrapper: {
+  illustrationWrapper: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: "42%",
+    height: "38%",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -145,11 +146,11 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    marginTop: "38%",
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    marginTop: "36%",
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
     paddingHorizontal: 24,
-    paddingTop: 32,
+    paddingTop: 18,
     alignItems: "center",
   },
   title: {
@@ -166,10 +167,10 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    marginBottom: 24,
+    marginBottom: 38,
   },
   inputSpacing: {
     width: "100%",
-    marginBottom: 20,
+    marginBottom: 30,
   },
 });

@@ -9,9 +9,9 @@ import Animated, {
 } from "react-native-reanimated";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAuth } from "../context/AuthContext";
-import Logo from "../../../../assets/homepage/login_logo.svg";
-import GradientBackground from "../../components/GradientBackground";
+import GiftBanner from "../../../../assets/homepage/banner_gift.svg";
 import AuthButton from "../../components/AuthButton";
 import OtpBoxRow from "../../components/OtpBoxRow";
 import { useAlert } from "../../../ecommerce/components/alerts";
@@ -146,24 +146,23 @@ function OTPScreen() {
   }, [canResend, resending, resendCount, method, destination, resetTimer, alert, displayDestination]);
 
   return (
-    <GradientBackground>
-      <View style={styles.content}>
-        <View style={styles.logoWrap}>
-          <Logo width={110} height={110} />
-        </View>
+    <View style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}>
+      <View style={styles.illustrationWrapper}>
+        <GiftBanner width={220} height={156} opacity={0.16} />
+      </View>
+
+      <TouchableOpacity
+        style={[styles.backButton, { backgroundColor: isDark ? "#18181B" : "#FFFFFF" }]}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={24} color={isDark ? "#FFFFFF" : "#111111"} />
+      </TouchableOpacity>
+
+      <View style={[styles.card, { backgroundColor: isDark ? "#09090B" : "#FFFFFF" }]}>
 
         <Animated.View entering={FadeIn.duration(400)}>
-          <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>
-            Verify {method === "phone" ? "Mobile Number" : "Email"}
-          </Text>
-          <View style={styles.destinationRow}>
-            <Text style={[styles.subText, { color: isDark ? "#D4D4D8" : "#555" }]}>
-              Code sent to {displayDestination}
-            </Text>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Text style={[styles.editLink, { color: isDark ? "#F472B6" : "#852BAF" }]}> Edit</Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#8F2BC1" }]}>Verification Code</Text>
+          <Text style={[styles.instruction, { color: isDark ? "#FFFFFF" : "#111111" }]}>Enter the code</Text>
         </Animated.View>
 
         <Animated.View style={[styles.otpWrap, shakeStyle]}>
@@ -187,7 +186,7 @@ function OTPScreen() {
         )}
 
         <Text style={[styles.timerText, { color: isDark ? "#A1A1AA" : "#777" }]}>
-          Didn't receive a code?{" "}
+          Didn’t receive an OTP?{" "}
           {!canResend ? (
             <Text>Resend in {secondsLeft}s</Text>
           ) : resending ? (
@@ -209,43 +208,56 @@ function OTPScreen() {
           disabled={otpValues.join("").length !== OTP_LENGTH}
         />
       </View>
-    </GradientBackground>
+    </View>
   );
 }
 
 export default React.memo(OTPScreen);
 
 const styles = StyleSheet.create({
-  content: {
+  screen: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 20,
   },
-  logoWrap: {
+  illustrationWrapper: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "35%",
     alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "center",
+  },
+  backButton: {
+    position: "absolute",
+    top: 48,
+    left: 20,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  card: {
+    flex: 1,
+    marginTop: "29%",
+    borderTopLeftRadius: 36,
+    borderTopRightRadius: 36,
+    paddingHorizontal: 24,
+    paddingTop: 44,
   },
   title: {
-    fontSize: 19,
+    fontSize: 24,
     fontWeight: "700",
     textAlign: "center",
-    marginBottom: 8,
+    marginBottom: 26,
   },
-  destinationRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 24,
-  },
-  subText: {
-    fontSize: 13,
-    textAlign: "center",
-  },
-  editLink: {
-    fontSize: 13,
-    fontWeight: "700",
+  instruction: {
+    fontSize: 17,
+    marginBottom: 18,
   },
   otpWrap: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   verifyingRow: {
     flexDirection: "row",
@@ -258,9 +270,9 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   timerText: {
-    fontSize: 12,
-    textAlign: "center",
-    marginBottom: 24,
+    fontSize: 16,
+    textAlign: "right",
+    marginBottom: 26,
   },
   resend: {
     fontWeight: "600",

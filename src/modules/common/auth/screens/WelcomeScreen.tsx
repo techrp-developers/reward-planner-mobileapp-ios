@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-import Logo from "../../../../assets/homepage/login_logo.svg";
+import GiftBanner from "../../../../assets/homepage/final splash screen.svg";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import type { AuthStackParamList } from "../navigation/types";
@@ -18,16 +18,14 @@ const WelcomeScreen = () => {
 
   return (
     <View style={styles.screen}>
-      <LinearGradient
-        colors={["#F0D8FF", "#FBE7F0", "#FAF7FA"]}
-        locations={[0, 0.55, 1]}
-        style={StyleSheet.absoluteFillObject}
+      <GiftBanner
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMid slice"
+        style={styles.backgroundArtwork}
       />
 
       <View style={styles.overlay}>
-        <View style={styles.logoWrapper}>
-          <Logo width={190} height={190} />
-        </View>
         {/* Text block sits over the bottom (faded/light) part of the image */}
         <View style={styles.textWrapper}>
           <Text style={styles.title}>
@@ -67,15 +65,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgb(250,247,250)",
   },
+  backgroundArtwork: {
+    ...StyleSheet.absoluteFillObject,
+  },
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
     paddingBottom: 30,
-  },
-  logoWrapper: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
   },
   textWrapper: {
     paddingHorizontal: 24,
@@ -95,7 +91,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#6B6B6B",
     lineHeight: 19,
-        marginBottom: 32,
+    marginBottom: 32,
 
   },
   buttonWrapper: {
@@ -104,15 +100,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   button: {
+    width: "100%",
+    minHeight: 58,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 90,
+
     borderRadius: 28,
     gap: 8,
-    marginBottom: 32,
-
+    marginBottom: 0,
   },
   buttonText: {
     color: "#fff",

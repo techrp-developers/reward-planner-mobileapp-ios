@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
   },
   gradient: {
     flexDirection: "row",
-    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -114,6 +113,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "700",
+    paddingVertical: 15,
+
   },
   labelWithIcon: {
     marginLeft: 10,
@@ -122,7 +123,6 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 14,
     borderWidth: 1.5,
-    paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -130,5 +130,7 @@ const styles = StyleSheet.create({
   secondaryLabel: {
     fontSize: 15,
     fontWeight: "700",
+    paddingVertical: 14,
+
   },
 });
