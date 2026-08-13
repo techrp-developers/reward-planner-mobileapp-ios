@@ -50,7 +50,7 @@ const WelcomeScreen = () => {
             style={styles.button}
           >
             <Text style={styles.buttonText}>Get Started</Text>
-            <MaterialCommunityIcons name="chevron-forward" size={18} color="#fff" />
+            <MaterialCommunityIcons name="chevron-right" size={34} color="#FFFFFF" />
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -107,12 +107,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     borderRadius: 28,
-    gap: 8,
+    gap: 28,
     marginBottom: 0,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 22,
+    fontWeight: "700",
   },
 });

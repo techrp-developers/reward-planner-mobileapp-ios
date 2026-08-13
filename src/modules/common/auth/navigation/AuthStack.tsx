@@ -14,7 +14,7 @@ const AuthStack = React.memo(() => {
       initialRouteName="Login"
     >
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="LoginOTP" component={OTPScreen} />
+      <Stack.Screen name="OTPScreen" component={OTPScreen} />
     </Stack.Navigator>
   );
 });

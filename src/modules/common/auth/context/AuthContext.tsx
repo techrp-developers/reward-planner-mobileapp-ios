@@ -200,7 +200,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [clearLocalSession, updateAccessToken]);
 
   useEffect(() => {
+    // Do not hold the visible splash indefinitely while secure storage or a
+    // session refresh is slow. Session restoration continues in the
+    // background and updates navigation as soon as it resolves.
+    const splashDeadline = setTimeout(() => {
+      setIsInitializing(false);
+    }, 700);
+
     bootstrapSession();
+
+    return () => clearTimeout(splashDeadline);
   }, [bootstrapSession]);
 
   const logout = useCallback(async () => {
