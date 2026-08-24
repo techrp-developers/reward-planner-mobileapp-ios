@@ -10,7 +10,6 @@ import React, {
 import { setSessionHandlers } from "../api/axios";
 import {
   fetchUserInfo,
-  isOnboardingComplete,
   logout as logoutRequest,
   restoreSession as restoreAuthSession,
   VerifyOtpResponse,
@@ -100,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const syncOnboardingState = useCallback(async (payload: any) => {
     const user = extractUser(payload);
     setUser(user);
-    setTermsAccepted(isOnboardingComplete(user));
+    setTermsAccepted(Boolean((user as any)?.terms_accepted));
     return user;
   }, []);
 
@@ -156,7 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       updateAccessToken(nextAccessToken);
       await persistAccessTokenInKeychain(nextAccessToken);
       const profile = await fetchProfile();
-      setTermsAccepted(isOnboardingComplete(profile as any));
+      setTermsAccepted(Boolean((profile as any)?.terms_accepted));
     } catch (error: any) {
       const status = error?.response?.status;
 

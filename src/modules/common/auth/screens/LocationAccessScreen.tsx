@@ -11,6 +11,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import GiftBanner from "../../../../assets/homepage/login_logo.svg";
 import AuthButton from "../../components/AuthButton";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useAlert } from "../../../ecommerce/components/alerts";
 import { useAuth } from "../context/AuthContext";
 import type { AuthStackParamList } from "../navigation/types";
 
@@ -23,12 +24,9 @@ function LocationAccessScreen() {
   const route = useRoute<LocationAccessRouteProp>();
   const { isDark } = useAppTheme();
   const { authenticateWithTokens } = useAuth();
+  const alert = useAlert();
   const [requesting, setRequesting] = useState(false);
 
-  // Whether permission is granted, denied, or the request itself fails,
-  // login proceeds regardless — this screen is an onboarding ask, not a
-  // gate. RootNavigator swaps to the App/TermsGate stack automatically
-  // once authenticateWithTokens flips isAuthenticated true.
   const handleAllow = useCallback(async () => {
     setRequesting(true);
     try {
@@ -39,11 +37,16 @@ function LocationAccessScreen() {
       await request(permission);
     } catch (error) {
       if (__DEV__) console.log("[LocationAccessScreen] permission request failed", error);
-    } finally {
+    }
+
+    try {
       await authenticateWithTokens(route.params.verifyResult);
+    } catch (error) {
+      if (__DEV__) console.log("[LocationAccessScreen] authenticateWithTokens failed", error);
+      alert.error("Login Error", "Something went wrong completing sign-in. Please try again.");
       setRequesting(false);
     }
-  }, [authenticateWithTokens, route.params.verifyResult]);
+  }, [authenticateWithTokens, route.params.verifyResult, alert]);
 
   return (
     <SafeAreaView
