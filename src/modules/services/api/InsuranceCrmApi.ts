@@ -7,8 +7,7 @@
 import axios from 'axios';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
 import { attachSessionRefreshInterceptor } from '../../common/auth/api/axios';
-
-const CRM_BASE_URL = 'https://rewardplanners.com/api/crm/v1';
+import { API_V1_URL as CRM_BASE_URL } from '../../../config/apiConfig';
 
 // Axios instance shared by CRM calls and re-exported for ServiceAPI backward compat.
 export const API = axios.create({

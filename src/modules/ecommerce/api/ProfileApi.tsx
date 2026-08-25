@@ -3,7 +3,7 @@
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
 
-const API_BASE_URL = "https://rewardplanners.com/api/crm/v1";
+import { API_V1_URL as API_BASE_URL } from "../../../config/apiConfig";
 
 export type TodoPayload = {
   created_by: number;

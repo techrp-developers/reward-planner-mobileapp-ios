@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 
-const API_BASE_URL = "https://rewardplanners.com/api/crm";
+import { API_BASE_URL } from "../../../config/apiConfig";
 
 const normalizeId = (value: unknown, label: string) => {
   const parsed = Number(value);
@@ -88,8 +88,8 @@ export const removeWishlist = async (payload: {
     const status = Number(error?.response?.status || 0);
     const message = String(
       error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        ""
+      error?.response?.data?.error ||
+      ""
     ).toLowerCase();
 
     if (!payload.strict && status === 404 && message.includes("not found")) {

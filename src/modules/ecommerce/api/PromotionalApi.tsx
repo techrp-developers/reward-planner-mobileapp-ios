@@ -2,7 +2,7 @@ import axios from "axios";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import { normalizeProduct } from "../utils/normalizeProduct";
 
-const API_BASE_URL = "https://rewardplanners.com/api/crm";
+import { API_BASE_URL } from "../../../config/apiConfig";
 const DEFAULT_PAGE_SIZE = 10;
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -71,8 +71,8 @@ const normalizePromotionResponse = <T = any>(payload: any, fallbackOffset = 0): 
         typeof payload?.hasMore === "boolean"
             ? payload.hasMore
             : typeof data?.hasMore === "boolean"
-              ? data.hasMore
-              : offset + products.length < total;
+                ? data.hasMore
+                : offset + products.length < total;
 
     const basePayload = payload && typeof payload === "object" && !Array.isArray(payload) ? payload : {};
 

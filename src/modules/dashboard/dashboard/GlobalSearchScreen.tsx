@@ -21,6 +21,7 @@ import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useGlobalSearch } from "../header/useGlobalSearch";
 import HeaderComponent from "../header/HeaderComponent";
+import { API_V1_URL } from "../../../config/apiConfig";
 
 const HEADER_CACHE_TTL_MS = 10 * 60 * 1000;
 let globalSearchHeaderCache: {
@@ -66,7 +67,7 @@ function GlobalSearchScreen() {
       if (!headers.Authorization) return;
 
       const userRes = await axios.get<{ success: boolean; data: any }>(
-        "https://rewardplanners.com/api/crm/v1/auth/user-info",
+        `${API_V1_URL}/auth/user-info`,
         { headers },
       );
 

@@ -1,8 +1,7 @@
 // api/orders.ts
 import axios from "axios";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
-
-const API_BASE_URL = "https://rewardplanners.com/api/crm";
+import { API_BASE_URL } from "../../../config/apiConfig";
 
 export type CancellationReason = {
   id: number;

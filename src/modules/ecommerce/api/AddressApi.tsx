@@ -1,25 +1,24 @@
 // src/api/AddressApi.ts
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
-
-const API_BASE_URL = "https://rewardplanners.com/api/crm";
+import { API_BASE_URL } from "../../../config/apiConfig";
 
 
 export type AddToAddressPayload = {
-address_type: "home" | "work" | "other";
-address1: string;
-address2?: string;
-city: string;
-state_id?: number;
-zipcode: string;
-is_default?: number;
-landmark?: string;
-contact_name?: string;
-contact_phone?: string;
+  address_type: "home" | "work" | "other";
+  address1: string;
+  address2?: string;
+  city: string;
+  state_id?: number;
+  zipcode: string;
+  is_default?: number;
+  landmark?: string;
+  contact_name?: string;
+  contact_phone?: string;
 
-// NEW
-latitude?: number;
-longitude?: number;
+  // NEW
+  latitude?: number;
+  longitude?: number;
 };
 
 
@@ -51,30 +50,30 @@ export const fetchAllAddress = async () => {
       console.debug('No auth token available for address fetch');
       return { data: [] };
     }
-    
+
     const res = await axios.get(`${API_BASE_URL}/v1/auth/addresses`, {
       headers,
     });
     return res.data;
   } catch (error: any) {
     const status = Number(error?.response?.status || 0);
-    
+
     if (status === 401) {
       console.debug('Address fetch: Unauthorized (token may be expired)');
       await clearAuthToken();
       return { data: [] };
     }
-    
+
     if (status === 503) {
       console.debug('Address API unavailable (503), returning empty address fallback');
       return { data: [] };
     }
-    
+
     if (status >= 500) {
       console.warn('Address fetch: Server error', status);
       return { data: [] };
     }
-    
+
     console.debug('Address fetch failed:', error?.message || error);
     return { data: [] };
   }
@@ -110,7 +109,7 @@ export const fetchAddressByID = async (address_id: string | number) => {
     `${API_BASE_URL}/v1/auth/address/${address_id}`,
     { headers }
   );
-  return res.data.data; 
+  return res.data.data;
 };
 let statesCache: any[] | null = null;
 let statesRequest: Promise<{ success: boolean; data: any[] }> | null = null;

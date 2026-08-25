@@ -1,8 +1,9 @@
 import { Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import { API_V1_URL } from '../../../config/apiConfig';
 
 const APP_SETTINGS_API =
-  'https://rewardplanners.com/api/crm/v1/settings/app-settings';
+  `${API_V1_URL}/settings/app-settings`;
 
 const STORE_URLS = {
   android: 'https://play.google.com/store/apps/details?id=com.rewardsplanners',

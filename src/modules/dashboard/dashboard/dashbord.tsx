@@ -31,6 +31,7 @@ import { useAppTheme } from '../../../theme/ThemeContext';
 import BottomTabs, { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
 import BirthdayCarousel from '../birthday/BirthdayCarousel';
 import type { BirthdayEmployee } from '../birthday/types';
+import { API_V1_URL } from '../../../config/apiConfig';
 
 const MODULE_ROUTE: Record<ExploreServiceTab, string> = {
   Product: 'ProductModule',
@@ -135,7 +136,7 @@ function Dashbord() {
       if (!headers.Authorization) return;
 
       const userRes = await axios.get<{ success: boolean; data: any }>(
-        'https://rewardplanners.com/api/crm/v1/auth/user-info',
+        `${API_V1_URL}/auth/user-info`,
         { headers },
       );
 

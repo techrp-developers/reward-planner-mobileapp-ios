@@ -1,6 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "./axios";
+import { API_BASE_URL } from "../../../../config/apiConfig";
 import {
   AUTH_USER_NAME_KEY,
   clearAccessToken,

@@ -2,8 +2,7 @@
 import axios from 'axios';
 import api from '../../common/auth/api/axios';
 
-const API_BASE_URL = 'https://rewardplanners.com/api/crm';
-const IMAGE_BASE_URL = 'https://rewardplanners.com';
+import { API_BASE_URL, SERVER_URL as IMAGE_BASE_URL } from '../../../config/apiConfig';
 
 export type ImageSizePreset =
   | 'thumbnail'

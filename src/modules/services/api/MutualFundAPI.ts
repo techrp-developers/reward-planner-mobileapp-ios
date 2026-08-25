@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-export const BASE_API_URL = 'https://rewardplanners.com/api/crm/v1/';
+export {API_V1_URL_WITH_SLASH as BASE_API_URL} from '../../../config/apiConfig';
+import { API_V1_URL_WITH_SLASH as BASE_API_URL } from '../../../config/apiConfig';
 
 const api = axios.create({
   baseURL: BASE_API_URL,

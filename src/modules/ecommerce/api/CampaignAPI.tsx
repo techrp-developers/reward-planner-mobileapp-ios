@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
-const BASE_API_URL = "https://rewardplanners.com/api/crm/v1";
+import { API_V1_URL as BASE_API_URL } from "../../../config/apiConfig";
 
 /* =========================================================
    TYPES

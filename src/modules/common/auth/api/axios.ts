@@ -1,7 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { API_BASE_URL } from "./env";
-
-export { API_BASE_URL };
+import { API_BASE_URL } from "../../../../config/apiConfig";
+export { API_BASE_URL } from "../../../../config/apiConfig";
 
 type SessionHandlers = {
   getAccessToken: () => string | null;
@@ -234,15 +233,8 @@ const handleUnauthorizedResponse = async (
 
       return retryRequest({ ...originalConfig, headers: retriedHeaders });
     } catch (refreshError: any) {
-        flushQueuedRequests(refreshError, null);
-
-      // Only a definitive authentication rejection ends the session. A
-      // timeout, offline state, or 5xx must not unexpectedly show login.
-      const refreshStatus = Number(refreshError?.response?.status || 0);
-      if (refreshStatus === 401 || refreshStatus === 403) {
-        await sessionHandlers.onLogout("refresh_failed");
-      }
-
+      flushQueuedRequests(refreshError, null);
+      await sessionHandlers.onLogout("refresh_failed");
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
