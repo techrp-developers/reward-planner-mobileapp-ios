@@ -375,6 +375,7 @@ function Dashbord() {
           <MemoModuleBanner />
           <MemoRewardsOverview />
         </Pressable>
+
       </ScrollView>
 
       {searchOverlay?.visible && (
