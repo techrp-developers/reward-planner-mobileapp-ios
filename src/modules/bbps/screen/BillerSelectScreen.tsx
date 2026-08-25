@@ -59,7 +59,7 @@ const mapFlatOperatorsToSection = (operators: Operator[]): StateBillerSection[] 
 
   return [
     {
-      title: 'All Billers',
+      title: 'Available operators',
       data: billers,
     },
   ];
@@ -129,8 +129,8 @@ const BillerSelectScreenComponent = () => {
   const error = !hasValidCategoryId
     ? 'Category ID not provided'
     : queryError
-    ? 'Failed to load billers. Please try again.'
-    : null;
+      ? 'Failed to load billers. Please try again.'
+      : null;
 
   const filteredData = useMemo(
     () => filterSections(allData, searchQuery),
@@ -183,34 +183,36 @@ const BillerSelectScreenComponent = () => {
 
   // Render individual Biller Item
   const renderBillerItem = useCallback(
-    ({ item, index, section }: { item: Biller; index: number; section: StateBillerSection }) => (
+    ({ item }: { item: Biller }) => (
       <TouchableOpacity
-        activeOpacity={0.7}
+        activeOpacity={0.78}
         style={[
           styles.billerItemRow,
           {
             backgroundColor: bbpsTheme.colors.surface,
-            borderColor: bbpsTheme.colors.borderSoft,
-            borderBottomColor: bbpsTheme.colors.divider,
+            borderColor: bbpsTheme.colors.border,
             shadowColor: bbpsTheme.colors.shadow,
           },
-          index === section.data.length - 1 && styles.lastBillerItemRow,
-          index === section.data.length - 1 && { borderBottomColor: bbpsTheme.colors.borderSoft },
         ]}
         onPress={() => handleBillerPress(item)}
       >
-          <LinearGradient
-          colors={bbpsTheme.gradients.primary}
+        <LinearGradient
+          colors={bbpsTheme.isDark ? ['#44305E', '#322142'] : ['#F1E7FA', '#E5D4F3']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.logoPlaceholder}
         >
-          <Text style={styles.logoInitial}>{item.name.charAt(0).toUpperCase()}</Text>
+          <Text style={[styles.logoInitial, { color: bbpsTheme.isDark ? '#F1DEFF' : '#704096' }]}>{item.name.charAt(0).toUpperCase()}</Text>
         </LinearGradient>
-        <Text style={[styles.billerNameText, { color: bbpsTheme.colors.text }]} numberOfLines={2}>
-          {item.name}
-        </Text>
-        <MaterialIcons name="chevron-right" size={22} color={bbpsTheme.colors.subtle} />
+        <View style={styles.billerTextBlock}>
+          <Text style={[styles.billerNameText, { color: bbpsTheme.colors.text }]} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={[styles.billerHintText, { color: bbpsTheme.colors.muted }]}>Select to view bill details</Text>
+        </View>
+        <View style={[styles.rowAction, { backgroundColor: bbpsTheme.colors.iconBg }]}>
+          <MaterialIcons name="arrow-forward" size={17} color={bbpsTheme.colors.primary} />
+        </View>
       </TouchableOpacity>
     ),
     [handleBillerPress, bbpsTheme]
@@ -222,11 +224,13 @@ const BillerSelectScreenComponent = () => {
       <View
         style={[
           styles.stateHeaderContainer,
-          { backgroundColor: bbpsTheme.isDark ? '#18112A' : '#F3EFFF' },
+          { backgroundColor: bbpsTheme.colors.background },
         ]}
       >
-        <View style={[styles.stateHeaderAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
-        <Text style={[styles.stateHeaderText, { color: bbpsTheme.colors.primary }]}>{title}</Text>
+        <View>
+          <Text style={[styles.stateHeaderText, { color: bbpsTheme.colors.textStrong }]}>{title}</Text>
+          <Text style={[styles.stateHeaderSubtext, { color: bbpsTheme.colors.muted }]}>Choose your service provider</Text>
+        </View>
       </View>
     ),
     [bbpsTheme]
@@ -263,7 +267,7 @@ const BillerSelectScreenComponent = () => {
       />
 
       {/* Search Input Area */}
-      <View style={[styles.searchContainer, { backgroundColor: bbpsTheme.colors.surface }]}>
+      <View style={[styles.searchContainer, { backgroundColor: bbpsTheme.colors.background }]}>
         {loading ? (
           <SkeletonBox pulse={pulse} width="100%" height={52} borderRadius={12} />
         ) : (
@@ -280,7 +284,7 @@ const BillerSelectScreenComponent = () => {
             <MaterialIcons name="search" size={24} color={bbpsTheme.colors.muted} style={styles.searchIcon} />
             <TextInput
               style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
-              placeholder="Search by biller name or State"
+              placeholder="Search operators"
               placeholderTextColor={bbpsTheme.colors.subtle}
               value={searchQuery}
               onChangeText={handleSearch}
@@ -347,10 +351,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FE',
   },
   searchContainer: {
-    backgroundColor: '#FFF',
     paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 14,
+    paddingTop: 18,
+    paddingBottom: 8,
   },
   searchBar: {
     flexDirection: 'row',
@@ -358,11 +361,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderWidth: 1,
     borderColor: '#ECE7FF',
-    borderRadius: 14,
+    borderRadius: 16,
     paddingHorizontal: 14,
     height: 52,
     shadowColor: '#5B47A3',
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 10,
     elevation: 2,
@@ -377,7 +380,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 20,
+    paddingBottom: 28,
   },
   skeletonRow: {
     backgroundColor: '#FFF',
@@ -399,67 +402,53 @@ const styles = StyleSheet.create({
   stateHeaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3EFFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    marginTop: 14,
-    borderTopLeftRadius: 14,
-    borderTopRightRadius: 14,
-    gap: 8,
-  },
-  stateHeaderAccent: {
-    width: 4,
-    height: 14,
-    borderRadius: 2,
-    backgroundColor: '#8665FF',
+    justifyContent: 'space-between',
+    paddingHorizontal: 2,
+    paddingTop: 18,
+    paddingBottom: 13,
   },
   stateHeaderText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#5B47A3',
-    letterSpacing: 0.2,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: -0.2,
   },
+  stateHeaderSubtext: { fontSize: 11.5, fontWeight: '500', marginTop: 3 },
   billerItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#EEECFB',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F1FC',
+    paddingHorizontal: 13,
+    paddingVertical: 12,
+    gap: 13,
+    borderWidth: 1,
+    borderRadius: 17,
+    marginBottom: 10,
     shadowColor: '#5B47A3',
-    shadowOpacity: 0.04,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-  },
-  lastBillerItemRow: {
-    borderBottomColor: '#EEECFB',
-    borderBottomLeftRadius: 14,
-    borderBottomRightRadius: 14,
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 7,
+    elevation: 2,
   },
   logoPlaceholder: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   logoInitial: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 19,
+    fontWeight: '800',
   },
+  billerTextBlock: { flex: 1, minWidth: 0 },
   billerNameText: {
-    flex: 1,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#1F2937',
-    lineHeight: 18,
+    lineHeight: 19,
   },
+  billerHintText: { fontSize: 10.5, fontWeight: '500', marginTop: 4 },
+  rowAction: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
