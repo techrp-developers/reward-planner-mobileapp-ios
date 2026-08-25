@@ -85,12 +85,9 @@ const defaultScreenOptions = {
 
 function AuthNavigator() {
   return (
-    <AuthStack.Navigator screenOptions={defaultScreenOptions} initialRouteName="Welcome">
-      <AuthStack.Screen name="Welcome" component={WelcomeScreen} />
+    <AuthStack.Navigator screenOptions={defaultScreenOptions}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="OTPScreen" component={OTPScreen} />
-      <AuthStack.Screen name="LocationAccess" component={LocationAccessScreen} />
-      <AuthStack.Screen name="Onboarding" component={OnboardingScreen} />
+      <AuthStack.Screen name="LoginOTP" component={OTPScreen} />
     </AuthStack.Navigator>
   );
 }

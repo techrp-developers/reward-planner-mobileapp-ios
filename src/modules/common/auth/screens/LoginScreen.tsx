@@ -1,210 +1,233 @@
-import React, { useCallback, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { useState, useCallback } from "react";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-
-import GiftBanner from "../../../../assets/homepage/login_logo.svg";
-import AuthButton from "../../components/AuthButton";
-import AuthTextInput from "../../components/AuthTextInput";
-import { useAppTheme } from "../../../../theme/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useAuth } from "../context/AuthContext";
 import { useAlert } from "../../../ecommerce/components/alerts";
-import { checkIdentifier, sendOtp } from "../api/AuthAPI";
-import { parseIdentifier } from "../utils/validators";
+import Logo from "../../../../assets/homepage/login_logo.svg";
 import type { AuthStackParamList } from "../navigation/types";
+import {
+  getLoginIdentifierKeyboardType,
+  parseLoginIdentifier,
+} from "../utils/loginIdentifier";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 
-type Nav = NativeStackNavigationProp<AuthStackParamList, "Login">;
+type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
 
-function LoginScreen() {
-  const navigation = useNavigation<Nav>();
-  const { height } = useWindowDimensions();
+export default function LoginScreen({ navigation }: Props) {
+  const { requestLoginOtp, loading } = useAuth();
   const { isDark } = useAppTheme();
   const alert = useAlert();
-
   const [identifier, setIdentifier] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = useCallback(async () => {
-    const parsed = parseIdentifier(identifier);
-
-    if (parsed.kind === "unknown") {
-      setError("Enter a valid email address or 10-digit mobile number.");
-      return;
-    }
-
-    setError(null);
-    setSubmitting(true);
-
+  const onLogin = useCallback(async () => {
     try {
-      const checkResult = await checkIdentifier(parsed.normalized);
+      const parsedIdentifier = parseLoginIdentifier(identifier);
 
-      if (!checkResult.registered) {
-        alert.warning("Not Registered", "We couldn't find an account for this email or phone number.");
+      if (parsedIdentifier.kind === "empty") {
+        alert.error("Login Error", "Please enter your email address or phone number");
         return;
       }
 
-      await sendOtp(parsed.normalized);
-
-      navigation.navigate("OTPScreen", {
-        method: checkResult.type ?? parsed.kind,
-        destination: parsed.normalized,
-      });
-    } catch (err: any) {
-      if (__DEV__) console.log("[LoginScreen] login failed", { identifier: parsed.normalized, err });
-
-      const status = err?.response?.status;
-      if (status === 404) {
-        alert.warning("Not Registered", "We couldn't find an account for this email or phone number.");
-      } else if (!err?.response) {
-        alert.error("Network Error", "Please check your connection and try again.");
-      } else {
-        alert.error(
-          "Couldn't Send Code",
-          err?.response?.data?.message || "Something went wrong. Please try again.",
-        );
+      if (parsedIdentifier.kind === "invalid") {
+        alert.error("Login Error", "Enter a valid email address or 10-digit phone number");
+        return;
       }
-    } finally {
-      setSubmitting(false);
+
+      await requestLoginOtp(parsedIdentifier.normalized);
+      navigation.navigate("LoginOTP", { identifier: parsedIdentifier.normalized });
+    } catch (error: any) {
+      const data = error?.response?.data;
+
+      const message = data?.message || "Unable to send the login code";
+
+      alert.error("Login Error", String(message));
     }
-  }, [identifier, alert, navigation]);
+  }, [identifier, requestLoginOtp, navigation, alert]);
 
   return (
     <SafeAreaView
-      edges={["top", "left", "right", "bottom"]}
       style={[styles.screen, { backgroundColor: isDark ? "#09090B" : "#F5F0FF" }]}
+      edges={["left", "right", "top"]}
     >
       <KeyboardAvoidingView
-        style={styles.screen}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardWrap}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-      <View style={[styles.illustrationWrapper, { height: height * 0.35 }]}>
-        <GiftBanner width={278} height={209} />
-      </View>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.logoWrap}>
+            <Logo width={180} height={180} />
+          </View>
 
-      <TouchableOpacity
-        style={[styles.backButton, { backgroundColor: isDark ? "#18181B" : "#FFFFFF" }]}
-        onPress={() => navigation.goBack()}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-        hitSlop={12}
-      >
-        <MaterialCommunityIcons name="chevron-left" size={22} color={isDark ? "#FFFFFF" : "#1F2937"} />
-      </TouchableOpacity>
+          <View style={[styles.card, { backgroundColor: isDark ? "#111113" : "#FFFFFF" }]}>
+            <Text style={[styles.title, { color: isDark ? "#FFFFFF" : "#852BAF" }]}>Login to Your Account</Text>
 
-      <ScrollView
-        style={[
-          styles.card,
-          { backgroundColor: isDark ? "#09090B" : "#FFFFFF", marginTop: height * 0.35 },
-        ]}
-        contentContainerStyle={styles.cardContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.title}>
-          <Text style={styles.titlePurple}>Reward </Text>
-          <Text style={styles.titlePink}>Planners</Text>
-        </Text>
-        <Text style={[styles.subtitle, { color: isDark ? "#A1A1AA" : "#6B7280" }]}>
-          Login to your account
-        </Text>
+            <View style={styles.identifierGroup}>
+              <View
+                style={[
+                  styles.inputWrap,
+                  {
+                    backgroundColor: isDark ? "#18181B" : "#F8F8F8",
+                    borderColor: isDark ? "rgba(255,255,255,0.10)" : "#EEE",
+                  },
+                ]}
+              >
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={18}
+                  color={isDark ? "#A1A1AA" : "#999"}
+                  style={styles.inputIcon}
+                />
 
-        <View style={styles.inputSpacing}>
-          <AuthTextInput
-            icon="account-outline"
-            placeholder="Email Address/Phone Number"
-            value={identifier}
-            onChangeText={(value) => {
-              setIdentifier(value);
-              if (error) setError(null);
-            }}
-            keyboardType="email-address"
-            error={error ?? undefined}
-            autoFocus
-          />
-        </View>
+                <TextInput
+                  placeholder="Email Address or Phone Number"
+                  placeholderTextColor={isDark ? "#71717A" : "#999"}
+                  autoCapitalize="none"
+                  keyboardType={getLoginIdentifierKeyboardType(identifier)}
+                  style={[styles.input, { color: isDark ? "#FFFFFF" : "#333" }]}
+                  value={identifier}
+                  onChangeText={setIdentifier}
+                />
+              </View>
 
-        <AuthButton
-          label="Log in"
-          onPress={handleLogin}
-          loading={submitting}
-          disabled={!identifier.trim()}
-          icon={<MaterialCommunityIcons name="login" size={21} color="#FFFFFF" />}
-        />
-      </ScrollView>
+              <Text style={[styles.helperText, { color: isDark ? "#A1A1AA" : "#777" }]}>
+                Registered email or mobile number
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={onLogin}
+              disabled={loading}
+            >
+              <LinearGradient
+                colors={["#FC8BAD", "#A654CD"]}
+                start={{ x: 1, y: 0 }}
+                end={{ x: 0, y: 0 }}
+                style={styles.loginBtn}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.loginText}>Send Login Code</Text>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-export default React.memo(LoginScreen);
-
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  illustrationWrapper: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
+  keyboardWrap: {
+    flex: 1,
   },
-  backButton: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  logoWrap: {
     alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-    elevation: 2,
-    shadowColor: "#5B2677",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.14,
-    shadowRadius: 8,
+    marginTop: 20,
   },
   card: {
-    flex: 1,
-    borderTopLeftRadius: 36,
-    borderTopRightRadius: 36,
-    shadowColor: "#6B278D",
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.08,
-    shadowRadius: 14,
-    elevation: 5,
-  },
-  cardContent: {
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
     paddingHorizontal: 24,
-    paddingTop: 22,
-    paddingBottom: 36,
-    alignItems: "center",
+    paddingTop: 30,
+    paddingBottom: "100%",
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "700",
-    textAlign: "center",
-    marginBottom: 6,
-    textShadowColor: "rgba(133,43,175,0.12)",
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 5,
+    color: "#852BAF",
+    marginBottom: 20,
   },
-  titlePurple: {
-    color: "#7B2CBF",
+  inputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 15,
+    height: 48,
   },
-  titlePink: {
-    color: "#EC4899",
+  identifierGroup: {
+    marginBottom: 8,
   },
-  subtitle: {
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
     fontSize: 14,
-    marginBottom: 38,
   },
-  inputSpacing: {
-    width: "100%",
-    marginBottom: 30,
+  helperText: {
+    marginTop: -8,
+    marginBottom: 0,
+    fontSize: 12,
+    color: "#777",
+  },
+  loginBtn: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  loginText: {
+    color: "#FFF",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  bottomWrap: {
+    borderTopWidth: 1,
+    paddingTop: 16,
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  bottomText: {
+    fontSize: 13,
+    color: "#666",
+  },
+  signUp: {
+    color: "#7B2CBF",
+    fontWeight: "bold",
+    paddingVertical: 4,
+  },
+  forgotWrap: {
+    alignSelf: "flex-end",
+    marginBottom: 16,
+    marginTop: -6,
+  },
+  forgotText: {
+    fontSize: 13,
+    color: "#A654CD",
+    fontWeight: "600",
   },
 });
