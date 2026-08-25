@@ -16,6 +16,7 @@ type LogoutConfirmationModalProps = {
   confirmText?: string;
   loadingText?: string;
   danger?: boolean;
+  showCancel?: boolean;
 };
 
 const LogoutConfirmationModalComponent = ({
@@ -31,6 +32,7 @@ const LogoutConfirmationModalComponent = ({
   confirmText = "Yes, Logout",
   loadingText = "Logging out...",
   danger = false,
+  showCancel = true,
 }: LogoutConfirmationModalProps) => {
   const handleConfirm = useCallback(() => {
     onConfirm();
@@ -86,24 +88,26 @@ const LogoutConfirmationModalComponent = ({
           {/* Button Row */}
           <View style={styles.buttonRow}>
             {/* Cancel Button */}
-            <TouchableOpacity
-              activeOpacity={0.8}
-              onPress={handleCancel}
-              disabled={isLoading}
-              style={styles.cancelButtonContainer}
-            >
-              <View
-                style={[
-                  styles.cancelBtn,
-                  {
-                    backgroundColor: isDark ? "#18181B" : "#F9F9F9",
-                    borderColor: isDark ? "rgba(255,255,255,0.10)" : "#E5E5E5",
-                  },
-                ]}
+            {showCancel ? (
+              <TouchableOpacity
+                activeOpacity={0.8}
+                onPress={handleCancel}
+                disabled={isLoading}
+                style={styles.cancelButtonContainer}
               >
-                <Text style={[styles.cancelBtnText, { color: isDark ? "#E5E7EB" : "#666666" }]}>Cancel</Text>
-              </View>
-            </TouchableOpacity>
+                <View
+                  style={[
+                    styles.cancelBtn,
+                    {
+                      backgroundColor: isDark ? "#18181B" : "#F9F9F9",
+                      borderColor: isDark ? "rgba(255,255,255,0.10)" : "#E5E5E5",
+                    },
+                  ]}
+                >
+                  <Text style={[styles.cancelBtnText, { color: isDark ? "#E5E7EB" : "#666666" }]}>Cancel</Text>
+                </View>
+              </TouchableOpacity>
+            ) : null}
 
             {/* Confirm Button with Gradient */}
             <TouchableOpacity

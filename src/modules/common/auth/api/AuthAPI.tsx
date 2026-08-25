@@ -194,12 +194,24 @@ export const fetchUserInfo = async () => {
   }
 };
 
-export const deleteCustomer = async () => {
+export type DeleteCustomerResponse = {
+  success: boolean;
+  status?: string;
+  message: string;
+  data?: {
+    gracePeriodDays: number;
+    deletionRequestedAt: string;
+    permanentDeletionAt: string;
+  };
+};
+
+export const deleteCustomer = async (): Promise<DeleteCustomerResponse> => {
   try {
     const res = await api.delete("/v1/auth/delete-customer");
+
     return res.data;
   } catch (error) {
-    console.error("Delete customer API failed", error);
+    console.error('Delete customer API failed', error);
     throw error;
   }
 };

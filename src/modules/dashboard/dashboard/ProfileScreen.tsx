@@ -116,6 +116,12 @@ const ProfileScreen: React.FC = () => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletionScheduled, setDeletionScheduled] = useState<{
+    deadline: string;
+    gracePeriodDays: number;
+  } | null>(null);
+  const [deletionExitLoading, setDeletionExitLoading] = useState(false);
+
 
   const topPadding =
     (insets.top > 0 ? insets.top : Platform.OS === 'android' ? 24 : 50) + 8;
@@ -206,10 +212,21 @@ const ProfileScreen: React.FC = () => {
     try {
       setDeleteLoading(true);
       const res = await deleteCustomer();
-      if (res?.success || res?.status === 'ok' || res?.data) {
-        await logout();
+      if (res?.success) {
+        const gracePeriodDays = res?.data?.gracePeriodDays ?? 30;
+        const deletionDeadline = res?.data?.permanentDeletionAt
+          ? `on ${new Date(res.data.permanentDeletionAt).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+          })}`
+          : `after ${gracePeriodDays} days`;
+
         setDeleteModalVisible(false);
-        rootNavigation?.reset({ index: 0, routes: [{ name: 'Auth' }] });
+        setDeletionScheduled({
+          deadline: deletionDeadline,
+          gracePeriodDays,
+        });
       } else {
         Alert.alert('Failed', 'Could not delete account. Please try again.');
       }
@@ -218,7 +235,19 @@ const ProfileScreen: React.FC = () => {
     } finally {
       setDeleteLoading(false);
     }
+  }, []);
+
+  const handleDeletionScheduledAcknowledge = useCallback(async () => {
+    try {
+      setDeletionExitLoading(true);
+      await logout();
+    } finally {
+      setDeletionScheduled(null);
+      setDeletionExitLoading(false);
+      rootNavigation?.reset({ index: 0, routes: [{ name: 'Auth' }] });
+    }
   }, [logout, rootNavigation]);
+
 
   // ── Rate us ───────────────────────────────────────────────────────────────
   const handleRateUs = useCallback(async () => {
@@ -499,7 +528,7 @@ const ProfileScreen: React.FC = () => {
 
           <View style={[styles.dangerCard, cardColor(isDark, theme)]}>
             <AccountRow icon="logout" label="Log Out" isDark={isDark} theme={theme} danger onPress={() => setLogoutModalVisible(true)} />
-            <AccountRow icon="delete-outline" label="Delete Account" sub="This action cannot be undone" isDark={isDark} theme={theme} danger last onPress={handleDeleteAccount} />
+            <AccountRow icon="delete-outline" label="Delete Account" sub="30-day recovery period" isDark={isDark} theme={theme} danger last onPress={handleDeleteAccount} />
           </View>
 
           {/* ════════════════════════════════════
@@ -531,12 +560,26 @@ const ProfileScreen: React.FC = () => {
         danger
         icon="delete-outline"
         title="Delete Account"
-        description="Are you sure you want to permanently delete your account?"
-        subText="This action cannot be undone."
-        confirmText="Delete Account"
-        loadingText="Deleting..."
+        description="Schedule your account for permanent deletion?"
+        subText="Your account and data will be retained for 30days. Logging in during this period will restore your account."
+        confirmText="Schedule Deletion"
+        loadingText="Scheduling..."
         onConfirm={handleDeleteAccountConfirm}
         onCancel={() => setDeleteModalVisible(false)}
+      />
+      <LogoutConfirmationModal
+        visible={deletionScheduled !== null}
+        isLoading={deletionExitLoading}
+        isDark={isDark}
+        icon="calendar-check-outline"
+        title="Deletion Scheduled"
+        description={`Your account will be permanently deleted ${deletionScheduled?.deadline ?? 'after 30 days'}.`}
+        subText={`Changed your mind? Log in again within ${deletionScheduled?.gracePeriodDays ?? 30} days to restore your account and all retained data.`}
+        confirmText="Got It"
+        loadingText="Signing out..."
+        showCancel={false}
+        onConfirm={handleDeletionScheduledAcknowledge}
+        onCancel={handleDeletionScheduledAcknowledge}
       />
     </LinearGradient>
   );
