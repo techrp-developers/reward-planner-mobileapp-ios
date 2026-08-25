@@ -4,10 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FASTagRecharge from '../../assets/BBPS_Service/FASTagRecharge.svg';
 import Electricity from '../../assets/BBPS_Service/Electricity.svg';
-import Water from '../../assets/BBPS_Service/Water.svg';
-import Landline from '../../assets/BBPS_Service/LandLine.svg';
-import Broadband from '../../assets/BBPS_Service/Broadband.svg';
-import DTH from '../../assets/BBPS_Service/DTH.svg';
+import Recharge from '../../assets/BBPS_Service/Recharge.svg';
 import Credit from '../../assets/BBPS_Service/Creadit.svg';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
 
@@ -28,14 +25,11 @@ type ServiceItemProps = {
 };
 
 const SERVICES: Service[] = [
+  { id: 'mobile-prepaid', label: 'Mobile Prepaid', icon: Recharge },
+  { id: 'mobile-postpaid', label: 'Mobile Postpaid', icon: Recharge },
   { id: 'electricity', label: 'Electricity', icon: Electricity },
-  { id: 'water', label: 'Water', icon: Water },
   { id: 'credit-card', label: 'Credit Card Payment', icon: Credit },
-  { id: 'dth', label: 'DTH', icon: DTH },
-  { id: 'landline', label: 'Landline Postpaid', icon: Landline },
-  { id: 'broadband', label: 'Broadband Postpaid', icon: Broadband },
   { id: 'fastag', label: 'FASTag Recharge', icon: FASTagRecharge },
-  { id: 'view-more', label: 'View More', iconName: 'add' },
 ];
 
 const ServiceItem = ({ icon, iconName, label, onPress, bbpsTheme }: ServiceItemProps) => (

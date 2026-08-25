@@ -1,8 +1,7 @@
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
 import { apiClient, NormalizedApiError } from "./apiClient";
-
-const API_BASE_URL = "https://rewardplanners.com/api/crm";
+import { API_BASE_URL } from '../../../config/apiConfig';
 
 export interface BillCategory {
   operator_category_name: string;
@@ -10,6 +9,26 @@ export interface BillCategory {
   operator_category_group: string;
   status: string;
 }
+
+export const ENABLED_BBPS_CATEGORY_NAMES = [
+  "Mobile Prepaid",
+  "Mobile Postpaid",
+  "Credit Card",
+  "Electricity",
+  "FASTag",
+] as const;
+
+const normalizeBbpsCategoryName = (value: string) =>
+  String(value || "").trim().toLowerCase().replace(/[\s_-]+/g, " ");
+
+const ENABLED_BBPS_CATEGORY_SET = new Set(
+  ENABLED_BBPS_CATEGORY_NAMES.map(normalizeBbpsCategoryName),
+);
+
+export const isEnabledBbpsCategory = (category: BillCategory) =>
+  ENABLED_BBPS_CATEGORY_SET.has(
+    normalizeBbpsCategoryName(category?.operator_category_name),
+  );
 
 export interface BillLocation {
   operator_location_name: string;
@@ -30,9 +49,11 @@ export interface Operator {
 export const fetchBillsCategories = async (): Promise<BillCategory[]> => {
   try {
     const res = await axios.get(`${API_BASE_URL}/v1/bills/categories`);
-    return Array.isArray(res.data?.data) ? res.data.data : [];
+    return Array.isArray(res.data?.data)
+      ? res.data.data.filter(isEnabledBbpsCategory)
+      : [];
   } catch (error: any) {
-    console.error("Fetch Categories Error:", error?.response?.data || error);
+    if (__DEV__) { console.error("Fetch Categories Error:", error?.response?.data || error); }
     throw error;
   }
 };
@@ -42,10 +63,7 @@ export const fetchBillLocations = async (): Promise<BillLocation[]> => {
     const res = await axios.get(`${API_BASE_URL}/v1/bills/locations`);
     return Array.isArray(res.data?.data) ? res.data.data : [];
   } catch (error: any) {
-    console.error(
-      "Fetch Locations Error:",
-      error?.response?.data || error
-    );
+    if (__DEV__) { console.error("Fetch Locations Error:", error?.response?.data || error); }
     throw error;
   }
 };
@@ -68,10 +86,7 @@ export const fetchOperators = async (
 
     return Array.isArray(res.data?.data) ? res.data.data : [];
   } catch (error: any) {
-    console.error(
-      "Fetch Operators Error:",
-      error?.response?.data || error
-    );
+    if (__DEV__) { console.error("Fetch Operators Error:", error?.response?.data || error); }
     throw error;
   }
 };
@@ -109,7 +124,7 @@ export const fetchOperatorDetails = async (
       data: Array.isArray(res.data?.data) ? res.data.data : [],
     };
   } catch (error: any) {
-    console.error("Operator Details Error:", error?.response?.data || error);
+    if (__DEV__) { console.error("Operator Details Error:", error?.response?.data || error); }
     throw error;
   }
 };
@@ -215,10 +230,7 @@ export const fetchRechargePlans = async (
       } as RechargePlansResponse,
     };
   } catch (error: any) {
-    console.error(
-      'Recharge Plans Error:',
-      error?.response?.data || error
-    );
+    if (__DEV__) { console.error('Recharge Plans Error:', error?.response?.data || error); }
 
     throw error?.response?.data || error;
   }
@@ -315,7 +327,7 @@ export const createBillPayOrder = async (
       return error as NormalizedApiError;
     }
 
-    console.error("Create Bill Pay Order Error:", error);
+    if (__DEV__) { console.error("Create Bill Pay Order Error:", error); }
     return {
       success: false,
       status: null,
@@ -341,11 +353,12 @@ export const verifyBillPayPayment = async (
 
     return res.data;
   } catch (error: any) {
-    console.error("Verify Bill Pay Payment Error:", error);
-    throw {
-      ...error,
-      ...(error?.error && typeof error.error === "object" ? error.error : {}),
-    };
+    if (error?.response?.status === 401) {
+      await clearAuthToken();
+    }
+
+    if (__DEV__) { console.error("Verify Bill Pay Payment Error:", error?.response?.data || error); }
+    throw error?.response?.data || error;
   }
 };
 
@@ -364,8 +377,12 @@ export const checkBillTransactionStatus = async (
 
     return res.data;
   } catch (error: any) {
-    console.error("Check Bill Status Error:", error);
-    throw error;
+    if (error?.response?.status === 401) {
+      await clearAuthToken();
+    }
+
+    if (__DEV__) { console.error("Check Bill Status Error:", error?.response?.data || error); }
+    throw error?.response?.data || error;
   }
 };
 
