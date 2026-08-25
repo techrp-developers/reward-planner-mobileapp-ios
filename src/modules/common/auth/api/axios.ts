@@ -6,7 +6,10 @@ export { API_BASE_URL };
 type SessionHandlers = {
   getAccessToken: () => string | null;
   getRefreshToken: () => Promise<string | null>;
-  onAccessTokenRefresh: (nextAccessToken: string) => Promise<void> | void;
+  onSessionRefresh: (
+    nextAccessToken: string,
+    nextRefreshToken: string,
+  ) => Promise<void> | void;
   onLogout: (reason: "refresh_failed" | "missing_refresh") => Promise<void> | void;
 };
 
@@ -215,12 +218,13 @@ const handleUnauthorizedResponse = async (
       });
 
       const nextAccessToken = (refreshResponse.data as any)?.accessToken;
+      const nextRefreshToken = (refreshResponse.data as any)?.refreshToken;
 
-      if (!nextAccessToken) {
-        throw new Error("Refresh endpoint did not return access token");
+      if (!nextAccessToken || !nextRefreshToken) {
+        throw new Error("Refresh endpoint did not return a complete token pair");
       }
 
-      await sessionHandlers.onAccessTokenRefresh(nextAccessToken);
+      await sessionHandlers.onSessionRefresh(nextAccessToken, nextRefreshToken);
       flushQueuedRequests(null, nextAccessToken);
 
       const retriedHeaders = {
@@ -229,9 +233,16 @@ const handleUnauthorizedResponse = async (
       };
 
       return retryRequest({ ...originalConfig, headers: retriedHeaders });
-    } catch (refreshError) {
-      flushQueuedRequests(refreshError, null);
-      await sessionHandlers.onLogout("refresh_failed");
+    } catch (refreshError: any) {
+        flushQueuedRequests(refreshError, null);
+
+      // Only a definitive authentication rejection ends the session. A
+      // timeout, offline state, or 5xx must not unexpectedly show login.
+      const refreshStatus = Number(refreshError?.response?.status || 0);
+      if (refreshStatus === 401 || refreshStatus === 403) {
+        await sessionHandlers.onLogout("refresh_failed");
+      }
+
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
