@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
+  Linking,
+  Modal,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -88,7 +91,19 @@ const getStatusStyle = (status: string) => {
   }
 };
 
-const TicketCard = ({ item, isDark }: { item: SupportTicket; isDark: boolean }) => {
+const isImageAttachment = (url?: string) =>
+  Boolean(url && /\.(jpe?g|png|webp)(?:\?|$)/i.test(url));
+
+
+const TicketCard = ({
+  item,
+  isDark,
+  onPreviewImage,
+}: {
+  item: SupportTicket;
+  isDark: boolean;
+  onPreviewImage: (url: string) => void;
+}) => {
   const statusStyle = getStatusStyle(item.status);
 
   return (
@@ -127,6 +142,57 @@ const TicketCard = ({ item, isDark }: { item: SupportTicket; isDark: boolean }) 
       >
         {item.description || "No description added for this ticket."}
       </Text>
+
+      <View style={styles.contextRow}>
+        <View style={[styles.contextPill, isDark && darkStyles.contextPill]}>
+          <MaterialCommunityIcons
+            name={item.support_module === 'services' ? 'briefcase-outline' : item.support_module === 'ecommerce' ? 'shopping-outline' : item.support_module === 'bbps' ? 'receipt-text-outline' : item.support_module === 'step_counter' ? 'walk' : 'help-circle-outline'}
+            size={14}
+            color="#7C3AED"
+          />
+          <Text style={[styles.contextPillText, isDark && darkStyles.secondaryText]}>
+            {item.support_module === 'ecommerce' ? 'Shopping' : item.support_module === 'services' ? 'Services' : item.support_module === 'bbps' ? 'Bills & recharge' : item.support_module === 'step_counter' ? 'Step counter' : 'General'}
+          </Text>
+        </View>
+        {item.reference_type === 'order' && item.reference_label ? (
+          <View style={[styles.contextPill, isDark && darkStyles.contextPill]}>
+            <MaterialCommunityIcons name="package-variant-closed" size={14} color="#7C3AED" />
+            <Text style={[styles.contextPillText, isDark && darkStyles.secondaryText]}>
+              Order #{item.reference_label}
+            </Text>
+          </View>
+        ) : null}
+      </View>
+
+      {item.attachment_url && isImageAttachment(item.attachment_url) ? (
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={styles.imageAttachment}
+          onPress={() => onPreviewImage(item.attachment_url!)}
+        >
+          <Image
+            source={{ uri: item.attachment_url }}
+            style={styles.imageAttachmentPreview}
+            resizeMode="cover"
+          />
+          <View style={styles.imageAttachmentOverlay}>
+            <MaterialCommunityIcons name="magnify-plus-outline" size={18} color="#FFFFFF" />
+            <Text style={styles.imageAttachmentLabel}>View image</Text>
+          </View>
+        </TouchableOpacity>
+      ) : item.attachment_url ? (
+        <TouchableOpacity
+          activeOpacity={0.82}
+          style={[styles.attachmentLink, isDark && darkStyles.contextPill]}
+          onPress={() => Linking.openURL(item.attachment_url!)}
+        >
+          <MaterialCommunityIcons name="paperclip" size={16} color="#7C3AED" />
+          <Text style={[styles.attachmentLinkText, isDark && darkStyles.secondaryText]}>
+            View attachment
+          </Text>
+          <MaterialCommunityIcons name="open-in-new" size={14} color="#7C3AED" />
+        </TouchableOpacity>
+      ) : null}
 
       <View style={styles.ticketMetaRow}>
         <View style={styles.metaGroup}>
@@ -204,6 +270,7 @@ export default function MyTickets({ navigation }: any) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<TicketFilter>("all");
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   const loadTickets = useCallback(async (showLoader = true) => {
     try {
@@ -287,7 +354,13 @@ export default function MyTickets({ navigation }: any) {
       <FlatList
         data={filteredTickets}
         keyExtractor={(item) => String(item.ticket_id)}
-        renderItem={({ item }) => <TicketCard item={item} isDark={isDark} />}
+        renderItem={({ item }) => (
+          <TicketCard
+            item={item}
+            isDark={isDark}
+            onPreviewImage={setPreviewImageUrl}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -371,6 +444,33 @@ export default function MyTickets({ navigation }: any) {
           )
         }
       />
+
+      <Modal
+        visible={Boolean(previewImageUrl)}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setPreviewImageUrl(null)}
+      >
+        <View style={styles.previewModal}>
+          <TouchableOpacity
+            accessibilityLabel="Close image preview"
+            activeOpacity={0.8}
+            style={styles.previewCloseButton}
+            onPress={() => setPreviewImageUrl(null)}
+          >
+            <MaterialCommunityIcons name="close" size={28} color="#FFFFFF" />
+          </TouchableOpacity>
+          {previewImageUrl ? (
+            <Image
+              source={{ uri: previewImageUrl }}
+              style={styles.fullImagePreview}
+              resizeMode="contain"
+            />
+          ) : null}
+        </View>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -572,6 +672,63 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#7B728B",
   },
+
+  contextRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
+  },
+
+  contextPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#F5F3FF',
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+
+  contextPillText: {
+    color: '#5B21B6',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  attachmentLink: {
+    alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: 6,
+    marginTop: 10, paddingHorizontal: 10, paddingVertical: 8, borderRadius: 10,
+    backgroundColor: '#F5F3FF', borderWidth: 1, borderColor: '#E9D5FF',
+  },
+  attachmentLinkText: { color: '#5B21B6', fontSize: 12, fontWeight: '700' },
+  imageAttachment: {
+    height: 150,
+    marginTop: 12,
+    borderRadius: 14,
+    overflow: 'hidden',
+    backgroundColor: '#F1F5F9',
+  },
+  imageAttachmentPreview: { width: '100%', height: '100%' },
+  imageAttachmentOverlay: {
+    position: 'absolute', right: 10, bottom: 10, flexDirection: 'row',
+    alignItems: 'center', gap: 5, paddingHorizontal: 10, paddingVertical: 7,
+    borderRadius: 999, backgroundColor: 'rgba(15,23,42,0.72)',
+  },
+  imageAttachmentLabel: { color: '#FFFFFF', fontSize: 11, fontWeight: '700' },
+  previewModal: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.96)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewCloseButton: {
+    position: 'absolute', top: 48, right: 18, zIndex: 2,
+    width: 44, height: 44, borderRadius: 22, alignItems: 'center',
+    justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.14)',
+  },
+  fullImagePreview: { width: '100%', height: '82%' },
 });
 
 const darkStyles = StyleSheet.create({
@@ -624,5 +781,10 @@ const darkStyles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.12)",
     shadowOpacity: 0,
     elevation: 0,
+  },
+
+  contextPill: {
+    backgroundColor: '#27272A',
+    borderColor: 'rgba(255,255,255,0.12)',
   },
 });

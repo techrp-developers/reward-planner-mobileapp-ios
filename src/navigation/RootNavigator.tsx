@@ -51,7 +51,7 @@ export type AppStackParamList = {
   Notification: undefined;
   ServiceSearch: undefined;
   WalletHistory: undefined;
-  HelpForm: undefined;
+  HelpForm: { context?: 'dashboard' | 'ecommerce' | 'services' | 'bbps' | 'step_counter' } | undefined;
   MyTickets: undefined;
   StepCount: undefined;
   TermsAndConditions: undefined;
@@ -181,6 +181,7 @@ function AppNavigator() {
           getComponent={() =>
             require("../modules/ecommerce/constants/Support/HelpForm").default
           }
+          initialParams={{ context: "dashboard" }}
         />
         <AppStack.Screen
           name="MyTickets"

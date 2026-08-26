@@ -105,7 +105,7 @@ export default function HomeStack() {
       <Stack.Screen name="SelectItemCancellationReason" getComponent={() => require("../components/order/SelectItemCancellationReason").default} />
       <Stack.Screen name="ItemCancellationDetails" getComponent={() => require("../screens/ItemCancellationDetailsScreen").default} />
       <Stack.Screen name="OrderConfirmedScreen" getComponent={() => require("../screens/OrderConfirmedScreen").default} />
-      <Stack.Screen name="HelpForm" getComponent={() => require("../constants/Support/HelpForm").default} />
+      <Stack.Screen name="HelpForm" getComponent={() => require("../constants/Support/HelpForm").default} initialParams={{ context: "ecommerce" }} />
       <Stack.Screen name="MyTickets" getComponent={() => require("../constants/Support/MyTickets").default} />
     </Stack.Navigator>
   );

@@ -77,6 +77,7 @@ export default function ServiceHomeStack() {
             <Stack.Screen
                 name="HelpForm"
                 getComponent={() => require("../../ecommerce/constants/Support/HelpForm").default}
+                initialParams={{ context: "services" }}
             />
             <Stack.Screen
                 name="MyTickets"

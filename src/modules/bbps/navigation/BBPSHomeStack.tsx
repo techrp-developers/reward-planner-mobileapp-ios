@@ -21,7 +21,7 @@ export type BBPSStackParamList = {
   AddAddressMap: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   PrivacyPolicy: undefined;
   TermsAndConditions: undefined;
-  HelpForm: undefined;
+  HelpForm: { context?: 'dashboard' | 'ecommerce' | 'services' | 'bbps' | 'step_counter' } | undefined;
   MyTickets: undefined;
 
 };
@@ -93,7 +93,7 @@ const BBPSHomeStack = React.memo(() => {
       <Stack.Screen name="AddAddressMap" getComponent={() => require('../../ecommerce/components/ItemCardAddress/AddAddressMapScreen').default} options={{ headerShown: false }} />
       <Stack.Screen name="PrivacyPolicy" getComponent={() => require('../../ecommerce/profile/PrivacyPolicy').default} options={{ headerShown: false }} />
       <Stack.Screen name="TermsAndConditions" getComponent={() => require('../../ecommerce/profile/TermsandCondition').default} options={{ headerShown: false }} />
-      <Stack.Screen name="HelpForm" getComponent={() => require('../../ecommerce/constants/Support/HelpForm').default} options={{ headerShown: false }} />
+      <Stack.Screen name="HelpForm" getComponent={() => require('../../ecommerce/constants/Support/HelpForm').default} initialParams={{ context: 'bbps' }} options={{ headerShown: false }} />
       <Stack.Screen name="MyTickets" getComponent={() => require('../../ecommerce/constants/Support/MyTickets').default} options={{ headerShown: false }} />
     </Stack.Navigator>
   );

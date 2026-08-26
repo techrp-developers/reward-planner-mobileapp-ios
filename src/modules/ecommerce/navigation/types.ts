@@ -92,7 +92,7 @@ export type HomeStackParamList = {
   Settings: undefined;
   Privacy: undefined;
   Support: undefined;
-  HelpForm: undefined;
+  HelpForm: { context?: 'dashboard' | 'ecommerce' | 'services' | 'bbps' | 'step_counter' } | undefined;
   MyTickets: undefined;
 };
 

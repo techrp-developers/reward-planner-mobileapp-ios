@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Animated,
   Easing,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -18,20 +19,76 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 import {
   createSupportTicket,
   fetchSupportCategories,
   SupportCategory,
 } from '../../api/SupportApi';
+import { fetchHistory } from '../../api/OrderApi';
+import { getProductImageUrl } from '../../api/ProductApi';
+import {
+  getMyServiceOrders,
+  type ServiceOrder,
+} from '../../../services/api/OrderAPI';
 
 import { useAlert } from '../../components/alerts';
 import type { AppStackParamList } from '../../../../navigation/RootNavigator';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 
 type HelpFormProps = NativeStackScreenProps<AppStackParamList, 'HelpForm'>;
+type SupportContext = 'general' | 'ecommerce' | 'services' | 'bbps' | 'step_counter';
+type SupportOrder = {
+  id: string;
+  reference: string;
+  title: string;
+  status: string;
+  date: string;
+  amount?: number;
+  image?: string;
+};
+type TicketAttachment = {
+  uri: string;
+  name: string;
+  type: string;
+  size?: number;
+};
 
-export default function HelpForm({ navigation }: HelpFormProps) {
+const MAX_ATTACHMENT_SIZE = 25 * 1024 * 1024;
+
+const formatFileSize = (size?: number) => {
+  if (!size) return '';
+  if (size < 1024 * 1024) return `${Math.ceil(size / 1024)} KB`;
+  return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const getDocumentMimeType = (name: string, reportedType: string | null) => {
+  if (reportedType) return reportedType;
+  const extension = name.split('.').pop()?.toLowerCase();
+  const mimeTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    doc: 'application/msword',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xls: 'application/vnd.ms-excel',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    txt: 'text/plain',
+  };
+  return mimeTypes[extension || ''] || 'application/pdf';
+};
+
+const formatOrderDate = (value: string) => {
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? ''
+    : parsed.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+};
+
+export default function HelpForm({ navigation, route }: HelpFormProps) {
   const alert = useAlert();
   const { isDark, theme } = useAppTheme();
 
@@ -46,8 +103,15 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const [subject, setSubject] = useState('');
   const [description, setDescription] = useState('');
+  const [attachment, setAttachment] = useState<TicketAttachment | null>(null);
+  const initialContext = route.params?.context;
+  const supportContext: SupportContext =
+    initialContext && initialContext !== 'dashboard' ? initialContext : 'general';
+  const [recentOrders, setRecentOrders] = useState<SupportOrder[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<SupportOrder | null>(null);
+  const [ordersLoading, setOrdersLoading] = useState(false);
+
 
   const [loading, setLoading] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
@@ -77,6 +141,69 @@ export default function HelpForm({ navigation }: HelpFormProps) {
   useEffect(() => {
     loadCategories();
   }, [loadCategories]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadRecentOrders = async () => {
+      setSelectedOrder(null);
+
+      if (supportContext !== 'ecommerce' && supportContext !== 'services') {
+        setRecentOrders([]);
+        return;
+      }
+
+      try {
+        setOrdersLoading(true);
+
+        if (supportContext === 'ecommerce') {
+          const response = await fetchHistory(1);
+          const orders = Array.isArray(response?.orders) ? response.orders : [];
+          if (mounted) {
+            setRecentOrders(
+              orders.slice(0, 4).map((order: any) => ({
+                id: String(order.order_id),
+                reference: String(order.order_ref || order.order_id),
+                title: String(order.title || 'Shopping order'),
+                status: String(order.status || 'placed'),
+                date: String(order.created_at || ''),
+                amount: Number(order.price || order.total_amount || 0),
+                image: getProductImageUrl(order.image),
+              })),
+            );
+          }
+          return;
+        }
+
+        const response = await getMyServiceOrders({ page: 1, limit: 4 });
+        if (mounted) {
+          setRecentOrders(
+            (response?.orders || []).slice(0, 4).map((order: ServiceOrder) => ({
+              id: String(order.parent_order_id),
+              reference: String(order.parent_order_id),
+              title: String(order.preview?.[0]?.name || 'Service order'),
+              status: String(order.status || 'placed'),
+              date: String(order.created_at || ''),
+              amount: Number(order.total_amount || 0),
+              image: getProductImageUrl(
+                order.items?.[0]?.image_url ||
+                order.bundles?.[0]?.items?.[0]?.image_url,
+              ),
+            })),
+          );
+        }
+      } catch {
+        if (mounted) setRecentOrders([]);
+      } finally {
+        if (mounted) setOrdersLoading(false);
+      }
+    };
+
+    loadRecentOrders();
+    return () => {
+      mounted = false;
+    };
+  }, [supportContext]);
 
   const hideSuccessCard = useCallback(() => {
     Animated.parallel([
@@ -128,15 +255,67 @@ export default function HelpForm({ navigation }: HelpFormProps) {
 
   // ============================ SUBMIT ============================
 
+  const setValidatedAttachment = useCallback((file: TicketAttachment) => {
+    if (file.size && file.size > MAX_ATTACHMENT_SIZE) {
+      alert.error('File too large', 'Please select a file smaller than 25 MB.');
+      return;
+    }
+    setAttachment(file);
+  }, [alert]);
+
+  const handlePickMedia = useCallback(async () => {
+    const result = await launchImageLibrary({
+      mediaType: 'mixed',
+      selectionLimit: 1,
+      quality: 0.8,
+    });
+    if (result.didCancel) return;
+    if (result.errorCode) {
+      alert.error('Attachment Error', result.errorMessage || 'Unable to select this file.');
+      return;
+    }
+    const asset = result.assets?.[0];
+    if (!asset?.uri) return;
+    setValidatedAttachment({
+      uri: asset.uri,
+      name: asset.fileName || `attachment-${Date.now()}`,
+      type: asset.type || (asset.duration ? 'video/mp4' : 'image/jpeg'),
+      size: asset.fileSize,
+    });
+  }, [alert, setValidatedAttachment]);
+
+  const handlePickDocument = useCallback(async () => {
+    try {
+      const {
+        errorCodes,
+        isErrorWithCode,
+        pick,
+        types,
+      } = require('@react-native-documents/picker');
+      const result = await pick({
+        type: [types.pdf, types.doc, types.docx, types.xls, types.xlsx, types.plainText],
+        allowMultiSelection: false,
+        mode: 'import',
+      });
+      const file = result[0];
+      if (!file) return;
+      const fileName = file.name || `document-${Date.now()}.pdf`;
+      setValidatedAttachment({
+        uri: file.uri,
+        name: fileName,
+        type: getDocumentMimeType(fileName, file.type),
+        size: file.size || undefined,
+      });
+    } catch (error: any) {
+      if (error?.code === 'OPERATION_CANCELED') return;
+      alert.error('Attachment Error', 'Unable to select this document.');
+    }
+  }, [alert, setValidatedAttachment]);
+
   const handleCreateTicket = useCallback(async () => {
     try {
       if (!selectedCategory?.category_id) {
         alert.error('Validation Error', 'Please select category');
-        return;
-      }
-
-      if (subject.trim().length < 3) {
-        alert.error('Validation Error', 'Subject must be minimum 3 characters');
         return;
       }
 
@@ -151,9 +330,15 @@ export default function HelpForm({ navigation }: HelpFormProps) {
       setLoading(true);
 
       const res = await createSupportTicket({
-        subject: subject.trim(),
         description: description.trim(),
         category_id: selectedCategory.category_id,
+        support_module: supportContext,
+        reference_type: selectedOrder ? 'order' : undefined,
+        reference_id: selectedOrder?.id,
+        reference_label: selectedOrder?.reference,
+        attachment: attachment
+          ? { uri: attachment.uri, name: attachment.name, type: attachment.type }
+          : undefined,
       });
 
       if (res.success) {
@@ -162,9 +347,9 @@ export default function HelpForm({ navigation }: HelpFormProps) {
           res.message || 'Support ticket created successfully',
         );
 
-        setSubject('');
         setDescription('');
         setSelectedCategory(null);
+        setAttachment(null);
 
         showSuccessCard();
         return;
@@ -179,7 +364,7 @@ export default function HelpForm({ navigation }: HelpFormProps) {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, subject, description, alert, showSuccessCard]);
+  }, [selectedCategory, description, alert, showSuccessCard, supportContext, selectedOrder, attachment]);
 
   useEffect(() => {
     return () => {
@@ -234,13 +419,104 @@ export default function HelpForm({ navigation }: HelpFormProps) {
             </View>
 
             <Text style={[styles.headerSub, isDark && darkStyles.mutedText]}>
-              Raise your issue and our team will help you.
+              Tell us what happened.We'll attach the right account context so our team can help faster
             </Text>
           </View>
 
           {/* CARD */}
 
           <View style={[styles.card, isDark && darkStyles.card]}>
+
+            {supportContext === 'ecommerce' || supportContext === 'services' ? (
+              <View style={styles.orderSection}>
+                <View style={styles.orderSectionHeader}>
+                  <View>
+                    <Text style={[styles.label, styles.orderSectionTitle, isDark && darkStyles.primaryText]}>
+                      Recent {supportContext === 'services' ? 'service' : 'shopping'} orders
+                    </Text>
+                    <Text style={[styles.orderHint, isDark && darkStyles.mutedText]}>
+                      Select an order if your issue is related to one.
+                    </Text>
+                  </View>
+                  {ordersLoading ? <ActivityIndicator size="small" color={theme.primary} /> : null}
+                </View>
+
+                {!ordersLoading && recentOrders.length === 0 ? (
+                  <View style={[styles.contextNotice, isDark && darkStyles.contextNotice]}>
+                    <MaterialCommunityIcons name="package-variant" size={20} color={theme.primary} />
+                    <Text style={[styles.contextNoticeText, isDark && darkStyles.mutedText]}>
+                      No recent orders found. You can still create a general ticket.
+                    </Text>
+                  </View>
+                ) : null}
+
+                {recentOrders.map(order => {
+                  const active = selectedOrder?.id === order.id;
+                  return (
+                    <TouchableOpacity
+                      key={order.id}
+                      activeOpacity={0.82}
+                      style={[
+                        styles.orderCard,
+                        isDark && darkStyles.orderCard,
+                        active && styles.orderCardActive,
+                      ]}
+                      onPress={() => setSelectedOrder(active ? null : order)}
+                    >
+                      <View style={[styles.orderIcon, active && styles.orderIconActive]}>
+                        {order.image ? (
+                          <Image
+                            source={{ uri: order.image }}
+                            style={styles.orderImage}
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <MaterialCommunityIcons
+                            name={supportContext === 'services' ? 'briefcase-check-outline' : 'package-variant-closed'}
+                            size={22}
+                            color={active ? '#FFFFFF' : theme.primary}
+                          />
+                        )}
+                      </View>
+                      <View style={styles.orderCopy}>
+                        <Text numberOfLines={1} style={[styles.orderTitle, isDark && darkStyles.primaryText]}>
+                          {order.title}
+                        </Text>
+                        <Text style={[styles.orderMeta, isDark && darkStyles.mutedText]}>
+                          #{order.reference} · {formatOrderDate(order.date)}
+                        </Text>
+                        <Text style={styles.orderStatus}>{order.status.replace(/_/g, ' ')}</Text>
+                      </View>
+                      {order.amount ? (
+                        <Text style={[styles.orderAmount, isDark && darkStyles.primaryText]}>
+                          ₹{order.amount.toLocaleString('en-IN')}
+                        </Text>
+                      ) : null}
+                      <MaterialCommunityIcons
+                        name={active ? 'check-circle' : 'circle-outline'}
+                        size={22}
+                        color={active ? theme.primary : isDark ? '#52525B' : '#CBD5E1'}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ) : (
+              <View style={[styles.contextNotice, styles.standaloneNotice, isDark && darkStyles.contextNotice]}>
+                <MaterialCommunityIcons
+                  name={supportContext === 'bbps' ? 'receipt-text-check-outline' : supportContext === 'step_counter' ? 'shoe-print' : 'account-heart-outline'}
+                  size={22}
+                  color={theme.primary}
+                />
+                <Text style={[styles.contextNoticeText, isDark && darkStyles.mutedText]}>
+                  {supportContext === 'bbps'
+                    ? 'Include the biller, transaction reference and payment date in your description.'
+                    : supportContext === 'step_counter'
+                      ? 'Include your device model, step date and Health Connect status.'
+                      : 'Choose a category and describe the issue. We’ll route it to the right team.'}
+                </Text>
+              </View>
+            )}
             {/* CATEGORY */}
 
             <Text style={[styles.label, isDark && darkStyles.primaryText]}>
@@ -309,30 +585,6 @@ export default function HelpForm({ navigation }: HelpFormProps) {
               </View>
             )}
 
-            {/* SUBJECT */}
-
-            <Text style={[styles.label, isDark && darkStyles.primaryText]}>
-              Subject
-            </Text>
-
-            <View style={[styles.inputWrap, isDark && darkStyles.inputWrap]}>
-              <MaterialCommunityIcons
-                name="text-box-outline"
-                size={18}
-                color={isDark ? '#A1A1AA' : '#999'}
-                style={styles.inputIcon}
-              />
-
-              <TextInput
-                placeholder="Enter Subject"
-                placeholderTextColor={isDark ? '#71717A' : '#999'}
-                selectionColor={theme.primary}
-                style={[styles.input, isDark && darkStyles.inputText]}
-                value={subject}
-                onChangeText={setSubject}
-              />
-            </View>
-
             {/* DESCRIPTION */}
 
             <Text style={[styles.label, isDark && darkStyles.primaryText]}>
@@ -351,6 +603,63 @@ export default function HelpForm({ navigation }: HelpFormProps) {
                 onChangeText={setDescription}
               />
             </View>
+
+            <Text style={[styles.label, isDark && darkStyles.primaryText]}>
+              Attachment <Text style={styles.optionalLabel}>(optional)</Text>
+            </Text>
+            <Text style={[styles.attachmentHint, isDark && darkStyles.mutedText]}>
+              Add an image, video, PDF, Word, Excel or text file. Maximum 25 MB.
+            </Text>
+
+            <View style={styles.attachmentActions}>
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[styles.attachmentButton, isDark && darkStyles.attachmentButton]}
+                onPress={handlePickMedia}
+              >
+                <MaterialCommunityIcons name="image-multiple-outline" size={20} color={theme.primary} />
+                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>Photo / Video</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.82}
+                style={[styles.attachmentButton, isDark && darkStyles.attachmentButton]}
+                onPress={handlePickDocument}
+              >
+                <MaterialCommunityIcons name="file-document-outline" size={20} color={theme.primary} />
+                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>Document</Text>
+              </TouchableOpacity>
+            </View>
+
+            {attachment ? (
+              <View style={[styles.selectedAttachment, isDark && darkStyles.selectedAttachment]}>
+                {attachment.type.startsWith('image/') ? (
+                  <Image source={{ uri: attachment.uri }} style={styles.attachmentPreview} resizeMode="cover" />
+                ) : (
+                  <View style={styles.attachmentFileIcon}>
+                    <MaterialCommunityIcons
+                      name={attachment.type.startsWith('video/') ? 'play-circle-outline' : 'file-check-outline'}
+                      size={24}
+                      color={theme.primary}
+                    />
+                  </View>
+                )}
+                <View style={styles.attachmentCopy}>
+                  <Text numberOfLines={1} style={[styles.attachmentName, isDark && darkStyles.primaryText]}>
+                    {attachment.name}
+                  </Text>
+                  <Text style={[styles.attachmentSize, isDark && darkStyles.mutedText]}>
+                    {formatFileSize(attachment.size) || 'Ready to upload'}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  accessibilityLabel="Remove attachment"
+                  style={styles.removeAttachment}
+                  onPress={() => setAttachment(null)}
+                >
+                  <MaterialCommunityIcons name="close" size={20} color={isDark ? '#D4D4D8' : '#64748B'} />
+                </TouchableOpacity>
+              </View>
+            ) : null}
 
             {/* BUTTON */}
 
@@ -492,6 +801,76 @@ const styles = StyleSheet.create({
     minHeight: '100%',
   },
 
+  orderSection: { marginBottom: 24 },
+
+  orderSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+
+  orderSectionTitle: { marginBottom: 3 },
+  orderHint: { color: '#64748B', fontSize: 12, lineHeight: 18 },
+
+  orderCard: {
+    minHeight: 78,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 10,
+  },
+
+  orderCardActive: {
+    borderColor: '#8B5CF6',
+    backgroundColor: '#F5F3FF',
+  },
+
+  orderIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    backgroundColor: '#F3E8FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  orderIconActive: { backgroundColor: '#8B5CF6' },
+  orderImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+  },
+  orderCopy: { flex: 1, minWidth: 0 },
+  orderTitle: { color: '#1E293B', fontSize: 14, fontWeight: '800' },
+  orderMeta: { color: '#64748B', fontSize: 11, marginTop: 3 },
+  orderStatus: {
+    color: '#7C3AED',
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 4,
+    textTransform: 'capitalize',
+  },
+  orderAmount: { color: '#1E293B', fontSize: 12, fontWeight: '800' },
+
+  contextNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 13,
+    borderRadius: 14,
+    backgroundColor: '#F8F7FF',
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+  },
+  standaloneNotice: { marginBottom: 24 },
+  contextNoticeText: { flex: 1, color: '#64748B', fontSize: 12, lineHeight: 18 },
+
   label: {
     fontSize: 14,
     fontWeight: '600',
@@ -569,6 +948,34 @@ const styles = StyleSheet.create({
     color: '#333',
     minHeight: 120,
   },
+
+  optionalLabel: { color: '#94A3B8', fontWeight: '500' },
+  attachmentHint: { color: '#64748B', fontSize: 12, lineHeight: 18, marginTop: -5, marginBottom: 12 },
+  attachmentActions: { flexDirection: 'row', gap: 10, marginBottom: 12 },
+  attachmentButton: {
+    flex: 1,
+    minHeight: 52,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E9D5FF',
+    backgroundColor: '#FAF7FF',
+  },
+  attachmentButtonText: { color: '#5B21B6', fontSize: 12, fontWeight: '700' },
+  selectedAttachment: {
+    flexDirection: 'row', alignItems: 'center', gap: 11, padding: 10,
+    borderRadius: 13, borderWidth: 1, borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF', marginBottom: 18,
+  },
+  attachmentPreview: { width: 46, height: 46, borderRadius: 10 },
+  attachmentFileIcon: { width: 46, height: 46, borderRadius: 10, backgroundColor: '#F3E8FF', alignItems: 'center', justifyContent: 'center' },
+  attachmentCopy: { flex: 1, minWidth: 0 },
+  attachmentName: { color: '#1E293B', fontSize: 13, fontWeight: '700' },
+  attachmentSize: { color: '#64748B', fontSize: 11, marginTop: 4 },
+  removeAttachment: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
 
   submitBtn: {
     height: 54,
@@ -662,4 +1069,15 @@ const darkStyles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.20)',
   },
   successTitle: { color: '#FFFFFF' },
+
+  orderCard: {
+    backgroundColor: '#202023',
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  contextNotice: {
+    backgroundColor: '#27272A',
+    borderColor: 'rgba(255,255,255,0.12)',
+  },
+  attachmentButton: { backgroundColor: '#27272A', borderColor: 'rgba(255,255,255,0.14)' },
+  selectedAttachment: { backgroundColor: '#202023', borderColor: 'rgba(255,255,255,0.12)' },
 });
