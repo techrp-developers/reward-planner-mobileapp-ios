@@ -18,6 +18,7 @@ type Props = {
   price: number
   discountText: string
   quantity: number
+  attributes?: Record<string, string>
   onIncrease?: () => void
   onDecrease?: () => void
   onRemove?: () => void
@@ -34,6 +35,7 @@ export default function CartItemCard({
   price,
   discountText,
   quantity,
+  attributes,
   onIncrease,
   onDecrease,
   onRemove,
@@ -59,6 +61,15 @@ export default function CartItemCard({
 
           <View style={styles.info}>
             <Text style={[styles.title, { color: theme.text }]}>{title}</Text>
+
+            {attributes && Object.keys(attributes).length > 0 ? (
+              <Text style={[styles.variantText, { color: theme.secondaryText }]} numberOfLines={2}>
+                {Object.entries(attributes)
+                  .filter(([, value]) => value != null && String(value).trim())
+                  .map(([key, value]) => `${key.replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}: ${value}`)
+                  .join('  •  ')}
+              </Text>
+            ) : null}
 
             <View style={styles.deliveryRow}>
               <MaterialIcons name="local-shipping" size={16} color={theme.secondaryText} />
@@ -108,147 +119,155 @@ export default function CartItemCard({
 }
 
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E6E6E6',
-        marginHorizontal: 14,
-        marginVertical: 8,
-        overflow: 'hidden',
-    },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E6E6E6',
+    marginHorizontal: 14,
+    marginVertical: 8,
+    overflow: 'hidden',
+  },
 
-    row: {
-        flexDirection: 'row',
-        padding: 12,
-    },
+  row: {
+    flexDirection: 'row',
+    padding: 12,
+  },
 
-    imageWrap: {
-        width: 64,
-        height: 64,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 10,
-    },
+  imageWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
 
-    image: {
-        width: 58,
-        height: 58,
-        resizeMode: 'contain',
-    },
+  image: {
+    width: 58,
+    height: 58,
+    resizeMode: 'contain',
+  },
 
-    info: {
-        flex: 1,
-    },
+  info: {
+    flex: 1,
+  },
 
-    mainContent: {
-      flex: 1,
-      flexDirection: 'row',
-    },
+  mainContent: {
+    flex: 1,
+    flexDirection: 'row',
+  },
 
-    title: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#222',
-    },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#222',
+  },
 
-    deliveryRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 4,
-        gap: 4,
-    },
+  variantText: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 4,
+    fontWeight: '500',
+  },
 
-    deliveryText: {
-        fontSize: 12,
-        color: '#666',
-    },
 
-    returnText: {
-        fontSize: 12,
-        color: '#2F80ED',
-        marginTop: 4,
-    },
+  deliveryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 4,
+  },
 
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 6,
-    },
+  deliveryText: {
+    fontSize: 12,
+    color: '#666',
+  },
 
-    mrp: {
-        fontSize: 13,
-        color: '#999',
-        textDecorationLine: 'line-through',
-    },
+  returnText: {
+    fontSize: 12,
+    color: '#2F80ED',
+    marginTop: 4,
+  },
 
-    price: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#222',
-    },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+  },
 
-    discount: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#1E9E3E',
-    },
+  mrp: {
+    fontSize: 13,
+    color: '#999',
+    textDecorationLine: 'line-through',
+  },
 
-    qtyBox: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#D0D5DD',
-        borderRadius: 6,
-        height: 28,
-        marginLeft: 6,
-    },
+  price: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#222',
+  },
 
-    qtyBtn: {
-        width: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
+  discount: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1E9E3E',
+  },
 
-    qtyText: {
-        fontSize: 16,
-        color: '#333',
-    },
+  qtyBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D0D5DD',
+    borderRadius: 6,
+    height: 28,
+    marginLeft: 6,
+  },
 
-    qty: {
-        width: 20,
-        fontSize: 12,
-        textAlign: 'center',
-        fontWeight: '600',
-    },
+  qtyBtn: {
+    width: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
-    divider: {
-        height: 1,
-        backgroundColor: '#E6E6E6',
-    },
+  qtyText: {
+    fontSize: 16,
+    color: '#333',
+  },
 
-    actions: {
-        flexDirection: 'row',
-        height: 48,
-    },
+  qty: {
+    width: 20,
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
 
-    actionBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 6,
-    },
+  divider: {
+    height: 1,
+    backgroundColor: '#E6E6E6',
+  },
 
-    actionText: {
-        fontSize: 14,
-        fontWeight: '500',
-        color: '#333',
-    },
+  actions: {
+    flexDirection: 'row',
+    height: 48,
+  },
 
-    verticalDivider: {
-        width: 1,
-        backgroundColor: '#E6E6E6',
-    },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+
+  actionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+  },
+
+  verticalDivider: {
+    width: 1,
+    backgroundColor: '#E6E6E6',
+  },
 })

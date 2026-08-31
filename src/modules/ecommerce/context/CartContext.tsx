@@ -19,6 +19,7 @@ export type CartItem = {
   price: number;
   quantity: number;
   image?: string;
+  attributes?: Record<string, string>;
 };
 
 type CartContextType = {
@@ -37,11 +38,11 @@ const CartContext = createContext<CartContextType>({
   count: 0,
   totalQuantity: 0,
   items: [],
-  refresh: async () => {},
-  addItem: async () => {},
-  removeItem: async () => {},
-  updateQuantity: async () => {},
-  clearCart: async () => {},
+  refresh: async () => { },
+  addItem: async () => { },
+  removeItem: async () => { },
+  updateQuantity: async () => { },
+  clearCart: async () => { },
 });
 
 const toCartItems = (rawItems: any[]): CartItem[] => {
@@ -63,6 +64,7 @@ const toCartItems = (rawItems: any[]): CartItem[] => {
     price: Number(item.sale_price || item.price || 0),
     quantity: Number(item.quantity || 1),
     image: item.image || item.product_image,
+    attributes: item.attributes || item.variant_attributes || {},
   }));
 };
 

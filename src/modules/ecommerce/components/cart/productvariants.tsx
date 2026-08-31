@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 
@@ -15,6 +16,21 @@ type Props = {
   selectedAttrs: Record<string, string>;
   variants: any[];
   onChange: (key: string, value: string) => void;
+};
+
+const isVisible = (variant: any) =>
+  variant?.is_visible === undefined ||
+  variant?.is_visible === null ||
+  [true, 1, "1", "true"].includes(variant.is_visible);
+
+const isAvailable = (variant: any) =>
+  Boolean(variant) && isVisible(variant) && Number(variant?.stock) > 0;
+
+const COLOR_MAP: Record<string, string> = {
+  black: "#111111", white: "#FFFFFF", red: "#EF4444", blue: "#3B82F6",
+  green: "#22C55E", yellow: "#FACC15", orange: "#F97316", purple: "#8B5CF6",
+  pink: "#EC4899", grey: "#9CA3AF", gray: "#9CA3AF", brown: "#92400E",
+  navy: "#1E3A8A", beige: "#D6C6A5", gold: "#D4AF37", silver: "#C0C0C0",
 };
 
 export default function ProductVariants({
@@ -48,6 +64,12 @@ export default function ProductVariants({
     );
   };
 
+  const findAvailableVariantForOption = (attrKey: string, value: string) =>
+    variantList.find(
+      (variant) =>
+        variant?.variant_attributes?.[attrKey] === value && isAvailable(variant)
+    );
+
   return (
     <View style={styles.container}>
       {attrEntries.map(([attrKey, rawValues]) => {
@@ -58,10 +80,10 @@ export default function ProductVariants({
 
         return (
           <View key={attrKey} style={styles.section}>
-            <Text style={[styles.label, { color: theme.text }]}>
-              {sectionTitle}:
-              <Text style={[styles.value, { color: theme.text }]}> {selectedValue || "Select"}</Text>
-            </Text>
+            <View style={styles.sectionHeading}>
+              <Text style={[styles.label, { color: theme.text }]}>{sectionTitle}</Text>
+              <Text style={[styles.value, { color: theme.secondaryText }]}>{selectedValue || "Select"}</Text>
+            </View>
 
             <ScrollView
               horizontal
@@ -70,6 +92,10 @@ export default function ProductVariants({
             >
               {values.map((value) => {
                 const variant = findVariantForOption(attrKey, value);
+                const availableVariant = findAvailableVariantForOption(attrKey, value);
+                const variantsForValue = variantList.filter(
+                  (item) => item?.variant_attributes?.[attrKey] === value && isVisible(item)
+                );
                 const variantWithImage = variantList.find(
                   (item) =>
                     item?.variant_attributes?.[attrKey] === value &&
@@ -77,9 +103,13 @@ export default function ProductVariants({
                     item.images.length > 0
                 );
                 const isSelected = selectedValue === value;
-                const isUnavailable = !variant;
-                const isOutOfStock = Boolean(variant && Number(variant.stock) <= 0);
+                const isUnavailable = variantsForValue.length === 0;
+                const isOutOfStock = !isUnavailable && !availableVariant;
                 const disabled = isUnavailable || isOutOfStock;
+                const displayVariant =
+                  (variant && isAvailable(variant) ? variant : null) ||
+                  availableVariant ||
+                  variantWithImage;
                 const colorImagePath = variantWithImage?.images?.[0];
                 const colorImageUrl = colorImagePath
                   ? getProductImageUrl(colorImagePath)
@@ -97,8 +127,8 @@ export default function ProductVariants({
                       },
                       isSelected && (isColorAttr ? styles.colorCardActive : styles.optionChipActive),
                       isSelected && {
-                        backgroundColor: isDark ? "#111827" : "#F9FAFB",
-                        borderColor: theme.text,
+                        backgroundColor: isDark ? "#2E1065" : "#F5F3FF",
+                        borderColor: "#7C3AED",
                       },
                       disabled && (isColorAttr ? styles.colorCardDisabled : styles.optionChipDisabled),
                       disabled && {
@@ -110,7 +140,44 @@ export default function ProductVariants({
                     disabled={disabled}
                   >
                     {isColorAttr && colorImageUrl ? (
-                      <Image source={{ uri: colorImageUrl }} style={styles.colorImage} />
+                      <View style={styles.imageWrap}>
+                        <Image source={{ uri: colorImageUrl }} style={styles.colorImage} />
+                        {isSelected ? (
+                          <View style={styles.imageCheck}>
+                            <MaterialCommunityIcons name="check" size={11} color="#FFFFFF" />
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : isColorAttr ? (
+                      <View style={styles.imageWrap}>
+                        <View
+                          style={[
+                            styles.colorSwatch,
+                            {
+                              backgroundColor: COLOR_MAP[value.trim().toLowerCase()] || theme.border,
+                              borderColor: value.trim().toLowerCase() === "white" ? "#D1D5DB" : "transparent",
+                            },
+                          ]}
+                        />
+                        {isSelected ? (
+                          <View style={styles.imageCheck}>
+                            <MaterialCommunityIcons name="check" size={11} color="#FFFFFF" />
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
+
+                    {isColorAttr && displayVariant ? (
+                      <View style={styles.variantPriceRow}>
+                        <Text style={[styles.variantPrice, { color: theme.text }]}>
+                          ₹{Number(displayVariant.sale_price || 0).toLocaleString("en-IN")}
+                        </Text>
+                        {Number(displayVariant.mrp) > Number(displayVariant.sale_price) ? (
+                          <Text style={[styles.variantMrp, { color: theme.secondaryText }]}>
+                            ₹{Number(displayVariant.mrp).toLocaleString("en-IN")}
+                          </Text>
+                        ) : null}
+                      </View>
                     ) : null}
 
                     <Text
@@ -127,10 +194,16 @@ export default function ProductVariants({
                       {value}
                     </Text>
 
+                    {!isColorAttr && isSelected ? (
+                      <MaterialCommunityIcons name="check-circle" size={16} color="#7C3AED" style={styles.optionCheck} />
+                    ) : null}
+
                     {isOutOfStock ? (
                       <Text style={styles.metaText}>Out of stock</Text>
                     ) : isUnavailable ? (
                       <Text style={styles.metaText}>Unavailable</Text>
+                    ) : !variant && !isSelected ? (
+                      <Text style={styles.availableMetaText}>Available</Text>
                     ) : null}
                   </TouchableOpacity>
                 );
@@ -147,30 +220,44 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  section: { marginBottom: 20, paddingHorizontal: 14 },
+  section: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 12 },
 
-  label: { fontSize: 12, fontWeight: "700", color: "#111827" },
-  value: { fontWeight: "900" },
+  sectionHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+
+  label: { fontSize: 13, fontWeight: "800", color: "#111827" },
+  value: { fontSize: 12, fontWeight: "700" },
 
   variantRow: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 10,
+    gap: 10,
+    marginTop: 13,
+    paddingRight: 4,
+    paddingBottom: 2,
   },
 
   optionChip: {
-    minWidth: 82,
-    borderRadius: 10,
+    minWidth: 76,
+    minHeight: 44,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: "#D1D5DB",
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 11,
     backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
   },
 
   optionChipActive: {
-    borderColor: "#111827",
-    backgroundColor: "#F9FAFB",
+    borderColor: "#7C3AED",
+    borderWidth: 2,
+    backgroundColor: "#F5F3FF",
   },
 
   optionChipDisabled: {
@@ -180,18 +267,19 @@ const styles = StyleSheet.create({
   },
 
   colorCard: {
-    width: 86,
+    width: 74,
+    minHeight: 104,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#D1D5DB",
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 6,
     alignItems: "center",
     backgroundColor: "#FFFFFF",
   },
 
   colorCardActive: {
-    borderColor: "#111827",
+    borderColor: "#7C3AED",
     borderWidth: 2,
   },
 
@@ -201,12 +289,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
   },
 
+  imageWrap: { position: "relative", marginBottom: 5 },
+
   colorImage: {
-    width: 46,
-    height: 46,
-    borderRadius: 8,
-    marginBottom: 6,
+    width: 58,
+    height: 52,
+    borderRadius: 7,
     resizeMode: "cover",
+  },
+  colorSwatch: {
+    width: 58,
+    height: 52,
+    borderRadius: 7,
+    borderWidth: 1,
+  },
+
+  imageCheck: {
+    position: "absolute",
+    right: -5,
+    top: -5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#7C3AED",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   optionText: {
@@ -216,8 +325,27 @@ const styles = StyleSheet.create({
   },
 
   optionTextActive: {
-    color: "#111827",
+    color: "#6D28D9",
   },
+
+  variantPriceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    marginBottom: 3,
+  },
+  variantPrice: {
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  variantMrp: {
+    fontSize: 9,
+    fontWeight: "500",
+    textDecorationLine: "line-through",
+  },
+
+  optionCheck: { position: "absolute", right: 4, top: 4 },
 
   optionTextDisabled: {
     color: "#9CA3AF",
@@ -229,4 +357,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#EF4444",
   },
+
+  availableMetaText: {
+    marginTop: 4,
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#16A34A",
+  },
+
 });

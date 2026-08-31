@@ -47,10 +47,18 @@ const getWishlistFlag = (item: any) => {
   return ["1", "true", "yes", "y"].includes(normalized);
 };
 
+const isVariantVisible = (variant: any) =>
+  variant?.is_visible === undefined ||
+  variant?.is_visible === null ||
+  [true, 1, "1", "true"].includes(variant.is_visible);
+
+const isVariantAvailable = (variant: any) =>
+  Boolean(variant) && isVariantVisible(variant) && Number(variant?.stock) > 0;
+
 export default function
   ProductDescriptionScreen() {
   const route = useRoute<RouteT>();
-  const { productId } = route.params;
+  const { productId, variantId: requestedVariantId } = route.params;
   const { isAuthenticated } = useAuth();
   const alert = useAlert();
   const { addItem, updateQuantity, totalQuantity, items: cartItems } = useCart();
@@ -109,8 +117,12 @@ export default function
       return;
     }
 
-    if (!product?.product_id || !selectedVariant?.variant_id) {
-      Alert.alert("Buy Now", "Product data is not available. Please try again.");
+    if (
+      !product?.product_id ||
+      !selectedVariant?.variant_id ||
+      !isVariantAvailable(selectedVariant)
+    ) {
+      Alert.alert("Selection unavailable", "Please choose an available product option.");
       return;
     }
 
@@ -132,8 +144,8 @@ export default function
       // Ignore prefetch errors and continue navigation.
     });
 
-    navigation.push("OrderStepUI", buyNowParams);
-  }, [isAuthenticated, navigation, product?.product_id, qty, selectedVariant?.variant_id]);
+    navigation.navigate("OrderStepUI", buyNowParams);
+  }, [isAuthenticated, navigation, product?.product_id, qty, selectedVariant]);
 
 
 
@@ -144,8 +156,13 @@ export default function
       const variants = Array.isArray(p?.variants) ? p.variants : [];
       const defaultVariant =
         variants.find(
-          (v: any) => v.is_visible === 1 && v.sale_price && v.stock > 0
-        ) || variants[0] || null;
+          (variant: any) => Number(variant?.variant_id) === Number(requestedVariantId)
+        ) ||
+        variants.find(isVariantAvailable) ||
+        variants.find(isVariantVisible) ||
+        variants[0] ||
+        null;
+
 
       unstable_batchedUpdates(() => {
         setProduct({ ...p, variants });
@@ -213,7 +230,7 @@ export default function
       isMounted = false;
       interactionTask.cancel();
     };
-  }, [productId, queryClient]);
+  }, [productId, queryClient, requestedVariantId]);
 
 
 
@@ -224,16 +241,46 @@ export default function
 
     const variants = Array.isArray(product?.variants) ? product.variants : [];
 
-    return variants.find((v: any) =>
-      Object.entries(selectedAttrs).every(
-        ([key, val]) => v?.variant_attributes?.[key] === val
-      )
+    const selectedKeys = Object.keys(selectedAttrs);
+    if (!selectedKeys.length) return null;
+
+    return variants.find(
+      (v: any) =>
+        isVariantVisible(v) &&
+        selectedKeys.every(
+          (key) => v?.variant_attributes?.[key] === selectedAttrs[key]
+        )
     );
   }, [product, selectedAttrs]);
 
   useEffect(() => {
     if (resolvedVariant) setSelectedVariant(resolvedVariant);
   }, [resolvedVariant]);
+
+  const handleVariantChange = useCallback((key: string, value: string) => {
+    const variants = Array.isArray(product?.variants) ? product.variants : [];
+    const candidates = variants.filter(
+      (variant: any) =>
+        isVariantAvailable(variant) && variant?.variant_attributes?.[key] === value
+    );
+    if (!candidates.length) return;
+
+    const score = (variant: any) =>
+      Object.entries(selectedAttrs).reduce(
+        (total, [attrKey, attrValue]) =>
+          attrKey !== key && variant?.variant_attributes?.[attrKey] === attrValue
+            ? total + 1
+            : total,
+        0
+      );
+    const bestMatch = candidates.reduce(
+      (best: any, candidate: any) => score(candidate) > score(best) ? candidate : best,
+      candidates[0]
+    );
+
+    setSelectedVariant(bestMatch);
+    setSelectedAttrs({ ...(bestMatch?.variant_attributes ?? {}) });
+  }, [product?.variants, selectedAttrs]);
 
   const images = useMemo(() => {
     if (!product) return [];
@@ -305,8 +352,9 @@ export default function
         }
         setQty(1);
       } catch {
-        setStock(null);
-        setInStock(true);
+        const fallbackStock = Number(selectedVariant?.stock);
+        setStock(Number.isFinite(fallbackStock) ? fallbackStock : null);
+        setInStock(Number.isFinite(fallbackStock) ? fallbackStock > 0 : false);
       }
     })();
   }, [selectedVariant]);
@@ -347,7 +395,10 @@ export default function
       return;
     }
 
-    if (!product?.product_id || !selectedVariant?.variant_id) return;
+    if (!product?.product_id || !selectedVariant?.variant_id || !inStock) {
+      alert.error("Selection unavailable", "Please choose an option that is in stock.", 3000);
+      return;
+    }
 
     if (selectedVariantInCart) {
       navigation.navigate("Cart");
@@ -391,6 +442,7 @@ export default function
     isAuthenticated,
     product?.product_id,
     selectedVariant?.variant_id,
+    inStock,
     selectedVariantInCart,
     selectedCartItem,
     navigation,
@@ -527,9 +579,7 @@ export default function
           attributes={product.attributes ?? {}}
           variants={Array.isArray(product.variants) ? product.variants : []}
           selectedAttrs={selectedAttrs}
-          onChange={(key, value) =>
-            setSelectedAttrs(prev => ({ ...prev, [key]: value }))
-          }
+          onChange={handleVariantChange}
         />
 
 

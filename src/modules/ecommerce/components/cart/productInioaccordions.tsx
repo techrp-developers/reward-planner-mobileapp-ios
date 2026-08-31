@@ -74,10 +74,10 @@ const toLabel = (raw: string): string => {
 
 // ─── Key bucket definitions ───────────────────────────────────────────────────
 
-const GENERAL_KEYS    = ["brand_name", "manufacturer", "vendor_name"];
-const CATEGORY_KEYS   = ["category_name", "subcategory_name", "sub_subcategory_name"];
-const DIMENSION_KEYS  = ["weight", "dimensions"];
-const VARIANT_KEYS    = ["colour1", "color1", "colour", "color", "sku"];
+const GENERAL_KEYS = ["brand_name", "manufacturer", "vendor_name"];
+const CATEGORY_KEYS = ["category_name", "subcategory_name", "sub_subcategory_name"];
+const DIMENSION_KEYS = ["weight", "dimensions"];
+const VARIANT_KEYS = ["colour1", "color1", "colour", "color", "sku"];
 const ADDITIONAL_KEYS = ["country_of_origin", "warranty_description", "model_name", "model_number"];
 
 const ALL_BUCKETED = new Set([
@@ -112,23 +112,23 @@ const buildSpecs = (product: any, selectedVariant: any): SpecGroup[] => {
   for (const [k, v] of Object.entries(selectedVariant?.variant_attributes ?? {})) put(k, v, true);
 
   // Top-level product scalars
-  put("vendor_name",           product.vendor_name);
-  put("manufacturer",          product.manufacturer);
-  put("brand_name",            product.brand_name);
-  put("category_name",         product.category_name);
-  put("subcategory_name",      product.subcategory_name);
-  put("sub_subcategory_name",  product.sub_subcategory_name);
-  put("country_of_origin",     product.country_of_origin);
-  put("warranty_description",  product.warranty_description);
-  put("model_name",            product.model_name);
-  put("model_number",          product.model_number);
+  put("vendor_name", product.vendor_name);
+  put("manufacturer", product.manufacturer);
+  put("brand_name", product.brand_name);
+  put("category_name", product.category_name);
+  put("subcategory_name", product.subcategory_name);
+  put("sub_subcategory_name", product.sub_subcategory_name);
+  put("country_of_origin", product.country_of_origin);
+  put("warranty_description", product.warranty_description);
+  put("model_name", product.model_name);
+  put("model_number", product.model_number);
 
   // Variant scalars (authoritative — always overwrite)
-  put("sku",     selectedVariant?.sku,                      true);
-  put("weight",  selectedVariant?.weight ?? product.weight, true);
-  put("length",  selectedVariant?.length,                   true);
-  put("breadth", selectedVariant?.breadth,                  true);
-  put("height",  selectedVariant?.height,                   true);
+  put("sku", selectedVariant?.sku, true);
+  put("weight", selectedVariant?.weight ?? product.weight, true);
+  put("length", selectedVariant?.length, true);
+  put("breadth", selectedVariant?.breadth, true);
+  put("height", selectedVariant?.height, true);
 
   // Compute combined dimensions when not already provided
   if (!flat.dimensions && flat.length && flat.breadth && flat.height) {
@@ -154,11 +154,11 @@ const buildSpecs = (product: any, selectedVariant: any): SpecGroup[] => {
     .map((k) => ({ label: toLabel(k), value: flat[k] }));
 
   const groups: SpecGroup[] = [
-    { title: "General",                rows: rows(GENERAL_KEYS) },
-    { title: "Category Information",   rows: rows(CATEGORY_KEYS) },
+    { title: "General", rows: rows(GENERAL_KEYS) },
+    { title: "Category Information", rows: rows(CATEGORY_KEYS) },
     ...(dynamicRows.length ? [{ title: "Features", rows: dynamicRows }] : []),
-    { title: "Physical Dimensions",    rows: rows(DIMENSION_KEYS) },
-    { title: "Variant Details",        rows: rows(VARIANT_KEYS) },
+    { title: "Physical Dimensions", rows: rows(DIMENSION_KEYS) },
+    { title: "Variant Details", rows: rows(VARIANT_KEYS) },
     { title: "Additional Information", rows: rows(ADDITIONAL_KEYS) },
   ];
 
@@ -187,7 +187,7 @@ const SpecGroupView = memo(({ group, theme }: { group: SpecGroup; theme: ReturnT
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
-const TABS = ["Specifications", "Product Info", "About Brand"] as const;
+const TABS = ["Product Details", "Description", "About Brand"] as const;
 type TabKey = typeof TABS[number];
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ export default function ProductInfoAccordions({
   product,
   selectedVariant,
 }: Props) {
-  const [activeTab, setActiveTab] = useState<TabKey>("Specifications");
+  const [activeTab, setActiveTab] = useState<TabKey>("Product Details");
   const { theme } = useAppTheme();
 
   const specGroups = useMemo(
@@ -223,7 +223,7 @@ export default function ProductInfoAccordions({
   };
 
   const productPoints = toPoints(productDescription, ["No product information available"]);
-  const brandPoints   = toPoints(brandDescription,   ["No brand information available"]);
+  const brandPoints = toPoints(brandDescription, ["No brand information available"]);
 
   return (
     <View style={[styles.wrap, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -254,7 +254,7 @@ export default function ProductInfoAccordions({
       {/* ── Content area ────────────────────────────────────────────────────── */}
       <View style={[styles.contentArea, { backgroundColor: theme.card }]}>
 
-        {activeTab === "Specifications" && (
+        {activeTab === "Product Details" && (
           specGroups.length > 0 ? (
             <View>
               {specGroups.map((g) => (
@@ -266,7 +266,7 @@ export default function ProductInfoAccordions({
           )
         )}
 
-        {activeTab === "Product Info" && (
+        {activeTab === "Description" && (
           <View>
             {productPoints.map((t, i) => (
               <View key={i} style={styles.pointRow}>

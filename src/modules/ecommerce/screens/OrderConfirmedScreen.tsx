@@ -228,10 +228,14 @@ export default function OrderConfirmedScreen() {
         .filter(Boolean)
         .join(" ") || "Product";
 
-    const weightOrQuantity =
-        firstItem?.attributes?.weight ||
-        firstItem?.attributes?.size ||
-        (firstItem?.quantity ? `Qty: ${firstItem.quantity}` : "-");
+    const firstVariantDetails = Object.entries(firstItem?.attributes || {})
+        .filter(([, value]) => value != null && String(value).trim())
+        .map(([key, value]) => `${key.replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase())}: ${value}`)
+        .join("  •  ");
+
+    const weightOrQuantity = firstVariantDetails
+        ? `${firstVariantDetails}${firstItem?.quantity ? `  •  Qty: ${firstItem.quantity}` : ""}`
+        : (firstItem?.quantity ? `Qty: ${firstItem.quantity}` : "-");
 
     const fullAddress = [
         orderData?.address?.line1,
@@ -502,7 +506,13 @@ export default function OrderConfirmedScreen() {
 
                         {orderData.items.map((item) => {
                             const title = [item.brand_name, item.product_name].filter(Boolean).join(" ");
-                            const meta = item.attributes?.weight || item.attributes?.size || `Qty: ${item.quantity}`;
+                            const variantDetails = Object.entries(item.attributes || {})
+                                .filter(([, value]) => value != null && String(value).trim())
+                                .map(([key, value]) => `${key.replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase())}: ${value}`)
+                                .join("  •  ");
+                            const meta = variantDetails
+                                ? `${variantDetails}  •  Qty: ${item.quantity}`
+                                : `Qty: ${item.quantity}`;
                             const cancellation = item.cancellation;
                             const feedback = item.feedback;
                             const hasCancellationRequest = !!cancellation?.status;

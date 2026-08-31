@@ -90,6 +90,7 @@ const CartRow = React.memo(function CartRow({
       price={price}
       discountText={`₹${discount} off`}
       quantity={item.quantity}
+      attributes={item.attributes || item.variant_attributes}
       onIncrease={() => onIncrease(item)}
       onDecrease={() => onDecrease(item)}
       onRemove={() => onRemove(item)}
@@ -97,6 +98,7 @@ const CartRow = React.memo(function CartRow({
         Number(item?.product_id) > 0 &&
         navigation.navigate('ProductDescription', {
           productId: Number(item.product_id),
+          variantId: Number(item.variant_id),
         })
       }
       onBuyNow={() =>
@@ -437,13 +439,13 @@ export default function WithoutAddress() {
       />
 
       <StickyBottomCTA bottomOffset={0} onLayout={stickyCTA.onCtaLayout}>
-      <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
-        <TouchableOpacity onPress={() => navigation.navigate('AddressSelect')}>
-          <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
-            <Text style={styles.buttonText}>Select Address</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
+        <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+          <TouchableOpacity onPress={() => navigation.navigate('AddressSelect')}>
+            <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
+              <Text style={styles.buttonText}>Select Address</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
       </StickyBottomCTA>
 
       <Modal visible={false} transparent animationType="none">

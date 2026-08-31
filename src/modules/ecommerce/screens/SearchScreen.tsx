@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, View, Text, TouchableOpacity, Image, StyleSheet, ScrollView, Alert } from "react-native";
+import {
+    Alert,
+    Animated,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoginHead from "../constants/heading/LoginHead";
 import { fetchSearchSuggestions, getProductImageUrl, saveSearchHistory, getSearchHistory, clearSearchHistory } from "../api/ProductApi";

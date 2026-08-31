@@ -278,12 +278,12 @@ export default function OrderStepUI() {
         Array.isArray(res?.items) && res.items.length > 0
           ? res.items
           : Array.isArray(res?.data?.items) && res.data.items.length > 0
-          ? res.data.items
-          : res?.item
-          ? [res.item]
-          : res?.data?.item
-          ? [res.data.item]
-          : [];
+            ? res.data.items
+            : res?.item
+              ? [res.item]
+              : res?.data?.item
+                ? [res.data.item]
+                : [];
 
       const normalizedItems = itemsArray.map(normalizeCheckoutItem);
 
@@ -311,9 +311,9 @@ export default function OrderStepUI() {
         reward: {
           redeemCoins: toAmount(
             reward?.redeemCoins ??
-              reward?.redeemedCoins ??
-              data?.totalDiscount ??
-              res?.totalDiscount,
+            reward?.redeemedCoins ??
+            data?.totalDiscount ??
+            res?.totalDiscount,
           ),
           earnCoins: toAmount(reward?.earnCoins),
         },
@@ -331,8 +331,8 @@ export default function OrderStepUI() {
     const list = Array.isArray(res?.data)
       ? res.data
       : Array.isArray(res)
-      ? res
-      : [];
+        ? res
+        : [];
     return (
       list.find((a: any) => Number(a?.is_default) === 1) || list[0] || null
     );
@@ -415,7 +415,7 @@ export default function OrderStepUI() {
       previousAddressIdRef.current = currentAddressId;
       queryClient
         .invalidateQueries({ queryKey: checkoutQueryKey })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [address, checkoutQueryKey, isAddressFetching, queryClient]);
 
@@ -494,10 +494,10 @@ export default function OrderStepUI() {
       setItems(prev => (prev.length === 0 ? prev : []));
       setCartSummary(prev =>
         prev.productTotal === 0 &&
-        prev.shippingTotal === 0 &&
-        prev.payableAmount === 0 &&
-        prev.reward.redeemCoins === 0 &&
-        prev.reward.earnCoins === 0
+          prev.shippingTotal === 0 &&
+          prev.payableAmount === 0 &&
+          prev.reward.redeemCoins === 0 &&
+          prev.reward.earnCoins === 0
           ? prev
           : emptyCheckoutSummary(),
       );
@@ -512,8 +512,8 @@ export default function OrderStepUI() {
     0,
     Number(
       checkoutData?.summary?.reward?.redeemCoins ??
-        cartSummary.reward.redeemCoins ??
-        0,
+      cartSummary.reward.redeemCoins ??
+      0,
     ),
   );
 
@@ -656,18 +656,18 @@ export default function OrderStepUI() {
     const cartSnapshot =
       mode !== 'buy_now'
         ? items
-            .map(item => ({
-              product_id: Number(item.product_id),
-              variant_id: Number(item.variant_id),
-              quantity: Number(item.quantity ?? 1),
-            }))
-            .filter(
-              item =>
-                Number.isFinite(item.product_id) &&
-                item.product_id > 0 &&
-                Number.isFinite(item.variant_id) &&
-                item.variant_id > 0,
-            )
+          .map(item => ({
+            product_id: Number(item.product_id),
+            variant_id: Number(item.variant_id),
+            quantity: Number(item.quantity ?? 1),
+          }))
+          .filter(
+            item =>
+              Number.isFinite(item.product_id) &&
+              item.product_id > 0 &&
+              Number.isFinite(item.variant_id) &&
+              item.variant_id > 0,
+          )
         : [];
 
     const restoreCartAfterPaymentFailure = async () => {
@@ -835,9 +835,9 @@ export default function OrderStepUI() {
 
       const orderId = Number(
         orderRes?.order_id ??
-          orderRes?.orderId ??
-          orderRes?.data?.order_id ??
-          orderRes?.data?.orderId,
+        orderRes?.orderId ??
+        orderRes?.data?.order_id ??
+        orderRes?.data?.orderId,
       );
       createdOrderId = Number.isFinite(orderId) && orderId > 0 ? orderId : null;
 
@@ -1428,9 +1428,8 @@ export default function OrderStepUI() {
             <CheckoutItemCart
               key={String(
                 item.cart_item_id ??
-                  `${item.product_id ?? 'p'}-${
-                    item.variant_id ?? 'v'
-                  }-${index}`,
+                `${item.product_id ?? 'p'}-${item.variant_id ?? 'v'
+                }-${index}`,
               )}
               item={item}
               onIncrease={() => increaseQty(item)}
@@ -1440,6 +1439,7 @@ export default function OrderStepUI() {
                 Number(item?.product_id) > 0 &&
                 navigation.navigate('ProductDescription', {
                   productId: Number(item.product_id),
+                  variantId: Number(item.variant_id),
                 })
               }
             />

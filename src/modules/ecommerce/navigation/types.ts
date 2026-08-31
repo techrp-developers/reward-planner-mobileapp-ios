@@ -18,7 +18,7 @@ export type HomeStackParamList = {
     subcategoryId?: number | string;
     subcategoryTitle?: string;
   };
-  ProductDescription: { productId: number | string };
+  ProductDescription: { productId: number | string; variantId?: number | string };
   Cart: undefined;
   AddressSelect: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   WithAddress: undefined;
