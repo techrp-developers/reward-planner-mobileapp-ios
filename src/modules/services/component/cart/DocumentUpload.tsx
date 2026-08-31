@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Animated,
   Image,
+  Modal,
 } from 'react-native';
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -181,7 +182,7 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
             {doc.localName}
           </Text>
         ) : (
-          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>JPG · PNG · PDF · max 10 MB</Text>
+          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>Image · Video · PDF · Office · max 10 MB</Text>
         )}
       </View>
 
@@ -294,6 +295,7 @@ const DocumentUpload = () => {
   const [submitting, setSubmitting] = useState(false);
   const [canSubmit, setCanSubmit] = useState(false);
   const [error, setError] = useState('');
+  const [filePickerDoc, setFilePickerDoc] = useState<LocalDoc | null>(null);
 
   // ── Load docs ──
   const loadDocs = useCallback(async () => {
@@ -338,7 +340,7 @@ const DocumentUpload = () => {
   const anyUploading = docs.some(d => d.uploadState === 'uploading');
 
   // ── Pick file ──
-  const handlePick = useCallback(async (doc: LocalDoc) => {
+  const handlePickMedia = useCallback(async (doc: LocalDoc) => {
     // Guard against double-taps opening the picker twice for the same doc —
     // the second call resolving (e.g. as cancelled) could stomp the first
     // call's successfully-picked file.
@@ -415,6 +417,74 @@ const DocumentUpload = () => {
       )
     );
   }, []);
+
+  const handlePickDocument = useCallback(async (doc: LocalDoc) => {
+    if (doc.uploadState === 'picking' || doc.uploadState === 'uploading') return;
+
+    setDocs(prev => prev.map(d =>
+      d.document_key === doc.document_key ? { ...d, uploadState: 'picking' } : d
+    ));
+
+    const resetPicking = () => setDocs(prev => prev.map(d =>
+      d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
+    ));
+
+    try {
+      // Load on demand so the native picker cannot delay app startup.
+      const { pick, types } = require('@react-native-documents/picker');
+      const result = await pick({
+        type: [
+          types.pdf, types.doc, types.docx, types.xls, types.xlsx,
+          types.ppt, types.pptx, types.csv, types.plainText,
+        ],
+        allowMultiSelection: false,
+        mode: 'import',
+      });
+      const file = result[0];
+      if (!file?.uri) {
+        resetPicking();
+        return;
+      }
+      if (file.size && file.size > MAX_FILE_SIZE_BYTES) {
+        Alert.alert('File Too Large', 'Maximum allowed size is 10 MB. Please choose a smaller file.');
+        resetPicking();
+        return;
+      }
+      setDocs(prev => prev.map(d =>
+        d.document_key === doc.document_key
+          ? {
+            ...d,
+            localUri: file.uri,
+            localName: file.name || `${doc.document_key}.pdf`,
+            localType: file.type || 'application/octet-stream',
+            uploadState: 'ready',
+            uploaded: false,
+          }
+          : d
+      ));
+    } catch (error: any) {
+      resetPicking();
+      if (error?.code !== 'OPERATION_CANCELED') {
+        Alert.alert('Picker Error', 'Could not select this document. Please try again.');
+      }
+    }
+  }, []);
+
+  const handlePick = useCallback((doc: LocalDoc) => {
+    setFilePickerDoc(doc);
+  }, []);
+
+  const choosePickerType = useCallback((type: 'media' | 'document') => {
+    const doc = filePickerDoc;
+    setFilePickerDoc(null);
+    if (!doc) return;
+
+    setTimeout(() => {
+      if (type === 'media') handlePickMedia(doc);
+      else handlePickDocument(doc);
+    }, 180);
+  }, [filePickerDoc, handlePickDocument, handlePickMedia]);
+
 
   // ── Remove / re-pick ──
   const handleRemove = useCallback((key: string) => {
@@ -622,6 +692,75 @@ const DocumentUpload = () => {
           </View>
         </>
       )}
+
+      <Modal
+        visible={Boolean(filePickerDoc)}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setFilePickerDoc(null)}
+      >
+        <View style={styles.pickerOverlay}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            accessibilityLabel="Close file options"
+            onPress={() => setFilePickerDoc(null)}
+          />
+          <View style={[styles.pickerSheet, { backgroundColor: servicesTheme.colors.surface }]}>
+            <View style={styles.pickerHandle} />
+            <View style={styles.pickerHeader}>
+              <View style={styles.pickerHeaderIcon}>
+                <MaterialCommunityIcons name="cloud-upload-outline" size={25} color="#7C3AED" />
+              </View>
+              <View style={styles.pickerHeaderCopy}>
+                <Text style={[styles.pickerTitle, { color: servicesTheme.colors.textStrong }]}>Upload document</Text>
+                <Text style={[styles.pickerSubtitle, { color: servicesTheme.colors.muted }]} numberOfLines={1}>
+                  {filePickerDoc?.document_name || 'Choose a file source'}
+                </Text>
+              </View>
+              <TouchableOpacity style={styles.pickerClose} onPress={() => setFilePickerDoc(null)}>
+                <Ionicons name="close" size={22} color={servicesTheme.colors.muted} />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.pickerOption, { borderColor: servicesTheme.colors.border }]}
+              activeOpacity={0.82}
+              onPress={() => choosePickerType('media')}
+            >
+              <View style={[styles.pickerOptionIcon, { backgroundColor: '#F3E8FF' }]}>
+                <Ionicons name="images-outline" size={24} color="#7C3AED" />
+              </View>
+              <View style={styles.pickerOptionCopy}>
+                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>Photo or video</Text>
+                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>JPG, PNG, WebP, HEIC, MP4, MOV or WebM</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#A78BFA" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.pickerOption, { borderColor: servicesTheme.colors.border }]}
+              activeOpacity={0.82}
+              onPress={() => choosePickerType('document')}
+            >
+              <View style={[styles.pickerOptionIcon, { backgroundColor: '#E0F2FE' }]}>
+                <Ionicons name="document-text-outline" size={24} color="#0284C7" />
+              </View>
+              <View style={styles.pickerOptionCopy}>
+                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>Browse documents</Text>
+                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>PDF, Word, Excel, PowerPoint, CSV or text</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#38BDF8" />
+            </TouchableOpacity>
+
+            <View style={[styles.pickerSecurity, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F8F7FF' }]}>
+              <MaterialCommunityIcons name="shield-check-outline" size={17} color="#7C3AED" />
+              <Text style={[styles.pickerSecurityText, { color: servicesTheme.colors.muted }]}>Secure upload · Maximum file size 10 MB</Text>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -726,6 +865,38 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   uploadBtnText: { fontSize: 12, fontWeight: '700', color: '#7C3AED' },
+
+  pickerOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(15, 23, 42, 0.58)',
+  },
+  pickerSheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 18,
+  },
+  pickerHandle: { width: 42, height: 5, borderRadius: 99, backgroundColor: '#D1D5DB', alignSelf: 'center', marginBottom: 18 },
+  pickerHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  pickerHeaderIcon: { width: 48, height: 48, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F3E8FF' },
+  pickerHeaderCopy: { flex: 1, marginLeft: 12 },
+  pickerTitle: { fontSize: 18, fontWeight: '800' },
+  pickerSubtitle: { fontSize: 12, marginTop: 4 },
+  pickerClose: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(148,163,184,0.12)' },
+  pickerOption: { minHeight: 78, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: 17, padding: 13, marginBottom: 11 },
+  pickerOptionIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  pickerOptionCopy: { flex: 1, marginHorizontal: 12 },
+  pickerOptionTitle: { fontSize: 14, fontWeight: '800' },
+  pickerOptionText: { fontSize: 11, lineHeight: 17, marginTop: 4 },
+  pickerSecurity: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, borderRadius: 12, padding: 11, marginTop: 3 },
+  pickerSecurityText: { fontSize: 11, fontWeight: '600' },
 
   // Footer
   footer: {
