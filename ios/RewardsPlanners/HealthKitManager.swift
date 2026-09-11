@@ -36,6 +36,28 @@ final class HealthKitManager: NSObject {
     }
   }
 
+  @objc(hasHandledAuthorization:rejecter:)
+  func hasHandledAuthorization(
+    _ resolve: @escaping HealthKitPromiseResolveBlock,
+    rejecter reject: @escaping HealthKitPromiseRejectBlock
+  ) {
+    guard let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) else {
+      reject("healthkit_steps_unavailable", "Step Count is not available on this device.", nil)
+      return
+    }
+
+    healthStore.getRequestStatusForAuthorization(toShare: [], read: [stepType]) { status, error in
+      if let error {
+        reject("healthkit_status_failed", error.localizedDescription, error)
+        return
+      }
+      // HealthKit intentionally does not disclose whether read access was
+      // allowed or denied. It does tell us whether the permission sheet has
+      // already been handled, which prevents repeatedly showing Grant Access.
+      resolve(status != .shouldRequest)
+    }
+  }
+
   @objc(getStepCount:endDate:resolver:rejecter:)
   func getStepCount(
     _ startDate: Double,

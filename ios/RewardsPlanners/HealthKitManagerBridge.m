@@ -8,6 +8,9 @@ RCT_EXTERN_METHOD(isAvailable:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(requestAuthorization:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(hasHandledAuthorization:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(getStepCount:(double)startDate
                   endDate:(double)endDate
                   resolver:(RCTPromiseResolveBlock)resolve

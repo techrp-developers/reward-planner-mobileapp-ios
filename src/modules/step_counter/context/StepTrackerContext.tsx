@@ -75,6 +75,7 @@ const IOS_STEPS_PERMISSION = { accessType: 'read', recordType: 'Steps' };
 const HealthKitManager = NativeModules.HealthKitManager as {
   isAvailable(): Promise<boolean>;
   requestAuthorization(): Promise<boolean>;
+  hasHandledAuthorization(): Promise<boolean>;
   getStepCount(startDate: number, endDate: number): Promise<number>;
   openHealthApp(): Promise<boolean>;
 } | undefined;
@@ -355,7 +356,8 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         }
 
         const setupComplete = await AsyncStorage.getItem(STORAGE_SETUP).catch(() => null);
-        if (setupComplete === 'true') {
+        const authorizationHandled = await HealthKitManager!.hasHandledAuthorization().catch(() => false);
+        if (setupComplete === 'true' || authorizationHandled) {
           const granted = [IOS_STEPS_PERMISSION];
           setGrantedPermissions(granted);
           setHealthConnectError(null);
@@ -534,7 +536,14 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     try {
       if (Platform.OS === 'ios') {
         if (!HealthKitManager) return;
-        await HealthKitManager.openHealthApp();
+        const authorized = await HealthKitManager.requestAuthorization();
+        if (authorized) {
+          setGrantedPermissions([IOS_STEPS_PERMISSION]);
+          setHealthConnectError(null);
+          await readAndSync();
+        } else {
+          setHealthConnectError('Apple Health authorization was not completed');
+        }
         return;
       }
 

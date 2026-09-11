@@ -84,7 +84,7 @@ const STEPS_ALREADY_INSTALLED: GuideStep[] = [
 ];
 
 const IOS_STEPS: GuideStep[] = [
-  { icon: 'numeric-1-circle-outline', title: 'Connect Apple Health', desc: 'Tap the Apple Health row above.' },
+  { icon: 'numeric-1-circle-outline', title: 'Connect Apple Health', desc: 'Tap the Apple Health row above to show the iOS permission sheet.' },
   { icon: 'numeric-2-circle-outline', title: 'Allow Steps', desc: 'In the Apple permission sheet, enable Steps and tap Allow.' },
   { icon: 'numeric-3-circle-outline', title: 'Come back here', desc: 'Your step count refreshes automatically when you return.' },
 ];
