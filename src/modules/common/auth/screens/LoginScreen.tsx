@@ -191,7 +191,6 @@ const styles = StyleSheet.create({
     color: "#777",
   },
   loginBtn: {
-    paddingVertical: 14,
     borderRadius: 10,
     alignItems: "center",
   },
@@ -199,6 +198,8 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 15,
     fontWeight: "700",
+    paddingVertical: 14,
+
   },
   bottomWrap: {
     borderTopWidth: 1,

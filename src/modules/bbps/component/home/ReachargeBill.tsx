@@ -489,9 +489,9 @@ function RechargeBill() {
         >
           <View style={styles.benefitRow}>
             <View style={styles.benefitIconWrap}>
-              <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
+              {/* <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
                 <MaterialCommunityIcons name="gift-outline" size={27} color="#FFFFFF" />
-              </LinearGradient>
+              </LinearGradient> */}
             </View>
             <View style={styles.benefitContent}>
               <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#33213F' }]}>Earn reward points</Text>
@@ -501,9 +501,9 @@ function RechargeBill() {
           <View style={[styles.benefitDivider, { backgroundColor: bbpsTheme.isDark ? 'rgba(255,255,255,0.10)' : 'rgba(112,64,150,0.12)' }]} />
           <View style={styles.benefitRow}>
             <View style={styles.benefitIconWrap}>
-              <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
+              {/* <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
                 <MaterialCommunityIcons name="cash-check" size={27} color="#FFFFFF" />
-              </LinearGradient>
+              </LinearGradient> */}
             </View>
             <View style={styles.benefitContent}>
               <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#33213F' }]}>No extra charges</Text>
@@ -542,13 +542,12 @@ const styles = StyleSheet.create({
   heroContainer: {
     minHeight: 205,
     marginHorizontal: -16,
-    marginTop: -12,
+    // marginTop: -12,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
-    padding: 20,
-    marginBottom: 0,
+    // marginBottom: 0,
     overflow: 'hidden',
     borderBottomWidth: 1,
     shadowOffset: { width: 0, height: 8 },
@@ -565,17 +564,30 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  heroContent: { alignItems: 'flex-start', flex: 1, marginTop: 12, paddingRight: 82, justifyContent: 'center' },
+  heroContent: {
+    alignItems: 'flex-start', flex: 1, marginTop: 12, paddingRight: 82, justifyContent: 'center', padding: 20,
+  },
   heroScript: { color: '#FFFFFF', fontSize: 20, fontWeight: '700', marginTop: -2 },
   heroReceipt: { position: 'absolute', right: -2, bottom: 18, width: 74, height: 84, borderRadius: 19, padding: 6, backgroundColor: 'rgba(255,255,255,0.12)', transform: [{ rotate: '5deg' }], shadowColor: '#3B1D54', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.24, shadowRadius: 10, elevation: 5 },
-  heroReceiptInner: { flex: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  heroReceiptInner: { flex: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingRight: 5 },
   heroAccentLine: { position: 'absolute', width: 38, height: 4, borderRadius: 2, left: 20, bottom: 20, opacity: 0.85 },
   featuredSection: { marginTop: 30 },
   quickHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  headingWithAccent: { flexDirection: 'row', alignItems: 'center' },
-  headingAccent: { width: 4, height: 24, borderRadius: 2, marginRight: 10 },
+  headingWithAccent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headingAccent: {
+    width: 4,
+    height: 22,
+    marginRight: 10,
+    borderRadius: 2,
+  },
   quickSubtitle: { fontSize: 11.5, fontWeight: '500', marginTop: 3 },
-  sectionDisplayTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '800', letterSpacing: -0.5, marginBottom: 16 },
+  sectionDisplayTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+  },
   featuredGrid: { flexDirection: 'row', gap: 9 },
   quickCard: { flex: 1, height: 128, borderRadius: 20, overflow: 'hidden', borderWidth: 1, shadowColor: '#5B47A3', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
   quickCardFill: { flex: 1, padding: 12 },
@@ -658,15 +670,46 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  benefitsSection: { marginTop: 30 },
-  benefitCard: { borderRadius: 22, borderWidth: 1, padding: 16, overflow: 'hidden' },
-  benefitRow: { flexDirection: 'row', alignItems: 'center' },
-  benefitIconWrap: { width: 58, height: 58, borderRadius: 19, padding: 4, backgroundColor: 'rgba(255,255,255,0.22)', marginRight: 13 },
-  benefitIconGradient: { flex: 1, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  benefitContent: { flex: 1, paddingRight: 6 },
-  benefitTitle: { fontSize: 15, fontWeight: '800', marginBottom: 5 },
-  benefitDescription: { fontSize: 11.5, lineHeight: 17, fontWeight: '500' },
-  benefitDivider: { height: 1, marginVertical: 14, marginLeft: 71 },
+  benefitsSection: {
+    marginTop: 24,
+  },
+  benefitCard: {
+    // padding: 16,
+    borderWidth: 1,
+    borderRadius: 16,
+  },
+  benefitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+
+  },
+  benefitIconWrap: {
+    width: 52,
+    height: 52,
+  },
+  benefitIconGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+
+  },
+  benefitContent: {
+    flex: 1,
+  },
+  benefitTitle: {
+    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  benefitDescription: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
+  benefitDivider: {
+    height: 1,
+    marginVertical: 14,
+  },
   othersSection: { marginTop: 30, marginBottom: 20 },
   otherRow: { minHeight: 78, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#29262D' },
   otherIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#17151A', borderWidth: 1, borderColor: '#2B2730', alignItems: 'center', justifyContent: 'center', marginRight: 13 },

@@ -7,7 +7,7 @@ const APP_SETTINGS_API =
 
 const STORE_URLS = {
   android: 'https://play.google.com/store/apps/details?id=com.rewardsplanners',
-  ios: 'https://apps.apple.com/app/idYOUR_APP_ID',
+  ios: 'https://apps.apple.com/in/app/reward-planners/id6763531257',
 };
 
 export type AppVersionResult = {
@@ -82,7 +82,12 @@ export const checkAppVersion = async (): Promise<AppVersionResult> => {
       ? data.android_force_update === 1
       : data.ios_force_update === 1;
 
-    const updateUrl = Platform.OS === 'android' ? STORE_URLS.android : STORE_URLS.ios;
+    const configuredAndroidStoreUrl = data.android_store_url ?? data.android_update_url;
+    const updateUrl = Platform.OS === 'ios'
+      ? STORE_URLS.ios
+      : typeof configuredAndroidStoreUrl === 'string' && configuredAndroidStoreUrl.trim()
+        ? configuredAndroidStoreUrl.trim()
+        : STORE_URLS.android;
 
     // Compare BOTH version name AND version code
     // Show update only if API version is strictly newer

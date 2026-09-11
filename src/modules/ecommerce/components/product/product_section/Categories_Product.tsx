@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import ProductCard from "../../../constants/product_cart/ProductCard";
@@ -93,6 +94,7 @@ const resolveInitialSelection = (
 
 export default function Categories_Product() {
   const route = useRoute<CategoryRouteProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { categoryId, title, subcategoryId } = route.params;
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -233,6 +235,21 @@ export default function Categories_Product() {
     if (!hasNextPage || isFetchingNextPage) return;
     fetchNextPage();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  const handleProductPress = useCallback(
+    (productId: string | number, item: any) => {
+      if (productId === undefined || productId === null || String(productId).trim() === "") {
+        return;
+      }
+
+      const variantId = item?.variant_id ?? item?.variantId ?? item?.default_variant_id;
+      navigation.push("ProductDescription", {
+        productId,
+        ...(variantId !== undefined && variantId !== null ? { variantId } : {}),
+      });
+    },
+    [navigation],
+  );
 
   // ── Viewability-based image loading ─────────────────────────────────────────
   const visibleIdsRef = useRef<Set<string>>(new Set());
@@ -435,6 +452,7 @@ export default function Categories_Product() {
                   item={item}
                   cardWidth={cardWidth}
                   shouldLoadImage={shouldLoadImage}
+                  onProductPress={handleProductPress}
                 />
               );
             }}

@@ -246,8 +246,6 @@ const styles = StyleSheet.create({
 
   verifyBtn: {
     width: "100%",
-    paddingVertical: 14,
-    paddingHorizontal: 14,
     borderRadius: 10,
     alignItems: "center",
     minWidth: 200,
@@ -257,5 +255,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "700",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
   },
 });

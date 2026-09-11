@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Alert,
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -255,7 +256,37 @@ export function AppUpdateModal({
     }).start();
   };
 
-  const handleUpdate = () => Linking.openURL(updateUrl);
+  const handleUpdate = async () => {
+    const webStoreUrl = updateUrl.trim();
+
+    if (!webStoreUrl) {
+      Alert.alert("Update unavailable", "The App Store link is not configured.");
+      return;
+    }
+
+    const nativeStoreUrl =
+      Platform.OS === "ios"
+        ? webStoreUrl.replace(/^https?:\/\//i, "itms-apps://")
+        : webStoreUrl;
+
+    try {
+      await Linking.openURL(nativeStoreUrl);
+    } catch (nativeError) {
+      try {
+        await Linking.openURL(webStoreUrl);
+      } catch (webError) {
+        console.warn("[AppUpdate] Unable to open store", {
+          nativeError,
+          webError,
+          updateUrl: webStoreUrl,
+        });
+        Alert.alert(
+          "Unable to open the store",
+          "Please open the App Store and search for Reward Planners.",
+        );
+      }
+    }
+  };
 
   // ── Content getters ─────────────────────────────────────────────────────
   type State = "maintenance" | "force" | "optional";

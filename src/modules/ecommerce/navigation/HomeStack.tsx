@@ -23,8 +23,7 @@ export default function HomeStack() {
         name="Category"
         getComponent={() => require("../components/product/product_section/Categories_Product").default}
         options={{
-          animation: "fade",
-          presentation: "transparentModal",
+          animation: "slide_from_right",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -55,8 +54,7 @@ export default function HomeStack() {
         name="CategoriesScreen"
         getComponent={() => require("../screens/CategoriesScreen").default}
         options={{
-          animation: "fade",
-          presentation: "transparentModal",
+          animation: "slide_from_right",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
