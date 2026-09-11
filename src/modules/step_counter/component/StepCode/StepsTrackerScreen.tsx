@@ -3,6 +3,7 @@ import {
   Animated,
   Easing,
   Linking,
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -80,6 +81,18 @@ const STEPS_ALREADY_INSTALLED: GuideStep[] = [
   { icon: 'numeric-3-circle-outline', title: 'Find Reward Planners', desc: 'Search for and tap "Reward Planners" in the app list.' },
   { icon: 'numeric-4-circle-outline', title: 'Open Permissions',     desc: 'Tap "Permissions" on the app info screen.' },
   { icon: 'numeric-5-circle-outline', title: 'Allow the toggles',    desc: 'Turn on "Physical activity" and "Health Connect", then come back here.' },
+];
+
+const IOS_STEPS: GuideStep[] = [
+  { icon: 'numeric-1-circle-outline', title: 'Connect Apple Health', desc: 'Tap the Apple Health row above.' },
+  { icon: 'numeric-2-circle-outline', title: 'Allow Steps', desc: 'In the Apple permission sheet, enable Steps and tap Allow.' },
+  { icon: 'numeric-3-circle-outline', title: 'Come back here', desc: 'Your step count refreshes automatically when you return.' },
+];
+
+const IOS_SETTINGS_STEPS: GuideStep[] = [
+  { icon: 'numeric-1-circle-outline', title: 'Open the Health app', desc: 'Open Apple Health on your iPhone.' },
+  { icon: 'numeric-2-circle-outline', title: 'Open Sharing', desc: 'Tap Sharing, then Apps and Services.' },
+  { icon: 'numeric-3-circle-outline', title: 'RewardsPlanners', desc: 'Select RewardsPlanners and enable Steps access.' },
 ];
 
 const PermissionGuide = ({
@@ -190,6 +203,8 @@ export default function StepsTrackerScreen() {
   const [guideOpen,                setGuideOpen]                = useState(false);
   const [altGuideOpen,             setAltGuideOpen]              = useState(false);
 
+  const isIOS = Platform.OS === 'ios';
+
   const isHCInstalled = healthConnectStatus !== '0' && healthConnectStatus !== String(SdkAvailabilityStatus.SDK_UNAVAILABLE);
   const hasStepsPerm  = hasStepsPermission(grantedPermissions);
   const isHCReady     = healthConnectStatus === String(SdkAvailabilityStatus.SDK_AVAILABLE) && hasStepsPerm;
@@ -218,6 +233,7 @@ export default function StepsTrackerScreen() {
   useEffect(() => { setGuideOpen(showGuide); }, [showGuide]);
 
   const checkApps = async () => {
+    if (isIOS) return;
     try {
       const fit     = await SendIntentAndroid.isAppInstalled('com.google.android.apps.fitness');
       const samsung = await SendIntentAndroid.isAppInstalled('com.sec.android.app.shealth');
@@ -257,10 +273,10 @@ export default function StepsTrackerScreen() {
 
     if (!isHCReady) {
       alert.warning(
-        !isHCInstalled ? 'Health Connect Required' : 'Permission Missing',
+        !isHCInstalled ? (isIOS ? 'Apple Health Required' : 'Health Connect Required') : 'Permission Missing',
         !isHCInstalled
-          ? 'Please install Health Connect to continue.'
-          : 'Please grant Steps permission in Health Connect, then return here.',
+          ? (isIOS ? 'Apple Health is not available on this device.' : 'Please install Health Connect to continue.')
+          : `Please grant Steps permission in ${isIOS ? 'Apple Health' : 'Health Connect'}, then return here.`,
       );
       if (isHCInstalled) setGuideOpen(true);
       return;
@@ -268,7 +284,9 @@ export default function StepsTrackerScreen() {
     if (totalSteps <= 0) {
       alert.warning(
         'No Steps Found',
-        'Open your fitness app (Google Fit, Samsung Health, Fitbit, Garmin, etc.), enable Health Connect sync, walk a few steps, then return here.',
+        isIOS
+          ? 'No steps were found for today. Walk a few steps with your iPhone or Apple Watch, then return here.'
+          : 'Open your fitness app (Google Fit, Samsung Health, Fitbit, Garmin, etc.), enable Health Connect sync, walk a few steps, then return here.',
       );
       refreshStatus();
       return;
@@ -284,7 +302,7 @@ export default function StepsTrackerScreen() {
     } finally {
       continueInProgressRef.current = false;
     }
-  }, [isHCReady, isHCInstalled, totalSteps, requestStepsPermission, navigation, alert, refreshStatus]);
+  }, [isHCReady, isHCInstalled, isIOS, totalSteps, requestStepsPermission, navigation, alert, refreshStatus]);
 
   return (
     <SafeAreaView style={ss.safe} edges={['top', 'bottom']}>
@@ -303,15 +321,17 @@ export default function StepsTrackerScreen() {
             <Text style={ss.eyebrow}>RP Move</Text>
             <Text style={ss.title}>Connect Your Apps</Text>
             <Text style={ss.description}>
-              Link your fitness apps so we can track your steps and reward you with coins.
+              {isIOS
+                ? 'Connect Apple Health so we can track your steps and reward you with coins.'
+                : 'Link your fitness apps so we can track your steps and reward you with coins.'}
             </Text>
           </View>
 
           {/* Required */}
           <Text style={ss.sectionLabel}>Required</Text>
           <ProviderCard
-            title="Health Connect"
-            subtitle="Google's unified health data platform"
+            title={isIOS ? 'Apple Health' : 'Health Connect'}
+            subtitle={isIOS ? 'Steps from your iPhone and Apple Watch' : "Google's unified health data platform"}
             iconName={BRAND.hc.icon} iconBg={BRAND.hc.bg} iconTint={BRAND.hc.tint}
             installed={isHCInstalled} connected={isHCReady}
             mandatory onPress={handleHCPress}
@@ -320,13 +340,13 @@ export default function StepsTrackerScreen() {
           <TouchableOpacity style={ss.guideToggle} onPress={() => setGuideOpen(v => !v)} activeOpacity={0.7}>
             <MaterialCommunityIcons name={guideOpen ? 'chevron-up' : 'information-outline'} size={14} color={VD.warning} />
             <Text style={ss.guideToggleText}>
-              {isHCReady ? 'View permission details' : 'How to grant Steps permission'}
+              {isHCReady ? 'View permission details' : `How to grant Steps permission`}
             </Text>
           </TouchableOpacity>
 
-          <PermissionGuide visible={guideOpen} steps={STEPS} headerText="How to grant Steps permission" />
+          <PermissionGuide visible={guideOpen} steps={isIOS ? IOS_STEPS : STEPS} headerText="How to grant Steps permission" />
 
-          {(isHCInstalled || isGoogleFitInstalled || isSamsungHealthInstalled) && !hasStepsPerm && (
+          {(isIOS || isHCInstalled || isGoogleFitInstalled || isSamsungHealthInstalled) && !hasStepsPerm && (
             <>
               <TouchableOpacity style={ss.guideToggle} onPress={() => setAltGuideOpen(v => !v)} activeOpacity={0.7}>
                 <MaterialCommunityIcons name={altGuideOpen ? 'chevron-up' : 'cog-outline'} size={14} color={VD.warning} />
@@ -335,56 +355,64 @@ export default function StepsTrackerScreen() {
 
               <PermissionGuide
                 visible={altGuideOpen}
-                steps={STEPS_ALREADY_INSTALLED}
-                headerText="Fix permission from phone Settings"
+                steps={isIOS ? IOS_SETTINGS_STEPS : STEPS_ALREADY_INSTALLED}
+                headerText={isIOS ? 'Fix permission in Apple Health' : 'Fix permission from phone Settings'}
               />
 
               {altGuideOpen && (
                 <TouchableOpacity style={ss.settingsBtn} onPress={openAppSettings} activeOpacity={0.78}>
                   <MaterialCommunityIcons name="cog-outline" size={16} color={VD.accentDark} />
-                  <Text style={ss.settingsBtnText}>Open App Settings</Text>
+                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open App Settings' : 'Open App Settings'}</Text>
                 </TouchableOpacity>
               )}
             </>
           )}
 
-          {/* Optional fitness apps — launchers, not required selection */}
-          <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Sync a Fitness App</Text>
-          <Text style={ss.sectionHint}>
-            Open any app below to enable Health Connect sync. You can also use Fitbit, Garmin, or any other compatible app — no specific app is required.
-          </Text>
+          {!isIOS && (
+            <>
+              {/* Optional fitness apps — launchers, not required selection */}
+              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Sync a Fitness App</Text>
+              <Text style={ss.sectionHint}>
+                Open any app below to enable Health Connect sync. You can also use Fitbit, Garmin, or any other compatible app — no specific app is required.
+              </Text>
 
-          <ProviderCard
-            title="Samsung Health"
-            subtitle="Ideal for Samsung devices — syncs automatically"
-            iconName={BRAND.samsung.icon} iconBg={BRAND.samsung.bg} iconTint={BRAND.samsung.tint}
-            installed={isSamsungHealthInstalled} connected={false}
-            mandatory={false}
-            onPress={() => handleOpenApp('com.sec.android.app.shealth', 'com.sec.android.app.shealth', isSamsungHealthInstalled)}
-          />
-          <ProviderCard
-            title="Google Fit"
-            subtitle="Works on all Android phones — great for step tracking"
-            iconName={BRAND.google.icon} iconBg={BRAND.google.bg} iconTint={BRAND.google.tint}
-            installed={isGoogleFitInstalled} connected={false}
-            mandatory={false}
-            onPress={() => handleOpenApp('com.google.android.apps.fitness', 'com.google.android.apps.fitness', isGoogleFitInstalled)}
-          />
+              <ProviderCard
+                title="Samsung Health"
+                subtitle="Ideal for Samsung devices — syncs automatically"
+                iconName={BRAND.samsung.icon} iconBg={BRAND.samsung.bg} iconTint={BRAND.samsung.tint}
+                installed={isSamsungHealthInstalled} connected={false}
+                mandatory={false}
+                onPress={() => handleOpenApp('com.sec.android.app.shealth', 'com.sec.android.app.shealth', isSamsungHealthInstalled)}
+              />
+              <ProviderCard
+                title="Google Fit"
+                subtitle="Works on all Android phones — great for step tracking"
+                iconName={BRAND.google.icon} iconBg={BRAND.google.bg} iconTint={BRAND.google.tint}
+                installed={isGoogleFitInstalled} connected={false}
+                mandatory={false}
+                onPress={() => handleOpenApp('com.google.android.apps.fitness', 'com.google.android.apps.fitness', isGoogleFitInstalled)}
+              />
+            </>
+          )}
 
           {/* Other apps note */}
-          <View style={ss.otherAppsRow}>
+          <View style={[ss.otherAppsRow, isIOS && ss.sectionLabelGap]}>
             <View style={[ss.providerIcon, { backgroundColor: BRAND.other.bg, width: 36, height: 36, borderRadius: 10 }]}>
               <MaterialCommunityIcons name={BRAND.other.icon} size={18} color={BRAND.other.tint} />
             </View>
             <Text style={ss.otherAppsText}>
-              Also works with <Text style={ss.otherAppsHighlight}>Fitbit, Garmin Connect, Huawei Health, Strava</Text> and any app that supports Health Connect.
+              {isIOS ? 'Steps recorded by your ' : 'Also works with '}
+              <Text style={ss.otherAppsHighlight}>{isIOS ? 'iPhone, Apple Watch, and apps connected to Apple Health' : 'Fitbit, Garmin Connect, Huawei Health, Strava'}</Text>
+              {isIOS ? ' are included.' : ' and any app that supports Health Connect.'}
             </Text>
           </View>
 
           <View style={ss.appTip}>
             <MaterialCommunityIcons name="lightbulb-outline" size={13} color={VD.accentDark} />
             <Text style={ss.appTipText}>
-              Inside your fitness app, go to Settings → Connected apps → Health Connect and enable it. Then walk a few steps so data appears.
+              {isIOS
+                ? 'Keep your iPhone with you or wear your Apple Watch. Apple Health combines their step data automatically.'
+                : 'Inside your fitness app, go to Settings → Connected apps → Health Connect and enable it. Then walk a few steps so data appears.'}
             </Text>
           </View>
 

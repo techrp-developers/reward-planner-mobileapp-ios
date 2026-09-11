@@ -50,6 +50,10 @@
 	<string>We need location access to help you select your delivery address accurately.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We need location access to help you select your delivery address accurately.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>RewardsPlanners reads your step count from Apple Health to track progress and award coins.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>RewardsPlanners uses Apple Health access to support your fitness rewards.</string>
 
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to upload images for your orders and profile.</string>
