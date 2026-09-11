@@ -272,6 +272,16 @@ export default function StepsTrackerScreen() {
     }
 
     if (!isHCReady) {
+      if (isIOS) {
+        continueInProgressRef.current = true;
+        try {
+          const setupReady = await requestStepsPermission();
+          if (setupReady) navigation.navigate('StepForm');
+        } finally {
+          continueInProgressRef.current = false;
+        }
+        return;
+      }
       alert.warning(
         !isHCInstalled ? (isIOS ? 'Apple Health Required' : 'Health Connect Required') : 'Permission Missing',
         !isHCInstalled
@@ -345,6 +355,26 @@ export default function StepsTrackerScreen() {
           </TouchableOpacity>
 
           <PermissionGuide visible={guideOpen} steps={isIOS ? IOS_STEPS : STEPS} headerText="How to grant Steps permission" />
+
+          {isIOS && (
+            <>
+              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>iOS Health Settings</Text>
+              <Text style={ss.sectionHint}>
+                Manage the step source in Apple Health or change this app's iPhone permissions.
+              </Text>
+              <ProviderCard
+                title="iPhone Settings"
+                subtitle="Manage RewardsPlanners permissions"
+                iconName="cog-outline"
+                iconBg={BRAND.other.bg}
+                iconTint={BRAND.other.tint}
+                installed
+                connected={false}
+                mandatory={false}
+                onPress={openAppSettings}
+              />
+            </>
+          )}
 
           {(isIOS || isHCInstalled || isGoogleFitInstalled || isSamsungHealthInstalled) && !hasStepsPerm && (
             <>

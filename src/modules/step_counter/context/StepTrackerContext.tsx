@@ -62,7 +62,13 @@ const MIN_STEP_DIFF   = 100;
 const COOLDOWN_MS     = 15 * 60 * 1000; // 15 minutes
 
 const STORAGE_LAST_SYNC = '@step_tracker/last_synced_steps';
-const STORAGE_SETUP     = 'fitness_setup_completed';
+// Health permission is device- and platform-specific. Never let an Android
+// Health Connect completion (or backend account flag) bypass Apple Health
+// onboarding on a new iPhone.
+const STORAGE_SETUP = Platform.select({
+  ios: 'fitness_setup_completed_ios_healthkit',
+  default: 'fitness_setup_completed',
+}) as string;
 
 const HC_PACKAGE = 'com.google.android.healthconnect.controller';
 const IOS_STEPS_PERMISSION = { accessType: 'read', recordType: 'Steps' };
@@ -178,7 +184,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
 
       if (setupPair[1] === 'true') {
         setIsSetupComplete(true);
-      } else {
+      } else if (Platform.OS !== 'ios') {
         // AsyncStorage is wiped on reinstall — check the backend so users who
         // already completed setup on a previous install skip onboarding entirely.
         try {
@@ -528,14 +534,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     try {
       if (Platform.OS === 'ios') {
         if (!HealthKitManager) return;
-        const authorized = await HealthKitManager.requestAuthorization();
-        if (authorized) {
-          setGrantedPermissions([IOS_STEPS_PERMISSION]);
-          setHealthConnectError(null);
-          await readAndSync();
-        } else {
-          await HealthKitManager.openHealthApp();
-        }
+        await HealthKitManager.openHealthApp();
         return;
       }
 
