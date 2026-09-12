@@ -16,9 +16,9 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../theme/ThemeContext';
-import Logo from '../../../assets/menu/logo.png';
 import { useGlobalSearch } from './useGlobalSearch';
 import type { SearchData } from '../api/GlobalSearchAPI';
+import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 
 const ANDROID_STATUS_BAR = StatusBar.currentHeight ?? 24;
 const IOS_FALLBACK_TOP   = 50;
@@ -40,15 +40,35 @@ interface HeaderProps {
   userImageUri?:          string;
   companyLogoUri?:        string;
   surface?:               'solid' | 'transparent';
+  // CMS-driven text color for the header strip (greeting name, subtitle,
+  // search placeholder/icon tints, bell icon) — used when a CMS
+  // navbar_background image/color is active, since the theme-based
+  // light/dark text tokens can't know if that background is readable
+  // against them. Leave unset to keep the normal theme-aware colors
+  // (e.g. the default no-CMS-content fallback background).
+  textColor?:             string;
   dismissSignal?:         number;
-  notificationBadge?:     number;
   onNotificationPress?:   () => void;
   onAIToggle?:            (value: boolean) => void;
   onSearchSubmit?:        (query: string) => void;
   onSearchActiveChange?:  (active: boolean) => void;
   onSearchDropdownChange?: (active: boolean) => void;
   onSearchOverlayChange?: (state: SearchOverlayState) => void;
+  showRewardPoints?:      boolean;
+  rewardPoints?:          number;
 }
+
+// Hex "#RRGGBB" -> "rgba(r,g,b,alpha)" — used to derive a muted/secondary
+// shade of a single CMS textColor for subtitle/placeholder text, the same
+// way the existing theme tokens pair a strong color with a muted one.
+const withOpacity = (hex: string, alpha: number): string => {
+  const normalized = hex.replace('#', '');
+  if (normalized.length !== 6) return hex;
+  const r = parseInt(normalized.slice(0, 2), 16);
+  const g = parseInt(normalized.slice(2, 4), 16);
+  const b = parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -57,8 +77,8 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   userImageUri,
   companyLogoUri,
   surface = 'solid',
+  textColor,
   dismissSignal = 0,
-  notificationBadge = 0,
   onNotificationPress,
   onSearchSubmit,
   onSearchActiveChange,
@@ -70,12 +90,10 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery,  setSearchQuery]  = useState('');
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [avatarFailed, setAvatarFailed] = useState(false);
+  const [companyLogoFailed, setCompanyLogoFailed] = useState(false);
 
   // All animations use native driver (opacity + transform only)
-  const dateFade    = useRef(new Animated.Value(1)).current;
-  const searchFade  = useRef(new Animated.Value(0)).current;
-  const searchSlide = useRef(new Animated.Value(28)).current;
-  const searchScale = useRef(new Animated.Value(0.94)).current;
   const searchSweep = useRef(new Animated.Value(0)).current;
   const lastDismissSignal = useRef(dismissSignal);
   const inputRef    = useRef<TextInput>(null);
@@ -84,6 +102,22 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   const safeTop = insets.top > 0
     ? insets.top
     : Platform.OS === 'android' ? ANDROID_STATUS_BAR : IOS_FALLBACK_TOP;
+  const normalizedUserImageUri = useMemo(
+    () => normalizeLocalCmsImageUrl(userImageUri),
+    [userImageUri],
+  );
+  const normalizedCompanyLogoUri = useMemo(
+    () => normalizeLocalCmsImageUrl(companyLogoUri),
+    [companyLogoUri],
+  );
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [normalizedUserImageUri]);
+
+  useEffect(() => {
+    setCompanyLogoFailed(false);
+  }, [normalizedCompanyLogoUri]);
 
   // ── Global search hook ────────────────────────────────────────────────────
 
@@ -93,26 +127,22 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   // ── Theme tokens ──────────────────────────────────────────────────────────
 
   const tk = useMemo(() => ({
-    headerBg:         surface === 'transparent' ? 'transparent' : '#111827',
-    helloColor:       isDark ? '#A1A1AA' : '#C7D2FE',
-    nameColor:        '#FFFFFF',
-    logoPillBg:       'rgba(255,255,255,0.92)',
-    avatarRingBg:     isDark ? 'rgba(79,70,229,0.22)'  : 'rgba(255,255,255,0.18)',
-    dateColor:        isDark ? '#C7D2FE'  : '#E0E7FF',
-    iconBg:           isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.16)',
-    iconTint:         '#FFFFFF',
-    searchBg:         '#09090B',
-    searchBorder:     isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.22)',
-    searchTextColor:  '#FFFFFF',
-    placeholderColor: isDark ? '#A1A1AA'  : '#C7D2FE',
-  }), [isDark, surface]);
-
-  const formattedDate = useMemo(() => {
-    const n = new Date();
-    const D = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${D[n.getDay()]}, ${n.getDate()} ${M[n.getMonth()]}`;
-  }, []);
+    headerBg:         surface === 'transparent' ? 'transparent' : isDark ? '#09090B' : '#FFFFFF',
+    helloColor:       textColor ? withOpacity(textColor, 0.78) : isDark ? '#94A3B8' : '#64748B',
+    nameColor:        textColor ?? (isDark ? '#F8FAFC' : '#0F172A'),
+    avatarRingBg:     isDark ? 'rgba(15,23,42,0.88)' : '#FFFFFF',
+    dateColor:        isDark ? '#94A3B8' : '#64748B',
+    iconBg:           isDark ? 'rgba(15,23,42,0.72)' : '#FFFFFF',
+    iconTint:         textColor ?? (isDark ? '#F8FAFC' : '#111827'),
+    searchBg:         isDark ? 'rgba(15,23,42,0.88)' : '#F1F5F9',
+    searchBorder:     'transparent',
+    // Search pill keeps its own fixed light/dark background regardless of
+    // the header's dynamic textColor, so its text must stay theme-based too
+    // — following textColor here would make it unreadable (e.g. white text
+    // on the pill's light gray background) whenever a CMS text_color is set.
+    searchTextColor:  isDark ? '#F8FAFC' : '#0F172A',
+    placeholderColor: isDark ? '#94A3B8' : '#64748B',
+  }), [isDark, surface, textColor]);
 
   // ── Layout measurement — drives dropdown top position ─────────────────────
 
@@ -133,30 +163,17 @@ const HeaderComponent: React.FC<HeaderProps> = ({
       duration: 1800,
       useNativeDriver: true,
     }).start();
-    Animated.parallel([
-      Animated.timing(dateFade,    { toValue: 0, duration: 160, useNativeDriver: true }),
-      Animated.timing(searchFade,  { toValue: 1, duration: 240, useNativeDriver: true }),
-      Animated.timing(searchSlide, { toValue: 0, duration: 260, useNativeDriver: true }),
-      Animated.spring(searchScale, { toValue: 1, useNativeDriver: true, tension: 90, friction: 10 }),
-    ]).start(() => inputRef.current?.focus());
-  }, [dateFade, searchFade, searchSlide, searchScale, searchSweep, onSearchActiveChange]);
+  }, [searchSweep, onSearchActiveChange]);
 
   const closeSearch = useCallback(() => {
     if (!searchActive) return;
     inputRef.current?.blur();
     searchSweep.stopAnimation();
     onSearchActiveChange?.(false);
-    Animated.parallel([
-      Animated.timing(dateFade,    { toValue: 1, duration: 200, useNativeDriver: true }),
-      Animated.timing(searchFade,  { toValue: 0, duration: 140, useNativeDriver: true }),
-      Animated.timing(searchSlide, { toValue: 28, duration: 200, useNativeDriver: true }),
-      Animated.timing(searchScale, { toValue: 0.94, duration: 180, useNativeDriver: true }),
-    ]).start(() => {
-      setSearchActive(false);
-      setSearchQuery('');
-      reset();
-    });
-  }, [dateFade, searchActive, searchFade, searchSlide, searchScale, searchSweep, reset, onSearchActiveChange]);
+    setSearchActive(false);
+    setSearchQuery('');
+    reset();
+  }, [searchActive, searchSweep, reset, onSearchActiveChange]);
 
   useEffect(() => {
     onSearchDropdownChange?.(showDropdown);
@@ -226,11 +243,12 @@ const HeaderComponent: React.FC<HeaderProps> = ({
             activeOpacity={0.8}
           >
             <View style={[styles.avatarRing, { backgroundColor: tk.avatarRingBg }]}>
-              {userImageUri ? (
+              {normalizedUserImageUri && !avatarFailed ? (
                 <Image
-                  source={{ uri: userImageUri }}
+                  source={{ uri: normalizedUserImageUri as string }}
                   style={styles.avatarImg as ImageStyle}
                   resizeMode="cover"
+                  onError={() => setAvatarFailed(true)}
                 />
               ) : (
                 <MaterialCommunityIcons name="account-circle" size={32} color="#FFFFFF" />
@@ -239,21 +257,37 @@ const HeaderComponent: React.FC<HeaderProps> = ({
           </TouchableOpacity>
 
           <View style={styles.greetWrap}>
-            <Text style={[styles.helloText, { color: tk.helloColor }]}>Hello,</Text>
             <Text style={[styles.nameText, { color: tk.nameColor }]} numberOfLines={1}>
-              {userName}
+              Hi, {userName} 👋
+            </Text>
+            <Text style={[styles.helloText, { color: tk.helloColor }]} numberOfLines={1}>
+              Welcome back to Reward Planner
             </Text>
           </View>
 
-          <View style={[styles.logoPill, { backgroundColor: tk.logoPillBg }]}>
-            <View style={styles.logoImageWrap}>
-              <Image
-                source={companyLogoUri ? { uri: companyLogoUri } : Logo}
-                style={styles.logoImage as ImageStyle}
-                resizeMode="contain"
-              />
+          {normalizedCompanyLogoUri && !companyLogoFailed ? (
+            <View style={[styles.logoPill, { backgroundColor: tk.avatarRingBg }]}>
+              <View style={styles.logoImageWrap}>
+                <Image
+                  source={{ uri: normalizedCompanyLogoUri }}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                  onError={() => setCompanyLogoFailed(true)}
+                />
+              </View>
             </View>
-          </View>
+          ) : null}
+
+          <TouchableOpacity
+            onPress={onNotificationPress}
+            style={styles.notificationBtn}
+            activeOpacity={0.75}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={24} color={tk.nameColor} />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>3</Text>
+            </View>
+          </TouchableOpacity>
 
         </View>
 
@@ -269,33 +303,13 @@ const HeaderComponent: React.FC<HeaderProps> = ({
 
             {/* Date */}
             <Animated.View
-              style={[StyleSheet.absoluteFill, styles.dateCentered, { opacity: dateFade }]}
-              pointerEvents={searchActive ? 'none' : 'auto'}
-            >
-              <MaterialCommunityIcons
-                name="calendar-month-outline"
-                size={13}
-                color={tk.dateColor}
-                style={styles.calIcon}
-              />
-              <Text style={[styles.dateText, { color: tk.dateColor }]} numberOfLines={1}>
-                {formattedDate}
-              </Text>
-            </Animated.View>
-
-            {/* Search pill */}
-            <Animated.View
               style={[
-                StyleSheet.absoluteFill,
                 styles.searchPill,
                 {
                   backgroundColor: tk.searchBg,
                   borderColor:     tk.searchBorder,
-                  opacity:         searchFade,
-                  transform: [{ translateX: searchSlide }, { scale: searchScale }],
                 },
               ]}
-              pointerEvents={searchActive ? 'auto' : 'none'}
             >
               <Animated.View
                 pointerEvents="none"
@@ -317,15 +331,22 @@ const HeaderComponent: React.FC<HeaderProps> = ({
               />
               <TextInput
                 ref={inputRef}
-                placeholder="Search products, services…"
+                placeholder="Search for rewards, services & more..."
                 placeholderTextColor={tk.placeholderColor}
                 value={searchQuery}
                 onChangeText={handleQueryChange}
+                onFocus={openSearch}
                 onSubmitEditing={handleSubmit}
                 style={[styles.searchInput, { color: tk.searchTextColor }]}
-                editable={searchActive}
                 returnKeyType="search"
               />
+              {/* <TouchableOpacity
+                onPress={() => navigation.navigate('GlobalSearchScreen')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={styles.scanIcon}
+              >
+                <MaterialCommunityIcons name="line-scan" size={20} color={tk.placeholderColor} />
+              </TouchableOpacity> */}
               {searchQuery.length > 0 && (
                 <TouchableOpacity
                   onPress={() => { setSearchQuery(''); reset(); }}
@@ -336,32 +357,6 @@ const HeaderComponent: React.FC<HeaderProps> = ({
               )}
             </Animated.View>
 
-          </View>
-
-          {/* Icon buttons */}
-          <View style={styles.actionRow}>
-            <TouchableOpacity
-              onPress={searchActive ? closeSearch : openSearch}
-              style={[styles.iconBtn, { backgroundColor: tk.iconBg }]}
-              activeOpacity={0.75}
-            >
-              <MaterialCommunityIcons
-                name={searchActive ? 'close' : 'magnify'}
-                size={19}
-                color={tk.iconTint}
-              />
-            </TouchableOpacity>
-
-            {!searchActive && (
-              <TouchableOpacity
-                onPress={onNotificationPress}
-                style={[styles.iconBtn, { backgroundColor: tk.iconBg }]}
-                activeOpacity={0.75}
-              >
-                <MaterialCommunityIcons name="bell-outline" size={19} color={tk.iconTint} />
-                {notificationBadge > 0 && <View style={styles.badgeDot} />}
-              </TouchableOpacity>
-            )}
           </View>
 
         </View>
@@ -384,33 +379,31 @@ const styles = StyleSheet.create({
   },
 
   headerSurface: {
-    paddingHorizontal: 18,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 34,
-    borderBottomRightRadius: 34,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
     overflow: 'hidden',
   },
   // ── Row 1 ──
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 13,
+    gap: 12,
     marginBottom: 16,
   },
   avatarRing: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.78)',
+    borderColor: '#FBBF24',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   avatarImg: {
     width: '100%',
@@ -420,16 +413,48 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   helloText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
-    lineHeight: 17,
-    letterSpacing: 0.2,
+    lineHeight: 18,
+    letterSpacing: 0,
   },
   nameText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '800',
-    lineHeight: 24,
+    lineHeight: 25,
     letterSpacing: 0,
+  },
+  notificationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 2,
+    right: 1,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EF4444',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  notificationBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    lineHeight: 12,
+    fontWeight: '900',
   },
   logoPill: {
     borderRadius: 18,
@@ -465,13 +490,12 @@ const styles = StyleSheet.create({
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    height: 50,
+    height: 54,
   },
   flexZone: {
     flex: 1,
     position: 'relative',
-    height: 50,
+    height: 54,
   },
 
   // Date
@@ -493,17 +517,17 @@ const styles = StyleSheet.create({
   searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: 27,
     borderWidth: 1,
-    paddingHorizontal: 15,
-    height: 50,
-    gap: 9,
+    paddingHorizontal: 16,
+    height: 54,
+    gap: 10,
     overflow: 'hidden',
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    elevation: 3,
   },
   searchSweep: {
     position: 'absolute',
@@ -516,9 +540,17 @@ const styles = StyleSheet.create({
   searchIcon: {},
   searchInput: {
     flex: 1,
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '600',
     paddingVertical: 0,
-    height: 50,
+    height: 54,
+  },
+  scanIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Action buttons
@@ -537,16 +569,29 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.18)',
   },
-  badgeDot: {
-    position: 'absolute',
-    top: 7,
-    right: 7,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#EF4444',
-    borderWidth: 1.5,
-    borderColor: '#111827',
+  rewardPointsPill: {
+    minWidth: 112,
+    height: 42,
+    borderRadius: 21,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.18)',
+  },
+  rewardPointsValue: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    lineHeight: 16,
+    fontWeight: '800',
+  },
+  rewardPointsLabel: {
+    color: '#C7D2FE',
+    fontSize: 9,
+    lineHeight: 11,
+    fontWeight: '600',
   },
 
   // Dropdown container — absolute, overlays content below header

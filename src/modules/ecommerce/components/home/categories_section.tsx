@@ -7,31 +7,32 @@ import {
   useWindowDimensions,
   Image,
   FlatList,
+  InteractionManager,
+  Animated,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../../navigation/types";
 import { fetchAllCategories, getProductImageUrl } from "../../api/ProductApi";
-import HomeSectionSkeleton from "./HomeSectionSkeleton";
 import { queryClient } from "../../../../query/queryClient";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { fs, rs } from "../../../../utils/responsive";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 const CATEGORIES_QUERY_KEY = ["ecommerce", "home", "categories-section"] as const;
 const CATEGORIES_STALE_TIME = 10 * 60 * 1000;
 
+const HORIZONTAL_PADDING = rs(16);
+const CARD_GAP = rs(10);
+const VISIBLE_CATEGORY_COUNT = 5;
+const SKELETON_CARD_COUNT = 5;
+
 type Category = {
   id: number;
   name: string;
   image: string;
-};
-
-type CategoryListItem = Category & {
-  __placeholder?: boolean;
-  __placeholderKey?: string;
 };
 
 const getCategoryList = (payload: any): Category[] => {
@@ -58,6 +59,136 @@ export const prefetchCategoriesSection = () =>
     staleTime: CATEGORIES_STALE_TIME,
   });
 
+const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+
+function CategoryItemSeparator() {
+  return <View style={styles.itemSeparator} />;
+}
+
+const CategoryTile = React.memo(function CategoryTile({
+  item,
+  cardWidth,
+  imageHeight,
+  labelColor,
+  cardBackgroundColor,
+  shadowColor,
+  onPress,
+}: {
+  item: Category;
+  cardWidth: number;
+  imageHeight: number;
+  labelColor: string;
+  cardBackgroundColor: string;
+  shadowColor: string;
+  onPress: (item: Category) => void;
+}) {
+  const scale = React.useRef(new Animated.Value(1)).current;
+  const opacity = React.useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = React.useCallback(() => {
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: 0.93,
+        useNativeDriver: true,
+        speed: 40,
+        bounciness: 4,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0.86,
+        duration: 90,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacity, scale]);
+
+  const handlePressOut = React.useCallback(() => {
+    Animated.parallel([
+      Animated.spring(scale, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 14,
+        bounciness: 9,
+      }),
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [opacity, scale]);
+
+  return (
+    <AnimatedTouchable
+      activeOpacity={0.9}
+      style={[styles.categoryTile, { width: cardWidth, opacity, transform: [{ scale }] }]}
+      onPress={() => onPress(item)}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
+      <View
+        style={[
+          styles.imageBox,
+          {
+            width: cardWidth,
+            height: imageHeight,
+            backgroundColor: cardBackgroundColor,
+            shadowColor,
+          },
+        ]}
+      >
+        <Image
+          source={{ uri: getProductImageUrl(item.image, "thumbnail", 45) }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      </View>
+
+      <Text style={[styles.label, { color: labelColor }]} numberOfLines={2} ellipsizeMode="tail">
+        {item.name}
+      </Text>
+    </AnimatedTouchable>
+  );
+});
+
+function CategoryCarouselSkeleton({ cardWidth }: { cardWidth: number }) {
+  const { isDark } = useAppTheme();
+  const opacity = React.useRef(new Animated.Value(0.55)).current;
+  const skeletonColor = isDark ? "#27272A" : "#EEF1F5";
+
+  React.useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 650, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.55, duration: 650, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [opacity]);
+
+  return (
+    <Animated.View
+      style={[styles.skeletonRow, { opacity, paddingHorizontal: HORIZONTAL_PADDING }]}
+    >
+      {Array.from({ length: SKELETON_CARD_COUNT }, (_, index) => (
+        <View key={index} style={{ width: cardWidth, marginRight: CARD_GAP }}>
+          <View
+            style={[
+              styles.skeletonImage,
+              {
+                width: cardWidth,
+                height: cardWidth * 1.05,
+                backgroundColor: skeletonColor,
+              },
+            ]}
+          />
+          <View style={[styles.skeletonLabel, { backgroundColor: skeletonColor }]} />
+        </View>
+      ))}
+    </Animated.View>
+  );
+}
+
 export default function CategoriesSection() {
   const navigation = useNavigation<Nav>();
   const { width } = useWindowDimensions();
@@ -72,147 +203,72 @@ export default function CategoriesSection() {
   });
 
   const layout = React.useMemo(() => {
-    const sectionHorizontalMargin = 0;
-    const sectionInnerPadding = 16;
-    const horizontalPadding = width >= 768 ? 12 : 8;
-    const gap = width >= 900 ? 16 : width >= 600 ? 14 : 12;
-    const numColumns = width >= 900 ? 6 : width >= 600 ? 5 : width >= 380 ? 4 : 3;
-    const availableWidth = width - sectionHorizontalMargin * 2 - sectionInnerPadding * 2;
-    const totalPadding = horizontalPadding * 2;
-    const totalGap = gap * (numColumns - 1);
-    const cardSize = (availableWidth - totalPadding - totalGap) / numColumns;
-    const imageSize = cardSize * 0.68;
-    const labelFontSize = width >= 900 ? 13 : width >= 600 ? 12 : width >= 380 ? 11 : 10;
-    const labelLineHeight = labelFontSize + 4;
+    // Keep exactly five category tiles visible so the row feels balanced
+    // across small and large phones.
+    const cardWidth =
+      (width - HORIZONTAL_PADDING * 2 - CARD_GAP * (VISIBLE_CATEGORY_COUNT - 1)) /
+      VISIBLE_CATEGORY_COUNT;
 
     return {
-      horizontalPadding,
-      gap,
-      numColumns,
-      cardSize,
-      imageSize,
-      labelFontSize,
-      labelLineHeight,
+      cardWidth,
+      imageHeight: cardWidth,
+      snapInterval: cardWidth + CARD_GAP,
     };
   }, [width]);
 
-  const onPressCategory = React.useCallback((item: Category) => {
-    navigation.navigate("Category", {
-      categoryId: item.id,
-      title: item.name,
-    });
-  }, [navigation]);
-
-  const listData = React.useMemo<CategoryListItem[]>(() => {
-    const remainder = categories.length % layout.numColumns;
-    if (remainder === 0) return categories;
-
-    const placeholdersNeeded = layout.numColumns - remainder;
-    const placeholders: CategoryListItem[] = Array.from({ length: placeholdersNeeded }, (_, index) => ({
-      id: -100000 - index,
-      name: "",
-      image: "",
-      __placeholder: true,
-      __placeholderKey: `category-placeholder-${index}`,
-    }));
-
-    return [...categories, ...placeholders];
-  }, [categories, layout.numColumns]);
+  const onPressCategory = React.useCallback(
+    (item: Category) => {
+      navigation.navigate("Category", {
+        categoryId: item.id,
+        title: item.name,
+      });
+    },
+    [navigation]
+  );
 
   React.useEffect(() => {
     if (!categories.length) return;
 
-    const id = requestIdleCallback(() => {
-      categories.slice(0, layout.numColumns).forEach((item) => {
+    const visibleCount = Math.ceil(width / layout.snapInterval) + 1;
+    const task = InteractionManager.runAfterInteractions(() => {
+      categories.slice(0, visibleCount).forEach((item) => {
         const imageUrl = getProductImageUrl(item.image, "thumbnail", 45);
         if (imageUrl) {
-          Image.prefetch(imageUrl).catch(() => {});
+          Image.prefetch(imageUrl).catch(() => { });
         }
       });
     });
 
-    return () => cancelIdleCallback(id);
-  }, [categories, layout.numColumns]);
+    return () => task.cancel();
+  }, [categories, layout.snapInterval, width]);
 
   const renderItem = React.useCallback(
-    ({ item }: { item: CategoryListItem }) => {
-      const cardSizeStyle = {
-        width: layout.cardSize,
-      };
-
-      if (item.__placeholder) {
-        return (
-          <View style={[styles.placeholderCard, cardSizeStyle]} />
-        );
-      }
-
-      return (
-        <TouchableOpacity
-          activeOpacity={0.85}
-          style={[
-            styles.categoryCard,
-            cardSizeStyle,
-          ]}
-          onPress={() => onPressCategory(item)}
-        >
-          <LinearGradient
-            colors={isDark ? ["#FACC15", "#FFFFFF"] : ["#FACC15", "#111827"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[
-              styles.gradientBorder,
-                {
-                  width: layout.cardSize,
-                  height: layout.cardSize,
-                  borderRadius: layout.cardSize * 0.26,
-                },
-              ]}
-          >
-            <View
-              style={[
-                styles.cardInner,
-                {
-                  borderRadius: layout.cardSize * 0.22,
-                  backgroundColor: theme.card,
-                },
-              ]}
-            >
-              <Image
-                source={{ uri: getProductImageUrl(item.image, "thumbnail", 45) }}
-                style={{
-                  width: layout.imageSize,
-                  height: layout.imageSize,
-                }}
-                resizeMode="contain"
-              />
-            </View>
-          </LinearGradient>
-
-          <Text
-            style={[
-              styles.label,
-              {
-                width: layout.cardSize,
-                fontSize: layout.labelFontSize,
-                lineHeight: layout.labelLineHeight,
-                minHeight: layout.labelLineHeight * 2,
-                color: theme.text,
-              },
-            ]}
-            numberOfLines={2}
-            ellipsizeMode="tail"
-          >
-            {item.name}
-          </Text>
-        </TouchableOpacity>
-      );
-    },
-    [isDark, layout, onPressCategory, theme.card, theme.text]
+    ({ item }: { item: Category }) => (
+      <CategoryTile
+        item={item}
+        cardWidth={layout.cardWidth}
+        imageHeight={layout.imageHeight}
+        labelColor={theme.text}
+        cardBackgroundColor={theme.card}
+        shadowColor={isDark ? "#000000" : "#94A3B8"}
+        onPress={onPressCategory}
+      />
+    ),
+    [isDark, layout.cardWidth, layout.imageHeight, onPressCategory, theme.card, theme.text]
   );
 
   if (loading) {
-    return <HomeSectionSkeleton height={240} backgroundColor={theme.background} />;
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.heading, { color: theme.text }]}>Categories</Text>
+        </View>
+        <CategoryCarouselSkeleton cardWidth={layout.cardWidth} />
+      </View>
+    );
   }
+
+  if (categories.length === 0) return null;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -224,27 +280,26 @@ export default function CategoriesSection() {
           onPress={() => navigation.navigate("CategoriesScreen")}
           style={styles.exploreBtn}
         >
-          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
-          <MaterialIcons name="chevron-right" size={18} color={isDark ? "#FFFFFF" : "#111827"} />
+          <Text style={[styles.exploreText, { color: theme.text }]}>View All</Text>
+          <MaterialIcons name="chevron-right" size={18} color={theme.text} />
         </TouchableOpacity>
       </View>
+
       <FlatList
-        key={`categories-${layout.numColumns}`}
-        data={listData}
-        keyExtractor={(item, index) => item.__placeholderKey ?? `${item.id}-${index}`}
-        numColumns={layout.numColumns}
+        data={categories}
+        keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingHorizontal: layout.horizontalPadding },
-        ]}
-        columnWrapperStyle={[styles.columnWrapper, { columnGap: layout.gap }]}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
-        removeClippedSubviews={true}
-        initialNumToRender={layout.numColumns * 2}
-        maxToRenderPerBatch={layout.numColumns}
-        windowSize={4}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        decelerationRate="fast"
+        snapToInterval={layout.snapInterval}
+        snapToAlignment="start"
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={CategoryItemSeparator}
+        removeClippedSubviews
+        initialNumToRender={6}
+        maxToRenderPerBatch={4}
+        windowSize={5}
       />
     </View>
   );
@@ -252,80 +307,72 @@ export default function CategoriesSection() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 14,
-    backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    marginTop: 4,
-    marginBottom: 4,
-
-  },
-  listContent: {
-    paddingBottom: 4,
-  },
-  columnWrapper: {
-    marginBottom: 6,
-  },
-  categoryCard: {
-    alignItems: "center",
-    flexGrow: 0,
-    flexShrink: 0,
-    
-  },
-  placeholderCard: {
-    opacity: 0,
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  gradientBorder: {
-    padding: 2,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardInner: {
-    flex: 1,
-    width: "100%",
-    backgroundColor: "#FFF6FE",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden",
-  },
-  label: {
-    marginTop: 6,
-    fontWeight: "600",
-    color: "#4A4A4A",
-    textAlign: "center",
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-  loader: {
-    paddingVertical: 30,
-    alignItems: "center",
+    paddingTop: rs(12),
+    paddingBottom: rs(14),
   },
   headerRow: {
-    paddingHorizontal: 0,
-    marginBottom: 12,
+    paddingHorizontal: HORIZONTAL_PADDING,
+    marginBottom: rs(10),
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-
   heading: {
-    fontSize: 18,
+    fontSize: fs(16.5),
     fontWeight: "700",
-    color: "#1A1A1A",
-  },
-
-  exploreText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#3B82F6",
   },
   exploreBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 7,
-    paddingLeft: 10,
-    paddingRight: 6,
-    borderRadius: 999,
+    minHeight: 32,
+  },
+  exploreText: {
+    fontSize: fs(12),
+    fontWeight: "600",
+  },
+  listContent: {
+    paddingHorizontal: HORIZONTAL_PADDING,
+  },
+  itemSeparator: {
+    width: CARD_GAP,
+  },
+  categoryTile: {
+    alignItems: "center",
+  },
+  imageBox: {
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    borderRadius: rs(15),
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 5,
+    elevation: 1,
+  },
+  image: {
+    width: "84%",
+    height: "84%",
+  },
+  label: {
+    marginTop: rs(6),
+    width: "100%",
+    fontSize: fs(10),
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: fs(13),
+    minHeight: rs(26),
+  },
+  skeletonRow: {
+    flexDirection: "row",
+  },
+  skeletonImage: {
+    borderRadius: 16,
+  },
+  skeletonLabel: {
+    marginTop: 8,
+    alignSelf: "center",
+    width: "60%",
+    height: 12,
+    borderRadius: 6,
   },
 });

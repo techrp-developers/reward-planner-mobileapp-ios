@@ -105,7 +105,6 @@ const ResultItem = memo(({
   const badgeLabel = meta.label;
   const badgeIcon = meta.icon;
 
-
   return (
     <TouchableOpacity
       style={[

@@ -21,7 +21,7 @@ import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useGlobalSearch } from "../header/useGlobalSearch";
 import HeaderComponent from "../header/HeaderComponent";
-import { API_V1_URL } from "../../../config/apiConfig";
+import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 
 const HEADER_CACHE_TTL_MS = 10 * 60 * 1000;
 let globalSearchHeaderCache: {
@@ -74,8 +74,8 @@ function GlobalSearchScreen() {
       if (userRes.data?.success) {
         const d = userRes.data.data;
         const nextUserName = d.name || headerUserName;
-        const nextUserImage = d.userImage ?? headerUserImage;
-        const nextCompanyLogo = d.company?.logo ?? headerCompanyLogo;
+        const nextUserImage = normalizeLocalCmsImageUrl(d.userImage) ?? headerUserImage;
+        const nextCompanyLogo = normalizeLocalCmsImageUrl(d.company?.logo) ?? headerCompanyLogo;
 
         setHeaderUserName((prev) => (prev === nextUserName ? prev : nextUserName));
         setHeaderUserImage((prev) => (prev === nextUserImage ? prev : nextUserImage));
@@ -88,7 +88,7 @@ function GlobalSearchScreen() {
           fetchedAt: Date.now(),
         };
       }
-    } catch { }
+    } catch {}
   }, [headerCompanyLogo, headerUserImage, headerUserName, isAuthenticated]);
 
   useEffect(() => { loadHeaderInfo(); }, [loadHeaderInfo]);
@@ -99,17 +99,17 @@ function GlobalSearchScreen() {
 
   // ── Theme tokens (mirrors HeaderComponent's `tk`) ──────────────────────────
   const tk = {
-    screenBg: isDark ? "#15131C" : "#F8F7FB",
-    cardBg: isDark ? "#1E1E32" : "#FFFFFF",
-    cardBorder: isDark ? "rgba(255,255,255,0.08)" : "rgba(124,92,252,0.12)",
-    titleColor: isDark ? "#F0EFFF" : "#1F1B24",
-    subTextColor: isDark ? "#9B8FCC" : "#A6A1AE",
-    iconAccent: isDark ? "#A78BFA" : "#7C5CFC",
-    iconAccentBg: isDark ? "rgba(167,139,250,0.14)" : "#F3E9FB",
-    thumbBg: isDark ? "#2A2A3E" : "#F3F0FF",
-    badgeProduct: "#7C5CFC",
-    badgeService: "#0EA5E9",
-    skeletonBase: isDark ? "#2A2A3E" : "#ECE7F5",
+    screenBg:          isDark ? "#15131C" : "#F8F7FB",
+    cardBg:            isDark ? "#1E1E32" : "#FFFFFF",
+    cardBorder:        isDark ? "rgba(255,255,255,0.08)" : "rgba(124,92,252,0.12)",
+    titleColor:        isDark ? "#F0EFFF" : "#1F1B24",
+    subTextColor:      isDark ? "#9B8FCC" : "#A6A1AE",
+    iconAccent:        isDark ? "#A78BFA" : "#7C5CFC",
+    iconAccentBg:      isDark ? "rgba(167,139,250,0.14)" : "#F3E9FB",
+    thumbBg:           isDark ? "#2A2A3E" : "#F3F0FF",
+    badgeProduct:      "#7C5CFC",
+    badgeService:      "#0EA5E9",
+    skeletonBase:      isDark ? "#2A2A3E" : "#ECE7F5",
     skeletonHighlight: isDark ? "#37374F" : "#F8F6FC",
   };
 

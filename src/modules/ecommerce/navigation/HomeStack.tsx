@@ -1,3 +1,4 @@
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "./types";
 import { useAppTheme } from "../../../theme/ThemeContext";
@@ -23,7 +24,8 @@ export default function HomeStack() {
         name="Category"
         getComponent={() => require("../components/product/product_section/Categories_Product").default}
         options={{
-          animation: "slide_from_right",
+          animation: "fade",
+          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -32,6 +34,9 @@ export default function HomeStack() {
         getComponent={() => require("../screens/product_description_screen").default}
         options={{
           animation: "slide_from_right",
+          // Keep Home attached behind this opaque screen so popping cannot
+          // briefly expose the outgoing product image while Home reattaches.
+          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -40,6 +45,7 @@ export default function HomeStack() {
         getComponent={() => require("../screens/cartScreen").default}
         options={{
           animation: "fade",
+          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -54,7 +60,8 @@ export default function HomeStack() {
         name="CategoriesScreen"
         getComponent={() => require("../screens/CategoriesScreen").default}
         options={{
-          animation: "slide_from_right",
+          animation: "fade",
+          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -86,10 +93,11 @@ export default function HomeStack() {
       />
       <Stack.Screen
         name="Profile"
-        getComponent={() => require("../../dashboard/dashboard/ProfileScreen").default}
+        getComponent={() => require("../profile/ProfileScreen").default}
         initialParams={{ context: "ecommerce" }}
         options={{
           animation: "fade",
+          presentation: "transparentModal",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -99,7 +107,6 @@ export default function HomeStack() {
         getComponent={() => require("../components/ItemCardAddress/NewAddressForm").default}
         options={{ presentation: "modal" }}
       />
-
       <Stack.Screen name="SelectItemCancellationReason" getComponent={() => require("../components/order/SelectItemCancellationReason").default} />
       <Stack.Screen name="ItemCancellationDetails" getComponent={() => require("../screens/ItemCancellationDetailsScreen").default} />
       <Stack.Screen name="OrderConfirmedScreen" getComponent={() => require("../screens/OrderConfirmedScreen").default} />

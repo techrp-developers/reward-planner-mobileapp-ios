@@ -31,7 +31,7 @@ export default function ServiceHomeStack() {
             <Stack.Screen name="CartScreen" getComponent={() => require("../component/screens/CartScreen").default} />
             <Stack.Screen
                 name="Profile"
-                getComponent={() => require("../../dashboard/dashboard/ProfileScreen").default}
+                getComponent={() => require("../../ecommerce/profile/ProfileScreen").default}
                 initialParams={{ context: "services" }}
             />
             <Stack.Screen

@@ -455,7 +455,8 @@ const styles = StyleSheet.create({
   summaryCard: {
     minHeight: 82,
     borderRadius: 18,
-
+    paddingVertical: 13,
+    paddingHorizontal: 16,
     marginBottom: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -472,8 +473,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.17)",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 13,
-
+    marginRight: 13,
   },
   summaryCopy: {
     flex: 1,
@@ -484,23 +484,18 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 1,
     marginBottom: 5,
-    marginLeft: 12,
-
   },
   summaryText: {
     fontSize: 16,
     color: "#FFFFFF",
     fontWeight: "800",
     letterSpacing: 0,
-    marginLeft: 12,
   },
   sectionHeader: {
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginLeft: 12,
-
   },
   markAllButton: {
     borderRadius: 999,

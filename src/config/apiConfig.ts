@@ -31,20 +31,52 @@ export const UPLOADS_URL =
     ? `${SERVER_URL}/uploads/`
     : `${API_BASE_URL}/uploads/`;
 
-// CMS may return paths or URLs generated on the backend's localhost host.
-export const normalizeLocalCmsImageUrl = (value: string | null | undefined): string | null => {
+const getCmsCdnBaseUrl = (): string => {
+  const envValue =
+    (typeof process !== 'undefined' && process?.env && (process.env.CMS_CDN_BASE_URL || process.env.EXPO_PUBLIC_CMS_CDN_BASE_URL)) ||
+    'https://cdn.rewardplanners.com';
+
+  const baseUrl = (envValue || 'https://cdn.rewardplanners.com').trim();
+  if (!baseUrl) return 'https://cdn.rewardplanners.com';
+
+  const normalized = baseUrl.replace(/\/+$/, '');
+  return /^https?:\/\//i.test(normalized) ? normalized : `https://${normalized.replace(/^\/+/, '')}`;
+};
+
+export const CMS_CDN_BASE_URL = getCmsCdnBaseUrl();
+
+export const buildCdnImageUrl = (imagePath: string | null | undefined): string | null => {
+  if (!imagePath) return null;
+
+  const value = imagePath.trim();
+  if (!value) return null;
+  if (/^(?:null|undefined)$/i.test(value)) return null;
+
+  if (/^data:/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const sanitizedPath = value.replace(/^\/+/, '');
+  if (!sanitizedPath) return null;
+
+  return `${CMS_CDN_BASE_URL.replace(/\/+$/, '')}/${sanitizedPath}`;
+};
+
+// Keep compatibility with the existing CMS helper name while routing all CMS image URLs through the
+// single CDN-based resolver. This preserves existing call sites and only changes the URL-generation layer.
+export const resolveCmsImageUrl = (value: string | null | undefined): string | null => {
   if (!value) return null;
 
-  const url = value.trim();
-  if (!url) return null;
+  const raw = value.trim();
+  if (!raw) return null;
+  if (/^(?:null|undefined)$/i.test(raw)) return null;
 
-  const localUrl = url.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)?$/i);
-  const path = localUrl ? (localUrl[1] || '/') : url;
+  const privateLocalUrl = raw.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)?$/i);
+  const normalizedPath = privateLocalUrl ? (privateLocalUrl[1] || '/') : raw;
 
-  if (!localUrl && /^https?:\/\//i.test(url)) return url;
-  if (/^\/api\/crm\/uploads\//i.test(path)) return `${SERVER_URL}${path}`;
-  if (/^\/?uploads\//i.test(path)) return `${UPLOADS_URL}${path.replace(/^\/?uploads\//i, '')}`;
-  if (localUrl) return `${SERVER_URL}${path}`;
-  if (path.startsWith('/')) return `${SERVER_URL}${path}`;
-  return url;
+  if (/^https?:\/\//i.test(raw) && !privateLocalUrl) return raw;
+  if (privateLocalUrl) return buildCdnImageUrl(normalizedPath);
+
+  return buildCdnImageUrl(raw);
 };
+
+export const normalizeLocalCmsImageUrl = resolveCmsImageUrl;

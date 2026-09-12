@@ -1,15 +1,13 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { Svg, Polygon } from 'react-native-svg';
 import {
   View,
-  Text,
   StyleSheet,
   ScrollView,
   Platform,
   Pressable,
+  ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import HeaderComponent, { type SearchOverlayState } from '../header/HeaderComponent';
@@ -17,11 +15,9 @@ import SearchDropdown from '../header/SearchDropdown';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
 import axios from 'axios';
-import { getNotificationBadge } from '../notification/NotificationAPI';
-import { notificationEvents } from '../../notifications/notificationEvents';
 import Home_Chart from '../stepcount/Home_Chart';
 import ModuleBanner from '../explore/ModuleBanner';
-import { rs, fs } from '../../../utils/responsive';
+import { rs } from '../../../utils/responsive';
 import ServicesModule, { type ExploreServiceTab } from '../explore/ServicesModule';
 import RewardsOverview from '../reward/Rewardsoverview';
 // import BottomTabs, { TAB_BAR_HEIGHT } from '../../ecommerce/navigation/BottomTabs';
@@ -31,7 +27,34 @@ import { useAppTheme } from '../../../theme/ThemeContext';
 import BottomTabs, { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
 import BirthdayCarousel from '../birthday/BirthdayCarousel';
 import type { BirthdayEmployee } from '../birthday/types';
-import { API_V1_URL } from '../../../config/apiConfig';
+import { useQuery } from '@tanstack/react-query';
+import { fetchWalletBalance } from '../../ecommerce/api/WalleteAPI';
+import { useDashboardLayout } from '../../common/cms/useDashboardLayout';
+import type { MainDashboardSectionKey } from '../../common/cms/dashboardLayout';
+import { fetchResolvedZones } from '../../common/cms/cmsContentApi';
+import { moduleContentQueryKey } from '../../common/cms/useModuleContent';
+import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
+import OffersBanner from '../../ecommerce/components/home/OffersBanner';
+import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
+
+const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
+  'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'rewardsOverview',
+];
+
+// The CMS only stores one solid color per navbar_background entry — turn it
+// into a two-stop gradient client-side (rather than needing a second
+// gradient-end field added to the backend) by blending it toward black.
+const darkenHexColor = (hex: string, amount: number): string => {
+  const normalized = hex.replace('#', '');
+  if (normalized.length !== 6) return hex;
+
+  const channel = (start: number) =>
+    Math.max(0, Math.min(255, Math.round(parseInt(normalized.slice(start, start + 2), 16) * (1 - amount))))
+      .toString(16)
+      .padStart(2, '0');
+
+  return `#${channel(0)}${channel(2)}${channel(4)}`;
+};
 
 const MODULE_ROUTE: Record<ExploreServiceTab, string> = {
   Product: 'ProductModule',
@@ -39,7 +62,6 @@ const MODULE_ROUTE: Record<ExploreServiceTab, string> = {
   Payments: 'PaymentsModule',
   DineOut: 'DineOutModule',
 };
-
 
 type DashboardHeaderCache = {
   userName: string;
@@ -59,25 +81,15 @@ const MemoServicesModule = memo(ServicesModule);
 const MemoModuleBanner = memo(ModuleBanner);
 const MemoRewardsOverview = memo(RewardsOverview);
 const MemoBirthdayCarousel = memo(BirthdayCarousel);
-
-const RIBBON = 52;
-const TricolorCornerRibbon = memo(function TricolorCornerRibbon() {
-  return (
-    <Svg width={RIBBON} height={RIBBON} style={tricolorStyle} pointerEvents="none">
-      <Polygon points={`${RIBBON},0 0,0 ${RIBBON},${RIBBON}`} fill="#138808" />
-      <Polygon points={`${RIBBON},0 ${Math.round(RIBBON * 0.62)},0 ${RIBBON},${Math.round(RIBBON * 0.62)}`} fill="#FFFFFF" />
-      <Polygon points={`${RIBBON},0 ${Math.round(RIBBON * 0.31)},0 ${RIBBON},${Math.round(RIBBON * 0.31)}`} fill="#FF9933" />
-    </Svg>
-  );
-});
-const tricolorStyle = { position: 'absolute' as const, top: 0, right: 0, zIndex: 2 };
+const MemoOffersBanner = memo(OffersBanner);
+const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
 
 function Dashbord() {
-  const { isDark, isFestive } = useAppTheme();
-  const iconSize = rs(26);
+  const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
   const { totalQuantity } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const dashboardLayout = useDashboardLayout('main', MAIN_DASHBOARD_SECTION_KEYS);
 
   const [headerUserName, setHeaderUserName] = useState<string>(
     () => dashboardHeaderCache?.userName ?? user?.name ?? 'User',
@@ -100,20 +112,37 @@ function Dashbord() {
   const [birthdays, setBirthdays] = useState<BirthdayEmployee[]>(
     () => dashboardHeaderCache?.birthdays ?? [],
   );
-  const [notificationBadge, setNotificationBadge] = useState(0);
+  const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
   const hasBirthdays = birthdays.length > 0;
-
-  const loadNotificationBadge = useCallback(async () => {
-    if (!isAuthenticated) return;
-    try {
-      const res = await getNotificationBadge();
-      setNotificationBadge(res.count);
-    } catch { }
-  }, [isAuthenticated]);
-
-  useEffect(() => {
-    return notificationEvents.onBadgeRefresh(loadNotificationBadge);
-  }, [loadNotificationBadge]);
+  const { data: walletBalanceResponse } = useQuery({
+    queryKey: ['dashboard', 'header-wallet-balance'],
+    queryFn: fetchWalletBalance,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const { data: mobileDashboardContent } = useQuery({
+    queryKey: moduleContentQueryKey('mobile_dashboard'),
+    queryFn: () => fetchResolvedZones('mobile_dashboard'),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+  const rewardPoints = Number(walletBalanceResponse?.data?.balance ?? 0);
+  const mobileDashboardBackground = mobileDashboardContent?.navbar_background ?? null;
+  const mobileDashboardImageUrl =
+    mobileDashboardBackground?.content_type === 'image'
+      ? mobileDashboardBackground.image_url
+      : null;
+  const mobileDashboardColor =
+    mobileDashboardBackground?.content_type === 'color'
+      ? mobileDashboardBackground.color_value
+      : null;
+  const mobileDashboardTextColor = mobileDashboardBackground?.text_color ?? null;
+  const hasMobileDashboardOffers =
+    mobileDashboardContent?.offers_banner?.content_type === 'image' &&
+    Array.isArray(mobileDashboardContent.offers_banner.images) &&
+    mobileDashboardContent.offers_banner.images.some((image) => image.is_active === 1 && image.image_url);
 
   const loadHeaderInfo = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -142,10 +171,12 @@ function Dashbord() {
 
       if (userRes.data?.success) {
         const d = userRes.data.data;
-        if (d.name) setHeaderUserName((prev) => (prev === d.name ? prev : d.name));
-        if (d.userImage) setHeaderUserImage((prev) => (prev === d.userImage ? prev : d.userImage));
-        if (d.company?.logo) setHeaderCompanyLogo((prev) => (prev === d.company.logo ? prev : d.company.logo));
-        if (d.thought) setThought((prev) => (prev === d.thought ? prev : d.thought));
+        const nextUserImage = normalizeLocalCmsImageUrl(d.userImage);
+        const nextCompanyLogo = normalizeLocalCmsImageUrl(d.company?.logo);
+        if (d.name)          setHeaderUserName((prev) => (prev === d.name ? prev : d.name));
+        if (nextUserImage)   setHeaderUserImage((prev) => (prev === nextUserImage ? prev : nextUserImage));
+        if (nextCompanyLogo) setHeaderCompanyLogo((prev) => (prev === nextCompanyLogo ? prev : nextCompanyLogo));
+        if (d.thought)       setThought((prev) => (prev === d.thought ? prev : d.thought));
 
         const apiStepGoal = Number(d.steps?.goal_steps);
         if (Number.isFinite(apiStepGoal) && apiStepGoal > 0) {
@@ -154,11 +185,11 @@ function Dashbord() {
 
         const raw: any[] = Array.isArray(d.birthday_employees) ? d.birthday_employees : [];
         const mappedBirthdays = raw.map((b) => ({
-          id: b.employeeId,
-          name: b.name,
+          id:          b.employeeId,
+          name:        b.name,
           designation: b.role,
-          department: b.department,
-          photo: b.image ?? null,
+          department:  b.department,
+          photo:       normalizeLocalCmsImageUrl(b.image) ?? null,
         }));
         setBirthdays((prev) => (
           JSON.stringify(prev) === JSON.stringify(mappedBirthdays) ? prev : mappedBirthdays
@@ -166,8 +197,8 @@ function Dashbord() {
 
         dashboardHeaderCache = {
           userName: d.name || headerUserName,
-          userImage: d.userImage ?? headerUserImage,
-          companyLogo: d.company?.logo ?? headerCompanyLogo,
+          userImage: nextUserImage ?? headerUserImage,
+          companyLogo: nextCompanyLogo ?? headerCompanyLogo,
           thought: d.thought ?? thought,
           stepGoal:
             Number.isFinite(Number(d.steps?.goal_steps)) && Number(d.steps?.goal_steps) > 0
@@ -218,15 +249,22 @@ function Dashbord() {
   }, []);
 
   useFocusEffect(useCallback(() => {
+    setOpeningModule(null);
     loadHeaderInfo();
-    loadNotificationBadge();
-  }, [loadHeaderInfo, loadNotificationBadge]));
+  }, [loadHeaderInfo]));
 
   const handleExploreModulePress = useCallback((tab: ExploreServiceTab) => {
-    navigation.navigate('Home', {
-      screen: MODULE_ROUTE[tab],
-      params: { moduleName: tab },
-      moduleName: tab,
+    setOpeningModule(tab);
+
+    // Let the lightweight module shell paint before mounting the destination.
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        navigation.navigate('Home', {
+          screen: MODULE_ROUTE[tab],
+          params: { moduleName: tab },
+          moduleName: tab,
+        });
+      }, 0);
     });
   }, [navigation]);
 
@@ -260,30 +298,102 @@ function Dashbord() {
     setSearchDismissSignal((value) => value + 1);
   }, [isSearchOpen]);
 
-  const quoteBannerGradient = useMemo<string[]>(() => isDark
-    ? ['#18181B', '#27233A', '#4338CA']
-    : ['#111827', '#312E81', '#4F46E5'],
-    [isDark]);
+  // Default (no CMS navbar_background configured for this module) header
+  // background — matches the light, near-white reference design. Only used
+  // as a fallback: renderHeaderSection still swaps in the CMS-provided
+  // image/color first when one is published, so this never overrides
+  // dynamic content — it just fixes what shows before any is set.
+  const topSectionGradient: string[] = useMemo(
+    () => (isDark ? ['#09090B', '#111827', '#18181B'] : ['#F8FAFC', '#FFFFFF', '#F1F5F9']),
+    [isDark],
+  );
 
-  const topSectionGradient = useMemo<string[]>(() => isDark
-    ? ['#09090B', '#111827', '#18181B']
-    : ['#111827', '#1E1B4B', '#312E81'],
-    [isDark]);
-
-  // Page background: stays normal — festive accent lives only in the hero section
-  const rootGradient = useMemo<string[]>(() => isDark
+  const rootGradient = isDark
     ? ['#09090B', '#111827', '#151526']
-    : ['#F8FAFC', '#EEF2FF', '#FFFFFF'],
-    [isDark]);
+    : ['#F8FAFC', '#FFFFFF', '#F8FAFC'];
 
-  const t = useMemo(() => StyleSheet.create({
-    iconContainer: { backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.16)' },
-    card: {},
-    cardWrap: {
-      shadowColor: isDark ? '#000000' : '#312E81',
-      backgroundColor: isDark ? '#18181B' : '#4338CA',
-    },
-  }), [isDark]);
+  const renderHeaderSection = useCallback((key: string) => {
+    // Only override the theme-aware text colors when a CMS background
+    // (image or color) is actually active — the default fallback gradient
+    // below keeps HeaderComponent's own light/dark text, matching the
+    // reference design when no CMS content has been published yet.
+    const hasDynamicHeaderBackground = !!(mobileDashboardImageUrl || mobileDashboardColor);
+    const headerTextColor = hasDynamicHeaderBackground
+      ? mobileDashboardTextColor ?? '#FFFFFF'
+      : undefined;
+
+    const headerContent = (
+      <>
+        <HeaderComponent
+          userName={headerUserName}
+          userImageUri={headerUserImage ?? undefined}
+          companyLogoUri={headerCompanyLogo ?? undefined}
+          surface="transparent"
+          textColor={headerTextColor}
+          dismissSignal={searchDismissSignal}
+          onSearchActiveChange={setIsSearchOpen}
+          onSearchOverlayChange={setSearchOverlay}
+          onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
+          onNotificationPress={() => navigation.navigate('Notification')}
+          showRewardPoints
+          rewardPoints={rewardPoints}
+        />
+      </>
+    );
+
+    if (mobileDashboardImageUrl) {
+      return (
+        <ImageBackground
+          key={key}
+          source={{ uri: mobileDashboardImageUrl }}
+          resizeMode="cover"
+          style={styles.topSection}
+          imageStyle={styles.topSectionImage}
+        >
+          <LinearGradient
+            colors={isDark ? ['rgba(9,9,11,0.70)', 'rgba(17,24,39,0.54)'] : ['rgba(17,24,39,0.56)', 'rgba(49,46,129,0.36)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+          {headerContent}
+        </ImageBackground>
+      );
+    }
+
+    if (mobileDashboardColor) {
+      return (
+        <LinearGradient
+          key={key}
+          colors={[mobileDashboardColor, darkenHexColor(mobileDashboardColor, 0.28)]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.topSection}
+        >
+          {headerContent}
+        </LinearGradient>
+      );
+    }
+
+    return (
+      <LinearGradient key={key} colors={topSectionGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.topSection}>
+        {headerContent}
+      </LinearGradient>
+    );
+  }, [
+    headerCompanyLogo,
+    headerUserImage,
+    headerUserName,
+    isDark,
+    mobileDashboardColor,
+    mobileDashboardImageUrl,
+    mobileDashboardTextColor,
+    navigation,
+    rewardPoints,
+    searchDismissSignal,
+    topSectionGradient,
+  ]);
 
   return (
     <LinearGradient
@@ -292,6 +402,10 @@ function Dashbord() {
       end={{ x: 0, y: 1 }}
       style={styles.root}
     >
+      {/* Fixed — stays pinned above the scrollable sections below, rather
+          than scrolling away with the rest of the dashboard content. */}
+      {renderHeaderSection('header')}
+
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: rs(32) + TAB_BAR_HEIGHT }]}
@@ -302,81 +416,38 @@ function Dashbord() {
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
-        <View style={styles.topSectionWrap}>
-          <LinearGradient
-            colors={topSectionGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.topSection}
-          >
-            <HeaderComponent
-              userName={headerUserName}
-              userImageUri={headerUserImage ?? undefined}
-              companyLogoUri={headerCompanyLogo ?? undefined}
-              surface="transparent"
-              dismissSignal={searchDismissSignal}
-              onSearchActiveChange={setIsSearchOpen}
-              onSearchOverlayChange={setSearchOverlay}
-              onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
-              notificationBadge={notificationBadge}
-              onNotificationPress={() => navigation.navigate('Notification')}
-            />
-
-            {/* Motivational Quote Banner */}
-            <Pressable onPress={dismissSearch}>
-              <View style={[styles.bannerOuter, { paddingHorizontal: rs(16), paddingTop: rs(2) }]}>
-                <View style={[styles.cardWrap, t.cardWrap]}>
-                  <LinearGradient
-                    colors={quoteBannerGradient}
-                    start={{ x: 0, y: 0.5 }}
-                    end={{ x: 1, y: 0.5 }}
-                    style={[styles.card, t.card]}
-                  >
-                    {isFestive && <TricolorCornerRibbon />}
-                    <LinearGradient
-                      colors={[
-                        'rgba(255,255,255,0)',
-                        'rgba(255,255,255,0.035)',
-                        'rgba(255,255,255,0.10)',
-                      ]}
-                      locations={[0, 0.58, 1]}
-                      start={{ x: 0, y: 0.5 }}
-                      end={{ x: 1, y: 0.5 }}
-                      style={styles.quoteHighlight}
-                      pointerEvents="none"
-                    />
-
-                    <View style={[styles.iconContainer, t.iconContainer]}>
-                      <MaterialCommunityIcons
-                        name="lightbulb-on-outline"
-                        size={iconSize}
-                        color={isFestive ? '#FFD27A' : isDark ? '#FFFFFF' : '#9B3DD8'}
-                      />
-                    </View>
-
-                    <Text style={styles.quote}>
-                      {thought
-                        ? `"${thought}"`
-                        : '"Success is the sum of small efforts,\nrepeated day in and day out."'}
-                    </Text>
-                  </LinearGradient>
-                </View>
-              </View>
-            </Pressable>
-          </LinearGradient>
-        </View>
-        {hasBirthdays && (
-          <Pressable onPress={dismissSearch}>
-            <MemoBirthdayCarousel birthdays={birthdays} />
-          </Pressable>
-        )}
-        <Pressable onPress={dismissSearch}>
-          <MemoHomeChart goalSteps={stepGoal} />
-          <MemoServicesModule onModulePress={handleExploreModulePress} />
-          <MemoModuleBanner />
-          <MemoRewardsOverview />
-        </Pressable>
-
+        {dashboardLayout.sections.map(({ key }) => {
+          switch (key as MainDashboardSectionKey) {
+            case 'header':
+              // Rendered fixed above the ScrollView instead — skip here.
+              return null;
+            case 'birthdays':
+              return hasBirthdays ? <Pressable key={key} onPress={dismissSearch}><MemoBirthdayCarousel birthdays={birthdays} /></Pressable> : null;
+            case 'stepProgress':
+              return <Pressable key={key} onPress={dismissSearch}><MemoHomeChart goalSteps={stepGoal} /></Pressable>;
+            case 'investmentInsurance':
+              return <Pressable key={key} onPress={dismissSearch}><MemoInvestmentInsuranceOverview /></Pressable>;
+            case 'exploreModules':
+              return <Pressable key={key} onPress={dismissSearch}><MemoServicesModule onModulePress={handleExploreModulePress} /></Pressable>;
+            case 'moduleBanner':
+              return hasMobileDashboardOffers ? (
+                <MemoOffersBanner
+                  key={key}
+                  module="mobile_dashboard"
+                  moduleContent={mobileDashboardContent}
+                  aspectRatio={2.55}
+                  resizeMode="cover"
+                  wrapperStyle={styles.dashboardOffers}
+                />
+              ) : (
+                <MemoModuleBanner key={key} />
+              );
+            case 'rewardsOverview':
+              return <Pressable key={key} onPress={dismissSearch}><MemoRewardsOverview /></Pressable>;
+            default:
+              return null;
+          }
+        })}
       </ScrollView>
 
       {searchOverlay?.visible && (
@@ -404,6 +475,33 @@ function Dashbord() {
         onTabPress={handleTabPress}
         onCenterPress={handleCenterPress}
       />
+      {openingModule && (
+        <View
+          style={[
+            styles.moduleLaunchOverlay,
+            { backgroundColor: isDark ? '#09090B' : '#F8FAFC' },
+          ]}
+        >
+          <View
+            style={[
+              styles.moduleLaunchLineWide,
+              { backgroundColor: isDark ? '#27272A' : '#E2E8F0' },
+            ]}
+          />
+          <View
+            style={[
+              styles.moduleLaunchLine,
+              { backgroundColor: isDark ? '#27272A' : '#E2E8F0' },
+            ]}
+          />
+          <View
+            style={[
+              styles.moduleLaunchCard,
+              { backgroundColor: isDark ? '#18181B' : '#E2E8F0' },
+            ]}
+          />
+        </View>
+      )}
       {/* <FloatingBottomBar/> */}
     </LinearGradient>
   );
@@ -425,33 +523,31 @@ const styles = StyleSheet.create({
     // paddingBottom set inline so it scales with rs() and TAB_BAR_HEIGHT
   },
 
-  topSectionWrap: {
+
+  topSection: {
+    paddingBottom: rs(16),
     borderBottomLeftRadius: rs(30),
     borderBottomRightRadius: rs(30),
+    overflow: 'hidden',
     zIndex: 20,
-    backgroundColor: '#312E81',
     shadowColor: '#111827',
     shadowOffset: { width: 0, height: rs(12) },
     shadowOpacity: Platform.OS === 'ios' ? 0.16 : 0.22,
     shadowRadius: rs(18),
     elevation: 8,
   },
-  topSection: {
-    paddingBottom: rs(16),
+  topSectionImage: {
     borderBottomLeftRadius: rs(30),
     borderBottomRightRadius: rs(30),
-    zIndex: 20,
   },
 
-  bannerOuter: {
-    // paddingHorizontal and paddingTop set inline
+  dashboardOffers: {
+    paddingTop: rs(12),
+    paddingBottom: rs(8),
   },
+
   searchOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
     zIndex: 250,
     elevation: 30,
   },
@@ -469,59 +565,28 @@ const styles = StyleSheet.create({
     elevation: 32,
   },
 
-  cardWrap: {
-    borderRadius: rs(20),
-    marginBottom: 20,
-    // shadowColor via t.cardWrap
-    shadowOffset: { width: 0, height: rs(10) },
-    shadowOpacity: Platform.OS === 'ios' ? 0.18 : 0.24,
-    shadowRadius: rs(18),
-    elevation: 8,
+  moduleLaunchOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 500,
+    elevation: 50,
+    padding: rs(18),
+    paddingTop: rs(90),
   },
-  card: {
-    borderRadius: rs(20),
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+  moduleLaunchLineWide: {
+    width: '58%',
+    height: rs(18),
+    borderRadius: rs(9),
+    marginBottom: rs(12),
   },
-
-  quoteHighlight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    bottom: 0,
-    width: rs(92),
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  moduleLaunchLine: {
+    width: '34%',
+    height: rs(12),
+    borderRadius: rs(6),
+    marginBottom: rs(22),
   },
-
-  iconContainer: {
-    width: rs(48),
-    height: rs(48),
-    borderRadius: rs(14),
-    // backgroundColor via t.iconContainer
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: rs(13),
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-    margin: 4,
+  moduleLaunchCard: {
+    width: '100%',
+    height: rs(210),
+    borderRadius: rs(18),
   },
-
-  quote: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: fs(13.5),
-    lineHeight: rs(20),
-    fontStyle: 'italic',
-    fontWeight: '600',
-    letterSpacing: 0,
-    paddingVertical: rs(13),
-    paddingHorizontal: rs(14),
-  },
-
 });

@@ -84,7 +84,7 @@ const BBPSHomeStack = React.memo(() => {
       />
       <Stack.Screen
         name="Profile"
-        getComponent={() => require('../../dashboard/dashboard/ProfileScreen').default}
+        getComponent={() => require('../../ecommerce/profile/ProfileScreen').default}
         initialParams={{ context: 'bbps' }}
         options={{ headerShown: false }}
       />

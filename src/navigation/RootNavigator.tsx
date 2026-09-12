@@ -138,7 +138,7 @@ function AppNavigator() {
         <AppStack.Screen
           name="Profile"
           getComponent={() =>
-            require("../modules/dashboard/dashboard/ProfileScreen").default
+            require("../modules/ecommerce/profile/ProfileScreen").default
           }
         />
         <AppStack.Screen

@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
+    paddingHorizontal: rs(12),
     gap: rs(8),
   },
   ctaText: {
@@ -252,7 +253,5 @@ const styles = StyleSheet.create({
     fontSize: fs(11),
     fontWeight: "800",
     letterSpacing: 0,
-    // paddingHorizontal: rs(2),
-
   },
 });

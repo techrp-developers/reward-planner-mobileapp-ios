@@ -18,7 +18,6 @@ export default function ModuleBanner() {
   const scrollRef = useRef<ScrollView>(null);
   const [index, setIndex] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
-
   const indexRef = useRef(0);
 
   const bannerHeight = Math.round(width * 0.38);
@@ -50,7 +49,7 @@ export default function ModuleBanner() {
 
   const t = useMemo(
     () => ({
-      dot: { backgroundColor: isDark ? '#374151' : '#D0D5E2' } as ViewStyle,
+      dot:       { backgroundColor: isDark ? '#374151' : '#D0D5E2' } as ViewStyle,
       activeDot: { backgroundColor: '#4A6CF7' } as ViewStyle,
     }),
     [isDark],

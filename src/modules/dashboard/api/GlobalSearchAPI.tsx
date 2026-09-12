@@ -11,17 +11,16 @@ export type SearchResultNavigation = {
 };
 
 export type SearchResultItem = {
-  id: number;
+  id:    number;
   title: string;
   image: string;
-  type: 'product' | 'category' | 'subcategory' | 'service';
+  type:  'product' | 'category' | 'subcategory' | 'service';
   category_id?: number;
   category_name?: string;
   subcategory_id?: number;
   subcategory_name?: string;
   navigation?: SearchResultNavigation;
 };
-
 
 export type SearchData = {
   products: SearchResultItem[];

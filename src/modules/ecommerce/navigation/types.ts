@@ -74,10 +74,9 @@ export type HomeStackParamList = {
           isDefault?: boolean;
         };
       };
-    OrderConfirmedScreen: {
-      order_id: number;
-    };
-    
+OrderConfirmedScreen: {
+    order_id: number;
+  };
   SelectItemCancellationReason: {
     orderItemId: number;
     orderId: number;
