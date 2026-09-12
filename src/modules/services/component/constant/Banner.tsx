@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, ScrollView, StyleSheet, Dimensions, Image } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Image, type ImageSourcePropType } from 'react-native';
 
 const Banner1 = require('../../assete/home/banner1.png');
 const Banner2 = require('../../assete/home/banner2.png');
 
 const { width } = Dimensions.get('window');
 
-const bannerSources = [
+const bannerSources: Array<ImageSourcePropType | { uri: string }> = [
   Banner1,
   Banner2,
 ];
@@ -43,15 +43,20 @@ export default function Banner() {
           setIndex(newIndex);
         }}
       >
-        {bannerSources.map((bannerSource, i) => (
-          <View key={i} style={styles.banner}>
-            <Image
-              source={bannerSource}
-              style={styles.bannerImage}
-              resizeMode="cover"
-            />
-          </View>
-        ))}
+        {bannerSources.map((bannerSource, i) => {
+          const resolvedBannerSource =
+            typeof bannerSource === 'string' ? { uri: bannerSource } : bannerSource;
+
+          return (
+            <View key={i} style={styles.banner}>
+              <Image
+                source={resolvedBannerSource}
+                style={styles.bannerImage}
+                resizeMode="cover"
+              />
+            </View>
+          );
+        })}
       </ScrollView>
 
       {/* DOT INDICATOR */}

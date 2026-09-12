@@ -1,46 +1,50 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
   ActivityIndicator,
+  ImageSourcePropType,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+
 import { useServiceHome } from '../../hooks/useServiceHome';
 import type { ServiceItem } from '../../navigation/type';
-import Card from '../constant/Card';
-import { getServiceImageSource, getDiscount } from '../../utils/serviceUtils';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import ServiceGridCard from '../constant/ServiceGridCard';
+
+const HORIZONTAL_PADDING = 16;
+const GRID_COLUMNS = 3;
+const GRID_GAP = 12;
+
+const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png');
 
 export default function QuickServices() {
   const navigation = useNavigation<any>();
   const servicesTheme = useServicesTheme();
   const { data: homeData, isLoading, error } = useServiceHome();
+  const { width } = useWindowDimensions();
 
-  const { section, items } = useMemo(() => {
-    if (!homeData?.data || !Array.isArray(homeData.data)) {
-      return { section: null, items: [] as ServiceItem[] };
-    }
-    const found = homeData.data.find(s => s.section_key === 'quick_services');
-    return {
-      section: found ?? null,
-      items: (found?.items as ServiceItem[]) ?? [],
-    };
+  const quickServicesSection = useMemo(() => {
+    if (!homeData?.data || !Array.isArray(homeData.data)) return null;
+    return homeData.data.find(
+      section => section.section_key === 'quick_services',
+    );
   }, [homeData]);
 
-  const handleServicePress = (service: ServiceItem) => {
-    (navigation as any).navigate('ServiceDescription', {
-      serviceId: service.service_id,
-      title: service.name,
-    });
-  };
+  const visibleItems = (quickServicesSection?.items as ServiceItem[]) || [];
+  const cardWidth = Math.floor(
+    (width - HORIZONTAL_PADDING * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
+    GRID_COLUMNS,
+  );
 
   if (isLoading) {
     return (
       <View style={styles.container}>
         <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
-          Quick &amp; Easy Services
+          Quick Picks
         </Text>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
@@ -49,72 +53,87 @@ export default function QuickServices() {
     );
   }
 
-  if (error || items.length === 0) return null;
+  if (error) {
+    console.error('QuickServices Error:', error);
+    return null;
+  }
+
+  if (visibleItems.length === 0) {
+    return null;
+  }
+
+  const getImageSource = (item: ServiceItem): ImageSourcePropType => {
+    const imageUrl = item.variant_image || item.service_image || item.image;
+    return imageUrl ? { uri: imageUrl } : fallbackImg;
+  };
+
+  const openService = (item: ServiceItem) => {
+    navigation.navigate('ServiceDescription', {
+      serviceId: item.service_id,
+      title: item.name,
+    });
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
-          {section?.title || 'Quick & Easy Services'}
+          {quickServicesSection?.title || 'Quick Picks'}
         </Text>
-        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>
-          Quick and easy
-        </Text>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          onPress={() => navigation.navigate('ServiceSearch')}
+          hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+        >
+          <Text style={[styles.viewAll, { color: servicesTheme.colors.primary }]}>View All</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.slider}
-      >
-        {items.map((service, index) => (
-          <Card
-            key={`${service.service_id}-${index}`}
-            title={service.title || service.name}
-            image={getServiceImageSource(service)}
-            price={service.price > 0 ? `₹${service.price}` : 'Get Quote'}
-            oldPrice={service.mrp && service.mrp > service.price ? `₹${service.mrp}` : undefined}
-            rating={service.rating}
-            users={String(service.review_count ?? 0)}
-            coins={service.coins ? String(service.coins) : ''}
-            discount={getDiscount(service)}
-            onPress={() => handleServicePress(service)}
+      <View style={styles.grid}>
+        {visibleItems.map((item) => (
+          <ServiceGridCard
+            key={`${item.service_id}-${item.variant_id}`}
+            item={item}
+            image={getImageSource(item)}
+            cardWidth={cardWidth}
+            onPress={openService}
           />
         ))}
-      </ScrollView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 24,
-    paddingTop: 4,
+    paddingTop: 18,
+    marginTop: 12,
+    paddingHorizontal: HORIZONTAL_PADDING,
   },
   headerRow: {
-    paddingHorizontal: 16,
-    marginBottom: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 18,
   },
   heading: {
-    fontSize: 19,
+    fontSize: 22,
     fontWeight: '800',
-    color: '#1F2937',
-    letterSpacing: -0.2,
+    color: '#111827',
   },
-  subheading: {
-    fontSize: 12.5,
-    color: '#8B93A1',
-    marginTop: 3,
-    fontWeight: '500',
+  viewAll: {
+    fontSize: 18,
+    fontWeight: '600',
   },
   loadingContainer: {
     paddingVertical: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  slider: {
-    paddingHorizontal: 16,
-    paddingBottom: 8,
-    gap: 12,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    rowGap: GRID_GAP,
+    columnGap: GRID_GAP,
   },
 });

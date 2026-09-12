@@ -155,13 +155,23 @@ export default function Government_Document_Screen() {
   }, []);
 
   const renderServiceCard = useCallback<ListRenderItem<CategoryServiceItem>>(({ item }) => {
+    const serviceImageUrl = getServiceImageUrl(item.service_image, 'small');
+
+    if (__DEV__) {
+      console.log('[Government_Document_Screen] service image', {
+        serviceId: item.id,
+        original: item.service_image,
+        resolved: serviceImageUrl,
+      });
+    }
+
     return (
       <View style={styles.categoryItem}>
         <CategoryCard
           serviceId={item.id}
           title={item.name}
           description={item.description}
-          image={getServiceImageUrl(item.service_image, 'small')}
+          image={serviceImageUrl || ''}
           priceText={`₹${item.price}`}
           days={`${item.estimated_days} Days`}
           rating={item.rating}

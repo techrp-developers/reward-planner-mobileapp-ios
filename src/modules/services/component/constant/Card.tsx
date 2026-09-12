@@ -6,7 +6,7 @@ import { Svg, Polygon } from 'react-native-svg';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { HomeStackParamList } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
-import { useAppTheme } from '../../../../theme/ThemeContext';
+import { isFestivePeriod } from '../../../../utils/festiveTheme';
 const fallbackImage = require('../../assete/gov_documet/aadhar card.png');
 
 function TricolorCornerRibbon({ size }: { size: number }) {
@@ -51,10 +51,23 @@ function Card({
 }: Props) {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
-  const { isFestive } = useAppTheme();
+  const isFestive = isFestivePeriod();
   const [imgError, setImgError] = useState(false);
   const parsedRating = Number(rating);
   const hasRating = rating !== undefined && rating !== null && Number.isFinite(parsedRating);
+
+  const resolvedImageSource = (() => {
+    if (imgError || !image) return fallbackImage;
+
+    if (typeof image === 'string') {
+      if (image.startsWith('http://') || image.startsWith('https://')) {
+        return { uri: image };
+      }
+      return image;
+    }
+
+    return image;
+  })();
 
   const handlePress = () => {
     if (onPress) {
@@ -103,10 +116,24 @@ function Card({
             </View>
           ) : null}
           <Image
-            source={imgError || !image ? fallbackImage : image}
+            source={resolvedImageSource}
             style={compact ? styles.cardImageCompact : styles.cardImage}
             resizeMode="contain"
-            onError={() => setImgError(true)}
+            onLoad={() => {
+              if (__DEV__) {
+                console.log('[SERVICE CARD IMAGE LOAD]', image);
+              }
+            }}
+            onError={(event) => {
+              if (__DEV__) {
+                console.log('[SERVICE CARD IMAGE ERROR]', {
+                  image,
+                  source: resolvedImageSource,
+                  nativeEvent: event?.nativeEvent,
+                });
+              }
+              setImgError(true);
+            }}
           />
         </View>
 

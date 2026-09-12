@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
   ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -25,7 +26,7 @@ const PACK_TYPE_MAP: { [key: number]: 'home' | 'married' | 'job' } = {
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 
-interface BundleCardProps {
+type BundleCardProps = {
   title: string;
   description: string;
   price: string;
@@ -33,30 +34,117 @@ interface BundleCardProps {
   imageUrl?: string;
   onPress: () => void;
   servicesTheme: ReturnType<typeof useServicesTheme>;
-}
+};
 
-function BundleCard({ title, description, price, oldPrice, imageUrl, onPress, servicesTheme }: BundleCardProps) {
+const parseBundleServices = (description: string) =>
+  String(description || '')
+    .split('|')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const formatBundlePrice = (value: string | number) => {
+  const amount = Number(String(value || '').replace(/[^0-9.]/g, ''));
+  if (!Number.isFinite(amount) || amount <= 0) return '';
+
+  return amount.toLocaleString('en-IN', {
+    maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
+    minimumFractionDigits: amount % 1 === 0 ? 0 : 2,
+  });
+};
+
+const getServiceIcon = (label: string) => {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes('rent')) return 'home-work';
+  if (normalized.includes('mseb') || normalized.includes('electric')) return 'bolt';
+  if (normalized.includes('tax') || normalized.includes('property')) return 'account-balance';
+  if (normalized.includes('aadhar') || normalized.includes('aadhaar')) return 'badge';
+  if (normalized.includes('pan')) return 'credit-card';
+  if (normalized.includes('passport')) return 'travel-explore';
+  if (normalized.includes('marriage')) return 'favorite-border';
+  if (normalized.includes('insurance')) return 'health-and-safety';
+
+  return 'description';
+};
+
+const getShortServiceName = (label: string) => {
+  const normalized = label.toLowerCase();
+
+  if (normalized.includes('property tax')) return 'Property Tax';
+  if (normalized.includes('mseb')) return 'MSEB';
+  if (normalized.includes('name change')) return label.replace(/name change/ig, '').trim() || label;
+  if (normalized.includes('aadhar card')) return 'Aadhar';
+  if (normalized.includes('aadhaar card')) return 'Aadhaar';
+  if (normalized.includes('pan card')) return 'PAN';
+  if (normalized.includes('health insurance')) return 'Insurance';
+
+  return label.length > 13 ? `${label.slice(0, 12).trim()}...` : label;
+};
+
+function BundleCard({
+  title,
+  description,
+  price,
+  oldPrice,
+  imageUrl,
+  onPress,
+  servicesTheme,
+}: BundleCardProps) {
   const [imgError, setImgError] = useState(false);
+  const services = useMemo(() => parseBundleServices(description), [description]);
+  const displayPrice = formatBundlePrice(price);
+  const displayOldPrice = formatBundlePrice(oldPrice);
 
   return (
-    <View style={styles.cardWrap}>
-    <LinearGradient colors={servicesTheme.isDark ? ['#18112A', '#27272A'] : ['#EDE8FF', '#C2B2FF']} style={styles.card}>
+    <LinearGradient
+      colors={servicesTheme.isDark ? ['#18112A', '#27272A'] : ['#F7F0FF', '#EEF4FF']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.card}
+    >
       <View style={styles.textContainer}>
-        <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]}>{title}</Text>
-        <Text style={[styles.cardDesc, { color: servicesTheme.colors.muted }]}>{description}</Text>
+        <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>
+          {title}
+        </Text>
+        <Text style={[styles.cardDesc, { color: servicesTheme.colors.muted }]}>
+          {services.length || 0} services in one convenient package
+        </Text>
       </View>
 
-      <TouchableOpacity activeOpacity={0.8} style={styles.buttonWrapper} onPress={onPress}>
+      {services.length > 0 ? (
+        <View style={styles.chipRow}>
+          {services.slice(0, 5).map((service) => (
+            <View key={service} style={styles.serviceChip}>
+              <MaterialIcons name={getServiceIcon(service)} size={11} color="#374151" />
+              <Text style={styles.serviceChipText} numberOfLines={1}>
+                {getShortServiceName(service)}
+              </Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.priceRow}>
+        {!!displayPrice && (
+          <Text style={styles.bundlePrice}>
+            {'\u20B9'}{displayPrice}
+          </Text>
+        )}
+        {!!displayOldPrice && displayOldPrice !== displayPrice && (
+          <Text style={styles.bundleOldPrice}>
+            {'\u20B9'}{displayOldPrice}
+          </Text>
+        )}
+      </View>
+
+      <TouchableOpacity activeOpacity={0.84} style={styles.buttonWrapper} onPress={onPress}>
         <LinearGradient
           colors={servicesTheme.gradients.primary}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.cta}
         >
-          <Text style={styles.ctaText}>
-            Get the Full Package at ₹{price}
-            <Text style={styles.oldPriceText}> ₹{oldPrice}</Text>
-          </Text>
+          <Text style={styles.ctaText}>Get Full Pack</Text>
         </LinearGradient>
       </TouchableOpacity>
 
@@ -64,14 +152,14 @@ function BundleCard({ title, description, price, oldPrice, imageUrl, onPress, se
         <Image
           source={!imgError && imageUrl ? { uri: imageUrl } : fallbackImage}
           style={styles.bundleImage}
-          onError={e => {
-            __DEV__ && console.log('BundleCard image error:', e.nativeEvent.error, 'url:', imageUrl);
+          resizeMode="contain"
+          onError={(event) => {
+            __DEV__ && console.log('BundleCard image error:', event.nativeEvent.error, 'url:', imageUrl);
             setImgError(true);
           }}
         />
       </View>
     </LinearGradient>
-    </View>
   );
 }
 
@@ -95,7 +183,7 @@ export default function BundleService() {
     <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
       <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>Bundle Services</Text>
 
-      {data.map(item => (
+      {data.map((item) => (
         <BundleCard
           key={item.id}
           title={item.name}
@@ -119,74 +207,116 @@ export default function BundleService() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
   },
   mainHeading: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#374151',
     marginBottom: 16,
   },
-  cardWrap: {
-    borderRadius: 20,
-    marginBottom: 20,
-    backgroundColor: '#C2B2FF',
-    elevation: 4,
-  },
   card: {
-    borderRadius: 20,
-    paddingTop: 20,
+    minHeight: 442,
+    borderRadius: 14,
+    paddingTop: 18,
+    marginBottom: 20,
     overflow: 'hidden',
     alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#111827',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.18,
+    shadowRadius: 14,
   },
   textContainer: {
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '800',
-    color: '#1F2937',
-    marginBottom: 8,
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 6,
   },
   cardDesc: {
-    fontSize: 12,
+    fontSize: 16,
     color: '#4B5563',
     textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 16,
+    lineHeight: 21,
+    marginBottom: 18,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    paddingHorizontal: 18,
+    marginBottom: 28,
+  },
+  serviceChip: {
+    height: 34,
+    minWidth: 74,
+    maxWidth: 104,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 4,
+    paddingHorizontal: 8,
+  },
+  serviceChipText: {
+    flexShrink: 1,
+    marginLeft: 4,
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#374151',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+  },
+  bundlePrice: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#7440F5',
+    marginRight: 14,
+  },
+  bundleOldPrice: {
+    fontSize: 23,
+    fontWeight: '800',
+    color: '#6B7280',
+    textDecorationLine: 'line-through',
   },
   buttonWrapper: {
-    width: '80%',
+    width: '60%',
+    minWidth: 230,
     zIndex: 10,
   },
   cta: {
-    borderRadius: 12,
+    height: 56,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ctaText: {
-    color: '#fff',
-    fontSize: 13,
-    fontWeight: '700',
-    paddingVertical: 12,
-
-  },
-  oldPriceText: {
-    textDecorationLine: 'line-through',
-    fontSize: 12,
-    color: '#E5E7EB',
-    opacity: 0.8,
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '800',
   },
   imageContainer: {
-    marginTop: 10,
+    marginTop: 18,
     width: '100%',
+    flex: 1,
+    justifyContent: 'flex-end',
   },
   bundleImage: {
     width: '100%',
-    height: 160,
-    resizeMode: 'contain',
+    height: 145,
   },
   loader: {
     marginTop: 20,
