@@ -30,7 +30,6 @@ const SERVICE_SECTIONS: Array<{ key: ServiceSectionKey }> = [
 ];
 
 const INITIAL_SERVICE_SECTIONS = new Set<ServiceSectionKey>(['banner', 'services', 'slider']);
-const READY_SERVICE_SECTIONS = new Set<ServiceSectionKey>(INITIAL_SERVICE_SECTIONS);
 
 const ServiceSection = React.memo(({
   sectionKey,
@@ -57,10 +56,11 @@ ServiceSection.displayName = 'ServiceHomeSection';
 
 function HomeScreen() {
   const { colors } = useServicesTheme();
+  const readySectionsRef = useRef<Set<ServiceSectionKey>>(new Set(INITIAL_SERVICE_SECTIONS));
   const [readySections, setReadySections] = useState<Set<ServiceSectionKey>>(
-    () => new Set(READY_SERVICE_SECTIONS),
+    () => new Set(readySectionsRef.current),
   );
-  const pendingReadySections = useRef<Set<ServiceSectionKey>>(new Set(READY_SERVICE_SECTIONS));
+  const pendingReadySections = useRef<Set<ServiceSectionKey>>(new Set(readySectionsRef.current));
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
@@ -73,7 +73,7 @@ function HomeScreen() {
 
       keysToAdd.forEach((key) => {
         pendingReadySections.current.add(key);
-        READY_SERVICE_SECTIONS.add(key);
+        readySectionsRef.current.add(key);
       });
 
       InteractionManager.runAfterInteractions(() => {
