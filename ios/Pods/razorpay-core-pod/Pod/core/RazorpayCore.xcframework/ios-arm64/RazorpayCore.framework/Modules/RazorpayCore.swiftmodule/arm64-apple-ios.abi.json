@@ -495,6 +495,62 @@
           },
           {
             "kind": "Function",
+            "name": "initWithKey",
+            "printedName": "initWithKey(_:andDelegate:withPaymentWebView:ApplePay:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Any?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ProtocolComposition",
+                    "printedName": "Any"
+                  }
+                ],
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "RazorpayPaymentCompletionProtocol",
+                "printedName": "any RazorpayCore.RazorpayPaymentCompletionProtocol",
+                "usr": "c:@M@RazorpayCore@objc(pl)RazorpayPaymentCompletionProtocol"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "WKWebView",
+                "printedName": "WebKit.WKWebView",
+                "usr": "c:objc(cs)WKWebView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ApplePayPlugin",
+                "printedName": "any RazorpayCore.ApplePayPlugin",
+                "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@M@RazorpayCore@objc(pl)CustomCheckoutImplementationProtocol(im)initWithKey:andDelegate:withPaymentWebView:ApplePay:",
+            "mangledName": "$s12RazorpayCore36CustomCheckoutImplementationProtocolP11initWithKey_11andDelegate18withPaymentWebView8ApplePayypSgSS_AA0am10CompletionF0_pSo05WKWebO0CAA0pQ6Plugin_ptF",
+            "moduleName": "RazorpayCore",
+            "genericSig": "<τ_0_0 where τ_0_0 : RazorpayCore.CustomCheckoutImplementationProtocol>",
+            "sugared_genericSig": "<Self where Self : RazorpayCore.CustomCheckoutImplementationProtocol>",
+            "protocolReq": true,
+            "declAttributes": [
+              "ObjC"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "changeApiKey",
             "printedName": "changeApiKey(_:checkoutInstance:)",
             "children": [
@@ -9185,6 +9241,237 @@
         ]
       },
       {
+        "kind": "TypeDecl",
+        "name": "ApplePayPlugin",
+        "printedName": "ApplePayPlugin",
+        "children": [
+          {
+            "kind": "Function",
+            "name": "initiate",
+            "printedName": "initiate(key_id:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin(im)initiateWithKey_id:",
+            "mangledName": "$s12RazorpayCore14ApplePayPluginP8initiate6key_idySS_tF",
+            "moduleName": "RazorpayCore",
+            "genericSig": "<τ_0_0 where τ_0_0 : RazorpayCore.ApplePayPlugin>",
+            "sugared_genericSig": "<Self where Self : RazorpayCore.ApplePayPlugin>",
+            "protocolReq": true,
+            "declAttributes": [
+              "ObjC"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Var",
+            "name": "paymentPlugin",
+            "printedName": "paymentPlugin",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "PluginPaymentDelegate",
+                "printedName": "any RazorpayCore.PluginPaymentDelegate",
+                "usr": "c:@M@RazorpayCore@objc(pl)PluginPaymentDelegate"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin(py)paymentPlugin",
+            "mangledName": "$s12RazorpayCore14ApplePayPluginP07paymentE0AA0E15PaymentDelegate_pvp",
+            "moduleName": "RazorpayCore",
+            "protocolReq": true,
+            "declAttributes": [
+              "ObjC"
+            ],
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "PluginPaymentDelegate",
+                    "printedName": "any RazorpayCore.PluginPaymentDelegate",
+                    "usr": "c:@M@RazorpayCore@objc(pl)PluginPaymentDelegate"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin(im)paymentPlugin",
+                "mangledName": "$s12RazorpayCore14ApplePayPluginP07paymentE0AA0E15PaymentDelegate_pvg",
+                "moduleName": "RazorpayCore",
+                "genericSig": "<τ_0_0 where τ_0_0 : RazorpayCore.ApplePayPlugin>",
+                "sugared_genericSig": "<Self where Self : RazorpayCore.ApplePayPlugin>",
+                "protocolReq": true,
+                "declAttributes": [
+                  "ObjC"
+                ],
+                "reqNewWitnessTableEntry": true,
+                "accessorKind": "get"
+              }
+            ]
+          },
+          {
+            "kind": "Function",
+            "name": "canMakePayment",
+            "printedName": "canMakePayment(completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Bool) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin(im)canMakePaymentWithCompletion:",
+            "mangledName": "$s12RazorpayCore14ApplePayPluginP14canMakePayment10completionyySbc_tF",
+            "moduleName": "RazorpayCore",
+            "genericSig": "<τ_0_0 where τ_0_0 : RazorpayCore.ApplePayPlugin>",
+            "sugared_genericSig": "<Self where Self : RazorpayCore.ApplePayPlugin>",
+            "protocolReq": true,
+            "declAttributes": [
+              "ObjC"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "setAnalyticsTracker",
+            "printedName": "setAnalyticsTracker(_:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.String, [Swift.AnyHashable : Any]?) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Tuple",
+                    "printedName": "(Swift.String, [Swift.AnyHashable : Any]?)",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "String",
+                        "printedName": "Swift.String",
+                        "usr": "s:SS"
+                      },
+                      {
+                        "kind": "TypeNominal",
+                        "name": "Optional",
+                        "printedName": "[Swift.AnyHashable : Any]?",
+                        "children": [
+                          {
+                            "kind": "TypeNominal",
+                            "name": "Dictionary",
+                            "printedName": "[Swift.AnyHashable : Any]",
+                            "children": [
+                              {
+                                "kind": "TypeNominal",
+                                "name": "AnyHashable",
+                                "printedName": "Swift.AnyHashable",
+                                "usr": "s:s11AnyHashableV"
+                              },
+                              {
+                                "kind": "TypeNominal",
+                                "name": "ProtocolComposition",
+                                "printedName": "Any"
+                              }
+                            ],
+                            "usr": "s:SD"
+                          }
+                        ],
+                        "usr": "s:Sq"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin(im)setAnalyticsTracker:",
+            "mangledName": "$s12RazorpayCore14ApplePayPluginP19setAnalyticsTrackeryyySS_SDys11AnyHashableVypGSgtcF",
+            "moduleName": "RazorpayCore",
+            "genericSig": "<τ_0_0 where τ_0_0 : RazorpayCore.ApplePayPlugin>",
+            "sugared_genericSig": "<Self where Self : RazorpayCore.ApplePayPlugin>",
+            "protocolReq": true,
+            "declAttributes": [
+              "RawDocComment",
+              "ObjC"
+            ],
+            "reqNewWitnessTableEntry": true,
+            "funcSelfKind": "NonMutating"
+          }
+        ],
+        "declKind": "Protocol",
+        "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin",
+        "mangledName": "$s12RazorpayCore14ApplePayPluginP",
+        "moduleName": "RazorpayCore",
+        "genericSig": "<τ_0_0 : AnyObject>",
+        "sugared_genericSig": "<Self : AnyObject>",
+        "declAttributes": [
+          "AccessControl",
+          "ObjC",
+          "RawDocComment"
+        ],
+        "conformances": [
+          {
+            "kind": "Conformance",
+            "name": "Escapable",
+            "printedName": "Escapable",
+            "usr": "s:s9EscapableP",
+            "mangledName": "$ss9EscapableP"
+          },
+          {
+            "kind": "Conformance",
+            "name": "Copyable",
+            "printedName": "Copyable",
+            "usr": "s:s8CopyableP",
+            "mangledName": "$ss8CopyableP"
+          }
+        ]
+      },
+      {
         "kind": "Import",
         "name": "Foundation",
         "printedName": "Foundation",
@@ -10157,21 +10444,21 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayCore.swift",
+      "filePath": "\/Users\/runner\/work\/razorpay-ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayCore.swift",
       "kind": "IntegerLiteral",
       "offset": 323,
       "length": 6,
       "value": "1"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayCore.swift",
+      "filePath": "\/Users\/runner\/work\/razorpay-ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayCore.swift",
       "kind": "Dictionary",
       "offset": 1028,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayPublicProtocols.swift",
+      "filePath": "\/Users\/runner\/work\/razorpay-ios\/razorpay-ios\/RazorpayIOS\/RazorpayCore\/RazorpayPublicProtocols.swift",
       "kind": "BooleanLiteral",
       "offset": 6201,
       "length": 5,

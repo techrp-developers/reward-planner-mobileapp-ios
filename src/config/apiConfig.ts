@@ -34,10 +34,10 @@ export const UPLOADS_URL =
 const getCmsCdnBaseUrl = (): string => {
   const envValue =
     (typeof process !== 'undefined' && process?.env && (process.env.CMS_CDN_BASE_URL || process.env.EXPO_PUBLIC_CMS_CDN_BASE_URL)) ||
-    'https://cdn.rewardplanners.com';
+    'https://cdn.rewardplanners.com/public';
 
-  const baseUrl = (envValue || 'https://cdn.rewardplanners.com').trim();
-  if (!baseUrl) return 'https://cdn.rewardplanners.com';
+  const baseUrl = (envValue || 'https://cdn.rewardplanners.com/public').trim();
+  if (!baseUrl) return 'https://cdn.rewardplanners.com/public';
 
   const normalized = baseUrl.replace(/\/+$/, '');
   return /^https?:\/\//i.test(normalized) ? normalized : `https://${normalized.replace(/^\/+/, '')}`;
@@ -48,14 +48,30 @@ export const CMS_CDN_BASE_URL = getCmsCdnBaseUrl();
 export const buildCdnImageUrl = (imagePath: string | null | undefined): string | null => {
   if (!imagePath) return null;
 
-  const value = imagePath.trim();
-  if (!value) return null;
-  if (/^(?:null|undefined)$/i.test(value)) return null;
+  const value = String(imagePath).trim();
+  if (!value || /^(?:null|undefined)$/i.test(value)) return null;
 
   if (/^data:/i.test(value)) return value;
-  if (/^https?:\/\//i.test(value)) return value;
 
-  const sanitizedPath = value.replace(/^\/+/, '');
+  if (/^https?:\/\//i.test(value)) {
+    const lower = value.toLowerCase();
+    if (lower.startsWith('https://cdn.rewardplanners.com/public/')) return value;
+    if (lower.startsWith('https://mpsl.rewardplanners.com/uploads/')) {
+      const suffix = value.replace(/^https?:\/\/[^/]+\/uploads\//i, '');
+      return `${CMS_CDN_BASE_URL.replace(/\/+$/, '')}/${suffix.replace(/^\/+/, '')}`;
+    }
+    if (lower.startsWith('http://localhost') || lower.startsWith('https://localhost')) {
+      const suffix = value.replace(/^https?:\/\/[^/]+(?::\d+)?\//i, '');
+      return `${CMS_CDN_BASE_URL.replace(/\/+$/, '')}/${suffix.replace(/^\/+/, '')}`;
+    }
+    if (lower.startsWith('https://rewardplanners.com/api/crm/uploads/')) {
+      const suffix = value.replace(/^https?:\/\/[^/]+\/api\/crm\/uploads\//i, '');
+      return `${CMS_CDN_BASE_URL.replace(/\/+$/, '')}/${suffix.replace(/^\/+/, '')}`;
+    }
+    return value;
+  }
+
+  const sanitizedPath = value.replace(/^\/+/, '').replace(/^public\//i, '');
   if (!sanitizedPath) return null;
 
   return `${CMS_CDN_BASE_URL.replace(/\/+$/, '')}/${sanitizedPath}`;
@@ -73,7 +89,7 @@ export const resolveCmsImageUrl = (value: string | null | undefined): string | n
   const privateLocalUrl = raw.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)?$/i);
   const normalizedPath = privateLocalUrl ? (privateLocalUrl[1] || '/') : raw;
 
-  if (/^https?:\/\//i.test(raw) && !privateLocalUrl) return raw;
+  if (/^https?:\/\//i.test(raw) && !privateLocalUrl) return buildCdnImageUrl(raw);
   if (privateLocalUrl) return buildCdnImageUrl(normalizedPath);
 
   return buildCdnImageUrl(raw);

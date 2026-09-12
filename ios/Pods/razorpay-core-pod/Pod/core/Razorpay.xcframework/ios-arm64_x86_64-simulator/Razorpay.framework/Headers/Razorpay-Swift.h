@@ -309,6 +309,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 @protocol UPITurboPlugin;
 @protocol UPITurboUIPlugin;
 @protocol AmazonWalletPaylaterProtocol;
+@protocol ApplePayPlugin;
 SWIFT_CLASS("_TtC8Razorpay16RazorpayCheckout")
 @interface RazorpayCheckout : NSObject
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayCheckout * _Nonnull shared;)
@@ -316,6 +317,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayChec
 @property (nonatomic, strong) id <UPITurboPlugin> _Nullable upiTurbo;
 @property (nonatomic, strong) id <UPITurboUIPlugin> _Nullable upiTurboUI;
 @property (nonatomic, strong) id <AmazonWalletPaylaterProtocol> _Nullable amazonPlugin;
+@property (nonatomic, strong) id <ApplePayPlugin> _Nullable applePay;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_DEPRECATED_MSG("-init is unavailable");
 @end
@@ -376,6 +378,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayChec
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView UIPlugin:(id <UPITurboUIPlugin> _Nonnull)UIPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView amazonPlugin:(id <AmazonWalletPaylaterProtocol> _Nonnull)amazonPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
++ (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView ApplePay:(id <ApplePayPlugin> _Nonnull)applePayPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 /// Introduces a new throwing <code>initWithKey</code> method (with the <code>unified</code> flag) to support the
 /// modularized SDK architecture.
 /// This initializer enables proper error handling when a specific checkout module
@@ -743,6 +746,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 @protocol UPITurboPlugin;
 @protocol UPITurboUIPlugin;
 @protocol AmazonWalletPaylaterProtocol;
+@protocol ApplePayPlugin;
 SWIFT_CLASS("_TtC8Razorpay16RazorpayCheckout")
 @interface RazorpayCheckout : NSObject
 SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayCheckout * _Nonnull shared;)
@@ -750,6 +754,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayChec
 @property (nonatomic, strong) id <UPITurboPlugin> _Nullable upiTurbo;
 @property (nonatomic, strong) id <UPITurboUIPlugin> _Nullable upiTurboUI;
 @property (nonatomic, strong) id <AmazonWalletPaylaterProtocol> _Nullable amazonPlugin;
+@property (nonatomic, strong) id <ApplePayPlugin> _Nullable applePay;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_DEPRECATED_MSG("-init is unavailable");
 @end
@@ -810,6 +815,7 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RazorpayChec
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView UIPlugin:(id <UPITurboUIPlugin> _Nonnull)UIPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 + (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView amazonPlugin:(id <AmazonWalletPaylaterProtocol> _Nonnull)amazonPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
++ (RazorpayCheckout * _Nonnull)initWithKey:(NSString * _Nonnull)key andDelegate:(id <RazorpayPaymentCompletionProtocol> _Nonnull)delegate withPaymentWebView:(WKWebView * _Nonnull)merchantWebView ApplePay:(id <ApplePayPlugin> _Nonnull)applePayPlugin SWIFT_METHOD_FAMILY(none) SWIFT_WARN_UNUSED_RESULT;
 /// Introduces a new throwing <code>initWithKey</code> method (with the <code>unified</code> flag) to support the
 /// modularized SDK architecture.
 /// This initializer enables proper error handling when a specific checkout module

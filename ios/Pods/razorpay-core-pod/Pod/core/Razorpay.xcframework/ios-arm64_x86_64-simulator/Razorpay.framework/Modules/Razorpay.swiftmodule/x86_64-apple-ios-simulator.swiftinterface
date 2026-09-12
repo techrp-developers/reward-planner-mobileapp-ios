@@ -16,6 +16,7 @@ import _SwiftConcurrencyShims
   @objc final public var upiTurbo: (any RazorpayCore.UPITurboPlugin)?
   @objc final public var upiTurboUI: (any RazorpayCore.UPITurboUIPlugin)?
   @objc final public var amazonPlugin: (any RazorpayCore.AmazonWalletPaylaterProtocol)?
+  @objc final public var applePay: (any RazorpayCore.ApplePayPlugin)?
   @objc @_inheritsConvenienceInitializers @objcMembers final public class RecommendedInstruments : ObjectiveC.NSObject {
     @objc @_inheritsConvenienceInitializers @objcMembers final public class ResponseKey : ObjectiveC.NSObject {
       @objc public static let getRecommendedInstruments: Swift.String
@@ -79,6 +80,7 @@ extension Razorpay.RazorpayCheckout {
   @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, UIPlugin: any RazorpayCore.UPITurboUIPlugin) -> Razorpay.RazorpayCheckout
   @objc public static func initWithKey(_ key: Swift.String) -> Razorpay.RazorpayCheckout
   @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, amazonPlugin: any RazorpayCore.AmazonWalletPaylaterProtocol) -> Razorpay.RazorpayCheckout
+  @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, ApplePay applePayPlugin: any RazorpayCore.ApplePayPlugin) -> Razorpay.RazorpayCheckout
   @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, _ unified: Swift.Bool = true) throws -> Razorpay.RazorpayCheckout
   @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, plugin: any RazorpayCore.UPITurboPlugin, _ unified: Swift.Bool = true) throws -> Razorpay.RazorpayCheckout
   @objc public static func initWithKey(_ key: Swift.String, andDelegate delegate: any RazorpayCore.RazorpayPaymentCompletionProtocol, withPaymentWebView merchantWebView: WebKit.WKWebView, UIPlugin: any RazorpayCore.UPITurboUIPlugin, _ unified: Swift.Bool = true) throws -> Razorpay.RazorpayCheckout

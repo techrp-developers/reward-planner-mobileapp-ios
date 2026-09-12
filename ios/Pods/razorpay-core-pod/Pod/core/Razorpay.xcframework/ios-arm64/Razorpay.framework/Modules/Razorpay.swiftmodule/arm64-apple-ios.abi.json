@@ -483,6 +483,129 @@
             ]
           },
           {
+            "kind": "Var",
+            "name": "applePay",
+            "printedName": "applePay",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "(any RazorpayCore.ApplePayPlugin)?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "ApplePayPlugin",
+                    "printedName": "any RazorpayCore.ApplePayPlugin",
+                    "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin"
+                  }
+                ],
+                "usr": "s:Sq"
+              }
+            ],
+            "declKind": "Var",
+            "usr": "c:@M@Razorpay@objc(cs)RazorpayCheckout(py)applePay",
+            "mangledName": "$s8Razorpay0A8CheckoutC8applePay0A4Core05AppleD6Plugin_pSgvp",
+            "moduleName": "Razorpay",
+            "declAttributes": [
+              "HasInitialValue",
+              "Final",
+              "HasStorage",
+              "AccessControl",
+              "ObjC"
+            ],
+            "hasStorage": true,
+            "accessors": [
+              {
+                "kind": "Accessor",
+                "name": "Get",
+                "printedName": "Get()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "(any RazorpayCore.ApplePayPlugin)?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplePayPlugin",
+                        "printedName": "any RazorpayCore.ApplePayPlugin",
+                        "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "c:@M@Razorpay@objc(cs)RazorpayCheckout(im)applePay",
+                "mangledName": "$s8Razorpay0A8CheckoutC8applePay0A4Core05AppleD6Plugin_pSgvg",
+                "moduleName": "Razorpay",
+                "implicit": true,
+                "declAttributes": [
+                  "Final",
+                  "ObjC"
+                ],
+                "accessorKind": "get"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Set",
+                "printedName": "Set()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Optional",
+                    "printedName": "(any RazorpayCore.ApplePayPlugin)?",
+                    "children": [
+                      {
+                        "kind": "TypeNominal",
+                        "name": "ApplePayPlugin",
+                        "printedName": "any RazorpayCore.ApplePayPlugin",
+                        "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin"
+                      }
+                    ],
+                    "usr": "s:Sq"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "c:@M@Razorpay@objc(cs)RazorpayCheckout(im)setApplePay:",
+                "mangledName": "$s8Razorpay0A8CheckoutC8applePay0A4Core05AppleD6Plugin_pSgvs",
+                "moduleName": "Razorpay",
+                "implicit": true,
+                "declAttributes": [
+                  "Final",
+                  "ObjC"
+                ],
+                "accessorKind": "set"
+              },
+              {
+                "kind": "Accessor",
+                "name": "Modify",
+                "printedName": "Modify()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  }
+                ],
+                "declKind": "Accessor",
+                "usr": "s:8Razorpay0A8CheckoutC8applePay0A4Core05AppleD6Plugin_pSgvM",
+                "mangledName": "$s8Razorpay0A8CheckoutC8applePay0A4Core05AppleD6Plugin_pSgvM",
+                "moduleName": "Razorpay",
+                "implicit": true,
+                "declAttributes": [
+                  "Final"
+                ],
+                "accessorKind": "_modify"
+              }
+            ]
+          },
+          {
             "kind": "TypeDecl",
             "name": "RecommendedInstruments",
             "printedName": "RecommendedInstruments",
@@ -2561,6 +2684,55 @@
           {
             "kind": "Function",
             "name": "initWithKey",
+            "printedName": "initWithKey(_:andDelegate:withPaymentWebView:ApplePay:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "RazorpayCheckout",
+                "printedName": "Razorpay.RazorpayCheckout",
+                "usr": "c:@M@Razorpay@objc(cs)RazorpayCheckout"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "RazorpayPaymentCompletionProtocol",
+                "printedName": "any RazorpayCore.RazorpayPaymentCompletionProtocol",
+                "usr": "c:@M@RazorpayCore@objc(pl)RazorpayPaymentCompletionProtocol"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "WKWebView",
+                "printedName": "WebKit.WKWebView",
+                "usr": "c:objc(cs)WKWebView"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "ApplePayPlugin",
+                "printedName": "any RazorpayCore.ApplePayPlugin",
+                "usr": "c:@M@RazorpayCore@objc(pl)ApplePayPlugin"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "c:@CM@Razorpay@objc(cs)RazorpayCheckout(cm)initWithKey:andDelegate:withPaymentWebView:ApplePay:",
+            "mangledName": "$s8Razorpay0A8CheckoutC11initWithKey_11andDelegate18withPaymentWebView8ApplePayACSS_0A4Core0aI18CompletionProtocol_pSo05WKWebK0CAH0lM6Plugin_ptFZ",
+            "moduleName": "Razorpay",
+            "static": true,
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "ObjC"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "initWithKey",
             "printedName": "initWithKey(_:andDelegate:withPaymentWebView:_:)",
             "children": [
               {
@@ -4518,135 +4690,135 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 786,
+      "offset": 827,
       "length": 29,
       "value": "\"get_recommended_instruments\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 854,
+      "offset": 895,
       "length": 7,
       "value": "\"items\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 980,
+      "offset": 1021,
       "length": 8,
       "value": "\"method\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1032,
+      "offset": 1073,
       "length": 13,
       "value": "\"app_package\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1160,
+      "offset": 1201,
       "length": 5,
       "value": "\"upi\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1203,
+      "offset": 1244,
       "length": 6,
       "value": "\"card\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1253,
+      "offset": 1294,
       "length": 12,
       "value": "\"netbanking\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1305,
+      "offset": 1346,
       "length": 8,
       "value": "\"wallet\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1350,
+      "offset": 1391,
       "length": 5,
       "value": "\"emi\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1397,
+      "offset": 1438,
       "length": 10,
       "value": "\"paylater\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "StringLiteral",
-      "offset": 1453,
+      "offset": 1494,
       "length": 15,
       "value": "\"bank_transfer\""
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "BooleanLiteral",
-      "offset": 6778,
+      "offset": 6819,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "BooleanLiteral",
-      "offset": 7317,
+      "offset": 7358,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "BooleanLiteral",
-      "offset": 7911,
+      "offset": 7952,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper.swift",
       "kind": "BooleanLiteral",
-      "offset": 8584,
+      "offset": 8625,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
       "kind": "BooleanLiteral",
-      "offset": 3658,
+      "offset": 4235,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
       "kind": "BooleanLiteral",
-      "offset": 4224,
+      "offset": 4801,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
       "kind": "BooleanLiteral",
-      "offset": 4903,
+      "offset": 5480,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/Users\/vivek.shindhe\/Razorpay\/ios\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
+      "filePath": "\/Users\/gaurav.bhardwaj\/Documents\/razorpay-ios\/RazorpayIOS\/RazorpayWrapper\/RazorpayWrapper+Extension.swift",
       "kind": "BooleanLiteral",
-      "offset": 5392,
+      "offset": 5969,
       "length": 4,
       "value": "true"
     }

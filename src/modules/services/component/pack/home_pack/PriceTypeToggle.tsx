@@ -63,11 +63,13 @@ const styles = StyleSheet.create({
   activeBtn: {
     flex: 1,
     borderRadius: 20,
+    paddingVertical: 10,
     alignItems: 'center',
   },
 
   inactiveBtn: {
     flex: 1,
+    paddingVertical: 10,
     alignItems: 'center',
   },
 
@@ -75,16 +77,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 13,
-    paddingVertical: 10,
-
-
   },
 
   inactiveText: {
     color: '#6B7280',
     fontSize: 13,
     fontWeight: '500',
-    paddingVertical: 10,
-
   },
 });

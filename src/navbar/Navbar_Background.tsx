@@ -89,26 +89,53 @@ export default function Navbar_Background({
       bgColor,
     });
 
+    if (imageUrl) {
+      console.log('[CMS IMAGE FINAL] imageUrl:', imageUrl);
+      console.log('[CMS IMAGE FINAL] typeof:', typeof imageUrl);
+      console.log('[CMS IMAGE FINAL] length:', imageUrl.length);
+      console.log('[CMS IMAGE FINAL] isHttps:', imageUrl.startsWith('https://'));
+      console.log('[CMS IMAGE FINAL] isCDN:', imageUrl.startsWith('https://cdn.rewardplanners.com/public/'));
+    } else {
+      console.log('[CMS IMAGE FINAL] imageUrl: null');
+      console.log('[CMS IMAGE FINAL] typeof: null');
+      console.log('[CMS IMAGE FINAL] length: 0');
+      console.log('[CMS IMAGE FINAL] isHttps: false');
+      console.log('[CMS IMAGE FINAL] isCDN: false');
+    }
+
     return (
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
         {bgColor !== "transparent" ? (
           <View style={[StyleSheet.absoluteFill, { backgroundColor: bgColor }]} />
         ) : null}
         {showImage ? (
-          <Image
-            source={{ uri: imageUrl as string }}
-            style={StyleSheet.absoluteFill}
-            resizeMode="cover"
-            onError={() => {
-              if (__DEV__) {
-                console.log("[CMS] Navbar image failed:", imageUrl);
-              }
-              setFailedImages((prev) => ({
-                ...prev,
-                [imageUrl as string]: true,
-              }));
-            }}
-          />
+          <>
+            {console.log('[CMS IMAGE SOURCE]', JSON.stringify({ uri: imageUrl }))}
+            <Image
+              source={{ uri: imageUrl as string }}
+              style={StyleSheet.absoluteFill}
+              resizeMode="cover"
+              onLoadStart={() => {
+                console.log('[CMS IMAGE LOAD START]', imageUrl);
+              }}
+              onLoad={() => {
+                console.log('[CMS IMAGE LOAD SUCCESS]', imageUrl);
+              }}
+              onLoadEnd={() => {
+                console.log('[CMS IMAGE LOAD END]', imageUrl);
+              }}
+              onError={(event) => {
+                console.log('[CMS IMAGE LOAD ERROR]', imageUrl, event?.nativeEvent);
+                if (__DEV__) {
+                  console.log("[CMS] Navbar image failed:", imageUrl);
+                }
+                setFailedImages((prev) => ({
+                  ...prev,
+                  [imageUrl as string]: true,
+                }));
+              }}
+            />
+          </>
         ) : null}
       </Animated.View>
     );
