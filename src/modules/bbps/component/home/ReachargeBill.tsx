@@ -375,30 +375,29 @@ function RechargeBill() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={ui.hero}
-        locations={[0, 0.3, 0.64, 1]}
-        start={{ x: 0.1, y: 0 }}
-        end={{ x: 0.9, y: 1 }}
+      <View
         style={[
           styles.heroContainer,
           {
-            borderColor: ui.heroBorder,
+            backgroundColor: bbpsTheme.isDark ? '#2B1D39' : '#76539B',
+            borderColor: bbpsTheme.isDark ? ui.heroBorder : '#B892DC',
             shadowColor: bbpsTheme.isDark ? '#000000' : '#76539B',
           },
         ]}
       >
         <View style={styles.heroContent}>
-          <Text style={[styles.mainTitle, { color: ui.heroText, textShadowColor: bbpsTheme.isDark ? 'rgba(0,0,0,0.24)' : 'rgba(59,29,84,0.28)' }]}>Everything due,</Text>
-          <Text style={[styles.heroScript, { color: ui.heroText }]}>all in one place.</Text>
-          <View style={[styles.heroReceipt, { backgroundColor: bbpsTheme.isDark ? 'rgba(255,255,255,0.12)' : '#E8D8F4' }]}>
-            <LinearGradient colors={bbpsTheme.isDark ? ['#C49BE8', '#704096'] : ['#DCC3EF', '#704096']} style={styles.heroReceiptInner}>
-              <MaterialCommunityIcons name="wallet-outline" size={36} color="#FFFFFF" />
-            </LinearGradient>
+          <Text style={[styles.mainTitle, { color: '#FFFFFF', textShadowColor: bbpsTheme.isDark ? 'rgba(0,0,0,0.24)' : 'rgba(59,29,84,0.28)' }]}>Everything due,</Text>
+          <Text style={[styles.heroScript, { color: '#FFFFFF' }]}>all in one place.</Text>
+        </View>
+
+        <View style={[styles.heroReceipt, { backgroundColor: bbpsTheme.isDark ? 'rgba(255,255,255,0.12)' : '#E8D8F4' }]}>
+          <View style={[styles.heroReceiptInner, { backgroundColor: bbpsTheme.isDark ? '#C49BE8' : '#704096' }]}>
+            <MaterialCommunityIcons name="wallet-outline" size={36} color="#FFFFFF" />
           </View>
         </View>
+
         <View style={[styles.heroAccentLine, { backgroundColor: bbpsTheme.isDark ? '#C49BE8' : '#704096' }]} />
-      </LinearGradient>
+      </View>
 
       {featuredCategories.length > 0 && (
         <View style={styles.featuredSection}>
@@ -481,36 +480,52 @@ function RechargeBill() {
           <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
           <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>Payment benefits</Text>
         </View>
-        <LinearGradient
-          colors={bbpsTheme.isDark ? ['#241630', '#3D2452'] : ['#F3E9FA', '#E8D8F4']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.benefitCard, { borderColor: bbpsTheme.isDark ? '#513568' : '#D5BCE5' }]}
+
+        <View
+          style={[
+            styles.benefitCard,
+            {
+              backgroundColor: bbpsTheme.isDark ? '#1A1321' : '#F4EBFF',
+              borderColor: bbpsTheme.isDark ? '#4B325F' : '#DCC5F3',
+            },
+          ]}
         >
           <View style={styles.benefitRow}>
-            <View style={styles.benefitIconWrap}>
-              {/* <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
+            <View
+              style={[
+                styles.benefitIconWrap,
+                { backgroundColor: bbpsTheme.isDark ? '#2B1D39' : '#FFFFFF', borderColor: bbpsTheme.isDark ? '#5B3C72' : '#E7D7F5' },
+              ]}
+            >
+              <View style={[styles.benefitIconGradient, { backgroundColor: bbpsTheme.isDark ? '#8E64D6' : '#704096' }]}>
                 <MaterialCommunityIcons name="gift-outline" size={27} color="#FFFFFF" />
-              </LinearGradient> */}
+              </View>
             </View>
             <View style={styles.benefitContent}>
-              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#33213F' }]}>Earn reward points</Text>
-              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#725E7D' }]}>Points are credited after every successful transaction.</Text>
+              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>Earn RP points</Text>
+              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>RP points are credited after every successful transaction.</Text>
             </View>
           </View>
+
           <View style={[styles.benefitDivider, { backgroundColor: bbpsTheme.isDark ? 'rgba(255,255,255,0.10)' : 'rgba(112,64,150,0.12)' }]} />
+
           <View style={styles.benefitRow}>
-            <View style={styles.benefitIconWrap}>
-              {/* <LinearGradient colors={bbpsTheme.gradients.primary} style={styles.benefitIconGradient}>
+            <View
+              style={[
+                styles.benefitIconWrap,
+                { backgroundColor: bbpsTheme.isDark ? '#2B1D39' : '#FFFFFF', borderColor: bbpsTheme.isDark ? '#5B3C72' : '#E7D7F5' },
+              ]}
+            >
+              <View style={[styles.benefitIconGradient, { backgroundColor: bbpsTheme.isDark ? '#8E64D6' : '#704096' }]}>
                 <MaterialCommunityIcons name="cash-check" size={27} color="#FFFFFF" />
-              </LinearGradient> */}
+              </View>
             </View>
             <View style={styles.benefitContent}>
-              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#33213F' }]}>No extra charges</Text>
-              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#725E7D' }]}>Pay only the bill amount with no additional fee.</Text>
+              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>No extra charges</Text>
+              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>Pay only the bill amount with no additional fee.</Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </View>
 
       <View style={styles.othersSection}>
@@ -518,13 +533,47 @@ function RechargeBill() {
           <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
           <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>Others</Text>
         </View>
-        <TouchableOpacity style={[styles.otherRow, { borderBottomColor: ui.divider }]} onPress={() => navigation.navigate('OrderHistory')}>
-          <View style={[styles.otherIcon, { backgroundColor: ui.rowIcon, borderColor: ui.rowIconBorder }]}><MaterialCommunityIcons name="receipt-text-outline" size={20} color={ui.text} /></View>
+
+        <TouchableOpacity
+          style={[
+            styles.otherRow,
+            {
+              borderBottomColor: ui.divider,
+              backgroundColor: bbpsTheme.isDark ? '#121018' : '#F9F7FB',
+            },
+          ]}
+          onPress={() => navigation.navigate('OrderHistory')}
+        >
+          <View
+            style={[
+              styles.otherIcon,
+              { backgroundColor: bbpsTheme.isDark ? '#1E1A24' : '#FFFFFF', borderColor: bbpsTheme.isDark ? '#3A3342' : '#E9DFEF' },
+            ]}
+          >
+            <MaterialCommunityIcons name="history" size={20} color={ui.text} />
+          </View>
           <Text style={[styles.otherLabel, { color: ui.text }]}>Recharges & bill payment history</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={ui.arrow} />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.otherRow, { borderBottomColor: ui.divider }]} onPress={() => navigation.navigate('HelpForm')}>
-          <View style={[styles.otherIcon, { backgroundColor: ui.rowIcon, borderColor: ui.rowIconBorder }]}><MaterialCommunityIcons name="headset" size={20} color={ui.text} /></View>
+
+        <TouchableOpacity
+          style={[
+            styles.otherRow,
+            {
+              borderBottomColor: ui.divider,
+              backgroundColor: bbpsTheme.isDark ? '#121018' : '#F9F7FB',
+            },
+          ]}
+          onPress={() => navigation.navigate('HelpForm')}
+        >
+          <View
+            style={[
+              styles.otherIcon,
+              { backgroundColor: bbpsTheme.isDark ? '#1E1A24' : '#FFFFFF', borderColor: bbpsTheme.isDark ? '#3A3342' : '#E9DFEF' },
+            ]}
+          >
+            <MaterialCommunityIcons name="headset" size={20} color={ui.text} />
+          </View>
           <Text style={[styles.otherLabel, { color: ui.text }]}>Help and support</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={ui.arrow} />
         </TouchableOpacity>
@@ -540,54 +589,39 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   heroContainer: {
-    minHeight: 205,
-    marginHorizontal: -16,
-    // marginTop: -12,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    // marginBottom: 0,
+    minHeight: 172,
+    borderRadius: 28,
+    marginHorizontal: 0,
+    marginTop: 0,
+    padding: 20,
+    marginBottom: 0,
     overflow: 'hidden',
-    borderBottomWidth: 1,
+    borderWidth: 1,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 16,
-    elevation: 5,
+    shadowOpacity: 0.14,
+    shadowRadius: 12,
+    elevation: 3,
   },
   mainTitle: {
-    fontSize: 34,
-    fontWeight: '500',
+    fontSize: 30,
+    fontWeight: '600',
     color: '#FFFFFF',
-    letterSpacing: -1,
+    letterSpacing: -0.9,
     textAlign: 'left',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  heroContent: {
-    alignItems: 'flex-start', flex: 1, marginTop: 12, paddingRight: 82, justifyContent: 'center', padding: 20,
-  },
-  heroScript: { color: '#FFFFFF', fontSize: 20, fontWeight: '700', marginTop: -2 },
-  heroReceipt: { position: 'absolute', right: -2, bottom: 18, width: 74, height: 84, borderRadius: 19, padding: 6, backgroundColor: 'rgba(255,255,255,0.12)', transform: [{ rotate: '5deg' }], shadowColor: '#3B1D54', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.24, shadowRadius: 10, elevation: 5 },
-  heroReceiptInner: { flex: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center', paddingRight: 5 },
+  heroContent: { alignItems: 'flex-start', flex: 1, marginTop: 8, paddingRight: 72, justifyContent: 'center' },
+  heroScript: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', marginTop: 2 },
+  heroReceipt: { position: 'absolute', right: 16, bottom: 18, width: 78, height: 88, borderRadius: 18, padding: 6, backgroundColor: 'rgba(255,255,255,0.12)', transform: [{ rotate: '5deg' }], shadowColor: '#3B1D54', shadowOffset: { width: 0, height: 7 }, shadowOpacity: 0.24, shadowRadius: 10, elevation: 5 },
+  heroReceiptInner: { flex: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   heroAccentLine: { position: 'absolute', width: 38, height: 4, borderRadius: 2, left: 20, bottom: 20, opacity: 0.85 },
   featuredSection: { marginTop: 30 },
   quickHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  headingWithAccent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headingAccent: {
-    width: 4,
-    height: 22,
-    marginRight: 10,
-    borderRadius: 2,
-  },
+  headingWithAccent: { flexDirection: 'row', alignItems: 'center' },
+  headingAccent: { width: 4, height: 24, borderRadius: 2, marginRight: 10 },
   quickSubtitle: { fontSize: 11.5, fontWeight: '500', marginTop: 3 },
-  sectionDisplayTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
+  sectionDisplayTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '800', letterSpacing: -0.5, marginBottom: 16 },
   featuredGrid: { flexDirection: 'row', gap: 9 },
   quickCard: { flex: 1, height: 128, borderRadius: 20, overflow: 'hidden', borderWidth: 1, shadowColor: '#5B47A3', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
   quickCardFill: { flex: 1, padding: 12 },
@@ -670,49 +704,54 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
   },
-  benefitsSection: {
-    marginTop: 24,
-  },
+  benefitsSection: { marginTop: 30 },
   benefitCard: {
-    // padding: 16,
+    borderRadius: 20,
     borderWidth: 1,
-    borderRadius: 16,
+    padding: 16,
+    overflow: 'hidden',
+    shadowColor: '#7A5AA5',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  benefitRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-
-  },
+  benefitRow: { flexDirection: 'row', alignItems: 'center' },
   benefitIconWrap: {
-    width: 52,
-    height: 52,
-  },
-  benefitIconGradient: {
-    flex: 1,
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    padding: 4,
+    marginRight: 13,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 14,
-
   },
-  benefitContent: {
-    flex: 1,
-  },
-  benefitTitle: {
-    marginBottom: 4,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  benefitDescription: {
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  benefitDivider: {
-    height: 1,
-    marginVertical: 14,
-  },
+  benefitIconGradient: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  benefitContent: { flex: 1, paddingRight: 6 },
+  benefitTitle: { fontSize: 15, fontWeight: '800', marginBottom: 5 },
+  benefitDescription: { fontSize: 11.5, lineHeight: 17, fontWeight: '500' },
+  benefitDivider: { height: 1, marginVertical: 14, marginLeft: 71 },
   othersSection: { marginTop: 30, marginBottom: 20 },
-  otherRow: { minHeight: 78, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#29262D' },
-  otherIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#17151A', borderWidth: 1, borderColor: '#2B2730', alignItems: 'center', justifyContent: 'center', marginRight: 13 },
+  otherRow: {
+    minHeight: 74,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  otherIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 13,
+  },
   otherLabel: { flex: 1, color: '#F5F2F7', fontSize: 14, fontWeight: '600' },
   skeletonTitle: {
     height: 22,

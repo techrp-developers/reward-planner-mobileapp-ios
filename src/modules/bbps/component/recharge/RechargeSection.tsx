@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import LinearGradient from 'react-native-linear-gradient';
 import BBPSHead from '../../constatnt/BBPSHead';
 import SkeletonBox from '../../../services/component/constant/SkeletonBox';
 import { useAuth } from '../../../common/auth/context/AuthContext';
@@ -252,15 +251,15 @@ function RechargeSection({ navigation, route }: any) {
         const responsePlans = response?.data?.plans || [];
         const responseGroups = Array.isArray(response?.data?.groups)
           ? response.data.groups.filter(
-            (group) => group?.label && Array.isArray(group.plans) && group.plans.length > 0
-          )
+              (group) => group?.label && Array.isArray(group.plans) && group.plans.length > 0
+            )
           : [];
         const groups =
           responseGroups.length > 0
             ? responseGroups
             : responsePlans.length > 0
-              ? [{ label: 'Recommended Packs', plans: responsePlans }]
-              : [];
+            ? [{ label: 'Recommended Packs', plans: responsePlans }]
+            : [];
 
         setPlans(responsePlans);
         setPlanGroups(groups);
@@ -288,7 +287,7 @@ function RechargeSection({ navigation, route }: any) {
     };
   }, [operatorId, primaryValue, selectedLocation]);
 
-  const handlePlanPress = (plan: RechargePlan) => {
+  const handlePlanPress = (plan: RechargePlan, startPaymentImmediately = false) => {
     if (!selectedLocation) {
       alert.warning('Select Circle', 'Please select a circle first.');
       return;
@@ -297,320 +296,325 @@ function RechargeSection({ navigation, route }: any) {
     navigation.navigate('RechargeConfirmationScreen', {
       operatorId,
       operatorName,
+      operatorLogoUrl: params.operatorLogoUrl,
+      operatorLogoAlt: params.operatorLogoAlt,
       formValues,
       circleId: selectedLocation.operator_location_id,
       circleName: selectedLocation.operator_location_name,
+      planGroupLabel: activeGroupLabel || 'Plan details',
+      startPaymentImmediately,
       plan,
     });
   };
 
   return (
     <>
-      <ScrollView style={[styles.mainContainer, { backgroundColor: bbpsTheme.colors.background }]} stickyHeaderIndices={[0]}>
-        <BBPSHead
-          user={{
-            name: user?.name || 'User',
-            number: String(primaryValue),
-            operatorInitial: operatorName,
-            type: operatorName,
-          }}
-          onBackPress={() => navigation.goBack()}
-          onChangePress={() => navigation.goBack()}
-        />
+    <ScrollView style={[styles.mainContainer, { backgroundColor: bbpsTheme.colors.background }]} stickyHeaderIndices={[0]}>
+      <BBPSHead
+        user={{
+          name: user?.name || 'User',
+          number: String(primaryValue),
+          operatorLogo: params.operatorLogoUrl ? { uri: params.operatorLogoUrl } : undefined,
+          operatorInitial: operatorName,
+          type: operatorName,
+        }}
+        onBackPress={() => navigation.goBack()}
+        onChangePress={() => navigation.goBack()}
+      />
 
-        <View style={[styles.outerContainer, { backgroundColor: bbpsTheme.colors.background }]}>
-          {loading ? (
-            <View>
-              <View style={styles.headerRow}>
-                <SkeletonBox pulse={pulse} width={170} height={20} borderRadius={8} />
-                <SkeletonBox pulse={pulse} width={64} height={16} borderRadius={8} />
+      <View style={[styles.outerContainer, { backgroundColor: bbpsTheme.colors.background }]}>
+        {loading ? (
+          <View>
+            <View style={styles.headerRow}>
+              <SkeletonBox pulse={pulse} width={170} height={20} borderRadius={8} />
+              <SkeletonBox pulse={pulse} width={64} height={16} borderRadius={8} />
+            </View>
+
+            {[0, 1, 2].map((item) => (
+              <View key={`recharge-card-skeleton-${item}`} style={styles.cardWrapper}>
+                <View style={styles.cardContainer}>
+                  <View style={styles.leftContent}>
+                    <SkeletonBox pulse={pulse} width="80%" height={16} borderRadius={8} />
+                    <SkeletonBox pulse={pulse} width="62%" height={12} borderRadius={8} style={styles.skeletonGapSm} />
+                  </View>
+                  <SkeletonBox pulse={pulse} width={110} height={44} borderRadius={10} />
+                </View>
               </View>
-
-              {[0, 1, 2].map((item) => (
-                <View key={`recharge-card-skeleton-${item}`} style={styles.cardWrapper}>
-                  <View style={styles.cardContainer}>
-                    <View style={styles.leftContent}>
-                      <SkeletonBox pulse={pulse} width="80%" height={16} borderRadius={8} />
-                      <SkeletonBox pulse={pulse} width="62%" height={12} borderRadius={8} style={styles.skeletonGapSm} />
-                    </View>
-                    <SkeletonBox pulse={pulse} width={110} height={44} borderRadius={10} />
+            ))}
+          </View>
+        ) : (
+          <View>
+            {hasPreselectedCircle && selectedLocation ? (
+              <View style={[styles.circleSummaryRow, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
+                <View style={styles.circleSummaryLeft}>
+                  <View style={styles.circleBadge}>
+                    <Text style={styles.circleBadgeText}>
+                      {selectedLocation.abbreviation?.substring(0, 2).toUpperCase() || '??'}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.circleSummaryLabel}>Circle</Text>
+                    <Text style={styles.circleSummaryName}>
+                      {selectedLocation.operator_location_name}
+                    </Text>
                   </View>
                 </View>
-              ))}
-            </View>
-          ) : (
-            <View>
-              {hasPreselectedCircle && selectedLocation ? (
-                <View style={[styles.circleSummaryRow, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
-                  <View style={styles.circleSummaryLeft}>
-                    <View style={styles.circleBadge}>
-                      <Text style={styles.circleBadgeText}>
-                        {selectedLocation.abbreviation?.substring(0, 2).toUpperCase() || '??'}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text style={styles.circleSummaryLabel}>Circle</Text>
-                      <Text style={styles.circleSummaryName}>
+                <TouchableOpacity
+                  style={styles.changeCircleBtn}
+                  onPress={() => navigation.goBack()}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.changeCircleText, { color: bbpsTheme.colors.primary }]}>Change</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Select Circle</Text>
+                </View>
+
+                <TouchableOpacity
+                  style={[
+                    styles.circleDropdown,
+                    {
+                      backgroundColor: bbpsTheme.colors.surfaceAlt,
+                      borderColor: bbpsTheme.colors.border,
+                    },
+                    selectedLocation && styles.circleDropdownSelected,
+                  ]}
+                  onPress={() => setLocationModalVisible(true)}
+                  activeOpacity={0.8}
+                >
+                  {selectedLocation ? (
+                    <View style={styles.circleSummaryLeft}>
+                      <View style={styles.circleBadge}>
+                        <Text style={styles.circleBadgeText}>
+                          {selectedLocation.abbreviation?.substring(0, 2).toUpperCase() || '??'}
+                        </Text>
+                      </View>
+                      <Text style={styles.circleDropdownText}>
                         {selectedLocation.operator_location_name}
                       </Text>
                     </View>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.changeCircleBtn}
-                    onPress={() => navigation.goBack()}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={[styles.changeCircleText, { color: bbpsTheme.colors.primary }]}>Change</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <>
-                  <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Select Circle</Text>
-                  </View>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.circleDropdown,
-                      {
-                        backgroundColor: bbpsTheme.colors.surfaceAlt,
-                        borderColor: bbpsTheme.colors.border,
-                      },
-                      selectedLocation && styles.circleDropdownSelected,
-                    ]}
-                    onPress={() => setLocationModalVisible(true)}
-                    activeOpacity={0.8}
-                  >
-                    {selectedLocation ? (
-                      <View style={styles.circleSummaryLeft}>
-                        <View style={styles.circleBadge}>
-                          <Text style={styles.circleBadgeText}>
-                            {selectedLocation.abbreviation?.substring(0, 2).toUpperCase() || '??'}
-                          </Text>
-                        </View>
-                        <Text style={styles.circleDropdownText}>
-                          {selectedLocation.operator_location_name}
-                        </Text>
-                      </View>
-                    ) : (
-                      <Text style={styles.circleDropdownPlaceholder}>
-                        {loading ? 'Loading circles…' : 'Choose your telecom circle'}
-                      </Text>
-                    )}
-                    <Icon
-                      name="chevron-down"
-                      size={22}
-                      color={selectedLocation ? '#8665FF' : '#C4B8F5'}
-                    />
-                  </TouchableOpacity>
-
-                  {!selectedLocation && (
-                    <Text style={styles.circleHintText}>
-                      Select a circle first to see matching recharge plans
+                  ) : (
+                    <Text style={styles.circleDropdownPlaceholder}>
+                      {loading ? 'Loading circles…' : 'Choose your telecom circle'}
                     </Text>
                   )}
-                </>
-              )}
+                  <Icon
+                    name="chevron-down"
+                    size={22}
+                    color={selectedLocation ? '#8665FF' : '#C4B8F5'}
+                  />
+                </TouchableOpacity>
 
-              <View style={[styles.plansSection, { backgroundColor: bbpsTheme.colors.surface }]}>
-                <View style={[styles.searchSection, { backgroundColor: bbpsTheme.colors.surface }]}>
-                  <View style={[styles.searchBar, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderColor: bbpsTheme.colors.border }]}>
-                    <MaterialIcons name="search" size={24} color={bbpsTheme.colors.muted} />
-                    <TextInput
-                      placeholder="Search a Plan, e.g. 299 or 28 days"
-                      style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
-                      placeholderTextColor={bbpsTheme.colors.subtle}
-                      value={searchQuery}
-                      onChangeText={setSearchQuery}
-                    />
-                  </View>
-                </View>
-
-                <View style={[styles.tabContainer, { backgroundColor: bbpsTheme.colors.surface, borderBottomColor: bbpsTheme.colors.divider }]}>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.groupTabsContent}
-                  >
-                    {(planGroups.length > 0
-                      ? planGroups
-                      : [{ label: 'Recommended Packs', plans }]
-                    ).map((group) => {
-                      const selectedLabel = activeGroupLabel || planGroups[0]?.label || group.label;
-                      const active = group.label === selectedLabel;
-
-                      return (
-                        <TouchableOpacity
-                          key={group.label}
-                          style={[styles.groupTab, active && styles.activeGroupTab]}
-                          activeOpacity={0.8}
-                          onPress={() => setActiveGroupLabel(group.label)}
-                        >
-                          <Text style={[styles.groupTabText, active && styles.activeGroupTabText]}>
-                            {group.label}
-                          </Text>
-                          {active && <View style={styles.activeTabUnderline} />}
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-                </View>
-
-                {!selectedLocation ? (
-                  <View style={styles.emptyState}>
-                    <Icon name="map-marker-radius-outline" size={40} color="#D8CFFB" />
-                    <Text style={styles.emptyText}>Select a circle to view plans</Text>
-                  </View>
-                ) : plansLoading ? (
-                  <View style={styles.loadingPlans}>
-                    <ActivityIndicator color="#8665FF" />
-                    <Text style={styles.loadingText}>Loading plans...</Text>
-                  </View>
-                ) : filteredPlans.length === 0 ? (
-                  <View style={styles.emptyState}>
-                    <Icon name="package-variant" size={40} color="#D8CFFB" />
-                    <Text style={styles.emptyText}>No recharge plans found</Text>
-                  </View>
-                ) : (
-                  filteredPlans.map((plan, index) => (
-                    <TouchableOpacity
-                      key={`${getPlanId(plan) || getPlanAmount(plan)}-${index}`}
-                      activeOpacity={0.9}
-                      style={[styles.planCard, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}
-                      onPress={() => handlePlanPress(plan)}
-                    >
-                      <View style={styles.planCardTop}>
-                        <View style={styles.planPriceBlock}>
-                          <Text style={styles.planCurrency}>₹</Text>
-                          <Text style={styles.planPriceText}>{getPlanAmount(plan)}</Text>
-                        </View>
-
-                        <View style={[styles.planDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
-
-                        <View style={styles.planTagsCol}>
-                          <View style={styles.planTagsRow}>
-                            <View style={styles.planTag}>
-                              <Icon name="calendar-clock-outline" size={13} color="#8665FF" />
-                              <Text style={styles.planTagText}>{getPlanValidity(plan)}</Text>
-                            </View>
-                            {/* <View style={styles.planTag}>
-                            <Icon name="wifi" size={13} color="#8665FF" />
-                            <Text style={styles.planTagText}>{getPlanData(plan)}</Text>
-                          </View> */}
-                          </View>
-                          {getPlanDescription(plan) ? (
-                            <Text style={styles.planDescription} numberOfLines={2}>
-                              {getPlanDescription(plan)}
-                            </Text>
-                          ) : null}
-                        </View>
-                      </View>
-
-                      <View style={[styles.planCardFooter, { backgroundColor: bbpsTheme.colors.surfaceAlt }]}>
-                        <Text style={styles.planFooterHint}>Recommended for you</Text>
-                        <LinearGradient
-                          colors={bbpsTheme.gradients.primary}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={styles.planRechargeChip}
-                        >
-                          <Text style={styles.planRechargeChipText}>Recharge</Text>
-                          <MaterialIcons name="chevron-right" size={18} color="#FFFFFF" />
-                        </LinearGradient>
-                      </View>
-                    </TouchableOpacity>
-                  ))
+                {!selectedLocation && (
+                  <Text style={styles.circleHintText}>
+                    Select a circle first to see matching recharge plans
+                  </Text>
                 )}
+              </>
+            )}
+
+            <View style={[styles.plansSection, { backgroundColor: bbpsTheme.colors.surface }]}>
+              <View style={[styles.searchSection, { backgroundColor: bbpsTheme.colors.surface }]}>
+                <View style={[styles.searchBar, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderColor: bbpsTheme.colors.border }]}>
+                  <MaterialIcons name="search" size={24} color={bbpsTheme.colors.muted} />
+                  <TextInput
+                    placeholder="Search a Plan, e.g. 299 or 28 days"
+                    style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
+                    placeholderTextColor={bbpsTheme.colors.subtle}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                </View>
               </View>
+
+              <View style={[styles.tabContainer, { backgroundColor: bbpsTheme.colors.surface, borderBottomColor: bbpsTheme.colors.divider }]}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.groupTabsContent}
+                >
+                  {(planGroups.length > 0
+                    ? planGroups
+                    : [{ label: 'Recommended Packs', plans }]
+                  ).map((group) => {
+                    const selectedLabel = activeGroupLabel || planGroups[0]?.label || group.label;
+                    const active = group.label === selectedLabel;
+
+                    return (
+                      <TouchableOpacity
+                        key={group.label}
+                        style={[styles.groupTab, active && styles.activeGroupTab]}
+                        activeOpacity={0.8}
+                        onPress={() => setActiveGroupLabel(group.label)}
+                      >
+                        <Text style={[styles.groupTabText, active && styles.activeGroupTabText]}>
+                          {group.label}
+                        </Text>
+                        {active && <View style={styles.activeTabUnderline} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {!selectedLocation ? (
+                <View style={styles.emptyState}>
+                  <Icon name="map-marker-radius-outline" size={40} color="#D8CFFB" />
+                  <Text style={styles.emptyText}>Select a circle to view plans</Text>
+                </View>
+              ) : plansLoading ? (
+                <View style={styles.loadingPlans}>
+                  <ActivityIndicator color="#8665FF" />
+                  <Text style={styles.loadingText}>Loading plans...</Text>
+                </View>
+              ) : filteredPlans.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Icon name="package-variant" size={40} color="#D8CFFB" />
+                  <Text style={styles.emptyText}>No recharge plans found</Text>
+                </View>
+              ) : (
+                filteredPlans.map((plan, index) => (
+                  <TouchableOpacity
+                    key={`${getPlanId(plan) || getPlanAmount(plan)}-${index}`}
+                    activeOpacity={0.9}
+                    style={[styles.planCard, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}
+                    onPress={() => handlePlanPress(plan)}
+                  >
+                    <View style={styles.planCardTop}>
+                      <View style={styles.planPriceBlock}>
+                        <Text style={styles.planCurrency}>₹</Text>
+                        <Text style={styles.planPriceText}>{getPlanAmount(plan)}</Text>
+                      </View>
+
+                      <View style={styles.planFacts}>
+                        {getPlanData(plan) !== '-' && (
+                          <View style={styles.planFactRow}>
+                            <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>Data</Text>
+                            <Text style={[styles.planFactValue, { color: bbpsTheme.colors.text }]}>{getPlanData(plan)}</Text>
+                          </View>
+                        )}
+                        <View style={styles.planFactRow}>
+                          <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>Validity</Text>
+                          <Text style={[styles.planFactValue, { color: bbpsTheme.colors.text }]}>{getPlanValidity(plan)}</Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        style={[styles.planArrowButton, { backgroundColor: bbpsTheme.colors.iconBg }]}
+                        activeOpacity={0.8}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Recharge with ₹${getPlanAmount(plan)} plan`}
+                        onPress={(event) => {
+                          event.stopPropagation();
+                          handlePlanPress(plan, true);
+                        }}
+                      >
+                        <MaterialIcons name="chevron-right" size={24} color={bbpsTheme.colors.primary} />
+                      </TouchableOpacity>
+                    </View>
+                    {getPlanDescription(plan) ? (
+                      <View style={[styles.planDescriptionRow, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderTopColor: bbpsTheme.colors.divider }]}>
+                        <Text style={[styles.planDescription, { color: bbpsTheme.colors.muted }]} numberOfLines={2}>
+                          {getPlanDescription(plan)}
+                        </Text>
+                        <MaterialIcons name="chevron-right" size={20} color={bbpsTheme.colors.muted} />
+                      </View>
+                    ) : null}
+                  </TouchableOpacity>
+                ))
+              )}
             </View>
+          </View>
+        )}
+      </View>
+    </ScrollView>
+
+    <Modal
+      visible={locationModalVisible}
+      animationType="slide"
+      transparent
+      onRequestClose={() => setLocationModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Select Circle</Text>
+            <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
+              <Icon name="close" size={22} color="#333" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalSearchContainer}>
+            <Icon name="magnify" size={20} color="#9CA3AF" />
+            <TextInput
+              style={styles.modalSearchInput}
+              placeholder="Search circle..."
+              placeholderTextColor="#9CA3AF"
+              value={locationSearch}
+              onChangeText={setLocationSearch}
+            />
+          </View>
+
+          {loading ? (
+            <ActivityIndicator size="large" color="#8665FF" style={styles.modalLoader} />
+          ) : (
+            <FlatList
+              data={filteredLocations}
+              keyExtractor={(item) => item.operator_location_id}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => {
+                const selected =
+                  selectedLocation?.operator_location_id === item.operator_location_id;
+
+                return (
+                  <TouchableOpacity
+                    style={[styles.locationItem, selected && styles.locationItemSelected]}
+                    onPress={() => {
+                      setSelectedLocation(item);
+                      setLocationModalVisible(false);
+                      setLocationSearch('');
+                    }}
+                  >
+                    <View style={styles.locationItemLeft}>
+                      <View style={styles.locationAbbrevBadge}>
+                        <Text style={styles.locationAbbrevText}>
+                          {item.abbreviation?.substring(0, 2).toUpperCase() || '??'}
+                        </Text>
+                      </View>
+                      <Text style={styles.locationName}>{item.operator_location_name}</Text>
+                    </View>
+                    {selected && <Icon name="check-circle" size={20} color="#8665FF" />}
+                  </TouchableOpacity>
+                );
+              }}
+              ListEmptyComponent={<Text style={styles.emptyText}>No circles found</Text>}
+            />
           )}
         </View>
-      </ScrollView>
-
-      <Modal
-        visible={locationModalVisible}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setLocationModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Circle</Text>
-              <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
-                <Icon name="close" size={22} color="#333" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalSearchContainer}>
-              <Icon name="magnify" size={20} color="#9CA3AF" />
-              <TextInput
-                style={styles.modalSearchInput}
-                placeholder="Search circle..."
-                placeholderTextColor="#9CA3AF"
-                value={locationSearch}
-                onChangeText={setLocationSearch}
-              />
-            </View>
-
-            {loading ? (
-              <ActivityIndicator size="large" color="#8665FF" style={styles.modalLoader} />
-            ) : (
-              <FlatList
-                data={filteredLocations}
-                keyExtractor={(item) => item.operator_location_id}
-                showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => {
-                  const selected =
-                    selectedLocation?.operator_location_id === item.operator_location_id;
-
-                  return (
-                    <TouchableOpacity
-                      style={[styles.locationItem, selected && styles.locationItemSelected]}
-                      onPress={() => {
-                        setSelectedLocation(item);
-                        setLocationModalVisible(false);
-                        setLocationSearch('');
-                      }}
-                    >
-                      <View style={styles.locationItemLeft}>
-                        <View style={styles.locationAbbrevBadge}>
-                          <Text style={styles.locationAbbrevText}>
-                            {item.abbreviation?.substring(0, 2).toUpperCase() || '??'}
-                          </Text>
-                        </View>
-                        <Text style={styles.locationName}>{item.operator_location_name}</Text>
-                      </View>
-                      {selected && <Icon name="check-circle" size={20} color="#8665FF" />}
-                    </TouchableOpacity>
-                  );
-                }}
-                ListEmptyComponent={<Text style={styles.emptyText}>No circles found</Text>}
-              />
-            )}
-          </View>
-        </View>
-      </Modal>
+      </View>
+    </Modal>
     </>
   );
 }
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#FFFFFF' },
-  outerContainer: { paddingVertical: 15, backgroundColor: '#F8F7FF' },
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 25 },
-  sectionHeader: { paddingHorizontal: 20, paddingBottom: 12 },
+  outerContainer: { paddingVertical: 16, backgroundColor: '#F8F7FF' },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 24 },
+  sectionHeader: { paddingHorizontal: 16, paddingBottom: 8 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: '#1F2937' },
-  cardWrapper: { paddingHorizontal: 16, marginBottom: 20 },
+  cardWrapper: { paddingHorizontal: 16, marginBottom: 16 },
   cardContainer: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFFFFF',
-    borderRadius: 16, paddingHorizontal: 18, paddingVertical: 20, borderWidth: 1, borderColor: '#EDEDED', elevation: 3,
+    borderRadius: 16, paddingHorizontal: 16, paddingVertical: 16, borderWidth: 1, borderColor: '#EDEDED', elevation: 3,
     shadowColor: '#000', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.08, shadowRadius: 8,
   },
   leftContent: { flex: 1 },
   plansSection: {
     backgroundColor: '#FFFFFF',
-    marginTop: 18,
+    marginTop: 16,
     paddingTop: 8,
     paddingBottom: 8,
   },
@@ -620,22 +624,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 16,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#ECE7FF',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     shadowColor: '#5B47A3',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
   },
-  circleSummaryLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  circleSummaryLeft: { flexDirection: 'row', alignItems: 'center', gap: 16, flex: 1, minWidth: 0 },
   circleBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     backgroundColor: '#8665FF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -644,9 +648,9 @@ const styles = StyleSheet.create({
   circleSummaryLabel: { fontSize: 11, color: '#9CA3AF' },
   circleSummaryName: { fontSize: 15, fontWeight: '700', color: '#1F2937', marginTop: 1 },
   changeCircleBtn: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: '#F3EFFF',
   },
   changeCircleText: { color: '#5B47A3', fontWeight: '700', fontSize: 13 },
@@ -656,23 +660,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 16,
     backgroundColor: '#FAF9FF',
-    borderRadius: 14,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#E5E0FA',
-    paddingHorizontal: 14,
-    height: 55,
+    paddingHorizontal: 16,
+    height: 64,
     shadowColor: '#5B47A3',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
+    elevation: 2,
   },
   circleDropdownSelected: {
     borderColor: '#8665FF',
     backgroundColor: '#F5F0FF',
   },
-  circleDropdownText: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
+  circleDropdownText: { flex: 1, fontSize: 15, fontWeight: '700', color: '#1F2937' },
   circleDropdownPlaceholder: { flex: 1, fontSize: 15, color: '#C4B8F5' },
-  circleHintText: { fontSize: 12, color: '#B0A8D4', marginTop: 6, marginHorizontal: 20 },
+  circleHintText: { fontSize: 12, color: '#B0A8D4', marginTop: 8, marginHorizontal: 16 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.45)',
@@ -682,10 +687,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingTop: 20,
-    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingHorizontal: 16,
     maxHeight: '75%',
-    paddingBottom: 30,
+    paddingBottom: 32,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -702,8 +707,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E0FA',
     paddingHorizontal: 12,
-    height: 46,
-    marginBottom: 14,
+    height: 48,
+    marginBottom: 16,
   },
   modalSearchInput: { flex: 1, marginLeft: 8, fontSize: 15, color: '#333' },
   modalLoader: { marginTop: 32 },
@@ -711,42 +716,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 14,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F1FC',
   },
   locationItemSelected: { backgroundColor: '#F5F0FF', borderRadius: 10, paddingHorizontal: 8 },
   locationItemLeft: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   locationAbbrevBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
     backgroundColor: '#EDE9FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 16,
   },
   locationAbbrevText: { fontSize: 12, fontWeight: '800', color: '#8665FF' },
   locationName: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
-  searchSection: { paddingHorizontal: 16, marginTop: 10, backgroundColor: '#FFFFFF', paddingTop: 18, paddingBottom: 4 },
+  searchSection: { paddingHorizontal: 16, marginTop: 8, backgroundColor: '#FFFFFF', paddingTop: 16, paddingBottom: 8 },
   searchBar: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#FAF9FF', borderRadius: 14,
     borderWidth: 1, borderColor: '#ECE7FF', paddingHorizontal: 16, height: 52,
     shadowColor: '#5B47A3', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
   },
   searchInput: { flex: 1, marginLeft: 8, fontSize: 15, color: '#111827' },
-  tabContainer: { borderBottomWidth: 1, borderBottomColor: '#E5E7EB', marginTop: 25, backgroundColor: '#FFFFFF' },
+  tabContainer: { borderBottomWidth: 1, borderBottomColor: '#E5E7EB', marginTop: 16, backgroundColor: '#FFFFFF' },
   groupTabsContent: { paddingHorizontal: 16 },
-  groupTab: { marginRight: 20, paddingBottom: 10, minHeight: 32, justifyContent: 'center' },
+  groupTab: { marginRight: 16, paddingBottom: 8, minHeight: 32, justifyContent: 'center' },
   activeGroupTab: {},
   groupTabText: { fontSize: 15, fontWeight: '700', color: '#9CA3AF' },
   activeGroupTabText: { color: '#374151' },
-  activeTab: { marginRight: 20, paddingBottom: 10 },
+  activeTab: { marginRight: 16, paddingBottom: 8 },
   activeTabText: { fontSize: 15, fontWeight: '700', color: '#374151' },
   activeTabUnderline: { height: 3, borderRadius: 2, backgroundColor: '#8665FF', position: 'absolute', bottom: 0, left: 0, right: 0 },
   planCard: {
     marginHorizontal: 16,
-    marginTop: 14,
+    marginTop: 16,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
@@ -760,14 +765,25 @@ const styles = StyleSheet.create({
   },
   planCardTop: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
-  planPriceBlock: { flexDirection: 'row', alignItems: 'flex-start', width: '26%' },
-  planCurrency: { fontSize: 14, fontWeight: '700', color: '#5B47A3', marginTop: 3, marginRight: 1 },
-  planPriceText: { fontSize: 24, fontWeight: '800', color: '#5B47A3' },
-  planDivider: { width: 1, height: 38, backgroundColor: '#F0EDFB', marginRight: 14 },
-  planTagsCol: { flex: 1 },
+  planPriceBlock: { flexDirection: 'row', alignItems: 'flex-start', width: '30%' },
+  planCurrency: { fontSize: 16, fontWeight: '700', color: '#5B47A3', marginTop: 2, marginRight: 2 },
+  planPriceText: { fontSize: 26, fontWeight: '800', color: '#5B47A3' },
+  planFacts: { flex: 1, gap: 8 },
+  planFactRow: { flexDirection: 'row', alignItems: 'center' },
+  planFactLabel: { width: 72, fontSize: 14, fontWeight: '700' },
+  planFactValue: { flex: 1, fontSize: 14, fontWeight: '500' },
+  planArrowButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
   planTagsRow: { flexDirection: 'row', gap: 8 },
   planTag: {
     flexDirection: 'row',
@@ -779,28 +795,16 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   planTagText: { fontSize: 12, fontWeight: '700', color: '#5B47A3' },
-  planDescription: { fontSize: 12, color: '#6B7280', marginTop: 8, lineHeight: 16 },
-  planCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  planDescriptionRow: {
+    minHeight: 56,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#FAF9FF',
+    paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F0EDFB',
-  },
-  planFooterHint: { fontSize: 12, color: '#9CA3AF', fontWeight: '500' },
-  planRechargeChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-
+    gap: 8,
   },
-  planRechargeChipText: {
-    color: '#FFFFFF', fontSize: 13, fontWeight: '700', paddingHorizontal: 14,
-    paddingVertical: 7,
-  },
+  planDescription: { flex: 1, fontSize: 13, lineHeight: 18 },
   emptyState: { padding: 32, alignItems: 'center', gap: 8 },
   emptyText: { color: '#6B7280', fontSize: 14, fontWeight: '600' },
   loadingPlans: { padding: 24, alignItems: 'center' },

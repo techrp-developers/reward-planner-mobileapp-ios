@@ -62,13 +62,13 @@ function ReachargeHomeScreen({ navigation, route }: any) {
 
   const myNumberEntry = user?.phone
     ? {
-        id: 'my-number',
-        name: user?.name || 'My Number',
-        number: user.phone,
-        status: 'Your registered number',
-        icon: vi,
-        type: 'My Number',
-      }
+      id: 'my-number',
+      name: user?.name || 'My Number',
+      number: user.phone,
+      status: 'Your registered number',
+      icon: vi,
+      type: 'My Number',
+    }
     : null;
 
   // Navigate with both number and location when Recharge is pressed
@@ -101,7 +101,6 @@ function ReachargeHomeScreen({ navigation, route }: any) {
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={() => handleRechargePress(item.number)}
-        style={styles.rechargeBtnWrap}
       >
         <LinearGradient
           colors={['#8665FF', '#5B47A3']}
@@ -157,7 +156,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                   style={[
                     styles.locationItem,
                     selectedLocation?.operator_location_id === item.operator_location_id &&
-                      styles.locationItemSelected,
+                    styles.locationItemSelected,
                   ]}
                   onPress={() => {
                     setSelectedLocation(item);
@@ -197,145 +196,145 @@ function ReachargeHomeScreen({ navigation, route }: any) {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View>
-            {/* ── Input Section ── */}
-            <View style={[styles.content, { backgroundColor: bbpsTheme.colors.surface, shadowColor: bbpsTheme.colors.shadow }]}>
-              {/* Mobile Number */}
-              <View style={styles.labelRow}>
-                <Text style={styles.label}>Enter Mobile Number</Text>
-                <View style={styles.operatorRow}>
-                  <Image source={jio} style={styles.operatorIcon} />
-                  <Image source={airtel} style={styles.operatorIcon} />
-                  <Image source={vi} style={styles.operatorIcon} />
-                </View>
+          {/* ── Input Section ── */}
+          <View style={[styles.content, { backgroundColor: bbpsTheme.colors.surface, shadowColor: bbpsTheme.colors.shadow }]}>
+            {/* Mobile Number */}
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>Enter Mobile Number</Text>
+              <View style={styles.operatorRow}>
+                <Image source={jio} style={styles.operatorIcon} />
+                <Image source={airtel} style={styles.operatorIcon} />
+                <Image source={vi} style={styles.operatorIcon} />
               </View>
-              <View style={[styles.inputContainer, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderColor: bbpsTheme.colors.border }]}>
-                <TextInput
-                  style={[styles.input, { color: bbpsTheme.colors.text }]}
-                  value={mobileNumber}
-                  onChangeText={setMobileNumber}
-                  keyboardType="phone-pad"
-                  placeholder="Enter 10-digit number"
-                  placeholderTextColor="#C4B8F5"
-                  maxLength={10}
-                />
-                <View style={styles.contactButton}>
-                  <Icon name="notebook-outline" size={26} color="#7F5DF0" />
-                </View>
+            </View>
+            <View style={[styles.inputContainer, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderColor: bbpsTheme.colors.border }]}>
+              <TextInput
+                style={[styles.input, { color: bbpsTheme.colors.text }]}
+                value={mobileNumber}
+                onChangeText={setMobileNumber}
+                keyboardType="phone-pad"
+                placeholder="Enter 10-digit number"
+                placeholderTextColor="#C4B8F5"
+                maxLength={10}
+              />
+              <View style={styles.contactButton}>
+                <Icon name="notebook-outline" size={26} color="#7F5DF0" />
               </View>
+            </View>
 
-              {/* Circle / Location Selector */}
-              <Text style={[styles.label, { marginTop: 18, marginBottom: 12 }]}>
-                Select Circle
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.inputContainer,
-                  {
-                    backgroundColor: bbpsTheme.colors.surfaceAlt,
-                    borderColor: bbpsTheme.colors.border,
-                  },
-                  selectedLocation ? styles.inputContainerSelected : null,
-                ]}
-                onPress={() => setLocationModalVisible(true)}
-                activeOpacity={0.8}
-              >
-                {selectedLocation ? (
-                  <View style={styles.selectedLocationRow}>
-                    <View style={styles.selectedBadge}>
-                      <Text style={styles.selectedBadgeText}>
-                        {selectedLocation.abbreviation?.substring(0, 2).toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={styles.selectedLocationText}>
-                      {selectedLocation.operator_location_name}
+            {/* Circle / Location Selector */}
+            <Text style={[styles.label, { marginTop: 18, marginBottom: 12 }]}>
+              Select Circle
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.inputContainer,
+                {
+                  backgroundColor: bbpsTheme.colors.surfaceAlt,
+                  borderColor: bbpsTheme.colors.border,
+                },
+                selectedLocation ? styles.inputContainerSelected : null,
+              ]}
+              onPress={() => setLocationModalVisible(true)}
+              activeOpacity={0.8}
+            >
+              {selectedLocation ? (
+                <View style={styles.selectedLocationRow}>
+                  <View style={styles.selectedBadge}>
+                    <Text style={styles.selectedBadgeText}>
+                      {selectedLocation.abbreviation?.substring(0, 2).toUpperCase()}
                     </Text>
                   </View>
-                ) : (
-                  <Text style={[styles.placeholderText, { color: bbpsTheme.colors.subtle }]}>
-                    {locationsLoading ? 'Loading circles…' : 'Choose your telecom circle'}
+                  <Text style={styles.selectedLocationText}>
+                    {selectedLocation.operator_location_name}
                   </Text>
-                )}
-                <Icon
-                  name="chevron-down"
-                  size={22}
-                  color={selectedLocation ? '#8665FF' : '#C4B8F5'}
-                />
-              </TouchableOpacity>
-
-              {/* Optional: show a hint when circle is not yet selected */}
-              {!selectedLocation && (
-                <Text style={styles.hintText}>
-                  Circle helps find the right plans for your number
+                </View>
+              ) : (
+                <Text style={[styles.placeholderText, { color: bbpsTheme.colors.subtle }]}>
+                  {locationsLoading ? 'Loading circles…' : 'Choose your telecom circle'}
                 </Text>
               )}
-            </View>
+              <Icon
+                name="chevron-down"
+                size={22}
+                color={selectedLocation ? '#8665FF' : '#C4B8F5'}
+              />
+            </TouchableOpacity>
 
-            {/* ── Proceed Button (only shown when both fields are filled) ── */}
-            {mobileNumber.length === 10 && selectedLocation && (
-              <TouchableOpacity
-                style={[styles.proceedWrapper, styles.proceedBtnWrap]}
-                activeOpacity={0.85}
-                onPress={() => handleRechargePress()}
-              >
-                <LinearGradient
-                  colors={bbpsTheme.gradients.primary}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.proceedBtn}
-                >
-                  <Text style={styles.proceedBtnText}>View Plans & Recharge</Text>
-                  <Icon name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
-                </LinearGradient>
-              </TouchableOpacity>
+            {/* Optional: show a hint when circle is not yet selected */}
+            {!selectedLocation && (
+              <Text style={styles.hintText}>
+                Circle helps find the right plans for your number
+              </Text>
             )}
+          </View>
 
-            {/* ── My Number Section ── */}
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionAccent} />
-              <Text style={styles.sectionTitle}>My Number</Text>
-            </View>
-            <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
-              {myNumberEntry && renderItem(myNumberEntry)}
-            </View>
+          {/* ── Proceed Button (only shown when both fields are filled) ── */}
+          {mobileNumber.length === 10 && selectedLocation && (
+            <TouchableOpacity
+              style={styles.proceedWrapper}
+              activeOpacity={0.85}
+              onPress={() => handleRechargePress()}
+            >
+              <LinearGradient
+                colors={bbpsTheme.gradients.primary}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.proceedBtn}
+              >
+                <Text style={styles.proceedBtnText}>View Plans & Recharge</Text>
+                <Icon name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
 
-            {/* ── My Recharges & Bill ── */}
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionAccent} />
-              <Text style={styles.sectionTitle}>My Recharges & Bill</Text>
-            </View>
-            <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
-              {RECENT_RECHARGES.map((item, index, arr) => (
-                <View key={item.id}>
-                  {renderItem(item)}
-                  {index < arr.length - 1 && <View style={styles.separator} />}
-                </View>
-              ))}
-            </View>
+          {/* ── My Number Section ── */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionAccent} />
+            <Text style={styles.sectionTitle}>My Number</Text>
+          </View>
+          <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
+            {myNumberEntry && renderItem(myNumberEntry)}
+          </View>
 
-            {/* ── Contacts ── */}
-            <View style={styles.contactsHeader}>
-              <Text style={styles.contactsTitle}>Contacts</Text>
-              <View>
-                <Icon name="magnify" size={22} color="#7F5DF0" />
+          {/* ── My Recharges & Bill ── */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionAccent} />
+            <Text style={styles.sectionTitle}>My Recharges & Bill</Text>
+          </View>
+          <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
+            {RECENT_RECHARGES.map((item, index, arr) => (
+              <View key={item.id}>
+                {renderItem(item)}
+                {index < arr.length - 1 && <View style={styles.separator} />}
               </View>
-            </View>
-            <View style={[styles.sectionContainer, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
-              {CONTACTS.map((contact) => (
-                <View key={contact.id} style={styles.listItem}>
-                  <View style={[styles.avatarCircle, { backgroundColor: contact.color }]} />
-                  <View style={styles.itemInfo}>
-                    <Text style={styles.itemName}>{contact.name}</Text>
-                    <Text style={styles.itemSubText}>{contact.number}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
+            ))}
+          </View>
 
-            <View style={styles.buttonCenter}>
-              <View style={styles.viewAllButton}>
-                <Text style={styles.viewAllText}>View All</Text>
-              </View>
+          {/* ── Contacts ── */}
+          <View style={styles.contactsHeader}>
+            <Text style={styles.contactsTitle}>Contacts</Text>
+            <View>
+              <Icon name="magnify" size={22} color="#7F5DF0" />
             </View>
+          </View>
+          <View style={[styles.sectionContainer, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
+            {CONTACTS.map((contact) => (
+              <View key={contact.id} style={styles.listItem}>
+                <View style={[styles.avatarCircle, { backgroundColor: contact.color }]} />
+                <View style={styles.itemInfo}>
+                  <Text style={styles.itemName}>{contact.name}</Text>
+                  <Text style={styles.itemSubText}>{contact.number}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.buttonCenter}>
+            <View style={styles.viewAllButton}>
+              <Text style={styles.viewAllText}>View All</Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
 
@@ -399,21 +398,17 @@ const styles = StyleSheet.create({
 
   // Proceed button
   proceedWrapper: { marginHorizontal: 20, marginTop: 16, marginBottom: 4 },
-  proceedBtnWrap: {
-    borderRadius: 14,
-    backgroundColor: '#5B47A3',
-    shadowColor: '#5B47A3',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 10,
-    elevation: 5,
-  },
   proceedBtn: {
     flexDirection: 'row',
     height: 52,
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#5B47A3',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.28,
+    shadowRadius: 10,
+    elevation: 5,
   },
   proceedBtnText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
 
@@ -461,23 +456,21 @@ const styles = StyleSheet.create({
   contactName: { fontSize: 15, fontWeight: '700', color: '#333' },
   contactNumber: { fontSize: 13, color: '#666', marginVertical: 2 },
   rechargeStatus: { fontSize: 12, color: '#888' },
-  rechargeBtnWrap: {
+  rechargeBtn: {
+
     borderRadius: 10,
-    backgroundColor: '#5B47A3',
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#5B47A3',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 6,
     elevation: 3,
   },
-  rechargeBtn: {
-    paddingHorizontal: 18,
+  rechargeBtnText: {
+    color: '#FFF', fontSize: 13, fontWeight: '700', paddingHorizontal: 18,
     paddingVertical: 9,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  rechargeBtnText: { color: '#FFF', fontSize: 13, fontWeight: '700' },
   separator: { height: 1, backgroundColor: '#F3F1FC', marginLeft: 60 },
 
   contactsHeader: {

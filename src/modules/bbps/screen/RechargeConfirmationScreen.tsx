@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import RazorpayCheckout from 'react-native-razorpay';
@@ -44,12 +45,17 @@ const getPlanAmount = (plan: any) =>
 const getPlanValidity = (plan: any) =>
   String(plan?.validity || plan?.validityDescription || plan?.validity_desc || '-');
 
+const getPlanData = (plan: any) =>
+  String(plan?.data || plan?.dataBenefit || plan?.benefits || '');
+
 const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
   const { user } = useAuth();
   const alert = useAlert();
   const bbpsTheme = useBbpsTheme();
   const [loading, setLoading] = useState(false);
+  const [logoFailed, setLogoFailed] = useState(false);
   const paymentFlowInProgress = useRef(false);
+  const automaticPaymentStarted = useRef(false);
   const [orderFailure, setOrderFailure] = useState<OrderFailure | null>(null);
   const params = useMemo(() => route?.params ?? {}, [route?.params]);
 
@@ -69,6 +75,10 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
     '';
   const planId = getPlanId(plan);
   const amount = getPlanAmount(plan);
+
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [params.operatorLogoUrl]);
 
   const handleCreateOrder = useCallback(async () => {
     if (paymentFlowInProgress.current) return;
@@ -207,6 +217,15 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
     }
   }, [params.operatorId, params.circleId, params.operatorName, mobile, planId, user, alert, navigation]);
 
+  useEffect(() => {
+    if (!params.startPaymentImmediately || automaticPaymentStarted.current) {
+      return;
+    }
+
+    automaticPaymentStarted.current = true;
+    handleCreateOrder();
+  }, [params.startPaymentImmediately, handleCreateOrder]);
+
   const handleCopyErrorDetails = useCallback(async () => {
     if (!orderFailure) return;
 
@@ -226,54 +245,10 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
     }
   }, [orderFailure]);
 
-  const benefits = useMemo(() => {
-    const desc = plan?.description || '';
-    const items = [];
-
-    const dataMatch = desc.match(/(\d+(\.\d+)?)\s?GB\s?Data/i);
-    if (dataMatch) {
-      items.push({
-        icon: 'network-cell',
-        label: `${dataMatch[0]}`,
-      });
-    }
-
-    const smsMatch = desc.match(/(\d+)\s?SMS/i);
-    if (smsMatch) {
-      items.push({
-        icon: 'message',
-        label: `${smsMatch[0]}`,
-      });
-    }
-
-    if (/Unlimited Calls/i.test(desc)) {
-      items.push({
-        icon: 'call',
-        label: 'Unlimited Calls',
-      });
-    }
-
-    if (/OTT|Movies|TV App/i.test(desc)) {
-      items.push({
-        icon: 'live-tv',
-        label: 'OTT Benefits',
-      });
-    }
-
-    if (plan?.validity) {
-      items.push({
-        icon: 'event',
-        label: plan.validity,
-      });
-    }
-
-    return items;
-  }, [plan?.description, plan?.validity]);
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
       <BBPSHead
-        title="Confirm Recharge"
+        title="Plan details"
         onBackPress={() => navigation.goBack()}
       />
 
@@ -282,55 +257,45 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.container}>
-          <View
-            style={[
-              styles.card,
-              {
-                backgroundColor: bbpsTheme.colors.surface,
-                shadowColor: bbpsTheme.colors.shadow,
-              },
-            ]}
-          >
-            <LinearGradient
-              colors={bbpsTheme.gradients.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.cardHeader}
-            >
-              <View style={styles.avatarCircle}>
-                <MaterialIcons name="sim-card" size={24} color="#FFFFFF" />
-              </View>
-              <View style={styles.headerTextWrap}>
-                <Text style={styles.operatorName}>{params.operatorName || 'Operator'}</Text>
-                <Text style={styles.mobileText}>{String(mobile)}</Text>
-              </View>
-            </LinearGradient>
+          <View style={styles.planDetailsHeading}>
+            {params.operatorLogoUrl && !logoFailed ? (
+              <Image
+                source={{ uri: params.operatorLogoUrl }}
+                style={[styles.detailsOperatorLogo, { borderColor: bbpsTheme.colors.border }]}
+                resizeMode="contain"
+                accessibilityLabel={params.operatorLogoAlt || `${params.operatorName || 'Operator'} logo`}
+                onError={() => setLogoFailed(true)}
+              />
+            ) : null}
+            <Text style={[styles.planGroupTitle, { color: bbpsTheme.colors.textStrong }]}>
+              {params.planGroupLabel || 'Plan details'}
+            </Text>
+          </View>
 
-            <View style={styles.cardBody}>
-              <View style={styles.row}>
-                <View style={styles.labelWrap}>
-                  <MaterialIcons name="location-on" size={16} color={bbpsTheme.colors.primary} />
-                  <Text style={[styles.label, { color: bbpsTheme.colors.muted }]}>Circle</Text>
-                </View>
-                <Text style={[styles.value, { color: bbpsTheme.colors.text }]}>{params.circleName || params.circleId || '-'}</Text>
+          <View style={[styles.planSummaryCard, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
+            <View style={styles.planPriceRow}>
+              <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Plan price</Text>
+              <Text style={[styles.summaryPrice, { color: bbpsTheme.colors.textStrong }]}>₹{amount || '-'}</Text>
+            </View>
+            <View style={[styles.summaryDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
+            <View style={styles.summaryFactsRow}>
+              <View style={styles.summaryFact}>
+                <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Validity</Text>
+                <Text style={[styles.summaryValue, { color: bbpsTheme.colors.textStrong }]}>{getPlanValidity(plan)}</Text>
               </View>
-              <View style={[styles.divider, { backgroundColor: bbpsTheme.colors.divider }]} />
-              <View style={styles.row}>
-                <View style={styles.labelWrap}>
-                  <MaterialIcons name="event-available" size={16} color={bbpsTheme.colors.primary} />
-                  <Text style={[styles.label, { color: bbpsTheme.colors.muted }]}>Validity</Text>
+              {getPlanData(plan) && (
+                <View style={styles.summaryFact}>
+                  <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Data</Text>
+                  <Text style={[styles.summaryValue, { color: bbpsTheme.colors.textStrong }]}>{getPlanData(plan)}</Text>
                 </View>
-                <Text style={[styles.value, { color: bbpsTheme.colors.text }]}>{getPlanValidity(plan)}</Text>
-              </View>
-              <View style={[styles.divider, { backgroundColor: bbpsTheme.colors.divider }]} />
-              <View style={styles.amountRow}>
-                <Text style={[styles.amountLabel, { color: bbpsTheme.colors.textStrong }]}>Total Amount</Text>
-                <View style={[styles.amountPill, { backgroundColor: bbpsTheme.colors.iconBg, borderColor: bbpsTheme.colors.border }]}>
-                  <Text style={[styles.amount, { color: bbpsTheme.colors.primary }]}>Rs {amount || '-'}</Text>
-                </View>
-              </View>
+              )}
             </View>
           </View>
+
+          <Text style={[styles.detailsTitle, { color: bbpsTheme.colors.textStrong }]}>Details</Text>
+          <Text style={[styles.detailsText, { color: bbpsTheme.colors.text }]}>
+            {plan?.description || 'No description available'}
+          </Text>
 
           {orderFailure && (
             <View style={styles.errorCard}>
@@ -380,64 +345,11 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <>
-                  <Text style={styles.buttonText}>Proceed Securely</Text>
-                  <MaterialIcons name="lock" size={18} color="#FFFFFF" style={styles.buttonIcon} />
-                </>
+                <Text style={styles.buttonText}>Proceed to recharge</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
-          <View
-            style={[
-              styles.planBenefitsCard,
-              {
-                backgroundColor: bbpsTheme.colors.surface,
-                borderColor: bbpsTheme.colors.border,
-              },
-            ]}
-          >
-            <View style={styles.sectionHeader}>
-              <MaterialIcons
-                name="local-offer"
-                size={20}
-                color={bbpsTheme.colors.primary}
-              />
-              <Text style={[styles.sectionTitle, { color: bbpsTheme.colors.textStrong }]}>
-                Plan Benefits
-              </Text>
-            </View>
 
-            <View style={styles.benefitsWrap}>
-              {benefits.map((item, index) => (
-                <View key={index} style={[styles.benefitChip, { backgroundColor: bbpsTheme.colors.iconBg, borderColor: bbpsTheme.colors.border }]}>
-                  <MaterialIcons
-                    name={item.icon}
-                    size={16}
-                    color={bbpsTheme.colors.primary}
-                  />
-                  <Text style={[styles.benefitText, { color: bbpsTheme.colors.primary }]}>
-                    {item.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            <Text style={[styles.descriptionTitle, { color: bbpsTheme.colors.textStrong }]}>
-              Plan Description
-            </Text>
-
-            <Text style={[styles.descriptionText, { color: bbpsTheme.colors.muted }]}>
-              {plan?.description || 'No description available'}
-            </Text>
-          </View>
-
-          <View style={styles.securityCard}>
-            <MaterialIcons name="shield" size={22} color="#22C55E" />
-            <View style={styles.securityTextWrap}>
-              <Text style={styles.securityTitle}>100% Secure Payment</Text>
-              <Text style={styles.securitySubTitle}>Powered by Razorpay</Text>
-            </View>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -447,14 +359,50 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8F7FF' },
   scrollContent: {
-    paddingBottom: 120,
+    flexGrow: 1,
+    paddingBottom: 24,
   },
   container: { flex: 1, padding: 16 },
+  planDetailsHeading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  detailsOperatorLogo: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  planGroupTitle: { fontSize: 18, fontWeight: '700', flex: 1 },
+  planSummaryCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
+  planPriceRow: {
+    minHeight: 72,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  summaryLabel: { fontSize: 14, fontWeight: '600' },
+  summaryPrice: { fontSize: 24, fontWeight: '700' },
+  summaryDivider: { height: 1 },
+  summaryFactsRow: { flexDirection: 'row', padding: 16, gap: 16 },
+  summaryFact: { flex: 1, gap: 8 },
+  summaryValue: { fontSize: 16, fontWeight: '700' },
+  detailsTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
+  detailsText: { fontSize: 14, lineHeight: 20, marginBottom: 24 },
   card: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 16,
     shadowColor: '#5B47A3',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.12,
@@ -464,8 +412,9 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-
-    gap: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    gap: 16,
   },
   avatarCircle: {
     width: 48,
@@ -476,36 +425,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.35)',
+    overflow: 'hidden',
   },
-  headerTextWrap: {
-    flex: 1, paddingHorizontal: 18,
-    paddingVertical: 20,
-  },
+  operatorLogo: { width: '100%', height: '100%', borderRadius: 24, backgroundColor: '#FFFFFF' },
+  headerTextWrap: { flex: 1 },
   operatorName: { fontSize: 17, fontWeight: '700', color: '#FFFFFF' },
-  mobileText: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 3, fontWeight: '500' },
-  cardBody: { padding: 18 },
-  divider: { height: 1, backgroundColor: '#F0EDFB', marginVertical: 4 },
+  mobileText: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 8, fontWeight: '500' },
+  cardBody: { padding: 16 },
+  divider: { height: 1, backgroundColor: '#F0EDFB', marginVertical: 8 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
-  labelWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  labelWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   label: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
   value: { fontSize: 14, color: '#1F2937', fontWeight: '700' },
   amountRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 14,
+    paddingTop: 16,
   },
   amountLabel: { fontSize: 14, color: '#374151', fontWeight: '700' },
   amountPill: {
     backgroundColor: '#F3EFFF',
     borderRadius: 999,
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderWidth: 1,
     borderColor: '#E4DBFF',
   },
@@ -521,6 +469,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 14,
     elevation: 6,
+    marginTop: 'auto',
   },
   button: {
     height: 56,
@@ -533,9 +482,9 @@ const styles = StyleSheet.create({
   buttonText: { color: '#FFF', fontSize: 16, fontWeight: '700' },
   buttonIcon: { marginLeft: 8 },
   planBenefitsCard: {
-    marginTop: 20,
+    marginTop: 16,
     backgroundColor: '#FAFAFF',
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
     borderColor: '#EEE8FF',
@@ -545,9 +494,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF2F2',
     borderWidth: 1,
     borderColor: '#FECACA',
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   errorCardHeader: {
     flexDirection: 'row',
@@ -568,40 +517,40 @@ const styles = StyleSheet.create({
   errorCardMeta: {
     fontSize: 11,
     color: '#B91C1C',
-    marginTop: 6,
+    marginTop: 8,
     fontWeight: '600',
   },
   errorCardActions: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
+    gap: 8,
+    marginTop: 16,
   },
   errorRetryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#DC2626',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   errorRetryText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   errorCopyBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E4DBFF',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
   },
   errorCopyText: { color: '#5B47A3', fontSize: 13, fontWeight: '700' },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
   },
 
   sectionTitle: {
@@ -614,7 +563,7 @@ const styles = StyleSheet.create({
   benefitsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 15,
+    marginBottom: 16,
   },
 
   benefitChip: {
@@ -634,7 +583,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#5B47A3',
-    marginLeft: 6,
+    marginLeft: 8,
   },
 
   descriptionTitle: {
@@ -650,29 +599,6 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
 
-  securityCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0FDF4',
-    borderWidth: 1,
-    borderColor: '#BBF7D0',
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 20,
-  },
-
-  securityTextWrap: { marginLeft: 10, flex: 1 },
-  securityTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#166534',
-  },
-
-  securitySubTitle: {
-    fontSize: 12,
-    color: '#15803D',
-    marginTop: 2,
-  },
 });
 
 const RechargeConfirmationScreen = React.memo(RechargeConfirmationScreenComponent);

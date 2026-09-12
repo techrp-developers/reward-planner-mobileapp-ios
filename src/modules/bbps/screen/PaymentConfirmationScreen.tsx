@@ -297,20 +297,23 @@ const PaymentConfirmationScreenComponent = () => {
 
           {/* Customer Card */}
           <View style={[styles.premiumCard, { backgroundColor: bbpsTheme.colors.surface }]}>
-            <LinearGradient
-              colors={bbpsTheme.gradients.primary}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.premiumCardHeader}
+            <View
+              style={[
+                styles.premiumCardHeader,
+                {
+                  backgroundColor: bbpsTheme.isDark ? '#241A2F' : '#F1E8FF',
+                  borderColor: bbpsTheme.isDark ? '#4C345F' : '#D8C6F5',
+                },
+              ]}
             >
-              <View style={styles.premiumLogoCircle}>
+              <View style={[styles.premiumLogoCircle, { backgroundColor: bbpsTheme.isDark ? '#7B53C8' : '#704096' }]}>
                 <Text style={styles.premiumLogoText}>{logoText}</Text>
               </View>
               <View style={styles.headerTextContainer}>
-                <Text style={styles.premiumCustomerName} numberOfLines={1}>{cardTitle}</Text>
-                <Text style={styles.premiumBillId} numberOfLines={1}>{consumerNumber}</Text>
+                <Text style={[styles.premiumCustomerName, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]} numberOfLines={1}>{cardTitle}</Text>
+                <Text style={[styles.premiumBillId, { color: bbpsTheme.isDark ? '#D9CFE8' : '#5E4B6E' }]} numberOfLines={1}>{consumerNumber}</Text>
               </View>
-            </LinearGradient>
+            </View>
 
             <View style={styles.customerCardBody}>
               <InfoRow icon="apartment" label="Operator" value={operatorName} bbpsTheme={bbpsTheme} />
@@ -426,38 +429,41 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#EDE3F8',
     ...Platform.select({
       ios: {
         shadowColor: BRAND_SECONDARY,
-        shadowOffset: { width: 0, height: 10 },
+        shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.08,
-        shadowRadius: 20,
+        shadowRadius: 18,
       },
       android: {
-        elevation: 6,
+        elevation: 4,
       },
     }),
   },
   premiumCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
   },
   premiumLogoCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
+    borderColor: 'rgba(255,255,255,0.22)',
   },
   premiumLogoText: {
     color: '#FFFFFF',
     fontWeight: '800',
-    fontSize: 16,
-    letterSpacing: 0.5,
+    fontSize: 15,
+    letterSpacing: 0.4,
   },
   headerTextContainer: {
     flex: 1,
@@ -469,7 +475,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   premiumBillId: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 4,
     fontWeight: '500',

@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import LinearGradient from 'react-native-linear-gradient';
+import MaskedView from '@react-native-masked-view/masked-view';
 import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
 
 interface UserInfo {
@@ -22,16 +22,9 @@ interface Props {
   onChangePress?: () => void; // For the "Change" link
 }
 
-const GRAD_H = { x: 0, y: 0 };
-const GRAD_H_END = { x: 1, y: 0 };
-const ANDROID_STATUS_BAR = StatusBar.currentHeight ?? 24;
-const IOS_FALLBACK_TOP = 44;
-
 const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onChangePress }) => {
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
-  const insets = useSafeAreaInsets();
-  const safeTop = insets.top > 0 ? insets.top : Platform.OS === 'android' ? ANDROID_STATUS_BAR : IOS_FALLBACK_TOP;
   const operatorInitial = user?.operatorInitial?.trim()?.charAt(0)?.toUpperCase() || 'O';
 
   const handleHelpPress = useCallback(() => {
@@ -40,15 +33,7 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
   }, [onHelpPress, navigation]);
 
   return (
-    <View
-      style={[
-        styles.headerContainer,
-        {
-          backgroundColor: bbpsTheme.colors.surface,
-          paddingTop: Math.max(12, safeTop + 8),
-        },
-      ]}
-    >
+    <View style={[styles.headerContainer, { backgroundColor: bbpsTheme.colors.surface }]}>
       <View style={styles.headerContent}>
         <View style={styles.leftSection}>
           <TouchableOpacity onPress={onBackPress} style={styles.backButton} activeOpacity={0.7}>
@@ -106,8 +91,8 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
           style={[
             styles.helpButtonWrap,
             {
-              borderColor: bbpsTheme.colors.primary,
-              backgroundColor: bbpsTheme.colors.surface,
+              backgroundColor: bbpsTheme.isDark ? '#1A1321' : '#F4ECFF',
+              borderColor: bbpsTheme.isDark ? '#4C3859' : '#DCC6F7',
             },
           ]}
         >
@@ -124,7 +109,7 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
 
 const styles = StyleSheet.create({
   // ... your existing styles ...
-  headerContainer: { backgroundColor: '#FFFFFF', paddingTop: 12 },
+  headerContainer: { backgroundColor: '#FFFFFF', paddingTop: 40 },
   headerContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12 },
   leftSection: { flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 0, paddingRight: 12 },
   backButton: { marginRight: 8, paddingVertical: 4 },
@@ -132,8 +117,8 @@ const styles = StyleSheet.create({
 
   // Profile specific styles
   profileSection: { flexDirection: 'row', alignItems: 'center', flex: 1, minWidth: 0 },
-  logoContainer: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, borderColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB' },
-  operatorLogo: { width: 28, height: 28 },
+  logoContainer: { width: 48, height: 48, borderRadius: 24, borderWidth: 1, borderColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center', backgroundColor: '#F9FAFB', overflow: 'hidden' },
+  operatorLogo: { width: '100%', height: '100%', borderRadius: 24 },
   operatorInitialCircle: {
     width: 36,
     height: 36,
@@ -155,21 +140,17 @@ const styles = StyleSheet.create({
   // Help button styles
   helpButtonWrap: {
     flexShrink: 0,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
-    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 7,
   },
   helpInnerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 7,
+    justifyContent: 'center',
   },
-  helpText: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginLeft: 4,
-  },
+  helpText: { fontSize: 14, fontWeight: '700', marginLeft: 6 },
   divider: { height: 1, backgroundColor: '#F3F4F6' },
 });
 

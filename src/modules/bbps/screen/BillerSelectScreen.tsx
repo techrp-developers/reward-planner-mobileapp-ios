@@ -8,9 +8,9 @@ import {
   SectionList,
   TouchableOpacity,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import BBPSHead from '../constatnt/BBPSHead';
@@ -25,11 +25,47 @@ import {
 } from '../api/BillsAPI';
 import SkeletonBox from '../../services/component/constant/SkeletonBox';
 
-const BRAND_START = '#8665FF';
-const BRAND_END = '#5B47A3';
 const FIVE_MINUTES = 5 * 60 * 1000;
 const SKELETON_GROUPS = [0, 1];
 const SKELETON_ROWS = [0, 1, 2];
+
+const OperatorLogo = React.memo(({
+  name,
+  logoUrl,
+  logoAlt,
+  isDark,
+}: {
+  name: string;
+  logoUrl?: string;
+  logoAlt?: string;
+  isDark: boolean;
+}) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [logoUrl]);
+
+  const showImage = Boolean(logoUrl) && !imageFailed;
+
+  return (
+    <View style={styles.logoPlaceholder}>
+      {showImage ? (
+        <Image
+          source={{ uri: logoUrl }}
+          style={styles.operatorLogo}
+          resizeMode="contain"
+          accessibilityLabel={logoAlt || `${name} logo`}
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <Text style={[styles.logoInitial, { color: isDark ? '#F1DEFF' : '#704096' }]}>
+          {name.charAt(0).toUpperCase()}
+        </Text>
+      )}
+    </View>
+  );
+});
 
 const mapFlatOperatorsToSection = (operators: Operator[]): StateBillerSection[] => {
   if (!Array.isArray(operators) || operators.length === 0) {
@@ -37,7 +73,7 @@ const mapFlatOperatorsToSection = (operators: Operator[]): StateBillerSection[] 
   }
 
   const billers = operators
-    .map((item) => {
+    .map((item): Biller | null => {
       const operatorId = Number(item?.operator_id);
       const name = String(item?.name || '').trim();
 
@@ -49,6 +85,8 @@ const mapFlatOperatorsToSection = (operators: Operator[]): StateBillerSection[] 
         id: operatorId.toString(),
         name,
         operator_id: operatorId,
+        logoUrl: String(item?.logo_url || '').trim() || undefined,
+        logoAlt: String(item?.logo_alt || '').trim() || undefined,
       };
     })
     .filter((item): item is Biller => Boolean(item));
@@ -129,8 +167,8 @@ const BillerSelectScreenComponent = () => {
   const error = !hasValidCategoryId
     ? 'Category ID not provided'
     : queryError
-      ? 'Failed to load billers. Please try again.'
-      : null;
+    ? 'Failed to load billers. Please try again.'
+    : null;
 
   const filteredData = useMemo(
     () => filterSections(allData, searchQuery),
@@ -174,6 +212,8 @@ const BillerSelectScreenComponent = () => {
       navigation.navigate('BillDetailsScreen', {
         operatorId: item.operator_id,
         operatorName: item.name,
+        operatorLogoUrl: item.logoUrl,
+        operatorLogoAlt: item.logoAlt,
         categoryId: categoryId,
         categoryName: categoryName,
       });
@@ -188,30 +228,19 @@ const BillerSelectScreenComponent = () => {
         activeOpacity={0.78}
         style={[
           styles.billerItemRow,
-          {
-            backgroundColor: bbpsTheme.colors.surface,
-            borderColor: bbpsTheme.colors.border,
-            shadowColor: bbpsTheme.colors.shadow,
-          },
         ]}
         onPress={() => handleBillerPress(item)}
       >
-        <LinearGradient
-          colors={bbpsTheme.isDark ? ['#44305E', '#322142'] : ['#F1E7FA', '#E5D4F3']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.logoPlaceholder}
-        >
-          <Text style={[styles.logoInitial, { color: bbpsTheme.isDark ? '#F1DEFF' : '#704096' }]}>{item.name.charAt(0).toUpperCase()}</Text>
-        </LinearGradient>
+        <OperatorLogo
+          name={item.name}
+          logoUrl={item.logoUrl}
+          logoAlt={item.logoAlt}
+          isDark={bbpsTheme.isDark}
+        />
         <View style={styles.billerTextBlock}>
           <Text style={[styles.billerNameText, { color: bbpsTheme.colors.text }]} numberOfLines={2}>
             {item.name}
           </Text>
-          <Text style={[styles.billerHintText, { color: bbpsTheme.colors.muted }]}>Select to view bill details</Text>
-        </View>
-        <View style={[styles.rowAction, { backgroundColor: bbpsTheme.colors.iconBg }]}>
-          <MaterialIcons name="arrow-forward" size={17} color={bbpsTheme.colors.primary} />
         </View>
       </TouchableOpacity>
     ),
@@ -224,7 +253,7 @@ const BillerSelectScreenComponent = () => {
       <View
         style={[
           styles.stateHeaderContainer,
-          { backgroundColor: bbpsTheme.colors.background },
+          { backgroundColor: bbpsTheme.colors.surface },
         ]}
       >
         <View>
@@ -328,11 +357,19 @@ const BillerSelectScreenComponent = () => {
         </View>
       ) : (
         <SectionList
+          style={[
+            styles.operatorListCard,
+            {
+              backgroundColor: bbpsTheme.colors.surface,
+              borderColor: bbpsTheme.colors.border,
+              shadowColor: bbpsTheme.colors.shadow,
+            },
+          ]}
           sections={filteredData}
           keyExtractor={keyExtractor}
           renderItem={renderBillerItem}
           renderSectionHeader={renderSectionHeader}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={styles.operatorListContent}
           showsVerticalScrollIndicator={false}
           stickySectionHeadersEnabled={false}
           removeClippedSubviews
@@ -352,7 +389,7 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 16,
-    paddingTop: 18,
+    paddingTop: 16,
     paddingBottom: 8,
   },
   searchBar: {
@@ -382,6 +419,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 28,
   },
+  operatorListCard: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderRadius: 20,
+    shadowOpacity: 0.06,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 7,
+    elevation: 2,
+  },
+  operatorListContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
   skeletonRow: {
     backgroundColor: '#FFF',
     borderLeftWidth: 1,
@@ -404,8 +456,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 2,
-    paddingTop: 18,
-    paddingBottom: 13,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   stateHeaderText: {
     fontSize: 18,
@@ -416,29 +468,30 @@ const styles = StyleSheet.create({
   billerItemRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 13,
-    paddingVertical: 12,
-    gap: 13,
-    borderWidth: 1,
-    borderRadius: 17,
-    marginBottom: 10,
-    shadowColor: '#5B47A3',
-    shadowOpacity: 0.06,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 7,
-    elevation: 2,
+    paddingHorizontal: 0,
+    paddingVertical: 8,
+    gap: 16,
+    marginBottom: 16,
   },
   logoPlaceholder: {
-    width: 50,
-    height: 50,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E4E4E7',
   },
   logoInitial: {
     fontSize: 19,
     fontWeight: '800',
+  },
+  operatorLogo: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 28,
   },
   billerTextBlock: { flex: 1, minWidth: 0 },
   billerNameText: {
@@ -447,8 +500,6 @@ const styles = StyleSheet.create({
     color: '#1F2937',
     lineHeight: 19,
   },
-  billerHintText: { fontSize: 10.5, fontWeight: '500', marginTop: 4 },
-  rowAction: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',

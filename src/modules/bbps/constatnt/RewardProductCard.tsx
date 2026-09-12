@@ -142,55 +142,55 @@ function RewardProductCard() {
       >
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
-              <View
-                key={`skeleton-${i}`}
-                style={[
-                  styles.cardContainer,
-                  {
-                    backgroundColor: bbpsTheme.colors.surface,
-                    borderColor: bbpsTheme.colors.border,
-                    shadowColor: bbpsTheme.colors.shadow,
-                  },
-                ]}
-              >
-                <View style={[styles.imageSection, { backgroundColor: bbpsTheme.colors.iconBg }]}>
-                  <SkeletonBox pulse={pulse} width="100%" height={120} borderRadius={0} />
-                </View>
-                <View style={styles.detailsSection}>
-                  <SkeletonBox pulse={pulse} width="80%" height={16} borderRadius={8} />
-                  <SkeletonBox pulse={pulse} width="60%" height={12} borderRadius={8} style={{ marginTop: 8 }} />
+            <View
+              key={`skeleton-${i}`}
+              style={[
+                styles.cardContainer,
+                {
+                  backgroundColor: bbpsTheme.colors.surface,
+                  borderColor: bbpsTheme.colors.border,
+                  shadowColor: bbpsTheme.colors.shadow,
+                },
+              ]}
+            >
+              <View style={[styles.imageSection, { backgroundColor: bbpsTheme.colors.iconBg }]}>
+                <SkeletonBox pulse={pulse} width="100%" height={120} borderRadius={0} />
+              </View>
+              <View style={styles.detailsSection}>
+                <SkeletonBox pulse={pulse} width="80%" height={16} borderRadius={8} />
+                <SkeletonBox pulse={pulse} width="60%" height={12} borderRadius={8} style={{ marginTop: 8 }} />
+              </View>
+            </View>
+          ))
+          : products.map((item) => (
+            <View
+              key={item.id}
+              style={[
+                styles.cardContainer,
+                {
+                  backgroundColor: bbpsTheme.colors.surface,
+                  borderColor: bbpsTheme.colors.border,
+                  shadowColor: bbpsTheme.colors.shadow,
+                },
+              ]}
+            >
+              {/* Top Image Section */}
+              <View style={[styles.imageSection, { backgroundColor: bbpsTheme.colors.iconBg }]}>
+                <Image source={{ uri: item.image }} style={styles.productImg} />
+                <View style={[styles.brandBadge, { backgroundColor: bbpsTheme.isDark ? 'rgba(17,17,19,0.92)' : 'rgba(255,255,255,0.9)' }]}>
+                  <Text style={[styles.brandBadgeText, { color: bbpsTheme.colors.text }]}>{item.brandLogo}</Text>
                 </View>
               </View>
-            ))
-          : products.map((item) => (
-          <View
-            key={item.id}
-            style={[
-              styles.cardContainer,
-              {
-                backgroundColor: bbpsTheme.colors.surface,
-                borderColor: bbpsTheme.colors.border,
-                shadowColor: bbpsTheme.colors.shadow,
-              },
-            ]}
-          >
-            {/* Top Image Section */}
-            <View style={[styles.imageSection, { backgroundColor: bbpsTheme.colors.iconBg }]}>
-               <Image source={{ uri: item.image }} style={styles.productImg} />
-               <View style={[styles.brandBadge, { backgroundColor: bbpsTheme.isDark ? 'rgba(17,17,19,0.92)' : 'rgba(255,255,255,0.9)' }]}>
-                  <Text style={[styles.brandBadgeText, { color: bbpsTheme.colors.text }]}>{item.brandLogo}</Text>
-               </View>
+
+              {/* Bottom Text Section */}
+              <View style={styles.detailsSection}>
+                <Text style={[styles.cardTitle, { color: bbpsTheme.colors.textStrong }]}>{item.title}</Text>
+                <Text style={[styles.cardSubTitle, { color: bbpsTheme.colors.muted }]} numberOfLines={2}>
+                  {item.sub}
+                </Text>
+              </View>
             </View>
-            
-            {/* Bottom Text Section */}
-            <View style={styles.detailsSection}>
-              <Text style={[styles.cardTitle, { color: bbpsTheme.colors.textStrong }]}>{item.title}</Text>
-              <Text style={[styles.cardSubTitle, { color: bbpsTheme.colors.muted }]} numberOfLines={2}>
-                {item.sub}
-              </Text>
-            </View>
-          </View>
-        ))}
+          ))}
       </ScrollView>
     </View>
   );
@@ -259,6 +259,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '800',
     color: '#333',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   detailsSection: {
     padding: 12,

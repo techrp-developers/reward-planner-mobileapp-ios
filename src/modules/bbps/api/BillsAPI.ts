@@ -39,6 +39,8 @@ export interface BillLocation {
 export interface Operator {
   operator_id: number;
   name: string;
+  logo_url?: string | null;
+  logo_alt?: string | null;
   billFetchResponse: number;
   high_commission_channel: number;
   kyc_required: number;
