@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
-import { API_BASE_URL } from "../../../../config/apiConfig";
-export { API_BASE_URL } from "../../../../config/apiConfig";
+export { API_BASE_URL } from '../../../../config/apiConfig';
+import { API_BASE_URL } from '../../../../config/apiConfig';
 
 type SessionHandlers = {
   getAccessToken: () => string | null;
@@ -34,60 +34,6 @@ export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 20000,
 });
-
-// Diagnostic-only request/response logging, gated behind __DEV__ so it
-// never ships to production. Registered FIRST on both the bare `axios`
-// singleton and the `api` instance (below), so it observes the raw
-// request/response/error before the token-attach and refresh-retry
-// interceptors touch anything — this distinguishes three failure modes
-// that otherwise all look identical from the UI ("nothing happens"):
-// server responded with an error, request sent but no response at all
-// (wrong IP/port, cleartext blocked, server down), or the request never
-// left the device (bug before the network call).
-const logRequest = (config: InternalAxiosRequestConfig) => {
-  if (__DEV__) {
-    console.log(`[API →] ${config.method?.toUpperCase()} ${config.baseURL ?? ""}${config.url}`, {
-      data: config.data,
-    });
-  }
-  return config;
-};
-
-const logRequestError = (error: unknown) => {
-  if (__DEV__) {
-    console.log("[API → ERROR]", error);
-  }
-  return Promise.reject(error);
-};
-
-const logResponse = (response: AxiosResponse) => {
-  if (__DEV__) {
-    console.log(`[API ←] ${response.status} ${response.config.url}`, response.data);
-  }
-  return response;
-};
-
-const logResponseError = (error: AxiosError) => {
-  if (__DEV__) {
-    if (error.response) {
-      console.log(`[API ← ERROR] ${error.response.status} ${error.config?.url}`, error.response.data);
-    } else if (error.request) {
-      console.log("[API ← NO RESPONSE] request sent but no response received", {
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        message: error.message,
-      });
-    } else {
-      console.log("[API ← SETUP ERROR] request never sent", error.message);
-    }
-  }
-  return Promise.reject(error);
-};
-
-axios.interceptors.request.use(logRequest, logRequestError);
-axios.interceptors.response.use(logResponse, logResponseError);
-api.interceptors.request.use(logRequest, logRequestError);
-api.interceptors.response.use(logResponse, logResponseError);
 
 const applyNoStoreHeaders = (config: InternalAxiosRequestConfig) => {
   const nextConfig = config;
@@ -139,12 +85,6 @@ const flushQueuedRequests = (
   });
 };
 
-// Unified passwordless OTP auth (v5) — pre-session calls that must never
-// carry a stale Authorization header or trigger the refresh-token dance on
-// a 401/404 (e.g. /check 404s on purpose for unregistered identifiers).
-// The old password system (/login, /register, /verify-email) and the old
-// split mobile/email routes all 404 on the backend now and nothing in this
-// app calls them — not whitelisted here since they're genuinely dead.
 const isAuthEndpoint = (url?: string) => {
   if (!url) return false;
   return (
@@ -162,6 +102,19 @@ const isAuthEndpoint = (url?: string) => {
 api.interceptors.request.use((config) => {
   const nextConfig = applyNoStoreHeaders(config);
   const token = sessionHandlers?.getAccessToken?.();
+  const isAuthRequest = isAuthEndpoint(nextConfig.url);
+
+  if (isAuthRequest) {
+    const headers: any = nextConfig.headers;
+    if (headers && typeof headers.delete === "function") {
+      headers.delete("Authorization");
+    } else if (headers) {
+      delete headers.Authorization;
+      delete headers.authorization;
+    }
+
+    return nextConfig;
+  }
 
   if (token) {
     const headers: any = nextConfig.headers;
@@ -212,7 +165,7 @@ const handleUnauthorizedResponse = async (
         return Promise.reject(error);
       }
 
-      const refreshResponse = await axios.post(`${API_BASE_URL}/v1/auth/refresh-token`, {
+      const refreshResponse = await axios.post(`${API_BASE_URL}/v1/auth/refresh`, {
         refreshToken,
       });
 
@@ -223,6 +176,8 @@ const handleUnauthorizedResponse = async (
         throw new Error("Refresh endpoint did not return a complete token pair");
       }
 
+      // Rotation invalidates the old refresh token immediately. Persist the
+      // complete replacement pair before retrying any queued API requests.
       await sessionHandlers.onSessionRefresh(nextAccessToken, nextRefreshToken);
       flushQueuedRequests(null, nextAccessToken);
 
@@ -234,7 +189,14 @@ const handleUnauthorizedResponse = async (
       return retryRequest({ ...originalConfig, headers: retriedHeaders });
     } catch (refreshError: any) {
       flushQueuedRequests(refreshError, null);
-      await sessionHandlers.onLogout("refresh_failed");
+
+      // Only a definitive authentication rejection ends the session. A
+      // timeout, offline state, or 5xx must not unexpectedly show login.
+      const refreshStatus = Number(refreshError?.response?.status || 0);
+      if (refreshStatus === 401 || refreshStatus === 403) {
+        await sessionHandlers.onLogout("refresh_failed");
+      }
+
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

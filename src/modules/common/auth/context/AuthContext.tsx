@@ -236,6 +236,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(true);
     try {
       const response = await api.post("/v1/auth/request-otp", { login: identifier });
+      if (response.data?.success === false) {
+        throw new Error(response.data?.message || "Unable to send the login code");
+      }
       return response.data;
     } finally {
       setLoading(false);

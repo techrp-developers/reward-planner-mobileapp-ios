@@ -251,6 +251,17 @@ export default function StepsTrackerScreen() {
 
   const openAppSettings = () => Linking.openSettings();
 
+  const openAppleHealth = async () => {
+    try {
+      await Linking.openURL('x-apple-health://');
+    } catch {
+      alert.info(
+        'Open Apple Health',
+        'Open Health → Profile → Privacy → Apps and Services → RewardsPlanners to manage Steps access.',
+      );
+    }
+  };
+
   const handleOpenApp = async (packageId: string, storeId: string, installed: boolean) => {
     try {
       if (installed) {
@@ -358,20 +369,20 @@ export default function StepsTrackerScreen() {
 
           {isIOS && (
             <>
-              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>iOS Health Settings</Text>
+              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Apple Health Settings</Text>
               <Text style={ss.sectionHint}>
-                Manage the step source in Apple Health or change this app's iPhone permissions.
+                Manage Steps access in Health → Profile → Privacy → Apps and Services → RewardsPlanners.
               </Text>
               <ProviderCard
-                title="iPhone Settings"
-                subtitle="Manage RewardsPlanners permissions"
-                iconName="cog-outline"
+                title="Health Permissions"
+                subtitle="Manage Steps access in Apple Health"
+                iconName="heart-pulse"
                 iconBg={BRAND.other.bg}
                 iconTint={BRAND.other.tint}
                 installed
                 connected={false}
                 mandatory={false}
-                onPress={openAppSettings}
+                onPress={openAppleHealth}
               />
             </>
           )}
@@ -390,9 +401,9 @@ export default function StepsTrackerScreen() {
               />
 
               {altGuideOpen && (
-                <TouchableOpacity style={ss.settingsBtn} onPress={openAppSettings} activeOpacity={0.78}>
+                <TouchableOpacity style={ss.settingsBtn} onPress={isIOS ? openAppleHealth : openAppSettings} activeOpacity={0.78}>
                   <MaterialCommunityIcons name="cog-outline" size={16} color={VD.accentDark} />
-                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open App Settings' : 'Open App Settings'}</Text>
+                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open Apple Health' : 'Open App Settings'}</Text>
                 </TouchableOpacity>
               )}
             </>

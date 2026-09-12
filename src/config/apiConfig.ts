@@ -30,3 +30,21 @@ export const UPLOADS_URL =
   IS_LOCAL_ENVIRONMENT
     ? `${SERVER_URL}/uploads/`
     : `${API_BASE_URL}/uploads/`;
+
+// CMS may return paths or URLs generated on the backend's localhost host.
+export const normalizeLocalCmsImageUrl = (value: string | null | undefined): string | null => {
+  if (!value) return null;
+
+  const url = value.trim();
+  if (!url) return null;
+
+  const localUrl = url.match(/^https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?(\/.*)?$/i);
+  const path = localUrl ? (localUrl[1] || '/') : url;
+
+  if (!localUrl && /^https?:\/\//i.test(url)) return url;
+  if (/^\/api\/crm\/uploads\//i.test(path)) return `${SERVER_URL}${path}`;
+  if (/^\/?uploads\//i.test(path)) return `${UPLOADS_URL}${path.replace(/^\/?uploads\//i, '')}`;
+  if (localUrl) return `${SERVER_URL}${path}`;
+  if (path.startsWith('/')) return `${SERVER_URL}${path}`;
+  return url;
+};

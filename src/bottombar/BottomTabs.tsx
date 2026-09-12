@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Animated, Image, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -11,8 +11,12 @@ import ExploreIcon from "../assets/menu/Explore.svg";
 import SearchIcon from "../assets/menu/Search.svg";
 import HistoryIcon from "../assets/menu/History.svg";
 import { useAppTheme } from "../theme/ThemeContext";
+import RewardIcon from "../assets/homepage/RewardPlannersLogo.png";
 
-export const TAB_BAR_HEIGHT = 68;
+const FLOATING_BOTTOM_GAP = 10;
+const FLOATING_BAR_HEIGHT = 64;
+const CENTER_BUTTON_SIZE = 58;
+export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP + 24;
 
 type AppMode = "Product" | "Services" | "Payments" | "DineOut";
 
@@ -85,46 +89,42 @@ const DASHBOARD_TABS: TabConfig[] = [
 const INACTIVE_COLOR = "#9CA3AF";
 const TAB_ICON_THEME: Record<AppMode, { activeIcon: string; activeLabel: string }> = {
   Product: {
-    activeIcon: "#D69A33",
+    activeIcon: "#C58A16",
     activeLabel: "#111827",
   },
   Services: {
-    activeIcon: "#1D4ED8",
+    activeIcon: "#2563EB",
     activeLabel: "#06111F",
   },
   Payments: {
-    activeIcon: "#7C3AED",
+    activeIcon: "#9333EA",
     activeLabel: "#120A24",
   },
   DineOut: {
-    activeIcon: "#DC2626",
-    activeLabel: "#1F0A0A",
+    activeIcon: "#E91E63",
+    activeLabel: "#1F0A13",
   },
 };
-const CENTER_BUTTON_THEME: Record<AppMode, { background: string; border: string; icon: string; shadow: string }> = {
+const CENTER_BUTTON_THEME: Record<AppMode, { background: string; border: string; shadow: string }> = {
   Product: {
-    background: "#111827",
-    border: "#FACC15",
-    icon: "#FACC15",
-    shadow: "#FACC15",
+    background: "#C58A16",
+    border: "#FFF4C2",
+    shadow: "#C58A16",
   },
   Services: {
-    background: "#06111F",
-    border: "#1D4ED8",
-    icon: "#BFDBFE",
-    shadow: "#1D4ED8",
+    background: "#2563EB",
+    border: "#DBEAFE",
+    shadow: "#2563EB",
   },
   Payments: {
-    background: "#120A24",
-    border: "#7C3AED",
-    icon: "#DDD6FE",
-    shadow: "#7C3AED",
+    background: "#9333EA",
+    border: "#F3E8FF",
+    shadow: "#9333EA",
   },
   DineOut: {
-    background: "#1F0A0A",
-    border: "#DC2626",
-    icon: "#FECACA",
-    shadow: "#DC2626",
+    background: "#E91E63",
+    border: "#FFE4F0",
+    shadow: "#E91E63",
   },
 };
 
@@ -187,12 +187,7 @@ const CenterButton = React.memo(function CenterButton({
   activeMode: AppMode;
   onPress: () => void;
 }) {
-  const { isFestive, theme } = useAppTheme();
-  const base = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
-  const centerTheme =
-    activeMode === "Product" && isFestive
-      ? { background: theme.saffron, border: "#FFFFFF", icon: "#FFFFFF", shadow: theme.saffron }
-      : base;
+  const centerTheme = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
 
   return (
     <TouchableOpacity
@@ -203,6 +198,15 @@ const CenterButton = React.memo(function CenterButton({
     >
       <View
         style={[
+          styles.centerGlow,
+          {
+            backgroundColor: centerTheme.background,
+            shadowColor: centerTheme.shadow,
+          },
+        ]}
+      />
+      <View
+        style={[
           styles.centerDiamondButton,
           {
             backgroundColor: centerTheme.background,
@@ -211,12 +215,13 @@ const CenterButton = React.memo(function CenterButton({
           },
         ]}
       >
-        <MaterialCommunityIcons
-          name="view-dashboard"
-          size={27}
-          color={centerTheme.icon}
-          style={styles.centerDashboardIcon}
-        />
+        <View style={styles.centerLogoPlate}>
+          <Image
+            source={RewardIcon}
+            style={styles.centerLogo}
+            resizeMode="contain"
+          />
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -235,8 +240,8 @@ function BottomTabs({
 }: Props) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
-  const { isDark, isFestive, theme } = useAppTheme();
-  const bottomInset = Math.max(insets.bottom, 8);
+  const { isDark, theme } = useAppTheme();
+  const bottomInset = Math.max(insets.bottom, 0);
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
   // Without this, every tab press invalidates handlePress → pressHandlers → all TabItem memos.
@@ -258,16 +263,16 @@ function BottomTabs({
     : activeMode === "Payments"
       ? PAYMENT_TABS
       : TABS;
-  const baseTabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
-  const tabTheme =
-    activeMode === "Product" && isFestive
-      ? { ...baseTabTheme, activeIcon: theme.saffron }
-      : baseTabTheme;
+  const tabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
   const inactiveColor = isDark ? theme.secondaryText : INACTIVE_COLOR;
-  const barBackgroundColor = isDark ? theme.card : "#FFFFFF";
+  const barBackgroundColor = isDark ? theme.card : "rgba(255,255,255,0.78)";
   const barBorderColor = isDark ? theme.border : "rgba(17,24,39,0.08)";
-  const homeIndicatorColor = isDark ? "rgba(255,255,255,0.24)" : "#D1D5DB";
   const activeLabelColor = isDark ? tabTheme.activeIcon : tabTheme.activeLabel;
+  const dashboardPillBackground = isDark ? "rgba(11,0,24,0.82)" : "rgba(255,255,255,0.82)";
+  const dashboardPillBorder = isDark ? "rgba(255,255,255,0.12)" : "rgba(75,0,130,0.1)";
+  const dashboardActiveColor = isDark ? "#FFFFFF" : "#18002E";
+  const dashboardInactiveColor = isDark ? "#D8CBE5" : "#625A6B";
+  const dashboardIndicatorBackground = isDark ? "rgba(106,0,255,0.45)" : "rgba(255,255,255,0.96)";
 
   const animateDashboardIndicator = useCallback((index: number) => {
     Animated.spring(dashboardIndicatorX, {
@@ -322,12 +327,24 @@ function BottomTabs({
   if (isDashboard) {
     return (
       <View style={[styles.dashboardWrap, { paddingBottom: bottomInset }]}>
-        <View style={styles.dashboardPill}>
+        <View
+          style={[
+            styles.dashboardPill,
+            {
+              backgroundColor: dashboardPillBackground,
+              borderColor: dashboardPillBorder,
+              shadowColor: isDark ? "#6A00FF" : "#4B0082",
+            },
+          ]}
+        >
           <Animated.View
             pointerEvents="none"
             style={[
               styles.dashboardIndicator,
-              { transform: [{ translateX: dashboardIndicatorX }] },
+              {
+                backgroundColor: dashboardIndicatorBackground,
+                transform: [{ translateX: dashboardIndicatorX }],
+              },
             ]}
           />
           <TouchableOpacity
@@ -339,7 +356,7 @@ function BottomTabs({
             <MaterialCommunityIcons
               name="note-text-outline"
               size={23}
-              color={activeTab === "Notes" ? "#111827" : "#E5E7EB"}
+              color={activeTab === "Notes" ? dashboardActiveColor : dashboardInactiveColor}
             />
           </TouchableOpacity>
 
@@ -352,7 +369,7 @@ function BottomTabs({
             <MaterialCommunityIcons
               name="home"
               size={24}
-              color={activeTab === "Home" ? "#111827" : "#E5E7EB"}
+              color={activeTab === "Home" ? dashboardActiveColor : dashboardInactiveColor}
             />
           </TouchableOpacity>
 
@@ -365,7 +382,7 @@ function BottomTabs({
             <MaterialCommunityIcons
               name="account-circle-outline"
               size={24}
-              color={activeTab === "Profile" ? "#111827" : "#E5E7EB"}
+              color={activeTab === "Profile" ? dashboardActiveColor : dashboardInactiveColor}
             />
           </TouchableOpacity>
         </View>
@@ -379,7 +396,7 @@ function BottomTabs({
         layoutMode === "navigator" ? styles.navigatorWrap : styles.wrap,
         {
           height: TAB_BAR_HEIGHT + bottomInset,
-          backgroundColor: layoutMode === "navigator" ? barBackgroundColor : "transparent",
+          backgroundColor: layoutMode === "navigator" ? theme.background : "transparent",
         },
       ]}
     >
@@ -387,10 +404,10 @@ function BottomTabs({
         style={[
           styles.bar,
           {
-            height: TAB_BAR_HEIGHT + bottomInset,
-            paddingBottom: bottomInset,
+            height: FLOATING_BAR_HEIGHT,
+            bottom: bottomInset + FLOATING_BOTTOM_GAP,
             backgroundColor: barBackgroundColor,
-            borderTopColor: barBorderColor,
+            borderColor: barBorderColor,
             shadowColor: isDark ? "#000000" : "#000000",
           },
         ]}
@@ -436,7 +453,6 @@ function BottomTabs({
           onPress={onCenterPress ?? NOOP}
         />
       </View>
-      <View style={[styles.homeIndicator, { backgroundColor: homeIndicatorColor }]} />
     </View>
   );
 }
@@ -497,76 +513,96 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    alignItems: "center",
   },
   navigatorWrap: {
     width: "100%",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "transparent",
+    alignItems: "center",
   },
   bar: {
+    position: "absolute",
+    left: 24,
+    right: 24,
     backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
-    paddingHorizontal: 10,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    elevation: 10,
+    paddingHorizontal: 14,
+    borderRadius: 32,
+    borderWidth: 1,
+    elevation: 16,
     shadowColor: "#000000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 18,
   },
   item: {
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
+    height: 56,
   },
   label: {
-    marginTop: 4,
-    fontSize: 11,
+    marginTop: 3,
+    fontSize: 10.5,
     color: INACTIVE_COLOR,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   labelActive: {
     fontWeight: "700",
   },
-  homeIndicator: {
-    position: "absolute",
-    bottom: 8,
-    alignSelf: "center",
-    width: 120,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#D1D5DB",
-    opacity: 0.9,
-  },
   centerSpacer: {
-    width: 60,
+    width: 64,
   },
   fabWrap: {
     position: "absolute",
     alignSelf: "center",
-    top: -25,
-    width: 60,
-    height: 60,
+    top: -23,
+    width: CENTER_BUTTON_SIZE + 8,
+    height: CENTER_BUTTON_SIZE + 8,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 999,
+    backgroundColor: "transparent",
+  },
+  centerGlow: {
+    position: "absolute",
+    width: CENTER_BUTTON_SIZE + 10,
+    height: CENTER_BUTTON_SIZE + 10,
+    borderRadius: (CENTER_BUTTON_SIZE + 10) / 2,
+    opacity: 0.18,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.55,
+    shadowRadius: 18,
+    elevation: 8,
   },
   centerDiamondButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width: CENTER_BUTTON_SIZE,
+    height: CENTER_BUTTON_SIZE,
+    borderRadius: CENTER_BUTTON_SIZE / 2,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    transform: [{ rotate: "45deg" }],
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOpacity: 0.32,
+    shadowRadius: 15,
+    elevation: 16,
   },
-  centerDashboardIcon: {
-    transform: [{ rotate: "-45deg" }],
+  centerLogoPlate: {
+    width: CENTER_BUTTON_SIZE - 12,
+    height: CENTER_BUTTON_SIZE - 12,
+    borderRadius: (CENTER_BUTTON_SIZE - 12) / 2,
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.84)",
+    overflow: "hidden",
+  },
+  centerLogo: {
+    width: CENTER_BUTTON_SIZE - 22,
+    height: CENTER_BUTTON_SIZE - 22,
   },
   badge: {
     position: "absolute",

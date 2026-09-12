@@ -32,11 +32,14 @@ import {
   productDetailsQueryKey,
 } from "../../navigation/navigationPerformance";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { fetchResolvedZones } from "../../../common/cms/cmsContentApi";
+import type { CmsModuleKey, CmsOfferImage as ContentZoneImage } from "../../../common/cms/cmsContentApi";
+import { useModuleContent, moduleContentQueryKey } from "../../../common/cms/useModuleContent";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Responsive constants
 const OFFER_WIDTH = SCREEN_WIDTH * 0.38;
-const OFFER_HEIGHT = OFFER_WIDTH * 1.8;
+const OFFER_HEIGHT = OFFER_WIDTH * 1.25;
 const CARD_WIDTH = Math.round(Math.min(Math.max(SCREEN_WIDTH * 0.33, 120), 170));
 const IMAGE_BOX_HEIGHT = Math.round(CARD_WIDTH * 0.72);
 const CARD_MARGIN = 8;
@@ -49,6 +52,40 @@ const FLASH_PRODUCTS_QUERY_KEY = (campaignId: number | string) =>
 const DEFAULT_FLASH_CAMPAIGN_ID = 4;
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
+
+const OfferSlideImage = React.memo(({ uri }: { uri: string | null | undefined }) => {
+  const { isDark } = useAppTheme();
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [uri]);
+
+  const showImage = !!uri && !failed;
+
+  return (
+    <View
+      style={[
+        styles.offerImage,
+        { backgroundColor: isDark ? "#111827" : "#FFF8E7" },
+      ]}
+    >
+      {showImage ? (
+        <RNImage
+          source={{ uri: uri as string }}
+          style={StyleSheet.absoluteFill}
+          resizeMode="contain"
+          onError={(event) => {
+            console.log('[CMS] Offer image failed:', uri, event.nativeEvent);
+            setFailed(true);
+          }}
+        />
+      ) : null}
+    </View>
+  );
+});
+
+OfferSlideImage.displayName = "OfferSlideImage";
 
 const hasWishlistFlag = (item: any) =>
   item?.is_wishlist !== undefined || item?.is_wishlisted !== undefined;
@@ -246,9 +283,9 @@ const FlashOfferProductCard = React.memo(({
       Alert.alert(
         "Wishlist",
         error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        "Failed to update wishlist"
+          error?.response?.data?.error ||
+          error?.message ||
+          "Failed to update wishlist"
       );
     } finally {
       setWishLoading(false);
@@ -334,9 +371,22 @@ FlashOfferProductCard.displayName = 'FlashOfferProductCard';
 // ---------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------
-export default function OfferHome() {
+type Props = {
+  module?: CmsModuleKey;
+};
+
+// The CMS offers-banner carousel below is module-generic; the flash-sale /
+// campaign / wishlist section is ecommerce (Product) specific business
+// logic and is intentionally NOT parameterized by module.
+export default function OfferHome({ module = "product" }: Props) {
   const navigation = useNavigation<Nav>();
   const { theme } = useAppTheme();
+  const { moduleContent } = useModuleContent(module);
+  const cmsOffersBanner = moduleContent?.offers_banner ?? null;
+
+  console.log('[CMS] Offers banner module:', module);
+  console.log('[CMS] Offers banner:', JSON.stringify(cmsOffersBanner));
+  console.log('[CMS] Offers images:', JSON.stringify(cmsOffersBanner?.images));
 
   const { data: campaignHome, isLoading: isCampaignLoading } = useQuery({
     queryKey: CAMPAIGN_HOME_QUERY_KEY,
@@ -383,6 +433,39 @@ export default function OfferHome() {
     [campaignHome]
   );
 
+  const cmsOffersSlides = useMemo(() => {
+    if (cmsOffersBanner?.content_type !== "image") return [];
+
+    const gallery: ContentZoneImage[] = Array.isArray(cmsOffersBanner.images)
+      ? cmsOffersBanner.images
+      : [];
+
+    return gallery
+      .filter((img) => Number(img?.is_active) === 1)
+      .slice()
+      .sort((a, b) => Number(a.sort_order) - Number(b.sort_order))
+      .map((img) => {
+        console.log('[CMS] Offer image:', {
+          imageId: img.image_id,
+          imageUrl: img.image_url,
+          sortOrder: img.sort_order,
+          isActive: img.is_active,
+        });
+        return {
+          id: String(img.image_id ?? `${cmsOffersBanner.content_id}_${img.sort_order}`),
+          image: img.image_url,
+        };
+      })
+      .filter((slide) => !!slide.image);
+  }, [cmsOffersBanner]);
+
+  const hasCmsOffersColor =
+    cmsOffersSlides.length === 0 &&
+    cmsOffersBanner?.content_type === "color" &&
+    !!cmsOffersBanner.color_value;
+  const shouldShowCmsOffersBanner =
+    cmsOffersSlides.length > 0 || hasCmsOffersColor;
+
   const flashSalesPoster = useMemo(() => {
     const flash = campaignHome?.data?.flash_sales?.[0];
     return flash?.banner_image ?? null;
@@ -406,7 +489,45 @@ export default function OfferHome() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Banner Carousel */}
-      {banner.length > 0 && (
+      {shouldShowCmsOffersBanner ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.offersScroll}
+        >
+          {cmsOffersSlides.length > 0 ? (
+            cmsOffersSlides.map((offer) => (
+              <TouchableOpacity
+                key={offer.id}
+                style={[styles.offerCard, { backgroundColor: theme.card }]}
+                activeOpacity={cmsOffersBanner?.redirect_link ? 0.85 : 1}
+                onPress={() => {
+                  if (cmsOffersBanner?.redirect_link) {
+                    Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
+                  }
+                }}
+                disabled={!cmsOffersBanner?.redirect_link}
+              >
+                <OfferSlideImage uri={offer.image} />
+              </TouchableOpacity>
+            ))
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.offerCard,
+                { backgroundColor: cmsOffersBanner!.color_value! },
+              ]}
+              activeOpacity={cmsOffersBanner?.redirect_link ? 0.85 : 1}
+              onPress={() => {
+                if (cmsOffersBanner?.redirect_link) {
+                  Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
+                }
+              }}
+              disabled={!cmsOffersBanner?.redirect_link}
+            />
+          )}
+        </ScrollView>
+      ) : banner.length > 0 ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -419,11 +540,11 @@ export default function OfferHome() {
               activeOpacity={0.85}
               onPress={() => handleBannerPress(offer)}
             >
-              <RNImage source={{ uri: offer.image }} style={styles.offerImage} resizeMode="cover" />
+              <OfferSlideImage uri={offer.image} />
             </TouchableOpacity>
           ))}
         </ScrollView>
-      )}
+      ) : null}
 
       {/* Flash Sales Section */}
       <View style={styles.flashSectionContainer}>
@@ -466,7 +587,13 @@ export default function OfferHome() {
   );
 }
 
-export const prefetchOfferHomeSection = async () => {
+export const prefetchOfferHomeSection = async (module: CmsModuleKey = "product") => {
+  await queryClient.prefetchQuery({
+    queryKey: moduleContentQueryKey(module),
+    queryFn: () => fetchResolvedZones(module),
+    staleTime: 5 * 60 * 1000,
+  });
+
   const campaignHome = await queryClient.fetchQuery({
     queryKey: CAMPAIGN_HOME_QUERY_KEY,
     queryFn: getCampaignHome,
@@ -588,7 +715,8 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderTopLeftRadius: 12,
     borderBottomRightRadius: 12,
     zIndex: 10,
@@ -597,8 +725,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "900",
     color: "#333",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
   },
   heartIcon: {
     position: "absolute",
@@ -647,6 +773,8 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -659,8 +787,6 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 11,
     fontWeight: "800",
-    paddingVertical: 7,
-    paddingHorizontal: 6,
   },
   rpBadge: {
     flexDirection: "row",

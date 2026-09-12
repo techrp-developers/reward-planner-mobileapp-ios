@@ -8,17 +8,14 @@ import {
   Alert,
   GestureResponderEvent,
 } from "react-native";
-import { Svg, Polygon } from "react-native-svg";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import type { HomeStackParamList } from "../../navigation/types";
-import PointsButton from "./PointsButton";
 import { checkWishlist, isWishlistPresent, setWishlistState } from "../../api/WishlistApi";
 import OptimizedImage from "../../components/common/OptimizedImage";
-import RPpriceBadge from "./RPpriceBadge";
 import { normalizeProduct } from "../../utils/normalizeProduct";
 import { fetchProductDetailsByID } from "../../api/ProductApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
@@ -28,6 +25,7 @@ const { width: screenWidth } = Dimensions.get("window");
 const PADDING = screenWidth * 0.03;
 const GAP = screenWidth * 0.02;
 const CARD_WIDTH = (screenWidth - PADDING * 2 - GAP * 2) / 3;
+const RP_PRICE_COLOR = "#F2811D";
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 type Props = {
@@ -50,6 +48,26 @@ const getProductImage = (item: any) =>
   item?.thumbnail ??
   (Array.isArray(item?.images) ? item.images[0] : undefined);
 
+const formatRpPriceValue = (value: number): string =>
+  Number.isInteger(value) ? String(value) : value.toFixed(2);
+
+// Single source of truth: rp_price is shown only when it's a finite number > 0.
+// null / undefined / "" / 0 / "0" / "0.00" (and any other non-positive value)
+// all mean "no RP price" \u2014 redeem_coins and reward.enabled are never consulted.
+const getRpPriceText = (rpPrice: unknown): string | undefined => {
+  if (rpPrice === null || rpPrice === undefined || rpPrice === "") {
+    return undefined;
+  }
+
+  const numericRpPrice = Number(rpPrice);
+
+  if (!Number.isFinite(numericRpPrice) || numericRpPrice <= 0) {
+    return undefined;
+  }
+
+  return `RP \u20B9${formatRpPriceValue(numericRpPrice)}`;
+};
+
 const hasWishlistFlag = (item: any) =>
   item?.is_wishlist !== undefined || item?.is_wishlisted !== undefined;
 
@@ -61,19 +79,6 @@ const getWishlistFlag = (item: any) => {
   const normalized = String(value ?? "").trim().toLowerCase();
   return ["1", "true", "yes", "y"].includes(normalized);
 };
-
-// 28×28 tricolor corner triangle clipped by the parent imageWrap's overflow:hidden + borderRadius.
-// Three stacked polygons (SVG renders bottom→top): green outer, white mid, saffron inner tip.
-const RIBBON = 28;
-const TricolorCornerRibbon = React.memo(function TricolorCornerRibbon() {
-  return (
-    <Svg width={RIBBON} height={RIBBON} style={styles.tricolorRibbon}>
-      <Polygon points={`0,0 ${RIBBON},0 0,${RIBBON}`} fill="#138808" />
-      <Polygon points={`0,0 19,0 0,19`} fill="#FFFFFF" />
-      <Polygon points={`0,0 9,0 0,9`} fill="#FF9933" />
-    </Svg>
-  );
-});
 
 const StarRating = React.memo(function StarRating({
   starCount,
@@ -91,9 +96,14 @@ const StarRating = React.memo(function StarRating({
   );
 });
 
-const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProductPress }: Props) => {
+const ProductCardComponent = ({
+  item,
+  cardWidth,
+  shouldLoadImage = true,
+  onProductPress,
+}: Props) => {
   const navigation = useNavigation<Nav>();
-  const { isDark, isFestive, theme } = useAppTheme();
+  const { isDark, theme } = useAppTheme();
   const [wishLoading, setWishLoading] = useState(false);
   const [wishlisted, setWishlisted] = useState(() => getWishlistFlag(item));
   const [resolvedVariantId, setResolvedVariantId] = useState<any>(() => getVariantId(item));
@@ -255,13 +265,12 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
   const {
     starCount,
     reviewText,
-    productTitle,
+    brandText,
+    productNameText,
     priceText,
     originalPriceText,
+    rpPriceText,
     discount,
-    rewardCoins,
-    redeemCoins,
-    rp_price
   } = useMemo(() => {
     const ratingValue = Number(normalizedProduct.rating ?? 4.5);
     const safeRating = Number.isFinite(ratingValue)
@@ -271,141 +280,143 @@ const ProductCardComponent = ({ item, cardWidth, shouldLoadImage = true, onProdu
     return {
       starCount: Math.round(safeRating),
       reviewText: normalizedProduct.reviews ? `(${normalizedProduct.reviews})` : "",
-      productTitle: [item?.product_name || item?.title, item?.brand || item?.brand_name]
-        .filter(Boolean)
-        .join(" "),
+      brandText: item?.brand || item?.brand_name || "",
+      productNameText: item?.product_name || item?.title || "",
       priceText: String(normalizedProduct.price ?? ""),
       originalPriceText: String(normalizedProduct.originalPrice ?? ""),
-      rewardCoins: normalizedProduct.rewardCoins,
-      redeemCoins: normalizedProduct.redeem_coins,
-      rp_price: normalizedProduct.rp_price ?? "",
+      rpPriceText: getRpPriceText(normalizedProduct.rp_price),
       discount: normalizedProduct.discount ?? "",
     };
   }, [item, normalizedProduct]);
 
   return (
-    <TouchableOpacity
-      activeOpacity={0.85}
-      onPress={goToDetails}
+    <View
       style={[
         styles.card,
         {
           width: usedCardWidth,
-          minHeight: calculations.cardMinHeight,
+          minHeight: calculations.cardMinHeight - 42,
           borderRadius: calculations.borderRadius,
-          backgroundColor: theme.card,
-          borderWidth: isDark ? 1 : 0,
-          borderColor: theme.border,
+          backgroundColor: isDark ? theme.card : "#FFFFFF",
+          borderWidth: 1,
+          borderColor: isDark ? theme.border : "#EEF0F4",
         },
       ]}
     >
-      <View style={[
-        styles.imageWrap,
-        {
-          height: calculations.imageWrapHeight,
-          borderRadius: calculations.borderRadius,
-          paddingTop: Math.round(usedCardWidth * 0.1),
-          backgroundColor: isDark ? "#303038" : "#F9FAFB",
-        },
-      ]}>
-        {isFestive && <TricolorCornerRibbon />}
-
-        {!!rp_price && (
-          <View style={styles.discountWrap}>
-            <RPpriceBadge value={rp_price} />
-          </View>
-        )}
-
-        <TouchableOpacity
-          style={[styles.heartIcon, { backgroundColor: isDark ? "rgba(38,38,43,0.92)" : "rgba(255,255,255,0.9)" }]}
-          activeOpacity={0.85}
-          onPress={handleWishlistPress}
-          disabled={wishLoading}
-        >
-          <FontAwesome
-            name={wishlisted ? "heart" : "heart-o"}
-            size={14}
-            color={wishlisted ? "#E53935" : theme.secondaryText}
-          />
-        </TouchableOpacity>
-
-        <OptimizedImage
-          path={firstImage}
-          width={calculations.imageDynamicSize}
-          height={calculations.imageDynamicSize}
-          resizeMode="contain"
-          sizePreset="thumbnail"
-          priority="high"
-          quality={40}
-          loadEnabled={shouldLoadImage}
-          style={styles.productImage}
-          fallbackBackgroundColor="transparent"
-        />
-      </View>
-
-      <View style={styles.details}>
-        <View style={styles.titleRow}>
-          <Text
-            style={[
-              styles.productTitle,
-              { fontSize: calculations.fontSizeLabel },
-              { color: theme.text },
-            ]}
-            numberOfLines={2}
-            ellipsizeMode="tail"
-          >
-            {productTitle}
-          </Text>
-        </View>
-
-        <View style={styles.ratingRow}>
-          <StarRating starCount={starCount} />
-          <Text style={[styles.reviews, { fontSize: calculations.fontSizeReview, color: theme.secondaryText }]}>
-            {reviewText}
-          </Text>
-        </View>
-
-        {/* ========== RESPONSIVE PRICE ROW ========== */}
-        <View style={styles.priceRow}>
-          {/* Discount indicator (arrow + text) */}
+      <TouchableOpacity activeOpacity={0.85} onPress={goToDetails}>
+        <View style={[
+          styles.imageWrap,
+          {
+            height: calculations.imageWrapHeight,
+            borderRadius: calculations.borderRadius,
+            backgroundColor: isDark ? "#303038" : "#F9FAFB",
+          },
+        ]}>
+          {/* Discount badge, top-left over the image */}
           {!!discount && (
-            <View style={styles.discountInline}>
-              <Text style={[styles.discountArrow, { fontSize: calculations.fontSizeDiscount }]}>
-                ↓
-              </Text>
-              <Text 
-                numberOfLines={1} 
-                style={[styles.discountText, { fontSize: calculations.fontSizeDiscount }]}
-              >
-                {discount}
-              </Text>
+            <View style={styles.discountBadgeWrap}>
+              <View style={styles.discountBadge}>
+                <Text style={[styles.discountArrow, { fontSize: calculations.fontSizeDiscount }]}>
+                  ↓
+                </Text>
+                <Text
+                  numberOfLines={1}
+                  style={[styles.discountText, { fontSize: calculations.fontSizeDiscount }]}
+                >
+                  {discount}
+                </Text>
+              </View>
             </View>
           )}
 
-          {/* Original price (strikethrough) */}
+          <TouchableOpacity
+            style={[styles.heartIcon, { backgroundColor: isDark ? "rgba(38,38,43,0.92)" : "rgba(255,255,255,0.9)" }]}
+            activeOpacity={0.85}
+            onPress={handleWishlistPress}
+            disabled={wishLoading}
+          >
+            <FontAwesome
+              name={wishlisted ? "heart" : "heart-o"}
+              size={14}
+              color={wishlisted ? "#E53935" : theme.secondaryText}
+            />
+          </TouchableOpacity>
+
+          <OptimizedImage
+            path={firstImage}
+            width={calculations.imageDynamicSize}
+            height={calculations.imageDynamicSize}
+            resizeMode="contain"
+            sizePreset="thumbnail"
+            priority="high"
+            quality={40}
+            loadEnabled={shouldLoadImage}
+            style={styles.productImage}
+            fallbackBackgroundColor="transparent"
+          />
+        </View>
+      </TouchableOpacity>
+
+      <View style={styles.details}>
+        {/* Brand name up front, with rating alongside it */}
+        <View style={styles.brandRow}>
+          <Text
+            style={[styles.brandName, { fontSize: calculations.fontSizeLabel, color: theme.text }]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {brandText}
+          </Text>
+          <View style={styles.ratingRow}>
+            <StarRating starCount={starCount} />
+            {!!reviewText && (
+              <Text style={[styles.reviews, { fontSize: calculations.fontSizeReview, color: theme.secondaryText }]}>
+                {reviewText}
+              </Text>
+            )}
+          </View>
+        </View>
+
+        {/* Product name under the brand name */}
+        <Text
+          style={[
+            styles.productTitle,
+            { fontSize: calculations.fontSizeLabel, color: theme.secondaryText },
+          ]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {productNameText}
+        </Text>
+
+        {/* ========== RP PRICE + MRP ROW ========== */}
+        <View style={styles.priceRow}>
+          {/* RP price (falls back to the plain price when no RP price exists) */}
+          <Text
+            numberOfLines={1}
+            style={[
+              styles.price,
+              {
+                fontSize: calculations.fontSizePrice,
+                color: rpPriceText ? RP_PRICE_COLOR : theme.text,
+              },
+            ]}
+          >
+            {rpPriceText || priceText}
+          </Text>
+
+          {/* MRP (strikethrough) */}
           {!!originalPriceText && (
-            <Text 
-              numberOfLines={1} 
+            <Text
+              numberOfLines={1}
               style={[styles.original, { fontSize: calculations.fontSizeOriginal, color: theme.secondaryText }]}
             >
               {originalPriceText}
             </Text>
           )}
-
-          {/* Final price */}
-          <Text 
-            numberOfLines={1} 
-            style={[styles.price, { fontSize: calculations.fontSizePrice, color: theme.text }]}
-          >
-            {priceText}
-          </Text>
-        </View>
-
-        <View style={styles.pointsWrap}>
-          <PointsButton rewardCoins={rewardCoins} redeemCoins={redeemCoins} onPress={goToDetails} />
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -429,10 +440,6 @@ const ProductCard = React.memo(ProductCardComponent, (prevProps, nextProps) => {
     prevItem?.originalPrice === nextItem?.originalPrice &&
     prevItem?.original_price === nextItem?.original_price &&
     prevItem?.mrp === nextItem?.mrp &&
-    prevItem?.rewardCoins === nextItem?.rewardCoins &&
-    prevItem?.reward_coins === nextItem?.reward_coins &&
-    prevItem?.redeem_coins === nextItem?.redeem_coins &&
-    prevItem?.redeemCoins === nextItem?.redeemCoins &&
     getProductImage(prevItem) === getProductImage(nextItem) &&
     prevItem?.product_name === nextItem?.product_name &&
     prevItem?.title === nextItem?.title &&
@@ -449,92 +456,37 @@ export default ProductCard;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: "#FFF",
-    padding: 6,
-    marginBottom: 12,
+    padding: 7,
+    marginBottom: 14,
     justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#EEF0F4",
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
   },
   imageWrap: {
     backgroundColor: "#F9FAFB",
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#F1F2F5",
   },
-  tricolorRibbon: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    zIndex: 1,
-  },
-  discountWrap: {
+  discountBadgeWrap: {
     position: "absolute",
     top: 6,
     left: 6,
     zIndex: 10,
   },
-  heartIcon: {
-    position: "absolute",
-    top: 5,
-    right: 5,
-    zIndex: 3,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  productImage: {
-    alignSelf: "center",
-  },
-  details: {
-    marginTop: 8,
-    flex: 1,
-    justifyContent: "space-between",
-  },
-  titleRow: {
-    marginTop: 4,
-  },
-  productTitle: {
-    color: "#374151",
-    fontWeight: "400",
-    lineHeight: 17,
-    minHeight: 34,
-  },
-  ratingRow: {
+  discountBadge: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
-  },
-  starText: {
-    fontSize: 10,
-    lineHeight: 12,
-    includeFontPadding: false,
-    letterSpacing: -0.5,
-  },
-  starTextFilled: {
-    color: "#FFC514",
-  },
-  starTextEmpty: {
-    color: "#E5E7EB",
-  },
-  reviews: {
-    color: "#9CA3AF",
-    marginLeft: 4,
-  },
-  priceRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    flexWrap: "wrap",      
-    marginTop: 6,
-    columnGap: 6,
-    rowGap: 4,
-  },
-  discountInline: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ECFDF5",
-    paddingHorizontal: 4,
-    paddingVertical: 2,
+    backgroundColor: "#EAF8EF",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
     borderRadius: 4,
   },
   discountArrow: {
@@ -546,16 +498,84 @@ const styles = StyleSheet.create({
     color: "#16A34A",
     fontWeight: "700",
   },
+  heartIcon: {
+    position: "absolute",
+    top: 5,
+    right: 5,
+    zIndex: 3,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#111827",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  productImage: {
+    alignSelf: "center",
+  },
+  details: {
+    marginTop: 9,
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  brandName: {
+    fontWeight: "800",
+    flexShrink: 1,
+    marginRight: 6,
+  },
+  productTitle: {
+    color: "#374151",
+    fontWeight: "500",
+    lineHeight: 17,
+    minHeight: 34,
+    marginTop: 3,
+  },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  starText: {
+    fontSize: 10,
+    lineHeight: 12,
+    includeFontPadding: false,
+    letterSpacing: 0,
+  },
+  starTextFilled: {
+    color: "#FFC514",
+  },
+  starTextEmpty: {
+    color: "#E5E7EB",
+  },
+  reviews: {
+    color: "#9CA3AF",
+    marginLeft: 3,
+  },
+  priceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    width: "100%",
+    marginTop: 6,
+    columnGap: 6,
+    rowGap: 3,
+  },
   original: {
     color: "#9CA3AF",
     textDecorationLine: "line-through",
   },
   price: {
-    fontWeight: "900",
+    fontWeight: "800",
     color: "#111827",
-  },
-  pointsWrap: {
-    marginTop: 8,
-    width: "100%",
   },
 });
