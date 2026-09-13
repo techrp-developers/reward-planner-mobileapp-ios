@@ -623,7 +623,7 @@ const styles = StyleSheet.create({
   quickSubtitle: { fontSize: 11.5, fontWeight: '500', marginTop: 3 },
   sectionDisplayTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '800', letterSpacing: -0.5, marginBottom: 16 },
   featuredGrid: { flexDirection: 'row', gap: 9 },
-  quickCard: { flex: 1, height: 128, borderRadius: 20, overflow: 'hidden', borderWidth: 1, shadowColor: '#5B47A3', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
+  quickCard: { flex: 1, height: 1008, borderRadius: 20, overflow: 'hidden', borderWidth: 1, shadowColor: '#5B47A3', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 2 },
   quickCardFill: { flex: 1, padding: 12 },
   quickIcon: { width: 43, height: 43, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 11 },
   quickCardTitle: { fontSize: 12, fontWeight: '700', lineHeight: 16, minHeight: 32 },

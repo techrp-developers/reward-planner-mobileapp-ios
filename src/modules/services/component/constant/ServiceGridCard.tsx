@@ -195,7 +195,7 @@ export default memo(ServiceGridCard);
 
 const styles = StyleSheet.create({
     card: {
-        padding: 8,
+        padding: 7,
         borderWidth: 1,
         justifyContent: 'space-between',
         overflow: 'hidden',
@@ -209,7 +209,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: '#F1F2F5',
-        marginBottom: 6,
     },
     image: {
         alignSelf: 'center',
@@ -219,14 +218,15 @@ const styles = StyleSheet.create({
         top: 6,
         left: 6,
         zIndex: 10,
+        alignItems: 'flex-start',
     },
     discountBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#EAF8EF',
-        paddingHorizontal: 6,
-        paddingVertical: 3,
-        borderRadius: 4,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        borderRadius: 5,
     },
     discountArrow: {
         color: '#16A34A',
@@ -240,10 +240,11 @@ const styles = StyleSheet.create({
     details: {
         flex: 1,
         marginTop: 0,
+        paddingTop: 0,
     },
     title: {
         flexShrink: 1,
-        minHeight: 32,
+        minHeight: 28,
         fontWeight: '800',
         lineHeight: 17,
     },

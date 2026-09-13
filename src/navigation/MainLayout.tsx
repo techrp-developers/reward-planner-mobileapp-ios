@@ -2,11 +2,9 @@ import React from "react";
 import { View, StyleSheet } from "react-native";
 import { useNavigation, useNavigationState, useRoute } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Navbar, { type TopTab } from "../navbar/Navbar";
 import BottomTabs from "../bottombar/BottomTabs";
-import { TAB_BAR_HEIGHT } from "../bottombar/BottomTabs";
 import { useCart } from "../modules/ecommerce/context/CartContext";
 import { useServiceCartCount } from "../modules/services/hooks/useServiceCartCount";
 import { useAppTheme } from "../theme/ThemeContext";
@@ -44,7 +42,7 @@ const ThemedSurface = React.memo(function ThemedSurface({
   style?: any;
 }) {
   const { theme } = useAppTheme();
-  return <View style={[style, { backgroundColor: theme.background }]}>{children}</View>;
+  return <View style={[style, { backgroundColor: style?.backgroundColor ?? theme.background }]}>{children}</View>;
 });
 
 const MODULE_MODE_BY_ROUTE: Record<keyof ModuleStackParamList, AppMode> = {
@@ -145,7 +143,6 @@ function MainLayout() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const navigationState = useNavigationState((state) => state);
-  const insets = useSafeAreaInsets();
   const moduleNavigationRef = React.useRef<any>(null);
 
   const routeChain = React.useMemo(
@@ -210,7 +207,6 @@ function MainLayout() {
     () => shouldShowBottomTabs(activeMode),
     [activeMode]
   );
-  const bottomInset = Math.max(insets.bottom, 8);
 
   // Each module owns its own cart count — add a new entry here (and its
   // hook call above) when a future module (e.g. Health) gets its own cart.
@@ -250,7 +246,7 @@ function MainLayout() {
     [navigation],
   );
 
-  const contentBottomSpacing = showBottomTabs ? TAB_BAR_HEIGHT + bottomInset : 0;
+  const contentBottomSpacing = 0;
   const handleBottomTabPress = React.useCallback(
     (tab: "Home" | "Search" | "Notes" | "Cart" | "History" | "Profile") => {
       if (tab === "History") {
@@ -371,6 +367,7 @@ export default React.memo(MainLayout);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   navbarSlot: {
     display: "flex",
@@ -380,5 +377,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    backgroundColor: "transparent",
   },
 });

@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     paddingVertical: 16,
     overflow: 'hidden',
+    marginBottom: 20,
   },
   loadingBox: {
     height: 200,

@@ -16,7 +16,7 @@ import RewardIcon from "../assets/homepage/RewardPlannersLogo.png";
 const FLOATING_BOTTOM_GAP = 10;
 const FLOATING_BAR_HEIGHT = 64;
 const CENTER_BUTTON_SIZE = 58;
-export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP + 24;
+export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP;
 
 type AppMode = "Product" | "Services" | "Payments" | "DineOut";
 
@@ -55,7 +55,7 @@ type TabItemProps = {
 
 // Defined outside render — stable reference, no allocation per press.
 const HIT_SLOP = { top: 10, bottom: 10, left: 6, right: 6 } as const;
-const NOOP = () => {};
+const NOOP = () => { };
 const DASHBOARD_SLOT_WIDTH = 62;
 const DASHBOARD_INDICATOR_LEFT = 9;
 
