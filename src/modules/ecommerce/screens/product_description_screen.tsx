@@ -58,7 +58,7 @@ const isVariantAvailable = (variant: any) =>
 export default function
   ProductDescriptionScreen() {
   const route = useRoute<RouteT>();
-  const { productId, variantId: requestedVariantId } = route.params;
+  const { productId, variantId: requestedVariantId, campaignId } = route.params;
   const { isAuthenticated } = useAuth();
   const alert = useAlert();
   const { addItem, updateQuantity, totalQuantity, items: cartItems } = useCart();
@@ -140,6 +140,7 @@ export default function
       mode: "buy_now" as const,
       product_id: Number(product.product_id),
       variant_id: Number(selectedVariant.variant_id),
+      ...(campaignId ? { campaign_id: campaignId } : {}),
       qty: Math.max(1, Number(qty) || 1),
     };
 
@@ -149,13 +150,14 @@ export default function
       mode: "buy_now",
       product_id: buyNowParams.product_id,
       variant_id: buyNowParams.variant_id,
+      campaign_id: campaignId,
       qty: buyNowParams.qty,
     }).catch(() => {
       // Ignore prefetch errors and continue navigation.
     });
 
     navigation.navigate("OrderStepUI", buyNowParams);
-  }, [isAuthenticated, navigation, product?.product_id, qty, selectedVariant]);
+  }, [campaignId, isAuthenticated, navigation, product?.product_id, qty, selectedVariant]);
 
 
 
@@ -182,7 +184,7 @@ export default function
       });
     };
 
-    const cachedProduct = queryClient.getQueryData<any>(productDetailsQueryKey(productId));
+    const cachedProduct = queryClient.getQueryData<any>(productDetailsQueryKey(productId, campaignId));
     if (cachedProduct) {
       applyProductState(cachedProduct);
       setLoading(false);
@@ -192,7 +194,7 @@ export default function
 
     // Start the network request immediately. Rendering the heavier product
     // content still waits for the native screen transition to finish below.
-    const productRequest = fetchProductDetailsByID(productId)
+    const productRequest = fetchProductDetailsByID(productId, campaignId)
       .then((raw) => ({ raw, error: null }))
       .catch((error) => ({ raw: null, error }));
 
@@ -220,7 +222,7 @@ export default function
           ...raw,
           variants: Array.isArray(raw?.variants) ? raw.variants.map(normalizeVariant) : [],
         };
-        queryClient.setQueryData(productDetailsQueryKey(productId), p);
+        queryClient.setQueryData(productDetailsQueryKey(productId, campaignId), p);
 
         if (!isMounted) return;
         applyProductState(p);
@@ -240,7 +242,7 @@ export default function
       isMounted = false;
       interactionTask.cancel();
     };
-  }, [productId, queryClient, requestedVariantId]);
+  }, [campaignId, productId, queryClient, requestedVariantId]);
 
 
 
@@ -290,6 +292,9 @@ export default function
 
     setSelectedVariant(bestMatch);
     setSelectedAttrs({ ...(bestMatch?.variant_attributes ?? {}) });
+    setInStock(false);
+    setStock(null);
+    setQty(1);
   }, [product?.variants, selectedAttrs]);
 
   const images = useMemo(() => {
@@ -347,10 +352,16 @@ export default function
 
   useEffect(() => {
     if (!selectedVariant?.variant_id) return;
+    let cancelled = false;
+
+    setInStock(false);
+    setStock(null);
+    setQty(1);
 
     (async () => {
       try {
         const res = await checkStock(selectedVariant.variant_id);
+        if (cancelled) return;
         const numericStock = Number(res?.stock);
         const safeStock = Number.isFinite(numericStock) ? numericStock : null;
 
@@ -362,11 +373,16 @@ export default function
         }
         setQty(1);
       } catch {
+        if (cancelled) return;
         const fallbackStock = Number(selectedVariant?.stock);
         setStock(Number.isFinite(fallbackStock) ? fallbackStock : null);
         setInStock(Number.isFinite(fallbackStock) ? fallbackStock > 0 : false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedVariant]);
 
   const selectedCartItem = useMemo(() => {
@@ -380,9 +396,10 @@ export default function
     return cartItems.find(
       (cartItem) =>
         Number(cartItem.product_id) === productCartId &&
-        Number(cartItem.variant_id) === variantCartId
+        Number(cartItem.variant_id) === variantCartId &&
+        Number(cartItem.flash_sale_campaign_id ?? 0) === Number(campaignId ?? 0)
     );
-  }, [cartItems, product?.product_id, productId, selectedVariant?.variant_id]);
+  }, [campaignId, cartItems, product?.product_id, productId, selectedVariant?.variant_id]);
 
   useEffect(() => {
     const cartQuantity = Number(selectedCartItem?.quantity);
@@ -405,7 +422,7 @@ export default function
       return;
     }
 
-    if (!product?.product_id || !selectedVariant?.variant_id || !inStock) {
+    if (!product?.product_id || !selectedVariant?.variant_id || !inStock || !isVariantAvailable(selectedVariant)) {
       alert.error("Selection unavailable", "Please choose an option that is in stock.", 3000);
       return;
     }
@@ -424,7 +441,7 @@ export default function
         return;
       }
 
-      await addItem(product.product_id, selectedVariant.variant_id, qty);
+      await addItem(product.product_id, selectedVariant.variant_id, qty, campaignId);
 
       // Open sheet first so it isn't blocked by alert overlays.
       setSheetVisible(true);
@@ -459,6 +476,7 @@ export default function
     qty,
     updateQuantity,
     addItem,
+    campaignId,
     alert,
     product?.product_name,
   ]);

@@ -59,7 +59,11 @@ const getRpPriceText = (rpPrice: unknown): string | undefined => {
     return undefined;
   }
 
-  const numericRpPrice = Number(rpPrice);
+  const numericRpPrice = Number(
+    typeof rpPrice === "string"
+      ? rpPrice.replace(/[₹,\s]/g, "")
+      : rpPrice
+  );
 
   if (!Number.isFinite(numericRpPrice) || numericRpPrice <= 0) {
     return undefined;
@@ -122,8 +126,8 @@ const ProductCardComponent = ({
     cardMinHeight: Math.round(Math.min(Math.max(usedCardWidth * 2.18, 238), 286)),
     fontSizeLabel: Math.max(11, Math.round(usedCardWidth * 0.07)),
     fontSizeReview: Math.max(9, Math.round(usedCardWidth * 0.066)),
-    fontSizePrice: Math.max(12, Math.round(usedCardWidth * 0.096)),
-    fontSizeOriginal: Math.max(9, Math.round(usedCardWidth * 0.065)),
+    fontSizePrice: 12,
+    fontSizeOriginal: 12,
     fontSizeDiscount: Math.max(9, Math.round(usedCardWidth * 0.07)),
   }), [usedCardWidth]);
 
@@ -143,7 +147,9 @@ const ProductCardComponent = ({
       item?.image_url,
       item?.thumbnail,
     ];
-    return candidates.find((candidate) => String(candidate || "").trim()) || "";
+    return candidates
+      .map((candidate) => typeof candidate === "string" ? candidate : candidate?.image_url ?? candidate?.url)
+      .find((candidate) => typeof candidate === "string" && candidate.trim()) || "";
   }, [item?.image, item?.image_url, item?.images, item?.thumbnail]);
 
   useEffect(() => {

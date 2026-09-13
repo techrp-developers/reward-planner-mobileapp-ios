@@ -15,6 +15,7 @@ export type CartItem = {
   id: string;
   product_id: string | number;
   variant_id: string | number;
+  flash_sale_campaign_id?: string | number | null;
   name: string;
   price: number;
   quantity: number;
@@ -27,7 +28,7 @@ type CartContextType = {
   totalQuantity: number;
   items: CartItem[];
   refresh: () => Promise<void>;
-  addItem: (productId: string | number, variantId: string | number, quantity: number) => Promise<void>;
+  addItem: (productId: string | number, variantId: string | number, quantity: number, campaignId?: string | number | null) => Promise<void>;
   removeItem: (itemId: string | number) => Promise<void>;
   updateQuantity: (itemId: string | number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -60,6 +61,7 @@ const toCartItems = (rawItems: any[]): CartItem[] => {
       item.productVariantId ??
       item.variant?.variant_id ??
       item.variant?.id,
+    flash_sale_campaign_id: item.flash_sale_campaign_id ?? item.campaign_id ?? null,
     name: item.product_name || item.name,
     price: Number(item.sale_price || item.price || 0),
     quantity: Number(item.quantity || 1),
@@ -119,11 +121,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   // 🔄 BACKGROUND SYNC
   // ➕ ADD PRODUCT
   const addMutation = useMutation({
-    mutationFn: ({ productId, variantId, quantity }: any) =>
+    mutationFn: ({ productId, variantId, quantity, campaignId }: any) =>
       addToCart({
         product_id: productId,
         variant_id: variantId,
         quantity,
+        ...(campaignId ? { campaign_id: campaignId } : {}),
       }),
     onSuccess: () => {
       syncProductCartQueries();
@@ -148,12 +151,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   });
 
   const addItem = useCallback(
-    async (productId: string | number, variantId: string | number, quantity: number) => {
+    async (productId: string | number, variantId: string | number, quantity: number, campaignId?: string | number | null) => {
       if (!isAuthenticated) return;
       await addMutation.mutateAsync({
         productId: Number(productId),
         variantId: Number(variantId),
         quantity,
+        campaignId: campaignId == null ? undefined : Number(campaignId),
       });
     },
     [addMutation, isAuthenticated]

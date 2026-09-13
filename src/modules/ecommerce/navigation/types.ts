@@ -18,7 +18,7 @@ export type HomeStackParamList = {
     subcategoryId?: number | string;
     subcategoryTitle?: string;
   };
-  ProductDescription: { productId: number | string; variantId?: number | string };
+  ProductDescription: { productId: number | string; variantId?: number | string; campaignId?: number };
   Cart: undefined;
   AddressSelect: { fromCart?: boolean; manageOnly?: boolean } | undefined;
   WithAddress: undefined;
@@ -28,6 +28,7 @@ export type HomeStackParamList = {
   OrderReceipt:  undefined;
   Explore : undefined;
   ProductScreen: { source: ProductCollectionSource } | undefined;
+  CampaignProducts: { campaignId?: number | string; contentId?: number; title?: string };
   ReviewScreen: {
     product_id: number;
     variant_id: number;
@@ -42,6 +43,7 @@ export type HomeStackParamList = {
     mode?: 'cart' | 'buy_now';
     product_id?: number;
     variant_id?: number;
+    campaign_id?: number;
     qty?: number;
   };
 
@@ -106,6 +108,7 @@ export type OrderStepParams = {
   mode?: 'buy_now' | 'cart';
   product_id?: number | string;
   variant_id?: number | string;
+  campaign_id?: number;
   qty?: number;
 };
 

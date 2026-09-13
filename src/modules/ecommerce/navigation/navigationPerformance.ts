@@ -16,6 +16,7 @@ export const checkoutPreviewQueryKey = (params?: {
   mode?: "buy_now" | "cart";
   product_id?: number | string;
   variant_id?: number | string;
+  campaign_id?: number;
   qty?: number;
   use_rewards?: boolean;
 }) => {
@@ -28,6 +29,7 @@ export const checkoutPreviewQueryKey = (params?: {
       "buy_now",
       String(params?.product_id ?? ""),
       String(params?.variant_id ?? ""),
+      String(params?.campaign_id ?? ""),
       String(params?.qty ?? 1),
       useRewards,
     ] as const;
@@ -36,10 +38,11 @@ export const checkoutPreviewQueryKey = (params?: {
   return ["ecommerce", "checkout-preview", "cart", useRewards] as const;
 };
 
-export const productDetailsQueryKey = (productId: number | string) => [
+export const productDetailsQueryKey = (productId: number | string, campaignId?: number | string) => [
   "ecommerce",
   "product-details",
   String(productId),
+  String(campaignId ?? ""),
 ] as const;
 
 type NavigateWithPrefetchOptions = {
@@ -104,6 +107,7 @@ export const prefetchCheckoutPreview = (params?: {
   mode?: "buy_now" | "cart";
   product_id?: number | string;
   variant_id?: number | string;
+  campaign_id?: number;
   qty?: number;
   use_rewards?: boolean;
 }) => {
@@ -124,10 +128,11 @@ export const prefetchCheckoutPreview = (params?: {
         mode,
         product_id: productId,
         variant_id: variantId,
+        campaign_id: params?.campaign_id,
         qty,
         use_rewards: useRewards,
       }),
-      queryFn: () => fetchBuyNowCheckout(productId, variantId, qty, useRewards),
+      queryFn: () => fetchBuyNowCheckout(productId, variantId, qty, useRewards, undefined, params?.campaign_id),
       staleTime: CART_STALE_TIME,
     });
   }
@@ -143,6 +148,7 @@ export const prefetchCheckoutScreenData = async (params?: {
   mode?: "buy_now" | "cart";
   product_id?: number | string;
   variant_id?: number | string;
+  campaign_id?: number;
   qty?: number;
   use_rewards?: boolean;
 }) => {

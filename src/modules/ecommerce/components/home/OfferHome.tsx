@@ -22,7 +22,10 @@ import {
   getProductImageUrl,
   fetchProductDetailsByID,
 } from "../../api/ProductApi";
-import { getCampaignHome, getCampaignProducts } from "../../api/CampaignAPI";
+import { getCampaignHome } from "../../api/CampaignAPI";
+import { cmsApi } from "../../../../config/cmsApiClient";
+import { normalizeLocalCmsImageUrl } from "../../../../config/apiConfig";
+import { normalizeProduct } from "../../utils/normalizeProduct";
 import { queryClient } from "../../../../query/queryClient";
 import { HomeStackParamList } from "../../navigation/types";
 import BgSales from "../../../../assets/homepage/Flash_Sale_Bg.svg";
@@ -44,12 +47,7 @@ const CARD_WIDTH = Math.round(Math.min(Math.max(SCREEN_WIDTH * 0.33, 120), 170))
 const IMAGE_BOX_HEIGHT = Math.round(CARD_WIDTH * 0.72);
 const CARD_MARGIN = 8;
 const CAMPAIGN_HOME_QUERY_KEY = ["ecommerce", "home", "campaign-home"] as const;
-const FLASH_PRODUCTS_QUERY_KEY = (campaignId: number | string) =>
-  ["ecommerce", "home", "flash-products", campaignId] as const;
-// The campaign-home endpoint can omit flash_sales even while the dedicated
-// flash-sale campaign remains available. Keep the configured campaign visible
-// until the API starts returning an active flash sale again.
-const DEFAULT_FLASH_CAMPAIGN_ID = 4;
+const CMS_FLASH_PRODUCTS_QUERY_KEY = ["cms", "content", "4", "products"] as const;
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -97,6 +95,85 @@ const getWishlistFlag = (item: any) => {
 
   const normalized = String(value ?? "").trim().toLowerCase();
   return ["1", "true", "yes", "y"].includes(normalized);
+};
+
+const fetchCmsFlashProducts = async () => {
+  const { data } = await cmsApi.get("/v1/cms/content/4/products");
+  const list = data?.data?.products ?? data?.products ?? [];
+  const content = data?.data?.content;
+  const offerImageUrl = normalizeLocalCmsImageUrl(content?.imageUrl) || null;
+  const offerTargetId = content?.targetId ?? null;
+  const campaignId = Number(content?.contentId) || undefined;
+  if (!Array.isArray(list)) return { products: [], offerImageUrl, offerTargetId, campaignId };
+
+  const products = list.map((product: any) => {
+    const normalized = normalizeProduct(product);
+    const productId =
+      product?.product_id ??
+      product?.id ??
+      product?.productId ??
+      normalized?.product_id ??
+      normalized?.id;
+    const imageCandidates = [
+      product?.image,
+      product?.image_url,
+      product?.thumbnail,
+      product?.main_image,
+      product?.cover_image,
+      ...(Array.isArray(product?.images) ? product.images : []),
+    ];
+    const rawImage = imageCandidates
+      .map((candidate) => typeof candidate === "string" ? candidate : candidate?.image_url ?? candidate?.url)
+      .find((candidate) => typeof candidate === "string" && candidate.trim());
+    const fallbackImage = normalizeLocalCmsImageUrl(rawImage) || null;
+
+    return {
+      ...normalized,
+      id: productId,
+      product_id: productId,
+      productId,
+      campaignId,
+      variant_id:
+        product?.variant_id ??
+        product?.variantId ??
+        product?.default_variant_id ??
+        normalized?.variant_id ??
+        0,
+      product_name:
+        product?.product_name ??
+        product?.title ??
+        product?.name ??
+        normalized?.product_name ??
+        "Product",
+      title:
+        product?.title ??
+        product?.product_name ??
+        product?.name ??
+        normalized?.title ??
+        "Product",
+      brand: product?.brand ?? product?.brand_name ?? "",
+      price: normalized.price || product?.final_price || product?.price || product?.selling_price || "",
+      originalPrice:
+        normalized.originalPrice ||
+        product?.original_price ||
+        product?.originalPrice ||
+        product?.mrp ||
+        "",
+      discount:
+        normalized.discount ||
+        product?.discount_percent ||
+        product?.off_percent ||
+        product?.discount ||
+        "",
+      rp_price: normalized.rp_price || product?.rp_price || product?.rpPrice || null,
+      image: fallbackImage || null,
+      images: fallbackImage ? [fallbackImage] : [],
+      is_wishlist: normalized.is_wishlist ?? false,
+      is_wishlisted: normalized.is_wishlisted ?? false,
+    };
+  });
+
+  return { products, offerImageUrl, offerTargetId, campaignId };
 };
 
 // ---------------------------------------------------------------------
@@ -254,9 +331,13 @@ const FlashOfferProductCard = React.memo(({
   const handlePress = () => {
     if (!productId) return;
     handleNavigateWithPrefetch({
-      navigate: () => navigation.navigate("ProductDescription", { productId: String(productId) }),
-      queryKey: productDetailsQueryKey(String(productId)),
-      queryFn: () => fetchProductDetailsByID(String(productId)),
+      navigate: () => navigation.navigate("ProductDescription", {
+        productId: String(productId),
+        variantId: variantId || undefined,
+        campaignId: item.campaignId,
+      }),
+      queryKey: productDetailsQueryKey(String(productId), item.campaignId),
+      queryFn: () => fetchProductDetailsByID(String(productId), item.campaignId),
     });
   };
 
@@ -283,9 +364,9 @@ const FlashOfferProductCard = React.memo(({
       Alert.alert(
         "Wishlist",
         error?.response?.data?.message ||
-          error?.response?.data?.error ||
-          error?.message ||
-          "Failed to update wishlist"
+        error?.response?.data?.error ||
+        error?.message ||
+        "Failed to update wishlist"
       );
     } finally {
       setWishLoading(false);
@@ -388,38 +469,21 @@ export default function OfferHome({ module = "product" }: Props) {
   console.log('[CMS] Offers banner:', JSON.stringify(cmsOffersBanner));
   console.log('[CMS] Offers images:', JSON.stringify(cmsOffersBanner?.images));
 
-  const { data: campaignHome, isLoading: isCampaignLoading } = useQuery({
+  const { data: campaignHome } = useQuery({
     queryKey: CAMPAIGN_HOME_QUERY_KEY,
     queryFn: getCampaignHome,
     staleTime: 10 * 60 * 1000,
   });
 
-  const flashCampaignId =
-    campaignHome?.data?.flash_sales?.[0]?.campaign_id ?? DEFAULT_FLASH_CAMPAIGN_ID;
-
-  const { data: products = [], isLoading: isProductsLoading } = useQuery({
-    queryKey: FLASH_PRODUCTS_QUERY_KEY(flashCampaignId!),
-    queryFn: () => getCampaignProducts(flashCampaignId!),
-    enabled: flashCampaignId != null,
+  const { data: cmsOffer, isLoading: isProductsLoading } = useQuery({
+    queryKey: CMS_FLASH_PRODUCTS_QUERY_KEY,
+    queryFn: fetchCmsFlashProducts,
     staleTime: 5 * 60 * 1000,
-    select: (res) =>
-      (res.data ?? []).map((p) => ({
-        id: p.id,
-        product_id: p.product_id,
-        variant_id: p.variant_id,
-        product_name: p.product_name,
-        title: p.product_name,
-        brand: p.brand_name || '',
-        price: p.price ?? p.final_price,
-        mrp: p.mrp,
-        originalPrice: p.originalPrice ?? p.mrp,
-        discount: p.discount,
-        rp_price: p.rp_price,
-        image: p.image || null,
-        images: p.image ? [p.image] : [],
-        is_wishlisted: false,
-      })),
   });
+  const products = cmsOffer?.products ?? [];
+  const promotionalContentId = module === "product"
+    ? Number(moduleContent?.promotional_banner?.content_id ?? cmsOffer?.campaignId ?? 0)
+    : 0;
 
   const banner = useMemo(() =>
     (campaignHome?.data?.posters ?? []).map(p => ({
@@ -479,17 +543,38 @@ export default function OfferHome({ module = "product" }: Props) {
       });
     } else if (offer.redirectType === 'url' && offer.redirectUrl) {
       Linking.openURL(offer.redirectUrl);
+    } else {
+      navigation.navigate('CampaignProducts', {
+        campaignId: offer.id,
+        title: offer.title || 'Offers',
+      });
     }
   };
 
-  if (isProductsLoading || isCampaignLoading) {
+  if (isProductsLoading) {
     return <HomeSectionSkeleton height={390} backgroundColor={theme.background} />;
   }
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Banner Carousel */}
-      {shouldShowCmsOffersBanner ? (
+      {cmsOffer?.offerImageUrl && !shouldShowCmsOffersBanner ? (
+        <View style={styles.offersScroll}>
+          <TouchableOpacity
+            style={[styles.offerCard, { backgroundColor: theme.card }]}
+            activeOpacity={cmsOffer.campaignId ? 0.85 : 1}
+            disabled={!cmsOffer.campaignId}
+            onPress={() => {
+              navigation.navigate("CampaignProducts", {
+                contentId: cmsOffer.campaignId,
+                title: "Offers",
+              });
+            }}
+          >
+            <OfferSlideImage uri={cmsOffer.offerImageUrl} />
+          </TouchableOpacity>
+        </View>
+      ) : shouldShowCmsOffersBanner ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -500,13 +585,18 @@ export default function OfferHome({ module = "product" }: Props) {
               <TouchableOpacity
                 key={offer.id}
                 style={[styles.offerCard, { backgroundColor: theme.card }]}
-                activeOpacity={cmsOffersBanner?.redirect_link ? 0.85 : 1}
+                activeOpacity={promotionalContentId > 0 || cmsOffersBanner?.redirect_link ? 0.85 : 1}
                 onPress={() => {
-                  if (cmsOffersBanner?.redirect_link) {
+                  if (promotionalContentId > 0) {
+                    navigation.navigate("CampaignProducts", {
+                      contentId: promotionalContentId,
+                      title: cmsOffersBanner?.title || "Offers",
+                    });
+                  } else if (cmsOffersBanner?.redirect_link) {
                     Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
                   }
                 }}
-                disabled={!cmsOffersBanner?.redirect_link}
+                disabled={promotionalContentId <= 0 && !cmsOffersBanner?.redirect_link}
               >
                 <OfferSlideImage uri={offer.image} />
               </TouchableOpacity>
@@ -517,13 +607,18 @@ export default function OfferHome({ module = "product" }: Props) {
                 styles.offerCard,
                 { backgroundColor: cmsOffersBanner!.color_value! },
               ]}
-              activeOpacity={cmsOffersBanner?.redirect_link ? 0.85 : 1}
+              activeOpacity={promotionalContentId > 0 || cmsOffersBanner?.redirect_link ? 0.85 : 1}
               onPress={() => {
-                if (cmsOffersBanner?.redirect_link) {
+                if (promotionalContentId > 0) {
+                  navigation.navigate("CampaignProducts", {
+                    contentId: promotionalContentId,
+                    title: cmsOffersBanner?.title || "Offers",
+                  });
+                } else if (cmsOffersBanner?.redirect_link) {
                   Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
                 }
               }}
-              disabled={!cmsOffersBanner?.redirect_link}
+              disabled={promotionalContentId <= 0 && !cmsOffersBanner?.redirect_link}
             />
           )}
         </ScrollView>
@@ -547,7 +642,7 @@ export default function OfferHome({ module = "product" }: Props) {
       ) : null}
 
       {/* Flash Sales Section */}
-      <View style={styles.flashSectionContainer}>
+      {products.length > 0 ? <View style={styles.flashSectionContainer}>
         <BgSales style={StyleSheet.absoluteFillObject} preserveAspectRatio="xMidYMid slice" />
         <View style={styles.flashContentRow}>
           <View style={styles.flashLeft}>
@@ -582,32 +677,29 @@ export default function OfferHome({ module = "product" }: Props) {
             ))}
           </ScrollView>
         </View>
-      </View>
+      </View> : null}
     </View>
   );
 }
 
 export const prefetchOfferHomeSection = async (module: CmsModuleKey = "product") => {
-  await queryClient.prefetchQuery({
-    queryKey: moduleContentQueryKey(module),
-    queryFn: () => fetchResolvedZones(module),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const campaignHome = await queryClient.fetchQuery({
-    queryKey: CAMPAIGN_HOME_QUERY_KEY,
-    queryFn: getCampaignHome,
-    staleTime: 10 * 60 * 1000,
-  });
-
-  const flashCampaignId = campaignHome?.data?.flash_sales?.[0]?.campaign_id;
-  if (flashCampaignId == null) return;
-
-  await queryClient.prefetchQuery({
-    queryKey: FLASH_PRODUCTS_QUERY_KEY(flashCampaignId),
-    queryFn: () => getCampaignProducts(flashCampaignId),
-    staleTime: 5 * 60 * 1000,
-  });
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: moduleContentQueryKey(module),
+      queryFn: () => fetchResolvedZones(module),
+      staleTime: 5 * 60 * 1000,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: CAMPAIGN_HOME_QUERY_KEY,
+      queryFn: getCampaignHome,
+      staleTime: 10 * 60 * 1000,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: CMS_FLASH_PRODUCTS_QUERY_KEY,
+      queryFn: fetchCmsFlashProducts,
+      staleTime: 5 * 60 * 1000,
+    }),
+  ]);
 };
 
 const styles = StyleSheet.create({
@@ -715,8 +807,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 0,
     left: 0,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+
     borderTopLeftRadius: 12,
     borderBottomRightRadius: 12,
     zIndex: 10,
@@ -725,6 +816,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "900",
     color: "#333",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   heartIcon: {
     position: "absolute",
@@ -754,18 +847,20 @@ const styles = StyleSheet.create({
   priceRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
+    columnGap: 6,
+    rowGap: 2,
     marginTop: 4,
   },
   currentPrice: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "bold",
     color: "#00A36C",
   },
   oldPrice: {
-    fontSize: 10,
+    fontSize: 12,
     color: "#999",
     textDecorationLine: "line-through",
-    marginLeft: 6,
   },
   pointsButtonWrapper: {
     width: "100%",
@@ -773,8 +868,7 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     borderRadius: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 6,
+
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -787,6 +881,8 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 11,
     fontWeight: "800",
+    paddingVertical: 7,
+    paddingHorizontal: 6,
   },
   rpBadge: {
     flexDirection: "row",

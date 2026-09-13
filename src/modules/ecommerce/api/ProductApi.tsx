@@ -91,12 +91,14 @@ export const getProductImageUrl = (
   const fullUrl = `${IMAGE_BASE_URL}/${encoded}`;
   return appendImageOptimizationParams(fullUrl, width, quality);
 };
-export const fetchProductDetailsByID = async (productId: string | number) => {
+export const fetchProductDetailsByID = async (productId: string | number, campaignId?: string | number) => {
   if (!productId) {
     throw new Error('Missing product id');
   }
 
-  const res = await api.get(`/v1/product/product-details/${productId}`);
+  const res = await api.get(`/v1/product/product-details/${productId}`, {
+    params: campaignId == null ? undefined : { campaign_id: campaignId },
+  });
   const payload = res?.data;
   return payload?.product ?? payload?.data?.product ?? payload?.data ?? null;
 };

@@ -217,6 +217,7 @@ export default function OrderStepUI() {
   const mode = route?.params?.mode === 'buy_now' ? 'buy_now' : 'cart';
   const product_id = Number(route?.params?.product_id);
   const variant_id = Number(route?.params?.variant_id);
+  const campaign_id = route?.params?.campaign_id;
   const qty = Math.max(1, Number(route?.params?.qty ?? 1));
   const [buyNowQty, setBuyNowQty] = useState(qty);
   const [cartSummary, setCartSummary] =
@@ -344,10 +345,11 @@ export default function OrderStepUI() {
         mode,
         product_id,
         variant_id,
+        campaign_id,
         qty: buyNowQty,
         use_rewards: useRewards,
       }),
-    [mode, product_id, variant_id, buyNowQty, useRewards],
+    [mode, product_id, variant_id, campaign_id, buyNowQty, useRewards],
   );
 
   const {
@@ -376,6 +378,8 @@ export default function OrderStepUI() {
           variant_id,
           buyNowQty,
           useRewards,
+          undefined,
+          campaign_id,
         );
       }
       return fetchCheckoutCart(useRewards);
@@ -660,6 +664,9 @@ export default function OrderStepUI() {
             product_id: Number(item.product_id),
             variant_id: Number(item.variant_id),
             quantity: Number(item.quantity ?? 1),
+            ...(Number(item.flash_sale_campaign_id ?? item.campaign_id) > 0
+              ? { campaign_id: Number(item.flash_sale_campaign_id ?? item.campaign_id) }
+              : {}),
           }))
           .filter(
             item =>
@@ -770,6 +777,7 @@ export default function OrderStepUI() {
               buyNowQty,
               useRewards,
               safeToNumber(selectedAddressId),
+              campaign_id,
             );
           }
           return fetchCheckoutCart(useRewards, safeToNumber(selectedAddressId));
@@ -793,6 +801,7 @@ export default function OrderStepUI() {
         const buyNowOrderPayload = {
           product_id: safeToNumber(product_id),
           variant_id: safeToNumber(variant_id),
+          ...(campaign_id ? { campaign_id } : {}),
           quantity: buyNowQty,
           address_id: safeToNumber(selectedAddressId),
           expected_total: safeToNumber(expectedPrice),

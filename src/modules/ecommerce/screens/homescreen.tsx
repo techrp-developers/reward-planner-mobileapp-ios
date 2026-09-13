@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import CategoriesSection from '../components/home/categories_section';
 import HomeSectionSkeleton from '../components/home/HomeSectionSkeleton';
+import PromotionalBanner from '../components/home/PromotionalBanner';
 import { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAppTheme } from '../../../theme/ThemeContext';
@@ -89,15 +90,6 @@ const SECTION_HEIGHTS: Record<SectionKey, number> = {
   recent: 360,
   productCategory: 720,
 };
-
-const SECTION_OFFSETS: Record<SectionKey, number> = HOME_SECTIONS.reduce(
-  (acc, section, index) => {
-    const previous = index === 0 ? 0 : acc[HOME_SECTIONS[index - 1].key] + SECTION_HEIGHTS[HOME_SECTIONS[index - 1].key];
-    acc[section.key] = previous;
-    return acc;
-  },
-  {} as Record<SectionKey, number>,
-);
 
 const getSectionIndex = (key: SectionKey) => HOME_SECTION_KEYS.indexOf(key);
 const getSectionRange = (startKey: SectionKey, ahead = SECTION_RENDER_AHEAD) => {
@@ -373,22 +365,11 @@ function HomeScreen() {
     [readySections]
   );
   const keyExtractor = useCallback((item: HomeSection) => item.key, []);
-  const getItemLayout = useCallback(
-    (_: ArrayLike<HomeSection> | null | undefined, index: number) => {
-      const key = HOME_SECTIONS[index].key;
-      return {
-        length: SECTION_HEIGHTS[key],
-        offset: SECTION_OFFSETS[key],
-        index,
-      };
-    },
-    [],
-  );
-
   return (
     <ThemedHomeSurface>
       <FlatList
         data={HOME_SECTIONS}
+        ListHeaderComponent={<PromotionalBanner module="product" />}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
@@ -400,7 +381,6 @@ function HomeScreen() {
         removeClippedSubviews={Platform.OS === 'android'}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        getItemLayout={getItemLayout}
         ListFooterComponent={ListFooterSpacer}
       />
     </ThemedHomeSurface>

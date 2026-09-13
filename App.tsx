@@ -11,6 +11,7 @@ import { AuthProvider } from './src/modules/common/auth/context/AuthContext';
 import { AppThemeProvider } from './src/theme/ThemeContext';
 import { navigationRef } from './src/navigation/navigationRef';
 import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
+import { CmsAppShellProvider } from './src/modules/common/cms/CmsAppShellContext';
 
 type AuthModalStackParamList = {
   Login: undefined;
@@ -84,18 +85,20 @@ export default function App() {
       <SafeAreaProvider>
         <AppThemeProvider>
           <QueryClientProvider client={queryClient}>
-            <AlertProvider>
-              <AuthProvider>
-                <CartProvider>
-                  <NavigationContainer linking={linking} ref={navigationRef}>
-                    <AlertContainer />
-                    <NetworkGuard>
-                      <RootNavigator />
-                    </NetworkGuard>
-                  </NavigationContainer>
-                </CartProvider>
-              </AuthProvider>
-            </AlertProvider>
+            <CmsAppShellProvider>
+              <AlertProvider>
+                <AuthProvider>
+                  <CartProvider>
+                    <NavigationContainer linking={linking} ref={navigationRef}>
+                      <AlertContainer />
+                      <NetworkGuard>
+                        <RootNavigator />
+                      </NetworkGuard>
+                    </NavigationContainer>
+                  </CartProvider>
+                </AuthProvider>
+              </AlertProvider>
+            </CmsAppShellProvider>
           </QueryClientProvider>
         </AppThemeProvider>
       </SafeAreaProvider>

@@ -5,6 +5,7 @@ export type AddToCartPayload = {
   product_id: number;
   variant_id: number;
   quantity: number;
+  campaign_id?: number;
 };
 
 export const addToCart = async (payload: AddToCartPayload) => {
@@ -25,6 +26,7 @@ export const addToCart = async (payload: AddToCartPayload) => {
         product_id: payload.product_id,
         variant_id: payload.variant_id,
         qty: payload.quantity,
+        ...(payload.campaign_id ? { campaign_id: payload.campaign_id } : {}),
       },
     },
     {
@@ -33,6 +35,7 @@ export const addToCart = async (payload: AddToCartPayload) => {
         product_id: payload.product_id,
         variant_id: payload.variant_id,
         qty: payload.quantity,
+        ...(payload.campaign_id ? { campaign_id: payload.campaign_id } : {}),
       },
     },
   ];

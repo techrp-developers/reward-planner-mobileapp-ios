@@ -233,6 +233,45 @@ const ACTIVE_TAB_SCALE = 1.04;
 const PRESSED_SCALE_DELTA = 0.06;
 const NAV_TABS_H_PADDING = rs(16);
 const NAV_TAB_GAP = rs(10);
+const SEARCH_PLACEHOLDERS: Record<string, string[]> = {
+  product: ["Search products and offers", "Search brands and categories", "Search rewards and deals"],
+  service: ["Search PAN and Aadhaar", "Search passport services", "Search insurance and SIP"],
+  payment: ["Search mobile recharge", "Search electricity bills", "Search water and DTH bills"],
+  dineout: ["Search bus routes", "Search bus tickets", "Search destinations"],
+};
+
+function RotatingSearchPlaceholder({ moduleKey }: { moduleKey: string }) {
+  const placeholders = SEARCH_PLACEHOLDERS[moduleKey] ?? SEARCH_PLACEHOLDERS.product;
+  const [index, setIndex] = React.useState(0);
+  const opacity = React.useRef(new Animated.Value(1)).current;
+
+  React.useEffect(() => {
+    setIndex(0);
+    opacity.setValue(1);
+    const interval = setInterval(() => {
+      Animated.timing(opacity, { toValue: 0, duration: 180, useNativeDriver: true })
+        .start(({ finished }) => {
+          if (!finished) return;
+          setIndex((current) => (current + 1) % placeholders.length);
+          Animated.timing(opacity, { toValue: 1, duration: 240, useNativeDriver: true }).start();
+        });
+    }, 3200);
+
+    return () => {
+      clearInterval(interval);
+      opacity.stopAnimation();
+    };
+  }, [moduleKey, opacity, placeholders]);
+
+  return (
+    <Animated.Text
+      style={[styles.searchPlaceholder, { color: "#111827", opacity }]}
+      numberOfLines={1}
+    >
+      {placeholders[index]}
+    </Animated.Text>
+  );
+}
 
 // --- Sub-component (icon-forward, no card background — dot indicator marks active) ---
 const TopIconWithLabel = React.memo(
@@ -240,6 +279,7 @@ const TopIconWithLabel = React.memo(
     active,
     onPress,
     iconUrl,
+    fallbackIconUrl,
     moduleKey,
     label,
     activeTint,
@@ -254,6 +294,7 @@ const TopIconWithLabel = React.memo(
     active: boolean;
     onPress: () => void;
     iconUrl: string | null;
+    fallbackIconUrl: string | null;
     moduleKey: string;
     label: string;
     activeTint?: string;
@@ -272,6 +313,11 @@ const TopIconWithLabel = React.memo(
     React.useEffect(() => {
       setImageUrl(iconUrl);
     }, [iconUrl]);
+    const handleIconError = React.useCallback(() => {
+      setImageUrl((current) => current === iconUrl && fallbackIconUrl !== iconUrl
+        ? fallbackIconUrl
+        : null);
+    }, [fallbackIconUrl, iconUrl]);
     // Base scale grows with a spring when the tab becomes active (visual
     // weight), and presses shrink from whatever the current base is —
     // never fighting an in-flight active/inactive transition.
@@ -345,8 +391,7 @@ const TopIconWithLabel = React.memo(
                   if (__DEV__) {
                     console.log("[CMS] Module icon failed:", moduleKey, imageUrl);
                   }
-                  if (imageUrl !== iconUrl) return;
-                  setImageUrl(null);
+                  handleIconError();
                 }}
               />
             </LinearGradient>
@@ -364,7 +409,7 @@ const TopIconWithLabel = React.memo(
                 if (__DEV__) {
                   console.log("[CMS] Module icon failed:", moduleKey, imageUrl);
                 }
-                setImageUrl(null);
+                handleIconError();
               }}
             />
           )
@@ -827,22 +872,20 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
         <View style={styles.searchRow}>
           <AnimatedTouchableOpacity
             activeOpacity={0.86}
-            style={[styles.searchBar, { backgroundColor: frostedSurface, borderColor: navbarBorder, height: searchHeight }]}
+            style={[styles.searchBar, { backgroundColor: "rgba(255,255,255,0.94)", borderColor: "rgba(0,0,0,0.08)", height: searchHeight }]}
             onPress={handleSearchPress}
             hitSlop={hitSlop(6)}
           >
-            <MaterialCommunityIcons name="magnify" size={20} color={navbarIconColor} />
-            <Text style={[styles.searchPlaceholder, { color: navbarMutedColor }]} numberOfLines={1}>
-              Search products and services
-            </Text>
+            <MaterialCommunityIcons name="magnify" size={20} color="#111827" />
+            <RotatingSearchPlaceholder moduleKey={selectedModuleKey} />
           </AnimatedTouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.85}
-            style={[styles.bellBtn, { backgroundColor: frostedSurface, borderColor: navbarBorder }]}
+            style={[styles.bellBtn, { backgroundColor: "rgba(255,255,255,0.94)", borderColor: "rgba(0,0,0,0.08)" }]}
             onPress={() => navigateToScreen("Notification")}
             hitSlop={hitSlop(8)}
           >
-            <MaterialCommunityIcons name="bell-outline" size={19} color={navbarIconColor} />
+            <MaterialCommunityIcons name="bell-outline" size={19} color="#111827" />
             {hasUnreadNotifications ? <View style={styles.bellDot} /> : null}
           </TouchableOpacity>
         </View>
@@ -867,6 +910,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 active={active}
                 onPress={() => handleModulePress(module)}
                 iconUrl={iconUrl}
+                fallbackIconUrl={module.icon_url}
                 moduleKey={module.module_key}
                 label={module.label}
                 activeTint={module.active_color || activeThemeColor}

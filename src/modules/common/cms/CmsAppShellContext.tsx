@@ -39,35 +39,33 @@ export const CmsAppShellProvider = ({ children }: { children: React.ReactNode })
     const RETRY_DELAY_MS = 1500;
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    const load = async () => {
+    const loadWithRetry = async <T,>(fetcher: () => Promise<T>) => {
       for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-        console.log(`[CMS] AppShell fetch starting (attempt ${attempt}/${MAX_ATTEMPTS})`);
         try {
-          const [modules, navbar] = await Promise.all([fetchResolvedModules(), fetchResolvedNavbar()]);
-          console.log('[CMS] AppShell fetch resolved:', {
-            modules: JSON.stringify(modules),
-            navbar: JSON.stringify(navbar),
-          });
-          if (cancelled) {
-            console.log('[CMS] AppShell fetch resolved but effect was cancelled — state not stored');
-            return;
-          }
-          const nextState = { modules, navbar, isLoading: false, error: null };
-          console.log('[CMS] AppShell storing state:', JSON.stringify(nextState));
-          setState(nextState);
-          return;
-        } catch (error: any) {
-          console.log(`[CMS] AppShell fetch failed (attempt ${attempt}/${MAX_ATTEMPTS}):`, error?.message ?? error);
-          if (cancelled) {
-            return;
-          }
+          return { data: await fetcher(), error: null };
+        } catch (error) {
+          if (cancelled) return { data: null, error };
           if (attempt === MAX_ATTEMPTS) {
-            setState({ ...defaultState, isLoading: false, error });
-            return;
+            return { data: null, error };
           }
           await delay(RETRY_DELAY_MS * attempt);
         }
       }
+      return { data: null, error: null };
+    };
+
+    const load = async () => {
+      const [modulesResult, navbarResult] = await Promise.all([
+        loadWithRetry(fetchResolvedModules),
+        loadWithRetry(fetchResolvedNavbar),
+      ]);
+      if (cancelled) return;
+      setState({
+        modules: modulesResult.data ?? [],
+        navbar: navbarResult.data ?? {},
+        isLoading: false,
+        error: modulesResult.error ?? navbarResult.error,
+      });
     };
 
     load();

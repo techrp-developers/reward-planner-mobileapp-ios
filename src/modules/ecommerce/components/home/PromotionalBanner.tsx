@@ -5,6 +5,9 @@ import { fetchResolvedZones } from "../../../common/cms/cmsContentApi";
 import type { CmsModuleKey } from "../../../common/cms/cmsContentApi";
 import { useModuleContent, moduleContentQueryKey } from "../../../common/cms/useModuleContent";
 import { queryClient } from "../../../../query/queryClient";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { HomeStackParamList } from "../../navigation/types";
 
 // Matches the old fixed `width * 0.92` banner proportions — used both as the
 // pure color fallback ratio (no image to measure) and as the placeholder
@@ -21,8 +24,10 @@ type Props = {
 };
 
 function PromotionalBanner({ module = "product" }: Props) {
+  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { moduleContent, isLoading, isError } = useModuleContent(module);
   const banner = moduleContent?.promotional_banner ?? null;
+  const contentId = module === "product" ? Number(banner?.content_id) : 0;
 
   const rawBannerImageUrl = banner?.content_type === "image" ? banner.image_url : null;
   const bannerImageUrl = React.useMemo(
@@ -46,10 +51,14 @@ function PromotionalBanner({ module = "product" }: Props) {
   }, [module, banner, bannerImageUrl, isLoading, isError]);
 
   const handlePress = React.useCallback(() => {
+    if (contentId > 0) {
+      navigation.navigate("CampaignProducts", { contentId, title: banner?.title || "Offers" });
+      return;
+    }
     if (banner?.redirect_link) {
       Linking.openURL(banner.redirect_link).catch(() => undefined);
     }
-  }, [banner?.redirect_link]);
+  }, [banner?.redirect_link, banner?.title, contentId, navigation]);
 
   const handleImageLoad = React.useCallback(
     (event: ImageLoadEvent) => {
@@ -73,7 +82,8 @@ function PromotionalBanner({ module = "product" }: Props) {
 
   const showRemoteImage = !!bannerImageUrl && !imageFailed;
   const showColor = !showRemoteImage && !!banner?.color_value;
-  const Wrapper = banner?.redirect_link ? TouchableOpacity : View;
+  const isPressable = contentId > 0 || !!banner?.redirect_link;
+  const Wrapper = isPressable ? TouchableOpacity : View;
   // Full height once the real image has loaded and reported its own ratio;
   // the fixed ratio otherwise (no image, or still loading it).
   const bannerAspectRatio = showRemoteImage && imageAspectRatio ? imageAspectRatio : FALLBACK_ASPECT_RATIO;
@@ -89,7 +99,7 @@ function PromotionalBanner({ module = "product" }: Props) {
     <View style={styles.wrapper}>
       <Wrapper
         activeOpacity={0.9}
-        onPress={banner?.redirect_link ? handlePress : undefined}
+        onPress={isPressable ? handlePress : undefined}
         style={[styles.bannerBox, { aspectRatio: bannerAspectRatio }]}
       >
         {showColor ? (
@@ -100,7 +110,7 @@ function PromotionalBanner({ module = "product" }: Props) {
           <Animated.Image
             source={{ uri: bannerImageUrl! }}
             style={[StyleSheet.absoluteFill, imageAspectRatio === null ? styles.imageLoading : null]}
-            resizeMode="cover"
+            resizeMode="contain"
             onLoad={handleImageLoad}
             onError={handleImageError}
           />

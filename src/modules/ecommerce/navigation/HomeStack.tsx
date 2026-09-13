@@ -80,6 +80,11 @@ export default function HomeStack() {
       <Stack.Screen name="ReviewScreen" getComponent={() => require("../screens/ReviewScreen").default} />
       <Stack.Screen name="BuyNow" getComponent={() => require("../components/product/product_section/BuyAgain").default} />
       <Stack.Screen name="ProductScreen" getComponent={() => require("../screens/ProductScreen").default} />
+      <Stack.Screen
+        name="CampaignProducts"
+        getComponent={() => require("../screens/CampaignProductsScreen").default}
+        options={{ animation: "slide_from_right" }}
+      />
       <Stack.Screen name="TermsAndConditions" getComponent={() => require("../profile/TermsandCondition").default} />
       <Stack.Screen name="PrivacyPolicy" getComponent={() => require("../profile/PrivacyPolicy").default} />
       <Stack.Screen

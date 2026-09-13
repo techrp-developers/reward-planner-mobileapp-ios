@@ -1,4 +1,5 @@
 import React from "react";
+import { normalizeLocalCmsImageUrl } from "../../config/apiConfig";
 import { useCmsAppShell } from "../../modules/common/cms/CmsAppShellContext";
 import { ApiModuleIcon } from "../api/ModuleIconsApi";
 import { TAB_MODULE_MAP } from "../navbarConstants";
@@ -64,11 +65,19 @@ const fallbackModules: ApiModuleIcon[] = [
   },
 ];
 
+const normalizeModuleIconUrls = (module: ApiModuleIcon): ApiModuleIcon => ({
+  ...module,
+  icon_url: normalizeLocalCmsImageUrl(module.icon_url),
+  active_icon_url: normalizeLocalCmsImageUrl(module.active_icon_url),
+  dashboard_icon_url: normalizeLocalCmsImageUrl(module.dashboard_icon_url),
+});
+
 export const useModuleIcons = () => {
   const { modules: rawModules } = useCmsAppShell();
 
   const modules = React.useMemo(() => {
     const nextModules = rawModules
+      .map(normalizeModuleIconUrls)
       .filter((module) => Number(module.is_active) === 1)
       .slice()
       .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
