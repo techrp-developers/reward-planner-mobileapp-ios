@@ -46,8 +46,7 @@ const InvestmentInsuranceOverview: React.FC = () => {
   const goToInsurance = useCallback(() => {
     navigation.navigate("Home", {
       screen: "ServicesModule",
-      params: { moduleName: "Services" },
-      moduleName: "Services",
+      params: { screen: "Health" },
     });
   }, [navigation]);
 

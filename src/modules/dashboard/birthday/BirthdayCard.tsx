@@ -16,8 +16,8 @@ import type { BirthdayEmployee } from './types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const AVATAR_SIZE   = rs(64);
-const RING_SIZE     = AVATAR_SIZE + rs(6);   // 3px ring each side
+const AVATAR_SIZE = rs(64);
+const RING_SIZE = AVATAR_SIZE + rs(6);   // 3px ring each side
 
 // ─── Avatar ───────────────────────────────────────────────────────────────────
 
@@ -96,7 +96,7 @@ const BirthdayCard = memo(({
   isDark,
 }: {
   employee: BirthdayEmployee;
-  isDark:   boolean;
+  isDark: boolean;
 }) => {
   const { width } = useWindowDimensions();
   const cardWidth = width - rs(32);  // matches dashboard horizontal padding
@@ -140,21 +140,13 @@ const BirthdayCard = memo(({
         {/* ── Decorative background blobs ─────────────────────────────── */}
         <View style={styles.blobTopRight} />
         <View style={styles.blobBottomLeft} />
-        <SparkDot size={rs(5)}  top={rs(18)} right={rs(56)} color="rgba(199,210,254,0.75)"  delay={0} />
-        <SparkDot size={rs(4)}  top={rs(40)} right={rs(30)} color="rgba(255,255,255,0.5)" delay={400} />
-        <SparkDot size={rs(5)}  bottom={rs(22)} right={rs(72)} color="rgba(129,140,248,0.75)" delay={800} />
-        <SparkDot size={rs(3)}  bottom={rs(40)} right={rs(20)} color="rgba(99,102,241,0.55)" delay={200} />
+        <SparkDot size={rs(5)} top={rs(18)} right={rs(56)} color="rgba(199,210,254,0.75)" delay={0} />
+        <SparkDot size={rs(4)} top={rs(40)} right={rs(30)} color="rgba(255,255,255,0.5)" delay={400} />
+        <SparkDot size={rs(5)} bottom={rs(22)} right={rs(72)} color="rgba(129,140,248,0.75)" delay={800} />
+        <SparkDot size={rs(3)} bottom={rs(40)} right={rs(20)} color="rgba(99,102,241,0.55)" delay={200} />
 
         {/* ── Glassmorphism inner panel ────────────────────────────────── */}
         <View style={styles.glass}>
-
-          {/* Celebration chip — top row */}
-          <View style={styles.chipRow}>
-            <View style={styles.chip}>
-              <MaterialCommunityIcons name="cake-variant" size={fs(12)} color="#C7D2FE" />
-              <Text style={styles.chipText}>Happy Birthday!</Text>
-            </View>
-          </View>
 
           {/* Main content row: avatar left, info right */}
           <View style={styles.contentRow}>
@@ -172,6 +164,12 @@ const BirthdayCard = memo(({
 
             {/* Text content */}
             <View style={styles.textSection}>
+              <View style={styles.chipRow}>
+                <View style={styles.chip}>
+                  <MaterialCommunityIcons name="cake-variant" size={fs(12)} color="#C7D2FE" />
+                  <Text style={styles.chipText}>Happy Birthday!</Text>
+                </View>
+              </View>
               <Text style={styles.nameText} numberOfLines={1}>
                 {employee.name}
               </Text>
@@ -263,7 +261,7 @@ const styles = StyleSheet.create({
   // ── Celebration chip ─────────────────────────────────────────────────────────
   chipRow: {
     flexDirection: 'row',
-    marginBottom: rs(10),
+    marginBottom: rs(8),
   },
   chip: {
     flexDirection: 'row',
@@ -296,6 +294,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: rs(6),
     flexShrink: 0,
+    marginTop: rs(8),
   },
   avatarRing: {
     alignItems: 'center',

@@ -8,11 +8,12 @@ import {
   Platform,
   ImageBackground,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { rs, fs } from "../../../utils/responsive";
 import { useStepTracker, StepDataState } from "../../step_counter/component/StepCode/useStepTracker";
+import { useDashboardQuery, useTodaySummaryQuery } from "../../step_counter/api/useFitnessQueries";
 import { useAppTheme } from "../../../theme/ThemeContext";
 import stepcounter from "../../../assets/homepage/step_Counter.jpeg";
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -79,11 +80,24 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
     refreshSteps,
     requestStepsPermission,
   } = useStepTracker();
+  const todaySteps = totalSteps;
+  const dashboardQuery = useDashboardQuery();
+  const summaryQuery = useTodaySummaryQuery();
+  const refetchDashboard = dashboardQuery.refetch;
+  const refetchSummary = summaryQuery.refetch;
+
+  useFocusEffect(useCallback(() => {
+    void refreshSteps();
+    void refetchDashboard();
+    void refetchSummary();
+    const interval = setInterval(() => { void refreshSteps(); }, 60_000);
+    return () => clearInterval(interval);
+  }, [refreshSteps, refetchDashboard, refetchSummary]));
 
   const targetSteps = useMemo(() => {
-    const value = Number(goalSteps);
+    const value = Number(summaryQuery.data?.data?.goal_steps || dashboardQuery.data?.data?.goal_steps || goalSteps);
     return Number.isFinite(value) && value > 0 ? Math.round(value) : DEFAULT_GOAL_STEPS;
-  }, [goalSteps]);
+  }, [dashboardQuery.data, goalSteps, summaryQuery.data]);
 
   const layout = useMemo(() => {
     const horizontalPadding = rs(width >= 768 ? 24 : 16);
@@ -93,8 +107,8 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
   }, [width]);
 
   const progressPercent = useMemo(
-    () => Math.min((totalSteps / targetSteps) * 100, 100),
-    [totalSteps, targetSteps],
+    () => Math.min((todaySteps / targetSteps) * 100, 100),
+    [todaySteps, targetSteps],
   );
 
   const goToRewards = useCallback(() => {
@@ -103,9 +117,9 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
   }, [navigation]);
 
   const goalPercent = Math.round(progressPercent);
-  const calories = Math.max(0, Math.round(totalSteps * 0.049));
-  const distanceKm = Math.max(0, totalSteps * 0.00074);
-  const activeMinutes = Math.max(0, Math.round(totalSteps / 115));
+  const calories = Math.max(0, Math.round(todaySteps * 0.04));
+  const distanceKm = Math.max(0, todaySteps * 0.0008);
+  const activeMinutes = todaySteps > 0 ? Math.max(1, Math.floor(todaySteps / 1000)) : 0;
   const progressBarWidth = `${progressPercent}%` as `${number}%`;
   const titleColor = isDark ? "#F8FAFC" : "#0F172A";
   const mutedColor = isDark ? "#CBD5E1" : "#64748B";
@@ -149,7 +163,7 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
             <View style={styles.stepsColumn}>
               <View style={styles.stepsLine}>
                 <Text style={[styles.stepsValue, { color: titleColor }]}>
-                  {totalSteps.toLocaleString("en-IN")}
+                  {todaySteps.toLocaleString("en-IN")}
                 </Text>
                 <Text style={[styles.stepsWord, { color: mutedColor }]}>steps</Text>
               </View>

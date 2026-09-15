@@ -9,6 +9,7 @@ import React, {
 import {
   Animated,
   Dimensions,
+  Platform,
   ScrollView,
   StyleSheet,
   View,
@@ -212,7 +213,7 @@ const styles = StyleSheet.create({
   // Container matches the quote banner's outer padding exactly
   container: {
     paddingHorizontal: H_PAD,
-    paddingTop: rs(14),
+    paddingTop: rs(Platform.OS === 'ios' ? 28 : 14),
     overflow: 'visible',
   },
 

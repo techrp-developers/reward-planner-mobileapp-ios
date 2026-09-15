@@ -99,7 +99,6 @@ export default function ExclusiveOffers() {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
-    paddingVertical: 16,
     overflow: 'hidden',
     marginBottom: 20,
   },
@@ -111,6 +110,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 16,
+
   },
   banner: {
     width: 130,
