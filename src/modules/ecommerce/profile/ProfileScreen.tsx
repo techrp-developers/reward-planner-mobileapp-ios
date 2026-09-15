@@ -296,9 +296,7 @@ const ProfileScreen: React.FC = () => {
                 >
                     {/* Top bar */}
                     <View style={styles.heroBar}>
-                        <TouchableOpacity style={styles.heroBtn} onPress={() => navigation.goBack()}>
-                            <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
-                        </TouchableOpacity>
+                        <View style={styles.heroBtnGhost} />
                         <Text style={[styles.heroTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>My Profile</Text>
                         <View style={styles.heroBtnGhost} />
                     </View>
@@ -543,6 +541,29 @@ const ProfileScreen: React.FC = () => {
                 </View>
             </ScrollView>
 
+            {/* Fixed outside ScrollView so Back is always visible while dragging. */}
+            <TouchableOpacity
+                style={[
+                    styles.floatingBackButton,
+                    {
+                        top: Math.max(insets.top, Platform.OS === 'ios' ? 44 : 24) + 8,
+                        backgroundColor: isDark ? 'rgba(39,39,42,0.94)' : 'rgba(255,255,255,0.94)',
+                        borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.10)',
+                    },
+                ]}
+                onPress={() => navigation.goBack()}
+                activeOpacity={0.72}
+                hitSlop={10}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+            >
+                <MaterialCommunityIcons
+                    name="chevron-left"
+                    size={26}
+                    color={isDark ? '#FFFFFF' : '#0F172A'}
+                />
+            </TouchableOpacity>
+
             <LogoutConfirmationModal
                 visible={logoutModalVisible}
                 isLoading={logoutLoading}
@@ -719,17 +740,32 @@ const styles = StyleSheet.create({
     root: { flex: 1 },
     loader: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
+    floatingBackButton: {
+        position: 'absolute',
+        left: rs(16),
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        zIndex: 100,
+        elevation: 10,
+        shadowColor: '#000000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.16,
+        shadowRadius: 8,
+    },
+
     // ── Hero ──
     hero: {
-        paddingHorizontal: rs(20),
-        paddingBottom: rs(18),
         overflow: 'hidden',
         borderBottomLeftRadius: rs(30),
         borderBottomRightRadius: rs(30),
         borderBottomWidth: 1,
         borderBottomColor: 'rgba(148,163,184,0.16)',
     },
-    heroBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: rs(16), zIndex: 2 },
+    heroBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 2 },
     heroTitle: { fontSize: fs(16), fontWeight: '800', letterSpacing: 0 },
     heroBtn: {
         width: 38,
@@ -752,8 +788,6 @@ const styles = StyleSheet.create({
         gap: rs(16),
         zIndex: 2,
         borderRadius: rs(24),
-        paddingHorizontal: rs(14),
-        paddingVertical: rs(16),
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.14)',
@@ -775,6 +809,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.14,
         shadowRadius: 18,
         elevation: 8,
+        marginLeft: rs(16),
     },
     avatarInner: { width: '100%', height: '100%', borderRadius: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden' },
     avatarImg: { width: '100%', height: '100%' },
@@ -784,7 +819,7 @@ const styles = StyleSheet.create({
         flex: 1,
         minWidth: 0,
     },
-    heroName: { fontSize: fs(20), fontWeight: '800', letterSpacing: 0, color: '#FFFFFF' },
+    heroName: { fontSize: fs(20), fontWeight: '800', letterSpacing: 0, color: '#FFFFFF', marginTop: 20 },
     heroRole: { fontSize: fs(12), marginTop: 4, fontWeight: '600', color: 'rgba(255,255,255,0.72)' },
     heroMetrics: {
         marginTop: rs(12),
@@ -801,6 +836,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.14)',
         backgroundColor: 'rgba(255,255,255,0.10)',
+        marginBottom: rs(12),
+        marginRight: rs(16),
     },
     heroMetricIcon: {
         width: rs(28),
