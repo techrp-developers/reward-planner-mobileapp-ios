@@ -240,7 +240,13 @@ const SEARCH_PLACEHOLDERS: Record<string, string[]> = {
   dineout: ["Search bus routes", "Search bus tickets", "Search destinations"],
 };
 
-function RotatingSearchPlaceholder({ moduleKey }: { moduleKey: string }) {
+function RotatingSearchPlaceholder({
+  moduleKey,
+  color,
+}: {
+  moduleKey: string;
+  color: string;
+}) {
   const placeholders = SEARCH_PLACEHOLDERS[moduleKey] ?? SEARCH_PLACEHOLDERS.product;
   const [index, setIndex] = React.useState(0);
   const opacity = React.useRef(new Animated.Value(1)).current;
@@ -265,7 +271,7 @@ function RotatingSearchPlaceholder({ moduleKey }: { moduleKey: string }) {
 
   return (
     <Animated.Text
-      style={[styles.searchPlaceholder, { color: "#111827", opacity }]}
+      style={[styles.searchPlaceholder, { color, opacity }]}
       numberOfLines={1}
     >
       {placeholders[index]}
@@ -526,7 +532,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   }, [modules]);
 
   const moduleNormalColor = React.useMemo(
-    () => selectedModule?.normal_color || (isDark ? "#FFFFFF" : "#111827"),
+    () => isDark ? "#FFFFFF" : (selectedModule?.normal_color || "#111827"),
     [isDark, selectedModule?.normal_color],
   );
   const activeThemeColor = React.useMemo(
@@ -549,8 +555,16 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   // as translucent glass cards rather than solid boxes on top of it.
   const frostedSurface = isDark ? "rgba(20,20,20,0.55)" : "rgba(255,255,255,0.88)";
   const navbarBorder = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
-  const navbarIconColor = moduleNormalColor;
-  const navbarMutedColor = moduleNormalColor;
+  const activeBanner = banners[activeTab];
+  const navbarIconColor = activeBanner?.imageUrl
+    ? "#FFFFFF"
+    : activeBanner?.bgColor
+      ? getReadableTextColor(activeBanner.bgColor)
+      : isDark ? "#FFFFFF" : "#111827";
+  const navbarMutedColor = isDark ? "#D4D4D8" : navbarIconColor;
+  const searchSurface = isDark ? "rgba(24,24,27,0.94)" : "rgba(255,255,255,0.94)";
+  const searchContentColor = isDark ? "#F4F4F5" : "#111827";
+  const searchBorderColor = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
   const isNavigatingRef = React.useRef(false);
 
   const headerOpacity = 1;
@@ -872,20 +886,20 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
         <View style={styles.searchRow}>
           <AnimatedTouchableOpacity
             activeOpacity={0.86}
-            style={[styles.searchBar, { backgroundColor: "rgba(255,255,255,0.94)", borderColor: "rgba(0,0,0,0.08)", height: searchHeight }]}
+            style={[styles.searchBar, { backgroundColor: searchSurface, borderColor: searchBorderColor, height: searchHeight }]}
             onPress={handleSearchPress}
             hitSlop={hitSlop(6)}
           >
-            <MaterialCommunityIcons name="magnify" size={20} color="#111827" />
-            <RotatingSearchPlaceholder moduleKey={selectedModuleKey} />
+            <MaterialCommunityIcons name="magnify" size={20} color={searchContentColor} />
+            <RotatingSearchPlaceholder moduleKey={selectedModuleKey} color={searchContentColor} />
           </AnimatedTouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.85}
-            style={[styles.bellBtn, { backgroundColor: "rgba(255,255,255,0.94)", borderColor: "rgba(0,0,0,0.08)" }]}
+            style={[styles.bellBtn, { backgroundColor: searchSurface, borderColor: searchBorderColor }]}
             onPress={() => navigateToScreen("Notification")}
             hitSlop={hitSlop(8)}
           >
-            <MaterialCommunityIcons name="bell-outline" size={19} color="#111827" />
+            <MaterialCommunityIcons name="bell-outline" size={19} color={searchContentColor} />
             {hasUnreadNotifications ? <View style={styles.bellDot} /> : null}
           </TouchableOpacity>
         </View>
@@ -914,7 +928,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 moduleKey={module.module_key}
                 label={module.label}
                 activeTint={module.active_color || activeThemeColor}
-                inactiveTint={module.normal_color || navbarIconColor}
+                inactiveTint={isDark ? "#FFFFFF" : (module.normal_color || navbarIconColor)}
                 gradientStart={module.gradient_start_color}
                 gradientEnd={module.gradient_end_color}
                 itemWidth={tabItemWidth}

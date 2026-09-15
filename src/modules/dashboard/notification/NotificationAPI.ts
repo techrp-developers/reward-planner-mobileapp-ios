@@ -119,6 +119,24 @@ export const markAllNotificationsAsRead = async () => {
   }
 };
 
+// Associate the current Firebase installation token with the signed-in user.
+// Let failures propagate so FCMService does not cache a token that the backend
+// never received; it can then retry on the next setup/token refresh.
+export const registerFCMToken = async (fcmToken: string): Promise<void> => {
+  try {
+    const headers = await getAuthHeaders();
+
+    await axios.put(
+      `${BASE_API_URL}/auth/update-fcm-token`,
+      { fcm_token: fcmToken },
+      { headers },
+    );
+  } catch (error: any) {
+    console.warn('[FCM] registerFCMToken error:', error?.response || error);
+    throw error?.response?.data || error;
+  }
+};
+
 export const deleteNotification = async (notificationId: number) => {
   try {
     const headers = await getAuthHeaders();

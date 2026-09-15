@@ -9,7 +9,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/query/queryClient';
 import { AuthProvider } from './src/modules/common/auth/context/AuthContext';
 import { AppThemeProvider } from './src/theme/ThemeContext';
-import { navigationRef } from './src/navigation/navigationRef';
+import { flushPendingNavigation, navigationRef } from './src/navigation/navigationRef';
 import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
 import { CmsAppShellProvider } from './src/modules/common/cms/CmsAppShellContext';
 
@@ -89,7 +89,11 @@ export default function App() {
               <AlertProvider>
                 <AuthProvider>
                   <CartProvider>
-                    <NavigationContainer linking={linking} ref={navigationRef}>
+                    <NavigationContainer
+                      linking={linking}
+                      ref={navigationRef}
+                      onReady={flushPendingNavigation}
+                    >
                       <AlertContainer />
                       <NetworkGuard>
                         <RootNavigator />

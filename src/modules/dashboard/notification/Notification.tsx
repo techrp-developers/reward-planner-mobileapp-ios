@@ -455,8 +455,7 @@ const styles = StyleSheet.create({
   summaryCard: {
     minHeight: 82,
     borderRadius: 18,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
+
     marginBottom: 14,
     flexDirection: "row",
     alignItems: "center",
@@ -473,7 +472,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.17)",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 13,
+    marginLeft: 13,
+    marginRight: 12,
   },
   summaryCopy: {
     flex: 1,
@@ -490,6 +490,7 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "800",
     letterSpacing: 0,
+
   },
   sectionHeader: {
     marginBottom: 10,

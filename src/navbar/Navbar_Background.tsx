@@ -73,7 +73,7 @@ export default function Navbar_Background({
   // no color/image has been published for a module at all, fall back to a
   // theme-aware surface instead of "transparent", which let whatever sits
   // behind Navbar show through and read as a stuck-white bar in dark mode.
-  const defaultBgColor = "transparent";
+  const defaultBgColor = isDark ? "#09090B" : "#FFFFFF";
 
   const renderLayer = (tab: TopTab, opacity?: Animated.Value | number) => {
     const banner = banners[tab];
