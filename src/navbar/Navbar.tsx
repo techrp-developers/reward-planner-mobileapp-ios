@@ -103,9 +103,9 @@ const getReadableTextColor = (backgroundColor: string): string => {
     const normalized =
       hex.length === 3
         ? hex
-            .split("")
-            .map((char) => char + char)
-            .join("")
+          .split("")
+          .map((char) => char + char)
+          .join("")
         : hex.slice(0, 6);
 
     if (normalized.length === 6) {
@@ -663,14 +663,14 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
       // then navigates inside ModuleStack) and from within MainLayout (already on Home –
       // React Navigation detects the screen is focused and updates the nested state directly).
       // No handleNavigateWithPrefetch wrapper so the switch is instant (<1 frame).
-       if (onModuleChange) {
-         onModuleChange(tab);
-       } else {
-         (navigation as any).navigate("Home", {
-           screen: SCREEN[tab],
-           params: { moduleName: tab },
-         });
-       }
+      if (onModuleChange) {
+        onModuleChange(tab);
+      } else {
+        (navigation as any).navigate("Home", {
+          screen: SCREEN[tab],
+          params: { moduleName: tab },
+        });
+      }
 
       requestAnimationFrame(() => {
         isNavigatingRef.current = false;
@@ -821,7 +821,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
           },
         ]}
       >
-        
+
         <View style={styles.topRow}>
           <AnimatedTouchableOpacity
             activeOpacity={0.9}

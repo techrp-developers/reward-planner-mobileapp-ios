@@ -96,17 +96,11 @@ export default function Navbar_Background({
         {showImage ? (
           <Image
             source={{ uri: imageUrl as string }}
-            style={{
-              position: "absolute",
-              left: 0,
-              bottom: 0,
-              width,
-              height: expandedImageHeight,
-            }}
-            // `contain` preserves the complete 1317 × 551 artwork. Bottom
-            // anchoring keeps the safe-area allowance above the artwork, so
-            // its lower edge joins the promotion without a blank strip.
-            resizeMode="contain"
+            style={StyleSheet.absoluteFill}
+            // Fill the complete navbar frame, including the iOS safe area,
+            // so no black band appears behind the camera/status bar. `cover`
+            // preserves the image proportions without stretching.
+            resizeMode="cover"
             onError={() => {
               if (__DEV__) {
                 console.log("[CMS] Navbar image failed:", imageUrl);
