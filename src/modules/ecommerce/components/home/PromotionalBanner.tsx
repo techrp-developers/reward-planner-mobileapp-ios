@@ -9,11 +9,9 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
 
-// Matches the old fixed `width * 0.92` banner proportions — used both as the
-// pure color fallback ratio (no image to measure) and as the placeholder
-// ratio shown for the brief moment before a real image's natural dimensions
-// are known.
-const FALLBACK_ASPECT_RATIO = 1 / 0.92;
+// Native promotion artwork: 2048 × 1008. This is also the loading ratio,
+// while CMS images still replace it with their measured natural ratio.
+const FALLBACK_ASPECT_RATIO = 2048 / 1008;
 const MIN_ASPECT_RATIO = 0.45;
 const MAX_ASPECT_RATIO = 2.2;
 
@@ -131,6 +129,8 @@ export const prefetchPromotionalBanner = (module: CmsModuleKey = "product") =>
 
 const styles = StyleSheet.create({
   wrapper: {
+    marginTop: 0,
+    paddingTop: 0,
     paddingBottom: 8,
   },
 
@@ -138,11 +138,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "flex-end",
     overflow: "hidden",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 3 },
+    marginTop: 0,
   },
 
   // Dims the image slightly while it's still sized to the placeholder ratio

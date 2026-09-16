@@ -6,7 +6,6 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
 import { NavbarBannerMap } from "./api/NavbarContentApi";
 import { TopTab } from "./navbarConstants";
 import { rs } from "../utils/responsive";
@@ -19,7 +18,9 @@ type Props = {
   scrollY: Animated.Value;
 };
 
-export const NAVBAR_BACKGROUND_HEIGHT = 230;
+// Native CMS navbar artwork: 1317 × 551. The rendered height is derived
+// from the current device width instead of treating source pixels as points.
+export const NAVBAR_BACKGROUND_ASPECT_RATIO = 1317 / 551;
 // Collapsed state still needs to cover the pinned module-tabs row once the
 // profile/search block collapses away above it.
 export const NAVBAR_COLLAPSED_BACKGROUND_HEIGHT = 105;
@@ -33,10 +34,11 @@ export default function Navbar_Background({
   scrollY,
 }: Props) {
   const { width } = useWindowDimensions();
+  const expandedImageHeight = width / NAVBAR_BACKGROUND_ASPECT_RATIO;
   const animatedHeight = scrollY.interpolate({
     inputRange: [0, NAVBAR_COLLAPSE_DISTANCE],
     outputRange: [
-      NAVBAR_BACKGROUND_HEIGHT + insetsTop,
+      expandedImageHeight + insetsTop,
       NAVBAR_COLLAPSED_BACKGROUND_HEIGHT + insetsTop,
     ],
     extrapolate: "clamp",
@@ -63,9 +65,6 @@ export default function Navbar_Background({
 
   const currentBanner = banners[activeTab];
   const previousBanner = banners[previousTab];
-  // The dark scrim only exists to keep white navbar text legible over a
-  // published banner photo — applying it unconditionally muddied the
-  // default (no CMS image) background so it never read as pure white/dark.
   const hasVisibleImage = (banner: typeof currentBanner) =>
     Boolean(banner?.imageUrl && !failedImages[banner.imageUrl]);
   const showOverlay = hasVisibleImage(currentBanner) || hasVisibleImage(previousBanner);
@@ -97,8 +96,17 @@ export default function Navbar_Background({
         {showImage ? (
           <Image
             source={{ uri: imageUrl as string }}
-            style={StyleSheet.absoluteFill}
-            resizeMode="cover"
+            style={{
+              position: "absolute",
+              left: 0,
+              bottom: 0,
+              width,
+              height: expandedImageHeight,
+            }}
+            // `contain` preserves the complete 1317 × 551 artwork. Bottom
+            // anchoring keeps the safe-area allowance above the artwork, so
+            // its lower edge joins the promotion without a blank strip.
+            resizeMode="contain"
             onError={() => {
               if (__DEV__) {
                 console.log("[CMS] Navbar image failed:", imageUrl);
@@ -123,10 +131,10 @@ export default function Navbar_Background({
       width,
       height: animatedHeight,
       backgroundColor: resolvedBgColor,
-      shadowOpacity: hasDynamicBackground ? 0.12 : 0,
-      elevation: hasDynamicBackground ? 6 : 0,
+      shadowOpacity: hasDynamicBackground && !showOverlay ? 0.12 : 0,
+      elevation: hasDynamicBackground && !showOverlay ? 6 : 0,
     }),
-    [animatedHeight, hasDynamicBackground, resolvedBgColor, width],
+    [animatedHeight, hasDynamicBackground, resolvedBgColor, showOverlay, width],
   );
 
   return (
@@ -140,20 +148,9 @@ export default function Navbar_Background({
         backgroundFrameStyle,
       ]}
     >
-      <View style={styles.root}>
+      <View style={[styles.root, showOverlay && styles.imageRoot]}>
         {previousTab !== activeTab ? renderLayer(previousTab, 1) : null}
         {renderLayer(activeTab, previousTab === activeTab ? 1 : fade)}
-
-        {showOverlay ? (
-          <LinearGradient
-            colors={
-              isDark
-                ? ["rgba(0,0,0,0.12)", "rgba(0,0,0,0.58)"]
-                : ["rgba(0,0,0,0.04)", "rgba(0,0,0,0.35)"]
-            }
-            style={StyleSheet.absoluteFill}
-          />
-        ) : null}
       </View>
     </Animated.View>
   );
@@ -177,5 +174,9 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     borderBottomLeftRadius: rs(28),
     borderBottomRightRadius: rs(28),
+  },
+  imageRoot: {
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
   },
 });

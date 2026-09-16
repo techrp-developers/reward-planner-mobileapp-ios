@@ -793,7 +793,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   }, [loadNavbarUser]);
 
   return (
-    <View style={[styles.wrapper, { paddingTop: insets.top + rs(14) }]}>
+    <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       <StatusBar
         barStyle={isDark ? "light-content" : "dark-content"}
         translucent
@@ -946,8 +946,10 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
 
 const styles = StyleSheet.create({
   wrapper: {
-    // paddingTop set inline: insets.top (safe area / status bar height,
-    // needed since StatusBar is translucent) + rs(14) breathing room.
+    // The safe-area inset is applied inline because the status bar is
+    // translucent. Extra top padding would make this content wrapper taller
+    // than the aspect-ratio navbar artwork and expose a strip above the
+    // promotion banner.
   },
 
   searchActionsRow: {
@@ -1167,7 +1169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: "100%",
     paddingHorizontal: NAV_TABS_H_PADDING,
-    paddingTop: rs(6),
+    paddingTop: 0,
     paddingBottom: 0,
     gap: NAV_TAB_GAP,
   },
