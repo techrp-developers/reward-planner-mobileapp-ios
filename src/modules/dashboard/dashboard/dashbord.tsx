@@ -8,7 +8,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import HeaderComponent, { type SearchOverlayState } from '../header/HeaderComponent';
 import SearchDropdown from '../header/SearchDropdown';
@@ -95,6 +95,7 @@ const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
 function Dashbord() {
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
   const { totalQuantity } = useCart();
   const { isAuthenticated, user } = useAuth();
   const dashboardLayout = useDashboardLayout('main', MAIN_DASHBOARD_SECTION_KEYS);
@@ -121,11 +122,10 @@ function Dashbord() {
     () => dashboardHeaderCache?.birthdays ?? [],
   );
   const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
-  const [statusTrayVisible, setStatusTrayVisible] = useState(false);
   const statusFeedQuery = useQuery({
     queryKey: STATUS_FEED_QUERY_KEY,
     queryFn: fetchStatusFeed,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && isFocused,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
@@ -309,9 +309,8 @@ function Dashbord() {
   );
 
   const handleCenterPress = useCallback(() => {
-    setStatusTrayVisible(true);
-    statusFeedQuery.refetch();
-  }, [statusFeedQuery.refetch]);
+    navigation.navigate('Dashboard');
+  }, [navigation]);
 
   const handleStatusViewed = useCallback((statusId: number) => {
     queryClient.setQueryData<StatusFeedGroup[]>(STATUS_FEED_QUERY_KEY, current =>
@@ -449,6 +448,16 @@ function Dashbord() {
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
+        <StatusTray
+          groups={statusFeedQuery.data ?? []}
+          loading={statusFeedQuery.isPending && statusFeedQuery.isFetching}
+          error={statusFeedQuery.isError}
+          currentUserId={user?.user_id ?? null}
+          currentUserName={headerUserName}
+          currentUserImage={headerUserImage}
+          onRetry={() => statusFeedQuery.refetch()}
+          onViewed={handleStatusViewed}
+        />
         {dashboardLayout.sections.map(({ key }) => {
           switch (key as MainDashboardSectionKey) {
             case 'header':
@@ -509,15 +518,6 @@ function Dashbord() {
         onTabPress={handleTabPress}
         onCenterPress={handleCenterPress}
         hasUnviewedStatus={hasUnviewedStatus}
-      />
-      <StatusTray
-        visible={statusTrayVisible}
-        groups={statusFeedQuery.data ?? []}
-        loading={statusFeedQuery.isPending && statusFeedQuery.isFetching}
-        error={statusFeedQuery.isError}
-        onClose={() => setStatusTrayVisible(false)}
-        onRetry={() => statusFeedQuery.refetch()}
-        onViewed={handleStatusViewed}
       />
       {openingModule && (
         <View
