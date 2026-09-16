@@ -7,7 +7,6 @@ import {
   onTokenRefresh,
   onMessage,
   setBackgroundMessageHandler,
-  registerDeviceForRemoteMessages,
   onNotificationOpenedApp,
   getInitialNotification,
 } from '@react-native-firebase/messaging';
@@ -81,19 +80,18 @@ async function getAndRegisterToken(): Promise<string | null> {
       return null;
     }
 
-    // iOS requires explicit APNs registration before getToken works.
-    await registerDeviceForRemoteMessages(getMessaging());
-
-    // Verify APNs token is present — if null on a real device, APNs is broken.
+    // RNFirebase auto-registers with APNs on iOS (firebase.json keeps the default).
+    // Verify the APNs token before requesting an FCM token.
     if (Platform.OS === 'ios') {
-      const apnsToken = await getAPNSToken(getMessaging());
+      let apnsToken = await getAPNSToken(getMessaging());
+      // Auto-registration can finish just after notification permission resolves.
+      for (let attempt = 0; attempt < 6 && !apnsToken; attempt++) {
+        await new Promise<void>(resolve => setTimeout(resolve, 500));
+        apnsToken = await getAPNSToken(getMessaging());
+      }
       console.log('[FCM] APNs token:', apnsToken ?? 'NULL — check Push Notifications capability and provisioning profile');
       if (!apnsToken) {
-        console.warn('[FCM] APNs token is null. Cannot get FCM token. Possible causes:\n' +
-          '  1. Running on Simulator (APNs not supported)\n' +
-          '  2. Push Notifications capability missing in Xcode\n' +
-          '  3. Provisioning profile does not include push entitlement\n' +
-          '  4. APNs Auth Key not uploaded in Firebase Console');
+        console.warn('[FCM] APNs token is null. Test on a physical iPhone and check Push Notifications capability and the provisioning profile.');
         return null;
       }
     }

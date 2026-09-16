@@ -35,6 +35,8 @@ type Props = {
   onRetry: () => void;
   onViewed: (statusId: number) => void;
   profileMode?: boolean;
+  headerMode?: boolean;
+  headerTextColor?: string;
 };
 
 const UNSEEN = ["#4B0082", "#6A00FF", "#FF2D7A", "#FFC83D"];
@@ -81,6 +83,8 @@ export default function StatusTray({
   onRetry,
   onViewed,
   profileMode = false,
+  headerMode = false,
+  headerTextColor,
 }: Props) {
   const [selected, setSelected] = React.useState<{
     group: number;
@@ -108,6 +112,7 @@ export default function StatusTray({
     (group: number, status: number) => {
       const item = ordered[group]?.statuses[status];
       if (!item) return;
+      if (__DEV__) console.log('👆 [STATUS] Status tray opened');
       setSelected({ group, status });
       if (!item.viewed) onViewed(item.id);
     },
@@ -193,7 +198,12 @@ export default function StatusTray({
             )}
           </View>
         </LinearGradient>
-        <Text style={styles.label} numberOfLines={1}>
+        {own && headerMode && (
+          <Pressable onPress={() => setCreating(true)} style={styles.headerPlus} accessibilityLabel="Add Status">
+            <MaterialCommunityIcons name="plus" size={rs(16)} color="#6A00FF" />
+          </Pressable>
+        )}
+        <Text style={[styles.label, headerMode && { color: headerTextColor || '#111827' }]} numberOfLines={1}>
           {own ? "Your Status" : group.user.name || "User"}
         </Text>
       </Pressable>
@@ -212,18 +222,13 @@ export default function StatusTray({
   };
 
   return (
-    <View style={styles.section}>
-      <View style={styles.head}>
-        <Text style={styles.title}>
-          {profileMode ? "My Status" : "Status / Updates"}
-        </Text>
-        {profileMode && (
+    <View style={[styles.section, headerMode && styles.headerSection]}>
+      {profileMode && <View style={styles.head}>
           <Pressable onPress={() => setCreating(true)} style={styles.addButton}>
             <MaterialCommunityIcons name="plus" size={16} color="#6A00FF" />
             <Text style={styles.addText}>Add Status</Text>
           </Pressable>
-        )}
-      </View>
+      </View>}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -245,7 +250,7 @@ export default function StatusTray({
                 />
               </View>
             </View>
-            <Text style={styles.label}>Your Status</Text>
+            <Text style={[styles.label, headerMode && { color: headerTextColor || '#111827' }]}>Your Status</Text>
           </Pressable>
         )}
         {others.map((group, index) =>
@@ -292,8 +297,8 @@ export default function StatusTray({
                 {item.type === "text"
                   ? item.text || "Text status"
                   : item.type === "video"
-                  ? "Video status"
-                  : "Photo status"}
+                    ? "Video status"
+                    : "Photo status"}
               </Text>
             </Pressable>
           ))}
@@ -378,8 +383,8 @@ export default function StatusTray({
                             index < selected.status
                               ? "100%"
                               : index > selected.status
-                              ? "0%"
-                              : progress.interpolate({
+                                ? "0%"
+                                : progress.interpolate({
                                   inputRange: [0, 1],
                                   outputRange: ["0%", "100%"],
                                 }),
@@ -564,6 +569,15 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 },
   },
+  headerSection: {
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+    marginHorizontal: 0,
+    marginTop: 0,
+    paddingVertical: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   head: {
     paddingHorizontal: rs(16),
     marginBottom: rs(12),
@@ -605,6 +619,20 @@ const styles = StyleSheet.create({
     borderColor: "#FFC83D",
     alignItems: "center",
     justifyContent: "center",
+  },
+  headerPlus: {
+    position: 'absolute',
+    right: rs(2),
+    top: rs(45),
+    width: rs(24),
+    height: rs(24),
+    borderRadius: rs(12),
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#FFC83D',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
   label: {
     color: "#111827",

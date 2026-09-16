@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -37,7 +37,7 @@ import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig
 import OffersBanner from '../../ecommerce/components/home/OffersBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
-import { fetchStatusFeed, markStatusViewed, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
+import { fetchStatusFeed, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
 import type { StatusFeedGroup } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
 
@@ -92,6 +92,11 @@ const MemoBirthdayCarousel = memo(BirthdayCarousel);
 const MemoOffersBanner = memo(OffersBanner);
 const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
 
+const fetchDashboardStatusFeed = () => {
+  if (__DEV__) console.log('🔄 [STATUS] Dashboard requesting status feed');
+  return fetchStatusFeed();
+};
+
 function Dashbord() {
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
@@ -116,6 +121,8 @@ function Dashbord() {
     return Number.isFinite(initialGoal) && initialGoal > 0 ? initialGoal : 5000;
   });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const headerCollapsedRef = useRef(false);
   const [searchOverlay, setSearchOverlay] = useState<SearchOverlayState | null>(null);
   const [searchDismissSignal, setSearchDismissSignal] = useState(0);
   const [birthdays, setBirthdays] = useState<BirthdayEmployee[]>(
@@ -124,11 +131,16 @@ function Dashbord() {
   const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
   const statusFeedQuery = useQuery({
     queryKey: STATUS_FEED_QUERY_KEY,
-    queryFn: fetchStatusFeed,
+    queryFn: fetchDashboardStatusFeed,
     enabled: isAuthenticated && isFocused,
     staleTime: 30_000,
     refetchInterval: 60_000,
   });
+  useEffect(() => {
+    if (__DEV__ && statusFeedQuery.data) {
+      console.log('📥 [STATUS] Dashboard status feed data:', sanitizeStatusDebugData(statusFeedQuery.data));
+    }
+  }, [statusFeedQuery.data]);
   const hasUnviewedStatus = (statusFeedQuery.data ?? []).some(group =>
     group.has_unviewed || group.statuses.some(status => !status.viewed),
   );
@@ -313,6 +325,10 @@ function Dashbord() {
   }, [navigation]);
 
   const handleStatusViewed = useCallback((statusId: number) => {
+    if (__DEV__) {
+      console.log('👁️ [STATUS] User viewed status');
+      console.log('🆔 statusId:', statusId);
+    }
     queryClient.setQueryData<StatusFeedGroup[]>(STATUS_FEED_QUERY_KEY, current =>
       (current ?? []).map(group => ({
         ...group,
@@ -329,6 +345,18 @@ function Dashbord() {
     if (!isSearchOpen) return;
     setSearchDismissSignal((value) => value + 1);
   }, [isSearchOpen]);
+
+  const handleDashboardScroll = useCallback((offsetY: number) => {
+    const nextCollapsed = offsetY > rs(40)
+      ? true
+      : offsetY < rs(12)
+        ? false
+        : headerCollapsedRef.current;
+    if (nextCollapsed !== headerCollapsedRef.current) {
+      headerCollapsedRef.current = nextCollapsed;
+      setIsHeaderCollapsed(nextCollapsed);
+    }
+  }, []);
 
   // Default (no CMS navbar_background configured for this module) header
   // background — matches the light, near-white reference design. Only used
@@ -358,8 +386,25 @@ function Dashbord() {
       <>
         <HeaderComponent
           userName={headerUserName}
-          userImageUri={headerUserImage ?? undefined}
+          collapsed={isHeaderCollapsed}
           companyLogoUri={headerCompanyLogo ?? undefined}
+          statusContent={
+            <StatusTray
+              headerMode
+              headerTextColor={headerTextColor ?? (isDark ? '#F8FAFC' : '#111827')}
+              groups={statusFeedQuery.data ?? []}
+              loading={statusFeedQuery.isPending && statusFeedQuery.isFetching}
+              error={statusFeedQuery.isError}
+              currentUserId={user?.user_id ?? null}
+              currentUserName={headerUserName}
+              currentUserImage={headerUserImage}
+              onRetry={() => {
+                if (__DEV__) console.log('🔄 [STATUS] Refetching status feed');
+                statusFeedQuery.refetch();
+              }}
+              onViewed={handleStatusViewed}
+            />
+          }
           surface="transparent"
           textColor={headerTextColor}
           dismissSignal={searchDismissSignal}
@@ -379,7 +424,7 @@ function Dashbord() {
           key={key}
           source={{ uri: mobileDashboardImageUrl }}
           resizeMode="cover"
-          style={styles.topSection}
+          style={[styles.topSection, { backgroundColor: isDark ? '#09090B' : '#F8FAFC' }]}
           imageStyle={styles.topSectionImage}
         >
           <LinearGradient
@@ -401,7 +446,7 @@ function Dashbord() {
           colors={[mobileDashboardColor, darkenHexColor(mobileDashboardColor, 0.28)]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.topSection}
+          style={[styles.topSection, { backgroundColor: mobileDashboardColor }]}
         >
           {headerContent}
         </LinearGradient>
@@ -409,14 +454,16 @@ function Dashbord() {
     }
 
     return (
-      <LinearGradient key={key} colors={topSectionGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.topSection}>
+      <LinearGradient key={key} colors={topSectionGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.topSection, { backgroundColor: isDark ? '#09090B' : '#F8FAFC' }]}>
         {headerContent}
       </LinearGradient>
     );
   }, [
     headerCompanyLogo,
+    isHeaderCollapsed,
     headerUserImage,
     headerUserName,
+    handleStatusViewed,
     isDark,
     mobileDashboardColor,
     mobileDashboardImageUrl,
@@ -424,7 +471,13 @@ function Dashbord() {
     navigation,
     rewardPoints,
     searchDismissSignal,
+    statusFeedQuery.data,
+    statusFeedQuery.isError,
+    statusFeedQuery.isFetching,
+    statusFeedQuery.isPending,
+    statusFeedQuery.refetch,
     topSectionGradient,
+    user?.user_id,
   ]);
 
   return (
@@ -443,21 +496,13 @@ function Dashbord() {
         contentContainerStyle={[styles.scrollContent, { paddingBottom: rs(16) + TAB_BAR_HEIGHT }]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isSearchOpen}
+        onScroll={event => handleDashboardScroll(event.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
         onScrollBeginDrag={dismissSearch}
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
-        <StatusTray
-          groups={statusFeedQuery.data ?? []}
-          loading={statusFeedQuery.isPending && statusFeedQuery.isFetching}
-          error={statusFeedQuery.isError}
-          currentUserId={user?.user_id ?? null}
-          currentUserName={headerUserName}
-          currentUserImage={headerUserImage}
-          onRetry={() => statusFeedQuery.refetch()}
-          onViewed={handleStatusViewed}
-        />
         {dashboardLayout.sections.map(({ key }) => {
           switch (key as MainDashboardSectionKey) {
             case 'header':
@@ -493,21 +538,23 @@ function Dashbord() {
         })}
       </ScrollView>
 
-      {searchOverlay?.visible && (
+      {isSearchOpen && searchOverlay && (
         <View style={styles.searchOverlay} pointerEvents="box-none">
           <Pressable
             style={[styles.searchDismissLayer, { top: searchOverlay.top }]}
             onPress={searchOverlay.onClose}
           />
-          <View style={[styles.searchDropdownOverlay, { top: searchOverlay.top }]}>
-            <SearchDropdown
-              query={searchOverlay.query}
-              results={searchOverlay.results}
-              loading={searchOverlay.loading}
-              isEmpty={searchOverlay.isEmpty}
-              onClose={searchOverlay.onClose}
-            />
-          </View>
+          {searchOverlay.visible && (
+            <View style={[styles.searchDropdownOverlay, { top: searchOverlay.top }]}>
+              <SearchDropdown
+                query={searchOverlay.query}
+                results={searchOverlay.results}
+                loading={searchOverlay.loading}
+                isEmpty={searchOverlay.isEmpty}
+                onClose={searchOverlay.onClose}
+              />
+            </View>
+          )}
         </View>
       )}
 
