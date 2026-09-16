@@ -28,6 +28,31 @@
         }
       }
     },
+    "@react-native-camera-roll/camera-roll": {
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-camera-roll/camera-roll",
+      "name": "@react-native-camera-roll/camera-roll",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-camera-roll/camera-roll/react-native-cameraroll.podspec",
+          "version": "7.10.2",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-camera-roll/camera-roll/android",
+          "packageImportPath": "import com.reactnativecommunity.cameraroll.CameraRollPackage;",
+          "packageInstance": "new CameraRollPackage()",
+          "buildTypes": [],
+          "libraryName": "rncameraroll",
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-camera-roll/camera-roll/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "@react-native-community/geolocation": {
       "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/@react-native-community/geolocation",
       "name": "@react-native-community/geolocation",
@@ -652,6 +677,31 @@
         }
       }
     },
+    "react-native-view-shot": {
+      "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-view-shot",
+      "name": "react-native-view-shot",
+      "platforms": {
+        "ios": {
+          "podspecPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-view-shot/react-native-view-shot.podspec",
+          "version": "5.1.1",
+          "configurations": [],
+          "scriptPhases": []
+        },
+        "android": {
+          "sourceDir": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-view-shot/android",
+          "packageImportPath": "import fr.greweb.reactnativeviewshot.RNViewShotPackage;",
+          "packageInstance": "new RNViewShotPackage()",
+          "buildTypes": [],
+          "libraryName": "rnviewshot",
+          "componentDescriptors": [],
+          "cmakeListsPath": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-view-shot/android/build/generated/source/codegen/jni/CMakeLists.txt",
+          "cxxModuleCMakeListsModuleName": null,
+          "cxxModuleCMakeListsPath": null,
+          "cxxModuleHeaderName": null,
+          "isPureCxxDependency": false
+        }
+      }
+    },
     "react-native-worklets": {
       "root": "/Users/ppbuddy/Desktop/reward-planner-mobileapp-ios-sahil-code/node_modules/react-native-worklets",
       "name": "react-native-worklets",
@@ -896,8 +946,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "vscode"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--binary-path <string>",
@@ -1064,8 +1113,7 @@
         },
         {
           "name": "--terminal <string>",
-          "description": "Launches the Metro Bundler in a new window using the specified terminal path.",
-          "default": "vscode"
+          "description": "Launches the Metro Bundler in a new window using the specified terminal path."
         },
         {
           "name": "--appId <string>",

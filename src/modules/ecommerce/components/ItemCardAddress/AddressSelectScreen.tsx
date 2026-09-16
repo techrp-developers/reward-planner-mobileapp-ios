@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import {
-  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -20,7 +19,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
 import ProductHeadColor from "../../constants/heading/Poduct_Head_Color";
 import { deleteAddress, fetchAddressByID, fetchAllAddress, updateAddress } from "../../api/AddressApi";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useQueryClient } from "@tanstack/react-query";

@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   ScrollView,
+  AppState,
   Platform,
   Pressable,
   ImageBackground,
@@ -134,8 +135,24 @@ function Dashbord() {
     queryFn: fetchDashboardStatusFeed,
     enabled: isAuthenticated && isFocused,
     staleTime: 30_000,
-    refetchInterval: 60_000,
+    retry: false,
+    // Keep stories fresh while the Dashboard is visible, but don't poll a
+    // missing live route every 15 seconds until the backend deploys it.
+    refetchInterval: query =>
+      axios.isAxiosError(query.state.error) && query.state.error.response?.status === 404
+        ? false
+        : 15_000,
+    refetchIntervalInBackground: false,
   });
+  useEffect(() => {
+    if (!isAuthenticated || !isFocused) return;
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'active') {
+        queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+      }
+    });
+    return () => subscription.remove();
+  }, [isAuthenticated, isFocused]);
   useEffect(() => {
     if (__DEV__ && statusFeedQuery.data) {
       console.log('📥 [STATUS] Dashboard status feed data:', sanitizeStatusDebugData(statusFeedQuery.data));
@@ -283,6 +300,12 @@ function Dashbord() {
     setOpeningModule(null);
     loadHeaderInfo();
   }, [loadHeaderInfo]));
+
+  useFocusEffect(useCallback(() => {
+    if (isAuthenticated) {
+      queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+    }
+  }, [isAuthenticated]));
 
   const handleExploreModulePress = useCallback((tab: ExploreServiceTab) => {
     setOpeningModule(tab);

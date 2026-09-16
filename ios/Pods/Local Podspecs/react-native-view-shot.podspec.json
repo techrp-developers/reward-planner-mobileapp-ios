@@ -1,0 +1,57 @@
+{
+  "name": "react-native-view-shot",
+  "version": "5.1.1",
+  "summary": "Capture a React Native view to an image",
+  "license": "MIT",
+  "authors": "Gaëtan Renaudeau <renaudeau.gaetan@gmail.com>",
+  "homepage": "https://github.com/gre/react-native-view-shot",
+  "platforms": {
+    "ios": "15.1"
+  },
+  "source": {
+    "git": "https://github.com/gre/react-native-view-shot.git",
+    "tag": "v5.1.1"
+  },
+  "source_files": "ios/**/*.{h,m,mm}",
+  "resource_bundles": {
+    "RNViewShotPrivacyInfo": [
+      "ios/PrivacyInfo.xcprivacy"
+    ]
+  },
+  "compiler_flags": "-DRCT_NEW_ARCH_ENABLED=1",
+  "dependencies": {
+    "React-Core": [],
+    "React-RCTFabric": [],
+    "ReactCodegen": [],
+    "RCTRequired": [],
+    "RCTTypeSafety": [],
+    "ReactCommon/turbomodule/bridging": [],
+    "ReactCommon/turbomodule/core": [],
+    "React-NativeModulesApple": [],
+    "Yoga": [],
+    "React-Fabric": [],
+    "React-graphics": [],
+    "React-utils": [],
+    "React-featureflags": [],
+    "React-debug": [],
+    "React-ImageManager": [],
+    "React-rendererdebug": [],
+    "React-jsi": [],
+    "React-renderercss": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
+  },
+  "pod_target_xcconfig": {
+    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/Headers/Private/Yoga\"",
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++20",
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -DRCT_NEW_ARCH_ENABLED=1 ",
+    "OTHER_SWIFT_FLAGS": "$(inherited) -DRCT_NEW_ARCH_ENABLED"
+  }
+}

@@ -604,6 +604,16 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>react-native-cameraroll-RNCameraRollPrivacyInfo.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>react-native-cameraroll.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>react-native-geolocation.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -645,6 +655,16 @@
 			<false/>
 		</dict>
 		<key>react-native-vector-icons-fontawesome.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>react-native-view-shot-RNViewShotPrivacyInfo.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>react-native-view-shot.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

@@ -57,6 +57,8 @@
 
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to upload images for your orders and profile.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Reward Planners saves your visiting card image to your photo library.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

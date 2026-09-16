@@ -16,7 +16,7 @@
   
   dispatch_once(&onceToken, ^{
     classNames = @[
-      
+      @"RNCPHAssetLoader"
     ];
   });
   
@@ -44,7 +44,7 @@
   
   dispatch_once(&onceToken, ^{
     classNames = @[
-      
+      @"RNCPHAssetUploader"
     ];
   });
   
