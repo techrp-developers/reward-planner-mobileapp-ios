@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Image, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Animated, Image, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -13,7 +13,9 @@ import HistoryIcon from "../assets/menu/History.svg";
 import { useAppTheme } from "../theme/ThemeContext";
 import RewardIcon from "../assets/homepage/RewardPlannersLogo.png";
 
-const FLOATING_BOTTOM_GAP = 10;
+// Keep the floating bar close to the system safe area without adding a large
+// second gap above it.
+const FLOATING_BOTTOM_GAP = 4;
 const FLOATING_BAR_HEIGHT = 64;
 const CENTER_BUTTON_SIZE = 58;
 export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP;
@@ -56,7 +58,6 @@ type TabItemProps = {
 // Defined outside render — stable reference, no allocation per press.
 const HIT_SLOP = { top: 10, bottom: 10, left: 6, right: 6 } as const;
 const NOOP = () => { };
-const DASHBOARD_SLOT_WIDTH = 62;
 const DASHBOARD_INDICATOR_LEFT = 9;
 
 // Tab config is identical across modes — the parent's onTabPress handler
@@ -239,14 +240,17 @@ function BottomTabs({
   layoutMode = "overlay",
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { width: screenWidth } = useWindowDimensions();
   const isFocused = useIsFocused();
   const { isDark, theme } = useAppTheme();
   const bottomInset = Math.max(insets.bottom, 0);
+  const dashboardPillWidth = Math.min(Math.max(screenWidth * 0.54, 204), 240);
+  const dashboardSlotWidth = (dashboardPillWidth - DASHBOARD_INDICATOR_LEFT * 2) / 3;
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
   // Without this, every tab press invalidates handlePress → pressHandlers → all TabItem memos.
   const activeTabRef = useRef<TabKey>("Home");
-  const dashboardIndicatorX = useRef(new Animated.Value(DASHBOARD_SLOT_WIDTH)).current;
+  const dashboardIndicatorX = useRef(new Animated.Value(dashboardSlotWidth)).current;
   const [activeTab, setActiveTab] = useState<TabKey>("Home");
 
   const handlePress = useCallback(
@@ -276,12 +280,12 @@ function BottomTabs({
 
   const animateDashboardIndicator = useCallback((index: number) => {
     Animated.spring(dashboardIndicatorX, {
-      toValue: index * DASHBOARD_SLOT_WIDTH,
+      toValue: index * dashboardSlotWidth,
       useNativeDriver: true,
       tension: 120,
       friction: 13,
     }).start();
-  }, [dashboardIndicatorX]);
+  }, [dashboardIndicatorX, dashboardSlotWidth]);
 
   const handleDashboardPress = useCallback((tab: "Notes" | "Home" | "Profile") => {
     const index = tab === "Notes" ? 0 : tab === "Home" ? 1 : 2;
@@ -331,6 +335,7 @@ function BottomTabs({
           style={[
             styles.dashboardPill,
             {
+              width: dashboardPillWidth,
               backgroundColor: dashboardPillBackground,
               borderColor: dashboardPillBorder,
               shadowColor: isDark ? "#6A00FF" : "#4B0082",
@@ -342,6 +347,7 @@ function BottomTabs({
             style={[
               styles.dashboardIndicator,
               {
+                width: dashboardSlotWidth,
                 backgroundColor: dashboardIndicatorBackground,
                 transform: [{ translateX: dashboardIndicatorX }],
               },
@@ -350,7 +356,7 @@ function BottomTabs({
           <TouchableOpacity
             activeOpacity={0.82}
             onPress={() => handleDashboardPress("Notes")}
-            style={styles.dashboardSideBtn}
+            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
             hitSlop={HIT_SLOP}
           >
             <MaterialCommunityIcons
@@ -363,7 +369,7 @@ function BottomTabs({
           <TouchableOpacity
             activeOpacity={0.9}
             onPress={() => handleDashboardPress("Home")}
-            style={styles.dashboardSideBtn}
+            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
             hitSlop={HIT_SLOP}
           >
             <MaterialCommunityIcons
@@ -376,7 +382,7 @@ function BottomTabs({
           <TouchableOpacity
             activeOpacity={0.82}
             onPress={() => handleDashboardPress("Profile")}
-            style={styles.dashboardSideBtn}
+            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
             hitSlop={HIT_SLOP}
           >
             <MaterialCommunityIcons
@@ -469,7 +475,6 @@ const styles = StyleSheet.create({
   },
   dashboardPill: {
     height: 58,
-    minWidth: 204,
     paddingHorizontal: 9,
     borderRadius: 31,
     backgroundColor: "#151515",
@@ -486,7 +491,6 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.10)",
   },
   dashboardSideBtn: {
-    width: DASHBOARD_SLOT_WIDTH,
     height: 46,
     borderRadius: 23,
     alignItems: "center",
@@ -496,7 +500,6 @@ const styles = StyleSheet.create({
   dashboardIndicator: {
     position: "absolute",
     left: DASHBOARD_INDICATOR_LEFT,
-    width: DASHBOARD_SLOT_WIDTH,
     height: 46,
     borderRadius: 23,
     alignItems: "center",

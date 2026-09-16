@@ -546,7 +546,7 @@ const ProfileScreen: React.FC = () => {
                 style={[
                     styles.floatingBackButton,
                     {
-                        top: Math.max(insets.top, Platform.OS === 'ios' ? 44 : 24) + 8,
+                        top: Math.max(insets.top, Platform.OS === 'ios' ? 44 : 44) + 8,
                         backgroundColor: isDark ? 'rgba(39,39,42,0.94)' : 'rgba(255,255,255,0.94)',
                         borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.10)',
                     },
@@ -755,6 +755,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.16,
         shadowRadius: 8,
+        marginTop: 18,
     },
 
     // ── Hero ──
@@ -810,6 +811,7 @@ const styles = StyleSheet.create({
         shadowRadius: 18,
         elevation: 8,
         marginLeft: rs(16),
+        marginTop: rs(36),
     },
     avatarInner: { width: '100%', height: '100%', borderRadius: 56, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB', overflow: 'hidden' },
     avatarImg: { width: '100%', height: '100%' },

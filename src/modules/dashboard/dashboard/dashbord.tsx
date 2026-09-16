@@ -41,6 +41,10 @@ const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
   'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'rewardsOverview',
 ];
 
+// Native dimensions of the promotion artwork: 2048 × 1008.
+// React Native derives the displayed height from the available width.
+const DASHBOARD_OFFER_ASPECT_RATIO = 2048 / 1008;
+
 // The CMS only stores one solid color per navbar_background entry — turn it
 // into a two-stop gradient client-side (rather than needing a second
 // gradient-end field added to the backend) by blending it toward black.
@@ -408,7 +412,7 @@ function Dashbord() {
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: rs(32) + TAB_BAR_HEIGHT }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: rs(16) + TAB_BAR_HEIGHT }]}
         showsVerticalScrollIndicator={false}
         scrollEnabled={!isSearchOpen}
         onScrollBeginDrag={dismissSearch}
@@ -435,8 +439,9 @@ function Dashbord() {
                   key={key}
                   module="mobile_dashboard"
                   moduleContent={mobileDashboardContent}
-                  aspectRatio={2.55}
-                  resizeMode="cover"
+                  aspectRatio={DASHBOARD_OFFER_ASPECT_RATIO}
+                  resizeMode="contain"
+                  fullWidth
                   wrapperStyle={styles.dashboardOffers}
                 />
               ) : (
@@ -542,8 +547,9 @@ const styles = StyleSheet.create({
   },
 
   dashboardOffers: {
-    paddingTop: rs(12),
-    paddingBottom: rs(8),
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
   },
 
   searchOverlay: {

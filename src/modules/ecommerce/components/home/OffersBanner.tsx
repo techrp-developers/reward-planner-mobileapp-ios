@@ -30,6 +30,7 @@ type Props = {
   module?: CmsModuleKey;
   aspectRatio?: number;
   resizeMode?: ImageResizeMode;
+  fullWidth?: boolean;
   moduleContent?: CmsResolvedZones | null;
   wrapperStyle?: StyleProp<ViewStyle>;
 };
@@ -38,6 +39,7 @@ function OffersBanner({
   module = 'product',
   aspectRatio = OFFER_ASPECT_RATIO,
   resizeMode = 'contain',
+  fullWidth = false,
   moduleContent: controlledModuleContent,
   wrapperStyle,
 }: Props) {
@@ -50,7 +52,7 @@ function OffersBanner({
   const [activeIndex, setActiveIndex] = React.useState(0);
   const [failedImages, setFailedImages] = React.useState<Record<string, true>>({});
 
-  const itemWidth = width - 32;
+  const itemWidth = fullWidth ? width : width - 32;
   const slides = React.useMemo<OfferSlide[]>(() => {
     if (banner?.content_type !== 'image') {
       return [];
@@ -166,7 +168,7 @@ function OffersBanner({
             activeOpacity={banner.redirect_link ? 0.9 : 1}
             disabled={!banner.redirect_link}
             onPress={handlePress}
-            style={[styles.slide, { width: itemWidth, aspectRatio }]}
+            style={[styles.slide, fullWidth && styles.fullWidthSlide, { width: itemWidth, aspectRatio }]}
           >
             <Image
               source={{ uri: item.imageUrl }}
@@ -216,6 +218,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
     backgroundColor: '#F8FAFC',
+  },
+  fullWidthSlide: {
+    borderRadius: 0,
   },
   colorFallback: {
     borderRadius: 12,
