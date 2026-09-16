@@ -36,6 +36,10 @@ import { moduleContentQueryKey } from '../../common/cms/useModuleContent';
 import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import OffersBanner from '../../ecommerce/components/home/OffersBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
+import StatusTray from '../status/components/StatusTray';
+import { fetchStatusFeed, markStatusViewed, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
+import type { StatusFeedGroup } from '../status/types';
+import { queryClient } from '../../../query/queryClient';
 
 const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
   'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'rewardsOverview',
@@ -117,6 +121,17 @@ function Dashbord() {
     () => dashboardHeaderCache?.birthdays ?? [],
   );
   const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
+  const [statusTrayVisible, setStatusTrayVisible] = useState(false);
+  const statusFeedQuery = useQuery({
+    queryKey: STATUS_FEED_QUERY_KEY,
+    queryFn: fetchStatusFeed,
+    enabled: isAuthenticated,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+  const hasUnviewedStatus = (statusFeedQuery.data ?? []).some(group =>
+    group.has_unviewed || group.statuses.some(status => !status.viewed),
+  );
   const hasBirthdays = birthdays.length > 0;
   const { data: walletBalanceResponse } = useQuery({
     queryKey: ['dashboard', 'header-wallet-balance'],
@@ -294,8 +309,22 @@ function Dashbord() {
   );
 
   const handleCenterPress = useCallback(() => {
-    navigation.navigate('Dashboard');
-  }, [navigation]);
+    setStatusTrayVisible(true);
+    statusFeedQuery.refetch();
+  }, [statusFeedQuery.refetch]);
+
+  const handleStatusViewed = useCallback((statusId: number) => {
+    queryClient.setQueryData<StatusFeedGroup[]>(STATUS_FEED_QUERY_KEY, current =>
+      (current ?? []).map(group => ({
+        ...group,
+        statuses: group.statuses.map(status => status.id === statusId ? { ...status, viewed: true } : status),
+        has_unviewed: group.statuses.some(status => status.id !== statusId && !status.viewed),
+      })),
+    );
+    markStatusViewed(statusId).catch(() => {
+      queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+    });
+  }, []);
 
   const dismissSearch = useCallback(() => {
     if (!isSearchOpen) return;
@@ -479,6 +508,16 @@ function Dashbord() {
         cartCount={totalQuantity}
         onTabPress={handleTabPress}
         onCenterPress={handleCenterPress}
+        hasUnviewedStatus={hasUnviewedStatus}
+      />
+      <StatusTray
+        visible={statusTrayVisible}
+        groups={statusFeedQuery.data ?? []}
+        loading={statusFeedQuery.isPending && statusFeedQuery.isFetching}
+        error={statusFeedQuery.isError}
+        onClose={() => setStatusTrayVisible(false)}
+        onRetry={() => statusFeedQuery.refetch()}
+        onViewed={handleStatusViewed}
       />
       {openingModule && (
         <View

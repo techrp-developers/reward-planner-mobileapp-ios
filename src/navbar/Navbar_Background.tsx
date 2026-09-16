@@ -25,6 +25,7 @@ export const NAVBAR_BACKGROUND_ASPECT_RATIO = 1317 / 551;
 // profile/search block collapses away above it.
 export const NAVBAR_COLLAPSED_BACKGROUND_HEIGHT = 105;
 export const NAVBAR_COLLAPSE_DISTANCE = 90;
+export const NAVBAR_WHITE_BACKGROUND_OFFSET = 45;
 
 export default function Navbar_Background({
   activeTab,
@@ -41,6 +42,11 @@ export default function Navbar_Background({
       expandedImageHeight + insetsTop,
       NAVBAR_COLLAPSED_BACKGROUND_HEIGHT + insetsTop,
     ],
+    extrapolate: "clamp",
+  });
+  const whiteBackgroundOpacity = scrollY.interpolate({
+    inputRange: [0, NAVBAR_WHITE_BACKGROUND_OFFSET],
+    outputRange: [0, 1],
     extrapolate: "clamp",
   });
   const [previousTab, setPreviousTab] = React.useState<TopTab>(activeTab);
@@ -145,6 +151,9 @@ export default function Navbar_Background({
       <View style={[styles.root, showOverlay && styles.imageRoot]}>
         {previousTab !== activeTab ? renderLayer(previousTab, 1) : null}
         {renderLayer(activeTab, previousTab === activeTab ? 1 : fade)}
+        <Animated.View
+          style={[StyleSheet.absoluteFill, styles.scrolledBackground, { opacity: whiteBackgroundOpacity }]}
+        />
       </View>
     </Animated.View>
   );
@@ -172,5 +181,8 @@ const styles = StyleSheet.create({
   imageRoot: {
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
+  },
+  scrolledBackground: {
+    backgroundColor: "#FFFFFF",
   },
 });

@@ -28,7 +28,7 @@ import { getNotificationBadge } from "../modules/dashboard/notification/Notifica
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { handleNavigateWithPrefetch } from "../modules/ecommerce/navigation/navigationPerformance";
 
-import Navbar_Background from "./Navbar_Background";
+import Navbar_Background, { NAVBAR_WHITE_BACKGROUND_OFFSET } from "./Navbar_Background";
 import { useNavbarBanners } from "./hooks/useNavbarBanners";
 import { TAB_MODULE_MAP, TopTab, isTopTab } from "./navbarConstants";
 import { useModuleIcons } from "./hooks/useModuleIcons";
@@ -450,6 +450,14 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   const { isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { scrollY } = useNavbarScroll();
+  const [isScrolledWhite, setIsScrolledWhite] = React.useState(false);
+  React.useEffect(() => {
+    const listener = scrollY.addListener(({ value }) => {
+      const next = value >= NAVBAR_WHITE_BACKGROUND_OFFSET;
+      setIsScrolledWhite((current) => current === next ? current : next);
+    });
+    return () => scrollY.removeListener(listener);
+  }, [scrollY]);
   const [rewardPoints, setRewardPoints] = React.useState(0);
   const [customerName, setCustomerName] = React.useState("Guest");
   const [customerLocation, setCustomerLocation] = React.useState("Set delivery location");
@@ -553,18 +561,18 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   );
   // Search bar + wallet button float over the campaign banner, so they read
   // as translucent glass cards rather than solid boxes on top of it.
-  const frostedSurface = isDark ? "rgba(20,20,20,0.55)" : "rgba(255,255,255,0.88)";
-  const navbarBorder = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
+  const frostedSurface = isScrolledWhite ? "#FFFFFF" : isDark ? "rgba(20,20,20,0.55)" : "rgba(255,255,255,0.88)";
+  const navbarBorder = isScrolledWhite ? "rgba(0,0,0,0.08)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
   const activeBanner = banners[activeTab];
-  const navbarIconColor = activeBanner?.imageUrl
+  const navbarIconColor = isScrolledWhite ? "#111827" : activeBanner?.imageUrl
     ? "#FFFFFF"
     : activeBanner?.bgColor
       ? getReadableTextColor(activeBanner.bgColor)
       : isDark ? "#FFFFFF" : "#111827";
-  const navbarMutedColor = isDark ? "#D4D4D8" : navbarIconColor;
-  const searchSurface = isDark ? "rgba(24,24,27,0.94)" : "rgba(255,255,255,0.94)";
-  const searchContentColor = isDark ? "#F4F4F5" : "#111827";
-  const searchBorderColor = isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
+  const navbarMutedColor = isScrolledWhite ? "#6B7280" : isDark ? "#D4D4D8" : navbarIconColor;
+  const searchSurface = isScrolledWhite ? "#F8FAFC" : isDark ? "rgba(24,24,27,0.94)" : "rgba(255,255,255,0.94)";
+  const searchContentColor = isScrolledWhite ? "#111827" : isDark ? "#F4F4F5" : "#111827";
+  const searchBorderColor = isScrolledWhite ? "rgba(0,0,0,0.08)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
   const isNavigatingRef = React.useRef(false);
 
   const headerOpacity = 1;
@@ -795,7 +803,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       <StatusBar
-        barStyle={isDark ? "light-content" : "dark-content"}
+        barStyle={isScrolledWhite ? "dark-content" : isDark ? "light-content" : "dark-content"}
         translucent
         backgroundColor="transparent"
       />
@@ -927,8 +935,8 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 fallbackIconUrl={module.icon_url}
                 moduleKey={module.module_key}
                 label={module.label}
-                activeTint={module.active_color || activeThemeColor}
-                inactiveTint={isDark ? "#FFFFFF" : (module.normal_color || navbarIconColor)}
+                activeTint={isScrolledWhite ? (module.active_color || "#B77900") : (module.active_color || activeThemeColor)}
+                inactiveTint={isScrolledWhite ? "#111827" : isDark ? "#FFFFFF" : (module.normal_color || navbarIconColor)}
                 gradientStart={module.gradient_start_color}
                 gradientEnd={module.gradient_end_color}
                 itemWidth={tabItemWidth}

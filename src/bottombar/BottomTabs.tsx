@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Image, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
+import { Animated, Image, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import ProfileIcon from "../assets/menu/profile.svg";
 import HomeIcon from "../assets/menu/Home.svg";
@@ -35,6 +34,7 @@ type Props = {
   // works correctly in both the MainLayout context (Dashboard) and the
   // MainTabs/HomeStack context, which have different navigation scopes.
   onCenterPress?: () => void;
+  hasUnviewedStatus?: boolean;
 };
 
 type TabConfig = {
@@ -58,7 +58,6 @@ type TabItemProps = {
 // Defined outside render — stable reference, no allocation per press.
 const HIT_SLOP = { top: 10, bottom: 10, left: 6, right: 6 } as const;
 const NOOP = () => { };
-const DASHBOARD_INDICATOR_LEFT = 9;
 
 // Tab config is identical across modes — the parent's onTabPress handler
 // (MainLayout / Dashbord) decides where each generic tab key actually
@@ -77,13 +76,8 @@ const PAYMENT_TABS: TabConfig[] = [
   { key: "Profile", label: "Profile", Icon: ProfileIcon },
 ];
 
-// On the Dashboard, the Cart slot is replaced with Explore — cart access
-// already lives elsewhere on that screen, and Explore gives quick access
-// to the to-do list from the bottom bar.
 const DASHBOARD_TABS: TabConfig[] = [
-  { key: "Home", label: "Home", Icon: HomeIcon },
-  { key: "Search", label: "Search", Icon: SearchIcon },
-  { key: "Notes", label: "Notes", Icon: ExploreIcon },
+  { key: "Notes", label: "Todo List", Icon: ExploreIcon },
   { key: "Profile", label: "Profile", Icon: ProfileIcon },
 ];
 
@@ -184,11 +178,16 @@ TabItem.displayName = "TabItem";
 const CenterButton = React.memo(function CenterButton({
   activeMode,
   onPress,
+  hasUnviewedStatus,
 }: {
   activeMode: AppMode;
   onPress: () => void;
+  hasUnviewedStatus?: boolean;
 }) {
   const centerTheme = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
+  const statusRingColor = hasUnviewedStatus === undefined
+    ? centerTheme.background
+    : hasUnviewedStatus ? centerTheme.background : "#A1A1AA";
 
   return (
     <TouchableOpacity
@@ -201,8 +200,8 @@ const CenterButton = React.memo(function CenterButton({
         style={[
           styles.centerGlow,
           {
-            backgroundColor: centerTheme.background,
-            shadowColor: centerTheme.shadow,
+            backgroundColor: statusRingColor,
+            shadowColor: statusRingColor,
           },
         ]}
       />
@@ -210,9 +209,9 @@ const CenterButton = React.memo(function CenterButton({
         style={[
           styles.centerDiamondButton,
           {
-            backgroundColor: centerTheme.background,
-            borderColor: centerTheme.border,
-            shadowColor: centerTheme.shadow,
+            backgroundColor: statusRingColor,
+            borderColor: hasUnviewedStatus === undefined ? centerTheme.border : hasUnviewedStatus ? centerTheme.border : "#D4D4D8",
+            shadowColor: statusRingColor,
           },
         ]}
       >
@@ -238,19 +237,16 @@ function BottomTabs({
   cartCount = 0,
   onCenterPress,
   layoutMode = "overlay",
+  hasUnviewedStatus = false,
 }: Props) {
   const insets = useSafeAreaInsets();
-  const { width: screenWidth } = useWindowDimensions();
   const isFocused = useIsFocused();
   const { isDark, theme } = useAppTheme();
   const bottomInset = Math.max(insets.bottom, 0);
-  const dashboardPillWidth = Math.min(Math.max(screenWidth * 0.54, 204), 240);
-  const dashboardSlotWidth = (dashboardPillWidth - DASHBOARD_INDICATOR_LEFT * 2) / 3;
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
   // Without this, every tab press invalidates handlePress → pressHandlers → all TabItem memos.
   const activeTabRef = useRef<TabKey>("Home");
-  const dashboardIndicatorX = useRef(new Animated.Value(dashboardSlotWidth)).current;
   const [activeTab, setActiveTab] = useState<TabKey>("Home");
 
   const handlePress = useCallback(
@@ -272,32 +268,6 @@ function BottomTabs({
   const barBackgroundColor = isDark ? theme.card : "rgba(255,255,255,0.78)";
   const barBorderColor = isDark ? theme.border : "rgba(17,24,39,0.08)";
   const activeLabelColor = isDark ? tabTheme.activeIcon : tabTheme.activeLabel;
-  const dashboardPillBackground = isDark ? "rgba(11,0,24,0.82)" : "rgba(255,255,255,0.82)";
-  const dashboardPillBorder = isDark ? "rgba(255,255,255,0.12)" : "rgba(75,0,130,0.1)";
-  const dashboardActiveColor = isDark ? "#FFFFFF" : "#18002E";
-  const dashboardInactiveColor = isDark ? "#D8CBE5" : "#625A6B";
-  const dashboardIndicatorBackground = isDark ? "rgba(106,0,255,0.45)" : "rgba(255,255,255,0.96)";
-
-  const animateDashboardIndicator = useCallback((index: number) => {
-    Animated.spring(dashboardIndicatorX, {
-      toValue: index * dashboardSlotWidth,
-      useNativeDriver: true,
-      tension: 120,
-      friction: 13,
-    }).start();
-  }, [dashboardIndicatorX, dashboardSlotWidth]);
-
-  const handleDashboardPress = useCallback((tab: "Notes" | "Home" | "Profile") => {
-    const index = tab === "Notes" ? 0 : tab === "Home" ? 1 : 2;
-    activeTabRef.current = tab;
-    setActiveTab(tab);
-    animateDashboardIndicator(index);
-    if (tab === "Home") {
-      onCenterPress?.();
-      return;
-    }
-    onTabPress?.(tab);
-  }, [animateDashboardIndicator, onCenterPress, onTabPress]);
 
   // One stable handler per key — rebuilt only when handlePress (i.e. onTabPress) changes,
   // not on every tab press. Passing these as onPress keeps TabItem React.memo effective.
@@ -322,79 +292,7 @@ function BottomTabs({
       setActiveTab(activeTabKey);
     }
 
-    if (isDashboard) {
-      const index = activeTabKey === "Notes" ? 0 : activeTabKey === "Home" ? 1 : 2;
-      animateDashboardIndicator(index);
-    }
-  }, [activeTabKey, animateDashboardIndicator, isDashboard, isFocused]);
-
-  if (isDashboard) {
-    return (
-      <View style={[styles.dashboardWrap, { paddingBottom: bottomInset }]}>
-        <View
-          style={[
-            styles.dashboardPill,
-            {
-              width: dashboardPillWidth,
-              backgroundColor: dashboardPillBackground,
-              borderColor: dashboardPillBorder,
-              shadowColor: isDark ? "#6A00FF" : "#4B0082",
-            },
-          ]}
-        >
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              styles.dashboardIndicator,
-              {
-                width: dashboardSlotWidth,
-                backgroundColor: dashboardIndicatorBackground,
-                transform: [{ translateX: dashboardIndicatorX }],
-              },
-            ]}
-          />
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={() => handleDashboardPress("Notes")}
-            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
-            hitSlop={HIT_SLOP}
-          >
-            <MaterialCommunityIcons
-              name="note-text-outline"
-              size={23}
-              color={activeTab === "Notes" ? dashboardActiveColor : dashboardInactiveColor}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={() => handleDashboardPress("Home")}
-            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
-            hitSlop={HIT_SLOP}
-          >
-            <MaterialCommunityIcons
-              name="home"
-              size={24}
-              color={activeTab === "Home" ? dashboardActiveColor : dashboardInactiveColor}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.82}
-            onPress={() => handleDashboardPress("Profile")}
-            style={[styles.dashboardSideBtn, { width: dashboardSlotWidth }]}
-            hitSlop={HIT_SLOP}
-          >
-            <MaterialCommunityIcons
-              name="account-circle-outline"
-              size={24}
-              color={activeTab === "Profile" ? dashboardActiveColor : dashboardInactiveColor}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  }
+  }, [activeTabKey, isFocused]);
 
   return (
     <View
@@ -419,7 +317,7 @@ function BottomTabs({
         ]}
       >
         {/* LEFT SIDE */}
-        {tabs.slice(0, 2).map((tab) => (
+        {tabs.slice(0, isDashboard ? 1 : 2).map((tab) => (
           <TabItem
             key={tab.key}
             label={tab.label}
@@ -436,7 +334,7 @@ function BottomTabs({
         <View style={styles.centerSpacer} />
 
         {/* RIGHT SIDE */}
-        {tabs.slice(2).map((tab) => (
+        {tabs.slice(isDashboard ? 1 : 2).map((tab) => (
           <TabItem
             key={tab.key}
             label={tab.label}
@@ -457,6 +355,7 @@ function BottomTabs({
         <CenterButton
           activeMode={activeMode}
           onPress={onCenterPress ?? NOOP}
+          hasUnviewedStatus={isDashboard ? hasUnviewedStatus : undefined}
         />
       </View>
     </View>
@@ -466,51 +365,6 @@ function BottomTabs({
 export default React.memo(BottomTabs);
 
 const styles = StyleSheet.create({
-  dashboardWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-  },
-  dashboardPill: {
-    height: 58,
-    paddingHorizontal: 9,
-    borderRadius: 31,
-    backgroundColor: "#151515",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 0,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    elevation: 18,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.10)",
-  },
-  dashboardSideBtn: {
-    height: 46,
-    borderRadius: 23,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 2,
-  },
-  dashboardIndicator: {
-    position: "absolute",
-    left: DASHBOARD_INDICATOR_LEFT,
-    height: 46,
-    borderRadius: 23,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F3F4F6",
-    shadowColor: "#FFFFFF",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    elevation: 4,
-  },
   wrap: {
     position: "absolute",
     left: 0,
