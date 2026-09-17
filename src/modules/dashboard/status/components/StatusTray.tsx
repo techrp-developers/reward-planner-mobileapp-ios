@@ -26,10 +26,11 @@ import { rs } from "../../../../utils/responsive";
 import type {
   StatusFeedGroup,
   StatusType,
+  StatusViewer,
   StatusVisibility,
   UserStatus,
 } from "../types";
-import { createStatus } from "../api/statusApi";
+import { createStatus, deleteStatus, fetchStatusViewers } from "../api/statusApi";
 
 type Props = {
   groups: StatusFeedGroup[];
@@ -42,6 +43,7 @@ type Props = {
   onRetry: () => void;
   onViewed: (statusId: number) => void;
   onCreated: (status: UserStatus) => void;
+  onDeleted: (statusId: number) => void;
   profileMode?: boolean;
   headerMode?: boolean;
   headerTextColor?: string;
@@ -89,6 +91,7 @@ export default function StatusTray({
   onRetry,
   onViewed,
   onCreated,
+  onDeleted,
   profileMode = false,
   headerMode = false,
   headerTextColor,
@@ -109,6 +112,10 @@ export default function StatusTray({
     React.useState<StatusVisibility | null>(null);
   const [posting, setPosting] = React.useState(false);
   const [paused, setPaused] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+  const [loadingViewers, setLoadingViewers] = React.useState(false);
+  const [viewers, setViewers] = React.useState<StatusViewer[] | null>(null);
+  const [viewCount, setViewCount] = React.useState(0);
   const progress = React.useRef(new Animated.Value(0)).current;
   const progressValue = React.useRef(0);
   const currentAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
@@ -122,8 +129,55 @@ export default function StatusTray({
     ? ordered[selected.group]?.statuses[selected.status]
     : undefined;
   const activeId = active?.id;
+  const activeIdRef = React.useRef(activeId);
+  activeIdRef.current = activeId;
   const activeDuration = active?.duration_seconds;
   const activeType = active?.type;
+  const ownActive = active?.user.id === currentUserId;
+
+  React.useEffect(() => {
+    setViewers(null);
+    setViewCount(Number(active?.view_count ?? 0));
+  }, [activeId, active?.view_count]);
+
+  const showViewers = async () => {
+    if (!active || loadingViewers) return;
+    setPaused(true);
+    setLoadingViewers(true);
+    try {
+      const result = await fetchStatusViewers(active.id);
+      if (activeIdRef.current !== active.id) return;
+      setViewers(result.viewers);
+      setViewCount(result.viewCount);
+    } catch (error: any) {
+      Alert.alert('Could not load views', error?.response?.data?.message || error?.message || 'Please try again.');
+      if (activeIdRef.current === active.id) setPaused(false);
+    } finally {
+      setLoadingViewers(false);
+    }
+  };
+
+  const confirmDelete = () => {
+    if (!active || deleting) return;
+    setPaused(true);
+    const statusId = active.id;
+    Alert.alert('Delete status?', 'This status will be removed immediately.', [
+      { text: 'Cancel', style: 'cancel', onPress: () => setPaused(false) },
+      { text: 'Delete', style: 'destructive', onPress: async () => {
+        setDeleting(true);
+        try {
+          await deleteStatus(statusId);
+          setSelected(null);
+          onDeleted(statusId);
+        } catch (error: any) {
+          Alert.alert('Could not delete status', error?.response?.data?.message || error?.message || 'Please try again.');
+          setPaused(false);
+        } finally {
+          setDeleting(false);
+        }
+      } },
+    ], { cancelable: true, onDismiss: () => setPaused(false) });
+  };
 
   const open = React.useCallback(
     (group: number, status: number, refreshOwn = false) => {
@@ -174,7 +228,7 @@ export default function StatusTray({
 
   React.useEffect(() => {
     currentAnimation.current?.stop();
-    if (!activeId || paused) return;
+    if (!activeId || paused || deleting || viewers) return;
     const seconds = activeDuration && activeDuration > 0
       ? activeDuration
       : activeType === 'video' ? 15 : 5;
@@ -188,7 +242,7 @@ export default function StatusTray({
       if (finished) moveRef.current(1);
     });
     return () => animation.stop();
-  }, [activeId, activeDuration, activeType, paused, progress]);
+  }, [activeId, activeDuration, activeType, paused, deleting, viewers, progress]);
 
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
@@ -472,13 +526,14 @@ export default function StatusTray({
                 </Pressable>
               </View>
             )}
-            {active.user.id === currentUserId && Number.isFinite(active.view_count) && (
-              <View style={[styles.viewCount, { bottom: insets.bottom + rs(20) }]}>
+            {ownActive && (
+              <Pressable onPress={showViewers} disabled={loadingViewers || deleting} accessibilityLabel="Show status viewers" style={[styles.viewCount, { bottom: insets.bottom + rs(20) }]}>
                 <MaterialCommunityIcons name="eye-outline" size={rs(20)} color="#FFFFFF" />
                 <Text style={styles.viewCountText}>
-                  {active.view_count} {active.view_count === 1 ? 'view' : 'views'}
+                  {viewCount} {viewCount === 1 ? 'view' : 'views'}
                 </Text>
-              </View>
+                {loadingViewers ? <ActivityIndicator color="#FFFFFF" size="small" /> : <MaterialCommunityIcons name="chevron-up" size={rs(18)} color="#FFFFFF" />}
+              </Pressable>
             )}
             <View style={[styles.viewerHeader, { top: insets.top + rs(12) }]}>
               <View style={styles.progressRow}>
@@ -525,6 +580,11 @@ export default function StatusTray({
                       .join(" • ")}
                   </Text>
                 </View>
+                {ownActive && (
+                  <Pressable onPress={confirmDelete} disabled={deleting} accessibilityLabel="Delete status" hitSlop={10}>
+                    {deleting ? <ActivityIndicator color="#FFFFFF" /> : <MaterialCommunityIcons name="delete-outline" color="#FFFFFF" size={rs(26)} />}
+                  </Pressable>
+                )}
                 <Pressable
                   onPress={() => setSelected(null)}
                   accessibilityLabel="Close status"
@@ -553,6 +613,24 @@ export default function StatusTray({
                 />
               ))}
             </View>
+            {viewers && ownActive && (
+              <View style={[styles.viewersSheet, { paddingBottom: insets.bottom + rs(16) }]}>
+                <View style={styles.viewersHeading}>
+                  <Text style={styles.viewersTitle}>Viewed by · {viewCount}</Text>
+                  <Pressable onPress={() => { setViewers(null); setPaused(false); }} accessibilityLabel="Close viewers">
+                    <MaterialCommunityIcons name="close" size={rs(24)} color="#111827" />
+                  </Pressable>
+                </View>
+                <ScrollView>
+                  {viewers.length ? viewers.map(viewer => (
+                    <View key={viewer.user_id} style={styles.viewerRow}>
+                      <View style={styles.viewerAvatar}>{avatar(viewer.image_url, rs(36))}</View>
+                      <Text style={styles.viewerName}>{viewer.name || 'User'}</Text>
+                    </View>
+                  )) : <Text style={styles.emptyViewers}>No views yet</Text>}
+                </ScrollView>
+              </View>
+            )}
           </View>
         )}
       </Modal>
@@ -817,6 +895,13 @@ const styles = StyleSheet.create({
   bottomShade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', zIndex: 1 },
   viewCount: { position: 'absolute', bottom: rs(36), left: rs(22), flexDirection: 'row', alignItems: 'center', gap: rs(7), zIndex: 3 },
   viewCountText: { color: '#FFFFFF', fontSize: rs(14), fontWeight: '700' },
+  viewersSheet: { position: 'absolute', left: 0, right: 0, bottom: 0, height: '48%', backgroundColor: '#FFFFFF', borderTopLeftRadius: rs(22), borderTopRightRadius: rs(22), paddingHorizontal: rs(20), paddingTop: rs(18), zIndex: 8 },
+  viewersHeading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: rs(12) },
+  viewersTitle: { color: '#111827', fontSize: rs(18), fontWeight: '800' },
+  viewerRow: { flexDirection: 'row', alignItems: 'center', gap: rs(12), paddingVertical: rs(8) },
+  viewerAvatar: { width: rs(36), height: rs(36), borderRadius: rs(18), backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  viewerName: { color: '#111827', fontSize: rs(14), fontWeight: '600' },
+  emptyViewers: { color: '#6B7280', textAlign: 'center', marginTop: rs(30) },
   caption: { position: 'absolute', bottom: rs(80), left: rs(20), right: rs(20), color: '#FFFFFF', fontSize: rs(16), textAlign: 'center', zIndex: 3, padding: rs(10), textShadowColor: '#000000', textShadowRadius: 8 },
   statusText: {
     color: "#FFFFFF",

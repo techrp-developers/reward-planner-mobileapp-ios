@@ -2,7 +2,7 @@ import api from '../../../common/auth/api/axios';
 import { getAuthHeaders } from '../../../common/auth/api/AuthAPI';
 import { API_V1_URL } from '../../../../config/apiConfig';
 import type { AxiosError } from 'axios';
-import type { StatusFeedGroup, StatusMediaInput, StatusType, StatusVisibility, UserStatus } from '../types';
+import type { StatusFeedGroup, StatusMediaInput, StatusType, StatusViewer, StatusVisibility, UserStatus } from '../types';
 
 type StatusFeedResponse = {
   success: boolean;
@@ -97,23 +97,22 @@ export async function fetchMyStatuses(): Promise<UserStatus[]> {
   return response.data.data;
 }
 
-export async function fetchStatusFeed(userIds: number[]): Promise<StatusFeedGroup[]> {
-  const ids = [...new Set(userIds.filter(id => Number.isInteger(id) && id > 0))];
-  if (!ids.length) return [];
+export async function fetchStatusFeed(userIds?: number[]): Promise<StatusFeedGroup[]> {
+  const ids = [...new Set((userIds ?? []).filter(id => Number.isInteger(id) && id > 0))];
   const url = statusUrl('/feed');
   if (__DEV__) {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('📡 [STATUS API] GET STATUS FEED');
     console.log('➡️ Method:', 'GET');
-    console.log('➡️ URL:', `${url}?user_ids=${ids.join(',')}`);
-    console.log('➡️ Parameters:', { user_ids: ids.join(',') });
+    console.log('➡️ URL:', ids.length ? `${url}?user_ids=${ids.join(',')}` : url);
+    console.log('➡️ Parameters:', ids.length ? { user_ids: ids.join(',') } : 'None');
     console.log('➡️ Body:', 'None');
     console.log('🔐 Auth:', Boolean((await statusAuthHeaders()).Authorization));
   }
 
   try {
     const response = await api.get<StatusFeedResponse>(url, {
-      params: { user_ids: ids.join(',') },
+      params: ids.length ? { user_ids: ids.join(',') } : undefined,
       headers: await statusAuthHeaders(),
     });
     if (__DEV__) {
@@ -138,9 +137,9 @@ export async function fetchStatusFeed(userIds: number[]): Promise<StatusFeedGrou
   }
 }
 
-export async function fetchDashboardStatuses(userIds: number[]): Promise<StatusFeedGroup[]> {
+export async function fetchDashboardStatuses(): Promise<StatusFeedGroup[]> {
   const [feedResult, mineResult] = await Promise.allSettled([
-    fetchStatusFeed(userIds),
+    fetchStatusFeed(),
     fetchMyStatuses(),
   ]);
   if (feedResult.status === 'rejected' && mineResult.status === 'rejected') {
@@ -196,4 +195,27 @@ export async function markStatusViewed(statusId: number): Promise<StatusViewResu
     }
     throw error;
   }
+}
+
+export async function deleteStatus(statusId: number): Promise<void> {
+  await api.delete(statusUrl(`/${statusId}`), {
+    headers: await statusAuthHeaders(),
+  });
+}
+
+export type StatusViewersResult = {
+  viewers: StatusViewer[];
+  viewCount: number;
+};
+
+export async function fetchStatusViewers(statusId: number): Promise<StatusViewersResult> {
+  const response = await api.get<{ success: boolean; data: StatusViewer[]; view_count?: number; message?: string }>(
+    statusUrl(`/${statusId}/views`),
+    { headers: await statusAuthHeaders() },
+  );
+  if (!response.data?.success || !Array.isArray(response.data.data)) {
+    throw new Error(response.data?.message || 'Could not load status views.');
+  }
+  const viewers = response.data.data;
+  return { viewers, viewCount: Number(response.data.view_count ?? viewers.length) };
 }

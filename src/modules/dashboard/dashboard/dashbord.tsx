@@ -38,6 +38,7 @@ import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig
 import OffersBanner from '../../ecommerce/components/home/OffersBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
+import LivePollCard from '../polls/components/LivePollCard';
 import { fetchDashboardStatuses, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
 import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
@@ -93,6 +94,7 @@ const MemoRewardsOverview = memo(RewardsOverview);
 const MemoBirthdayCarousel = memo(BirthdayCarousel);
 const MemoOffersBanner = memo(OffersBanner);
 const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
+const MemoLivePollCard = memo(LivePollCard);
 
 function Dashbord() {
   const { isDark } = useAppTheme();
@@ -135,7 +137,7 @@ function Dashbord() {
   const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
   const statusFeedQuery = useQuery({
     queryKey: statusFeedQueryKey,
-    queryFn: () => fetchDashboardStatuses(user?.user_id ? [user.user_id] : []),
+    queryFn: fetchDashboardStatuses,
     enabled: isAuthenticated && isFocused,
     staleTime: 30_000,
     retry: false,
@@ -394,6 +396,16 @@ function Dashbord() {
     queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
   }, [statusFeedQueryKey]);
 
+  const handleStatusDeleted = useCallback((statusId: number) => {
+    queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current =>
+      (current ?? []).map(group => {
+        const statuses = group.statuses.filter(status => status.id !== statusId);
+        return { ...group, statuses, has_unviewed: statuses.some(status => !status.viewed) };
+      }).filter(group => group.statuses.length > 0),
+    );
+    queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+  }, [statusFeedQueryKey]);
+
   const dismissSearch = useCallback(() => {
     if (!isSearchOpen) return;
     setSearchDismissSignal((value) => value + 1);
@@ -458,6 +470,7 @@ function Dashbord() {
               }}
               onViewed={handleStatusViewed}
               onCreated={handleStatusCreated}
+              onDeleted={handleStatusDeleted}
             />
           }
           surface="transparent"
@@ -478,8 +491,8 @@ function Dashbord() {
         <ImageBackground
           key={key}
           source={{ uri: mobileDashboardImageUrl }}
-          resizeMode="cover"
-          style={[styles.topSection, { backgroundColor: isDark ? '#09090B' : '#F8FAFC' }]}
+          resizeMode="contain"
+          style={[styles.topSection, { backgroundColor: mobileDashboardBackground?.color_value || '#241936' }]}
           imageStyle={styles.topSectionImage}
         >
           <LinearGradient
@@ -521,6 +534,7 @@ function Dashbord() {
     headerUserName,
     handleStatusViewed,
     handleStatusCreated,
+    handleStatusDeleted,
     isDark,
     mobileDashboardColor,
     mobileDashboardImageUrl,
@@ -556,6 +570,7 @@ function Dashbord() {
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
+        <MemoLivePollCard />
         {dashboardLayout.sections.map(({ key }) => {
           switch (key as MainDashboardSectionKey) {
             case 'header':
@@ -669,7 +684,7 @@ const styles = StyleSheet.create({
 
 
   topSection: {
-    paddingBottom: rs(16),
+    paddingBottom: rs(4),
     borderBottomLeftRadius: rs(30),
     borderBottomRightRadius: rs(30),
     overflow: 'hidden',

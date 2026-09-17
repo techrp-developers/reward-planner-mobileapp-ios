@@ -1,12 +1,14 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useQuery } from '@tanstack/react-query';
+import { useIsFocused } from '@react-navigation/native';
 import { queryClient } from '../../../../query/queryClient';
 import { useAuth } from '../../../common/auth/context/AuthContext';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { fetchLivePolls, submitPollVote } from '../api/pollsApi';
 import type { LivePoll } from '../type';
+import { rs } from '../../../../utils/responsive';
 
 function errorMessage(error: any) {
     return error?.response?.data?.message || error?.message || 'Unable to submit your vote';
@@ -14,16 +16,18 @@ function errorMessage(error: any) {
 
 function LivePollCard() {
     const { isAuthenticated } = useAuth();
-    const { isDark } = useAppTheme();
+    const { theme } = useAppTheme();
+    const isFocused = useIsFocused();
     const [now, setNow] = useState(Date.now());
     const [selected, setSelected] = useState<number[]>([]);
     const [submitting, setSubmitting] = useState(false);
-    const [expanded, setExpanded] = useState(true);
+    const submissionInFlight = useRef(false);
+    const [votedPollId, setVotedPollId] = useState<number | null>(null);
 
     const pollsQuery = useQuery({
         queryKey: ['dashboard', 'live-polls'],
         queryFn: fetchLivePolls,
-        enabled: isAuthenticated,
+        enabled: isAuthenticated && isFocused,
         staleTime: 10000,
         refetchInterval: 15000,
         refetchOnWindowFocus: true,
@@ -37,9 +41,7 @@ function LivePollCard() {
         setSelected(poll?.selected_option_ids ?? []);
     }, [poll?.poll_id, poll?.selected_option_ids]);
 
-    useEffect(() => {
-        setExpanded(!poll?.has_voted);
-    }, [poll?.poll_id, poll?.has_voted]);
+    const hasVoted = Boolean(poll?.has_voted || (poll && votedPollId === poll.poll_id));
 
     useEffect(() => {
         if (!poll?.closes_at) return;
@@ -53,53 +55,67 @@ function LivePollCard() {
     }, [poll?.closes_at]);
 
     const vote = useCallback(async (optionIds: number[]) => {
-        if (!poll || !optionIds.length || submitting) return;
+        if (!poll || !optionIds.length || submissionInFlight.current || hasVoted) return;
+        submissionInFlight.current = true;
         setSubmitting(true);
         try {
             const updated = await submitPollVote(poll.poll_id, optionIds);
+            setVotedPollId(poll.poll_id);
+            setSelected(optionIds);
             queryClient.setQueryData<LivePoll[]>(['dashboard', 'live-polls'], current =>
-                (current ?? []).map(item => item.poll_id === poll.poll_id && updated ? updated : item),
+                (current ?? []).map(item => item.poll_id === poll.poll_id
+                    ? updated ?? {
+                        ...item,
+                        has_voted: true,
+                        selected_option_ids: optionIds,
+                        participant_count: item.participant_count + 1,
+                        options: item.options.map(option => ({
+                            ...option,
+                            vote_count: option.vote_count + (optionIds.includes(option.option_id) ? 1 : 0),
+                        })),
+                    }
+                    : item),
             );
+            queryClient.invalidateQueries({ queryKey: ['dashboard', 'live-polls'] });
         } catch (error: any) {
-            if (error?.response?.status === 404) {
+            if (error?.response?.status === 409) {
+                setVotedPollId(poll.poll_id);
                 queryClient.invalidateQueries({ queryKey: ['dashboard', 'live-polls'] });
             } else Alert.alert('Vote not submitted', errorMessage(error));
-        } finally { setSubmitting(false); }
-    }, [poll, submitting]);
+        } finally { submissionInFlight.current = false; setSubmitting(false); }
+    }, [poll, hasVoted]);
 
     const choose = useCallback((optionId: number) => {
-        if (!poll || submitting) return;
-        if (!poll.allow_multiple) { setSelected([optionId]); vote([optionId]); return; }
+        if (!poll || submitting || hasVoted) return;
+        if (!poll.allow_multiple) { void vote([optionId]); return; }
         setSelected(current => current.includes(optionId) ? current.filter(id => id !== optionId) : [...current, optionId]);
-    }, [poll, submitting, vote]);
+    }, [poll, submitting, hasVoted, vote]);
 
     if (!poll) return null;
     const totalVotes = poll.options.reduce((sum, option) => sum + option.vote_count, 0);
+    const selectedIds = hasVoted && poll.selected_option_ids?.length ? poll.selected_option_ids : selected;
 
     return (
-        <View style={[styles.outer, { backgroundColor: isDark ? '#111B21' : '#E7F7EF' }]}>
-            <View style={[styles.bubble, { backgroundColor: isDark ? '#202C33' : '#FFFFFF' }]}>
-                <Pressable disabled={!poll.has_voted} onPress={() => setExpanded(value => !value)} style={styles.titleRow}>
-                    <MaterialCommunityIcons name="poll" size={21} color="#25A866" />
-                    <View style={styles.questionWrap}><Text numberOfLines={expanded ? undefined : 1} style={[styles.question, { color: isDark ? '#F1F5F7' : '#111B21' }]}>{poll.question}</Text>{poll.has_voted && !expanded && <Text style={styles.votedLabel}>Voted · {poll.participant_count} {poll.participant_count === 1 ? 'vote' : 'votes'}</Text>}</View>
-                    {poll.has_voted && <MaterialCommunityIcons name={expanded ? 'chevron-up' : 'chevron-down'} size={23} color="#8696A0" />}
-                </Pressable>
-                {expanded && <>
-                    <Text style={styles.hint}>{poll.allow_multiple ? 'Select one or more options' : 'Select one option'}</Text>
+        <View style={[styles.outer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={styles.bubble}>
+                <View style={styles.titleRow}>
+                    <MaterialCommunityIcons name="poll" size={rs(21)} color={theme.primary} />
+                    <View style={styles.questionWrap}><Text style={[styles.question, { color: theme.text }]}>{poll.question}</Text></View>
+                </View>
+                    <Text style={[styles.hint, { color: theme.secondaryText }]}>{hasVoted ? 'Your vote is final · Results' : poll.allow_multiple ? 'Select one or more options' : 'Select one option to vote'}</Text>
                     {poll.options.map(option => {
-                        const checked = selected.includes(option.option_id);
+                        const checked = selectedIds.includes(option.option_id);
                         const percent = totalVotes ? Math.round(option.vote_count * 100 / totalVotes) : 0;
                         return (
-                            <Pressable key={option.option_id} disabled={submitting} onPress={() => choose(option.option_id)} style={styles.option}>
-                                <View style={styles.optionTop}><MaterialCommunityIcons name={poll.allow_multiple ? (checked ? 'checkbox-marked' : 'checkbox-blank-outline') : (checked ? 'radiobox-marked' : 'radiobox-blank')} size={22} color="#25A866" /><Text style={[styles.optionText, { color: isDark ? '#E9EDEF' : '#202C33' }]}>{option.option_text}</Text><Text style={styles.percent}>{percent}%</Text></View>
-                                <View style={[styles.track, { backgroundColor: isDark ? '#3B4A54' : '#E5E7EB' }]}><View style={[styles.fill, { width: `${percent}%` }]} /></View>
+                            <Pressable key={option.option_id} disabled={hasVoted || submitting} onPress={() => choose(option.option_id)} style={[styles.option, { borderColor: checked ? theme.primary : theme.border }]}>
+                                <View style={styles.optionTop}><MaterialCommunityIcons name={checked ? 'check-circle' : 'circle-outline'} size={22} color={checked ? theme.primary : theme.secondaryText} /><Text style={[styles.optionText, { color: theme.text }]}>{option.option_text}</Text>{hasVoted && <Text style={[styles.percent, { color: theme.text }]}>{percent}%</Text>}</View>
+                                {hasVoted && <View style={[styles.track, { backgroundColor: theme.border }]}><View style={[styles.fill, { width: `${percent}%`, backgroundColor: theme.primary }]} /></View>}
                             </Pressable>
                         );
                     })}
-                    {poll.allow_multiple && <Pressable disabled={!selected.length || submitting} onPress={() => vote(selected)} style={[styles.voteButton, (!selected.length || submitting) && styles.voteButtonDisabled]}>{submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.voteText}>Vote</Text>}</Pressable>}
-                    {!poll.allow_multiple && submitting && <ActivityIndicator style={styles.loader} size="small" color="#25A866" />}
-                    <View style={styles.footer}><Text style={styles.footerText}>{poll.participant_count} {poll.participant_count === 1 ? 'vote' : 'votes'}</Text>{poll.closes_at && <Text style={styles.footerText}>Closes {new Date(poll.closes_at).toLocaleString()}</Text>}</View>
-                </>}
+                    {!hasVoted && poll.allow_multiple && <Pressable disabled={!selected.length || submitting} onPress={() => void vote(selected)} style={[styles.voteButton, { backgroundColor: theme.primary }, (!selected.length || submitting) && styles.voteButtonDisabled]}>{submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.voteText}>Vote</Text>}</Pressable>}
+                    {!hasVoted && !poll.allow_multiple && submitting && <ActivityIndicator style={styles.loader} size="small" color={theme.primary} />}
+                    <View style={[styles.footer, { borderTopColor: theme.border }]}><Text style={[styles.footerText, { color: theme.secondaryText }]}>{poll.participant_count} {poll.participant_count === 1 ? 'vote' : 'votes'}</Text>{poll.closes_at && <Text style={[styles.footerText, { color: theme.secondaryText }]}>Closes {new Date(poll.closes_at).toLocaleString()}</Text>}</View>
             </View>
         </View>
     );
@@ -108,10 +124,10 @@ function LivePollCard() {
 export default memo(LivePollCard);
 
 const styles = StyleSheet.create({
-    outer: { marginHorizontal: 16, marginTop: 12, borderRadius: 18, padding: 7 },
-    bubble: { borderRadius: 14, padding: 14, elevation: 2, shadowColor: '#000', shadowOpacity: .08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
-    titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 9 }, questionWrap: { flex: 1 }, question: { fontSize: 16, lineHeight: 22, fontWeight: '700' }, votedLabel: { color: '#25A866', fontSize: 11, fontWeight: '700', marginTop: 2 }, hint: { color: '#8696A0', fontSize: 12, marginTop: 4, marginBottom: 8, marginLeft: 30 },
-    option: { paddingVertical: 8 }, optionTop: { flexDirection: 'row', alignItems: 'center', gap: 9 }, optionText: { flex: 1, fontSize: 14 }, percent: { color: '#667781', fontSize: 12, fontWeight: '600' }, track: { height: 4, marginTop: 7, marginLeft: 31, borderRadius: 2, overflow: 'hidden' }, fill: { height: '100%', borderRadius: 2, backgroundColor: '#25D366' },
-    voteButton: { alignSelf: 'flex-end', minWidth: 88, height: 38, marginTop: 8, borderRadius: 19, alignItems: 'center', justifyContent: 'center', backgroundColor: '#25A866' }, voteButtonDisabled: { opacity: .45 }, voteText: { color: '#FFF', fontWeight: '700' }, loader: { marginTop: 8 },
-    footer: { marginTop: 10, paddingTop: 9, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: '#8696A066', flexDirection: 'row', justifyContent: 'space-between', gap: 8 }, footerText: { color: '#8696A0', fontSize: 10, flexShrink: 1 },
+    outer: { marginHorizontal: rs(16), marginTop: rs(12), borderRadius: rs(18), borderWidth: 1 },
+    bubble: { padding: rs(16) },
+    titleRow: { flexDirection: 'row', alignItems: 'flex-start', gap: rs(9) }, questionWrap: { flex: 1 }, question: { fontSize: rs(16), lineHeight: rs(22), fontWeight: '700' }, hint: { fontSize: rs(12), marginTop: rs(6), marginBottom: rs(8), marginLeft: rs(30) },
+    option: { padding: rs(10), marginTop: rs(8), borderWidth: 1, borderRadius: rs(12) }, optionTop: { flexDirection: 'row', alignItems: 'center', gap: rs(9) }, optionText: { flex: 1, fontSize: rs(14) }, percent: { fontSize: rs(12), fontWeight: '700' }, track: { height: rs(4), marginTop: rs(7), marginLeft: rs(31), borderRadius: rs(2), overflow: 'hidden' }, fill: { height: '100%', borderRadius: rs(2) },
+    voteButton: { alignSelf: 'flex-end', minWidth: rs(88), height: rs(38), marginTop: rs(8), borderRadius: rs(19), alignItems: 'center', justifyContent: 'center' }, voteButtonDisabled: { opacity: .45 }, voteText: { color: '#FFF', fontWeight: '700' }, loader: { marginTop: rs(8) },
+    footer: { marginTop: rs(10), paddingTop: rs(9), borderTopWidth: StyleSheet.hairlineWidth, flexDirection: 'row', justifyContent: 'space-between', gap: rs(8) }, footerText: { fontSize: rs(10), flexShrink: 1 },
 });

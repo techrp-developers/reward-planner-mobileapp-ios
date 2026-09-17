@@ -227,7 +227,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     <View style={styles.wrapper}>
 
       <View
-        style={[styles.headerSurface, { backgroundColor: tk.headerBg, paddingTop: safeTop + 10 }]}
+        style={[styles.headerSurface, { backgroundColor: tk.headerBg, paddingTop: safeTop + 10, paddingBottom: statusContent ? rs(4) : rs(10) }]}
         onLayout={handleHeaderLayout}
       >
         <Animated.View style={[styles.collapsibleRow, { height: headerRowHeight, opacity: headerCollapse.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]} pointerEvents={collapsed ? 'none' : 'auto'}>
