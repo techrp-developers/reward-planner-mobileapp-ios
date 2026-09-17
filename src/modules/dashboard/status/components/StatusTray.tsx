@@ -1,6 +1,7 @@
 import React from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
   Image,
   Linking,
@@ -23,6 +24,7 @@ import type {
   StatusVisibility,
   UserStatus,
 } from "../types";
+import { createStatus } from "../api/statusApi";
 
 type Props = {
   groups: StatusFeedGroup[];
@@ -34,6 +36,7 @@ type Props = {
   currentCompanyName?: string | null;
   onRetry: () => void;
   onViewed: (statusId: number) => void;
+  onCreated: (status: UserStatus) => void;
   profileMode?: boolean;
   headerMode?: boolean;
   headerTextColor?: string;
@@ -43,14 +46,12 @@ const UNSEEN = ["#4B0082", "#6A00FF", "#FF2D7A", "#FFC83D"];
 const VISIBILITY: Array<{ value: StatusVisibility; label: string }> = [
   { value: "same_company", label: "Same company" },
   { value: "all_companies", label: "All companies" },
-  { value: "all_except_companies", label: "All except companies" },
-  { value: "custom_people", label: "Custom people" },
 ];
 
 const timeAgo = (value: string) => {
   const minutes = Math.max(
     0,
-    Math.floor((Date.now() - new Date(value).getTime()) / 60000)
+    Math.floor((Date.now() - new Date(value.replace(' ', 'T')).getTime()) / 60000)
   );
   if (!Number.isFinite(minutes)) return "";
   if (minutes < 1) return "now";
@@ -82,6 +83,7 @@ export default function StatusTray({
   currentCompanyName,
   onRetry,
   onViewed,
+  onCreated,
   profileMode = false,
   headerMode = false,
   headerTextColor,
@@ -97,7 +99,8 @@ export default function StatusTray({
   const [color, setColor] = React.useState("#4B0082");
   const [font, setFont] = React.useState("default");
   const [visibility, setVisibility] =
-    React.useState<StatusVisibility>("same_company");
+    React.useState<StatusVisibility | null>(null);
+  const [posting, setPosting] = React.useState(false);
   const progress = React.useRef(new Animated.Value(0)).current;
   const mine = groups.find((group) => group.user.id === currentUserId);
   const others = profileMode
@@ -114,9 +117,9 @@ export default function StatusTray({
       if (!item) return;
       if (__DEV__) console.log('👆 [STATUS] Status tray opened');
       setSelected({ group, status });
-      if (!item.viewed) onViewed(item.id);
+      if (!item.viewed && item.user.id !== currentUserId) onViewed(item.id);
     },
-    [ordered, onViewed]
+    [ordered, onViewed, currentUserId]
   );
 
   const move = React.useCallback(
@@ -218,6 +221,47 @@ export default function StatusTray({
     if (result.assets?.[0]) {
       setType(kind);
       setMedia(result.assets[0]);
+    }
+  };
+
+  const publish = async () => {
+    if (posting) return;
+    if (type === 'text' && !draft.trim()) {
+      Alert.alert('Add text', 'Write something before posting.');
+      return;
+    }
+    if (type !== 'text' && !media?.uri) {
+      Alert.alert('Choose media', `Choose a ${type} before posting.`);
+      return;
+    }
+    if (!visibility) {
+      Alert.alert('Choose an audience', 'Select who can see this status.');
+      return;
+    }
+    setPosting(true);
+    try {
+      const status = await createStatus({
+        type,
+        text: draft.trim() || undefined,
+        visibility,
+        background_color: type === 'text' ? color : undefined,
+        font_style: type === 'text' ? font : undefined,
+        media: type !== 'text' && media?.uri ? {
+          uri: media.uri,
+          type: media.type || (type === 'image' ? 'image/jpeg' : 'video/mp4'),
+          fileName: media.fileName || `status-${Date.now()}.${type === 'image' ? 'jpg' : 'mp4'}`,
+        } : undefined,
+      });
+      onCreated(status);
+      setCreating(false);
+      setDraft('');
+      setMedia(null);
+      setType('text');
+      setVisibility(null);
+    } catch (error: any) {
+      Alert.alert('Could not post status', error?.response?.data?.message || error?.message || 'Please try again.');
+    } finally {
+      setPosting(false);
     }
   };
 
@@ -339,6 +383,9 @@ export default function StatusTray({
                 resizeMode="contain"
               />
             )}
+            {active.type !== 'text' && !!active.text && (
+              <Text style={styles.caption}>{active.text}</Text>
+            )}
             {active.type === "text" && (
               <Text
                 style={[
@@ -441,21 +488,41 @@ export default function StatusTray({
         animationType="slide"
         onRequestClose={() => setCreating(false)}
       >
-        <ScrollView
-          style={styles.create}
-          contentContainerStyle={styles.createContent}
-        >
+        <View style={styles.create}>
+        <ScrollView contentContainerStyle={styles.createContent} keyboardShouldPersistTaps="handled">
           <View style={styles.createHeader}>
             <Text style={styles.createTitle}>Create Status</Text>
             <Pressable onPress={() => setCreating(false)}>
               <MaterialCommunityIcons name="close" size={26} color="#111827" />
             </Pressable>
           </View>
+          <Text style={styles.field}>Who can see this status?</Text>
+          <View style={styles.audienceChoices}>
+            {VISIBILITY.map(item => (
+              <Pressable
+                key={item.value}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: visibility === item.value }}
+                onPress={() => setVisibility(item.value)}
+                style={[styles.audienceChoice, visibility === item.value && styles.audienceSelected]}
+              >
+                <MaterialCommunityIcons
+                  name={visibility === item.value ? 'radiobox-marked' : 'radiobox-blank'}
+                  size={rs(21)}
+                  color="#6A00FF"
+                />
+                <Text style={styles.audienceText}>{item.label}</Text>
+              </Pressable>
+            ))}
+          </View>
           <View style={styles.choices}>
             {(["text", "image", "video"] as StatusType[]).map((item) => (
               <Pressable
                 key={item}
-                onPress={() => setType(item)}
+                onPress={() => {
+                  if (item !== type) setMedia(null);
+                  setType(item);
+                }}
                 style={[styles.choice, type === item && styles.selected]}
               >
                 <Text style={styles.choiceText}>{item.toUpperCase()}</Text>
@@ -479,7 +546,7 @@ export default function StatusTray({
               ]}
             />
           ) : (
-            <Pressable onPress={() => chooseMedia(type)} style={styles.picker}>
+            <><Pressable onPress={() => chooseMedia(type)} style={styles.picker}>
               {media?.uri && media.type?.startsWith("image/") ? (
                 <Image
                   source={{ uri: media.uri }}
@@ -497,8 +564,15 @@ export default function StatusTray({
                 {media?.fileName || `Choose ${type}`}
               </Text>
             </Pressable>
+            <TextInput
+              placeholder="Add a caption (optional)"
+              placeholderTextColor="#6B7280"
+              value={draft}
+              onChangeText={setDraft}
+              style={styles.captionInput}
+            /></>
           )}
-          <Text style={styles.field}>Background color</Text>
+          {type === 'text' && <><Text style={styles.field}>Background color</Text>
           <View style={styles.choices}>
             {["#4B0082", "#6A00FF", "#FF2D7A", "#FFC83D", "#111827"].map(
               (item) => (
@@ -526,32 +600,17 @@ export default function StatusTray({
               </Pressable>
             ))}
           </View>
-          <Text style={styles.field}>Audience</Text>
-          <View style={styles.choices}>
-            {VISIBILITY.map((item) => (
-              <Pressable
-                key={item.value}
-                onPress={() => setVisibility(item.value)}
-                style={[
-                  styles.choice,
-                  visibility === item.value && styles.selected,
-                ]}
-              >
-                <Text style={styles.choiceText}>{item.label}</Text>
-              </Pressable>
-            ))}
-          </View>
-          <Pressable
-            disabled
-            style={styles.postDisabled}
-            accessibilityLabel="Post status unavailable until publishing is connected"
-          >
-            <Text style={styles.postText}>Post Status</Text>
-          </Pressable>
-          <Text style={styles.notice}>
-            Publishing is not available yet. This draft is not uploaded.
-          </Text>
+          </>}
         </ScrollView>
+          <Pressable
+            disabled={posting}
+            onPress={publish}
+            style={[styles.postDisabled, !posting && styles.postEnabled, styles.postFooter]}
+            accessibilityLabel="Post status"
+          >
+            {posting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.postText}>Post Status</Text>}
+          </Pressable>
+        </View>
       </Modal>
     </View>
   );
@@ -667,6 +726,7 @@ const styles = StyleSheet.create({
   addText: { color: "#6A00FF", fontWeight: "700" },
   viewer: { flex: 1, alignItems: "center", justifyContent: "center" },
   media: { width: "100%", height: "100%" },
+  caption: { position: 'absolute', bottom: rs(80), left: rs(20), right: rs(20), color: '#FFFFFF', fontSize: rs(16), textAlign: 'center', zIndex: 3, backgroundColor: 'rgba(0,0,0,0.4)', padding: rs(10), borderRadius: rs(8) },
   statusText: {
     color: "#FFFFFF",
     fontSize: rs(28),
@@ -719,8 +779,12 @@ const styles = StyleSheet.create({
   createContent: {
     paddingHorizontal: rs(18),
     paddingTop: rs(60),
-    paddingBottom: rs(35),
+    paddingBottom: rs(25),
   },
+  audienceChoices: { flexDirection: 'row', gap: rs(10), marginTop: rs(10) },
+  audienceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: rs(6), borderWidth: 1, borderColor: '#D1D5DB', borderRadius: rs(12), padding: rs(10) },
+  audienceSelected: { borderColor: '#6A00FF', backgroundColor: '#F5F3FF' },
+  audienceText: { color: '#111827', fontSize: rs(11), fontWeight: '700', flexShrink: 1 },
   createHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -759,6 +823,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   pickerText: { color: "#6A00FF", marginTop: rs(8) },
+  captionInput: { color: '#111827', backgroundColor: '#F3F4F6', borderRadius: rs(12), paddingHorizontal: rs(14), marginTop: rs(12) },
   mediaPreview: { width: "100%", height: rs(130) },
   field: { color: "#111827", fontWeight: "800", marginTop: rs(18) },
   color: { width: rs(30), height: rs(30), borderRadius: rs(15) },
@@ -770,6 +835,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: rs(25),
   },
+  postEnabled: { backgroundColor: '#6A00FF' },
+  postFooter: { marginTop: 0, marginHorizontal: rs(18), marginBottom: rs(25) },
   postText: { color: "#FFFFFF", fontWeight: "800", fontSize: rs(15) },
   notice: { color: "#6B7280", marginTop: rs(10), lineHeight: rs(18) },
 });

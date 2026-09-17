@@ -205,7 +205,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gradientBtn: {
-    paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
@@ -214,5 +213,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 15,
     fontWeight: "700",
+    paddingVertical: 14,
+
   },
 });

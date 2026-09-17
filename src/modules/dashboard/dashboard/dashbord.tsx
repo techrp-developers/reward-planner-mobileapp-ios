@@ -38,8 +38,8 @@ import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig
 import OffersBanner from '../../ecommerce/components/home/OffersBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
-import { fetchStatusFeed, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
-import type { StatusFeedGroup } from '../status/types';
+import { fetchDashboardStatuses, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
+import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
 
 const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
@@ -93,17 +93,13 @@ const MemoBirthdayCarousel = memo(BirthdayCarousel);
 const MemoOffersBanner = memo(OffersBanner);
 const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
 
-const fetchDashboardStatusFeed = () => {
-  if (__DEV__) console.log('🔄 [STATUS] Dashboard requesting status feed');
-  return fetchStatusFeed();
-};
-
 function Dashbord() {
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
   const { totalQuantity } = useCart();
   const { isAuthenticated, user } = useAuth();
+  const statusFeedQueryKey = [...STATUS_FEED_QUERY_KEY, user?.user_id ?? null] as const;
   const dashboardLayout = useDashboardLayout('main', MAIN_DASHBOARD_SECTION_KEYS);
 
   const [headerUserName, setHeaderUserName] = useState<string>(
@@ -131,8 +127,8 @@ function Dashbord() {
   );
   const [openingModule, setOpeningModule] = useState<ExploreServiceTab | null>(null);
   const statusFeedQuery = useQuery({
-    queryKey: STATUS_FEED_QUERY_KEY,
-    queryFn: fetchDashboardStatusFeed,
+    queryKey: statusFeedQueryKey,
+    queryFn: () => fetchDashboardStatuses(user?.user_id ? [user.user_id] : []),
     enabled: isAuthenticated && isFocused,
     staleTime: 30_000,
     retry: false,
@@ -159,7 +155,7 @@ function Dashbord() {
     }
   }, [statusFeedQuery.data]);
   const hasUnviewedStatus = (statusFeedQuery.data ?? []).some(group =>
-    group.has_unviewed || group.statuses.some(status => !status.viewed),
+    group.user.id !== user?.user_id && (group.has_unviewed || group.statuses.some(status => !status.viewed)),
   );
   const hasBirthdays = birthdays.length > 0;
   const { data: walletBalanceResponse } = useQuery({
@@ -352,7 +348,7 @@ function Dashbord() {
       console.log('👁️ [STATUS] User viewed status');
       console.log('🆔 statusId:', statusId);
     }
-    queryClient.setQueryData<StatusFeedGroup[]>(STATUS_FEED_QUERY_KEY, current =>
+    queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current =>
       (current ?? []).map(group => ({
         ...group,
         statuses: group.statuses.map(status => status.id === statusId ? { ...status, viewed: true } : status),
@@ -362,7 +358,19 @@ function Dashbord() {
     markStatusViewed(statusId).catch(() => {
       queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
     });
-  }, []);
+  }, [user?.user_id]);
+
+  const handleStatusCreated = useCallback((status: UserStatus) => {
+    queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current => {
+      const groups = current ?? [];
+      const existing = groups.find(group => group.user.id === status.user.id);
+      if (!existing) return [{ user: status.user, has_unviewed: !status.viewed, statuses: [status] }, ...groups];
+      return groups.map(group => group.user.id === status.user.id
+        ? { ...group, statuses: [...group.statuses, status], has_unviewed: group.has_unviewed || !status.viewed }
+        : group);
+    });
+    queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+  }, [user?.user_id]);
 
   const dismissSearch = useCallback(() => {
     if (!isSearchOpen) return;
@@ -426,6 +434,7 @@ function Dashbord() {
                 statusFeedQuery.refetch();
               }}
               onViewed={handleStatusViewed}
+              onCreated={handleStatusCreated}
             />
           }
           surface="transparent"
@@ -487,6 +496,7 @@ function Dashbord() {
     headerUserImage,
     headerUserName,
     handleStatusViewed,
+    handleStatusCreated,
     isDark,
     mobileDashboardColor,
     mobileDashboardImageUrl,
