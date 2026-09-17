@@ -76,6 +76,7 @@ type DashboardHeaderCache = {
   userName: string;
   userImage: string | null;
   companyLogo: string | null;
+  companyName: string | null;
   thought: string;
   stepGoal: number;
   birthdays: BirthdayEmployee[];
@@ -99,7 +100,10 @@ function Dashbord() {
   const isFocused = useIsFocused();
   const { totalQuantity } = useCart();
   const { isAuthenticated, user } = useAuth();
-  const statusFeedQueryKey = [...STATUS_FEED_QUERY_KEY, user?.user_id ?? null] as const;
+  const statusFeedQueryKey = useMemo(
+    () => [...STATUS_FEED_QUERY_KEY, user?.user_id ?? null] as const,
+    [user?.user_id],
+  );
   const dashboardLayout = useDashboardLayout('main', MAIN_DASHBOARD_SECTION_KEYS);
 
   const [headerUserName, setHeaderUserName] = useState<string>(
@@ -110,6 +114,9 @@ function Dashbord() {
   );
   const [headerCompanyLogo, setHeaderCompanyLogo] = useState<string | null>(
     () => dashboardHeaderCache?.companyLogo ?? null,
+  );
+  const [headerCompanyName, setHeaderCompanyName] = useState<string | null>(
+    () => dashboardHeaderCache?.companyName ?? null,
   );
   const [thought, setThought] = useState<string>(() => dashboardHeaderCache?.thought ?? '');
   const [stepGoal, setStepGoal] = useState<number>(() => {
@@ -198,6 +205,7 @@ function Dashbord() {
       setHeaderUserName(dashboardHeaderCache.userName);
       setHeaderUserImage(dashboardHeaderCache.userImage);
       setHeaderCompanyLogo(dashboardHeaderCache.companyLogo);
+      setHeaderCompanyName(dashboardHeaderCache.companyName);
       setThought(dashboardHeaderCache.thought);
       setStepGoal(dashboardHeaderCache.stepGoal);
       setBirthdays(dashboardHeaderCache.birthdays);
@@ -217,9 +225,11 @@ function Dashbord() {
         const d = userRes.data.data;
         const nextUserImage = normalizeLocalCmsImageUrl(d.userImage);
         const nextCompanyLogo = normalizeLocalCmsImageUrl(d.company?.logo);
+        const nextCompanyName = typeof d.company?.name === 'string' ? d.company.name : null;
         if (d.name)          setHeaderUserName((prev) => (prev === d.name ? prev : d.name));
         if (nextUserImage)   setHeaderUserImage((prev) => (prev === nextUserImage ? prev : nextUserImage));
         if (nextCompanyLogo) setHeaderCompanyLogo((prev) => (prev === nextCompanyLogo ? prev : nextCompanyLogo));
+        if (nextCompanyName) setHeaderCompanyName((prev) => (prev === nextCompanyName ? prev : nextCompanyName));
         if (d.thought)       setThought((prev) => (prev === d.thought ? prev : d.thought));
 
         const apiStepGoal = Number(d.steps?.goal_steps);
@@ -243,6 +253,7 @@ function Dashbord() {
           userName: d.name || headerUserName,
           userImage: nextUserImage ?? headerUserImage,
           companyLogo: nextCompanyLogo ?? headerCompanyLogo,
+          companyName: nextCompanyName ?? headerCompanyName,
           thought: d.thought ?? thought,
           stepGoal:
             Number.isFinite(Number(d.steps?.goal_steps)) && Number(d.steps?.goal_steps) > 0
@@ -253,7 +264,7 @@ function Dashbord() {
         };
       }
     } catch { }
-  }, [headerCompanyLogo, headerUserImage, headerUserName, isAuthenticated, stepGoal, thought]);
+  }, [headerCompanyLogo, headerCompanyName, headerUserImage, headerUserName, isAuthenticated, stepGoal, thought]);
 
   // Warm the ecommerce route shortly after the first dashboard paint. A timer
   // is intentional here: InteractionManager may never become idle while the
@@ -355,10 +366,21 @@ function Dashbord() {
         has_unviewed: group.statuses.some(status => status.id !== statusId && !status.viewed),
       })),
     );
-    markStatusViewed(statusId).catch(() => {
-      queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
-    });
-  }, [user?.user_id]);
+    markStatusViewed(statusId)
+      .then(result => {
+        queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current =>
+          (current ?? []).map(group => {
+            const statuses = group.statuses.map(status => status.id === result.id
+              ? { ...status, viewed: result.viewed, view_count: result.view_count }
+              : status);
+            return { ...group, statuses, has_unviewed: statuses.some(status => !status.viewed) };
+          }),
+        );
+      })
+      .catch(() => {
+        queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
+      });
+  }, [statusFeedQueryKey]);
 
   const handleStatusCreated = useCallback((status: UserStatus) => {
     queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current => {
@@ -370,7 +392,7 @@ function Dashbord() {
         : group);
     });
     queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
-  }, [user?.user_id]);
+  }, [statusFeedQueryKey]);
 
   const dismissSearch = useCallback(() => {
     if (!isSearchOpen) return;
@@ -429,6 +451,7 @@ function Dashbord() {
               currentUserId={user?.user_id ?? null}
               currentUserName={headerUserName}
               currentUserImage={headerUserImage}
+              currentCompanyName={headerCompanyName}
               onRetry={() => {
                 if (__DEV__) console.log('🔄 [STATUS] Refetching status feed');
                 statusFeedQuery.refetch();
@@ -492,6 +515,7 @@ function Dashbord() {
     );
   }, [
     headerCompanyLogo,
+    headerCompanyName,
     isHeaderCollapsed,
     headerUserImage,
     headerUserName,
@@ -504,11 +528,7 @@ function Dashbord() {
     navigation,
     rewardPoints,
     searchDismissSignal,
-    statusFeedQuery.data,
-    statusFeedQuery.isError,
-    statusFeedQuery.isFetching,
-    statusFeedQuery.isPending,
-    statusFeedQuery.refetch,
+    statusFeedQuery,
     topSectionGradient,
     user?.user_id,
   ]);

@@ -3,9 +3,12 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  AppState,
   Image,
+  KeyboardAvoidingView,
   Linking,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,6 +19,8 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { launchImageLibrary, type Asset } from "react-native-image-picker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAppTheme } from "../../../../theme/ThemeContext";
 import { normalizeLocalCmsImageUrl } from "../../../../config/apiConfig";
 import { rs } from "../../../../utils/responsive";
 import type {
@@ -43,9 +48,9 @@ type Props = {
 };
 
 const UNSEEN = ["#4B0082", "#6A00FF", "#FF2D7A", "#FFC83D"];
-const VISIBILITY: Array<{ value: StatusVisibility; label: string }> = [
-  { value: "same_company", label: "Same company" },
-  { value: "all_companies", label: "All companies" },
+const VISIBILITY: Array<{ value: StatusVisibility; label: string; description: string; icon: string }> = [
+  { value: "same_company", label: "Same company", description: "People at your company", icon: "domain" },
+  { value: "all_companies", label: "All companies", description: "Everyone on RewardsPlanners", icon: "earth" },
 ];
 
 const timeAgo = (value: string) => {
@@ -88,6 +93,8 @@ export default function StatusTray({
   headerMode = false,
   headerTextColor,
 }: Props) {
+  const insets = useSafeAreaInsets();
+  const { isDark } = useAppTheme();
   const [selected, setSelected] = React.useState<{
     group: number;
     status: number;
@@ -101,25 +108,33 @@ export default function StatusTray({
   const [visibility, setVisibility] =
     React.useState<StatusVisibility | null>(null);
   const [posting, setPosting] = React.useState(false);
+  const [paused, setPaused] = React.useState(false);
   const progress = React.useRef(new Animated.Value(0)).current;
+  const progressValue = React.useRef(0);
+  const currentAnimation = React.useRef<Animated.CompositeAnimation | null>(null);
+  const longPressed = React.useRef(false);
   const mine = groups.find((group) => group.user.id === currentUserId);
-  const others = profileMode
+  const others = React.useMemo(() => profileMode
     ? []
-    : groups.filter((group) => group.user.id !== currentUserId);
-  const ordered = mine ? [mine, ...others] : others;
+    : groups.filter((group) => group.user.id !== currentUserId), [groups, currentUserId, profileMode]);
+  const ordered = React.useMemo(() => mine ? [mine, ...others] : others, [mine, others]);
   const active = selected
     ? ordered[selected.group]?.statuses[selected.status]
     : undefined;
+  const activeId = active?.id;
+  const activeDuration = active?.duration_seconds;
+  const activeType = active?.type;
 
   const open = React.useCallback(
-    (group: number, status: number) => {
+    (group: number, status: number, refreshOwn = false) => {
       const item = ordered[group]?.statuses[status];
       if (!item) return;
       if (__DEV__) console.log('👆 [STATUS] Status tray opened');
       setSelected({ group, status });
+      if (refreshOwn && item.user.id === currentUserId) onRetry();
       if (!item.viewed && item.user.id !== currentUserId) onViewed(item.id);
     },
-    [ordered, onViewed, currentUserId]
+    [ordered, onViewed, onRetry, currentUserId]
   );
 
   const move = React.useCallback(
@@ -141,20 +156,47 @@ export default function StatusTray({
     [open, ordered, selected]
   );
 
+  const moveRef = React.useRef(move);
+  moveRef.current = move;
+
   React.useEffect(() => {
-    progress.stopAnimation();
+    const listener = progress.addListener(({ value }) => { progressValue.current = value; });
+    return () => progress.removeListener(listener);
+  }, [progress]);
+
+  React.useEffect(() => {
+    currentAnimation.current?.stop();
+    progressValue.current = 0;
     progress.setValue(0);
-    if (!active || active.type === "video") return;
+    setPaused(false);
+    return () => currentAnimation.current?.stop();
+  }, [activeId, progress]);
+
+  React.useEffect(() => {
+    currentAnimation.current?.stop();
+    if (!activeId || paused) return;
+    const seconds = activeDuration && activeDuration > 0
+      ? activeDuration
+      : activeType === 'video' ? 15 : 5;
     const animation = Animated.timing(progress, {
       toValue: 1,
-      duration: Math.max(3, active.duration_seconds || 5) * 1000,
+      duration: Math.max(100, (1 - progressValue.current) * seconds * 1000),
       useNativeDriver: false,
     });
+    currentAnimation.current = animation;
     animation.start(({ finished }) => {
-      if (finished) move(1);
+      if (finished) moveRef.current(1);
     });
     return () => animation.stop();
-  }, [active?.id, progress]);
+  }, [activeId, activeDuration, activeType, paused, progress]);
+
+  React.useEffect(() => {
+    const subscription = AppState.addEventListener('change', state => {
+      if (state !== 'active') setPaused(true);
+      else setPaused(false);
+    });
+    return () => subscription.remove();
+  }, []);
 
   const avatar = (uri: string | null | undefined, size: number) => {
     const normalized = normalizeLocalCmsImageUrl(uri);
@@ -184,7 +226,8 @@ export default function StatusTray({
             Math.max(
               0,
               group.statuses.findIndex((item) => !item.viewed)
-            )
+            ),
+            true
           )
         }
       >
@@ -201,12 +244,12 @@ export default function StatusTray({
             )}
           </View>
         </LinearGradient>
-        {own && headerMode && (
-          <Pressable onPress={() => setCreating(true)} style={styles.headerPlus} accessibilityLabel="Add Status">
+        {own && (
+          <Pressable onPress={event => { event.stopPropagation(); setCreating(true); }} style={styles.headerPlus} accessibilityLabel="Add Status">
             <MaterialCommunityIcons name="plus" size={rs(16)} color="#6A00FF" />
           </Pressable>
         )}
-        <Text style={[styles.label, headerMode && { color: headerTextColor || '#111827' }]} numberOfLines={1}>
+        <Text style={[styles.label, isDark && styles.darkText, headerMode && { color: headerTextColor || '#111827' }]} numberOfLines={1}>
           {own ? "Your Status" : group.user.name || "User"}
         </Text>
       </Pressable>
@@ -258,16 +301,17 @@ export default function StatusTray({
       setMedia(null);
       setType('text');
       setVisibility(null);
-    } catch (error: any) {
-      Alert.alert('Could not post status', error?.response?.data?.message || error?.message || 'Please try again.');
+    } catch (publishError: any) {
+      Alert.alert('Could not post status', publishError?.response?.data?.message || publishError?.message || 'Please try again.');
     } finally {
       setPosting(false);
     }
   };
 
   return (
-    <View style={[styles.section, headerMode && styles.headerSection]}>
+    <View style={[styles.section, isDark && styles.darkSection, headerMode && styles.headerSection]}>
       {profileMode && <View style={styles.head}>
+          <Text style={[styles.title, isDark && styles.darkText]}>Status</Text>
           <Pressable onPress={() => setCreating(true)} style={styles.addButton}>
             <MaterialCommunityIcons name="plus" size={16} color="#6A00FF" />
             <Text style={styles.addText}>Add Status</Text>
@@ -294,7 +338,8 @@ export default function StatusTray({
                 />
               </View>
             </View>
-            <Text style={[styles.label, headerMode && { color: headerTextColor || '#111827' }]}>Your Status</Text>
+            <Text style={[styles.label, isDark && styles.darkText, headerMode && { color: headerTextColor || '#111827' }]}>Your Status</Text>
+            <Text style={[styles.addHint, isDark && styles.darkMuted]}>Add a status</Text>
           </Pressable>
         )}
         {others.map((group, index) =>
@@ -302,15 +347,11 @@ export default function StatusTray({
         )}
       </ScrollView>
       {profileMode && mine?.statuses.length ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.previewRow}
-        >
+        <View style={styles.previewRow}>
           {mine.statuses.map((item, index) => (
             <Pressable
               key={item.id}
-              onPress={() => open(0, index)}
+              onPress={() => open(0, index, true)}
               style={[
                 styles.preview,
                 { backgroundColor: item.background_color || "#4B0082" },
@@ -344,9 +385,15 @@ export default function StatusTray({
                     ? "Video status"
                     : "Photo status"}
               </Text>
+              {Number.isFinite(item.view_count) && (
+                <View style={styles.previewViews}>
+                  <MaterialCommunityIcons name="eye-outline" size={rs(12)} color="#FFFFFF" />
+                  <Text style={styles.previewViewsText}>{item.view_count}</Text>
+                </View>
+              )}
             </Pressable>
           ))}
-        </ScrollView>
+        </View>
       ) : null}
       {loading && !groups.length && (
         <ActivityIndicator color="#6A00FF" style={styles.feedback} />
@@ -380,17 +427,24 @@ export default function StatusTray({
                     active.media_url,
                 }}
                 style={styles.media}
-                resizeMode="contain"
+                resizeMode="cover"
               />
             )}
+            {active.type !== 'text' && (
+              <>
+                <LinearGradient pointerEvents="none" colors={['rgba(0,0,0,0.65)', 'transparent']} style={styles.topShade} />
+                <LinearGradient pointerEvents="none" colors={['transparent', 'rgba(0,0,0,0.58)']} style={styles.bottomShade} />
+              </>
+            )}
             {active.type !== 'text' && !!active.text && (
-              <Text style={styles.caption}>{active.text}</Text>
+              <Text style={[styles.caption, { bottom: insets.bottom + rs(78) }]}>{active.text}</Text>
             )}
             {active.type === "text" && (
               <Text
                 style={[
                   styles.statusText,
                   {
+                    color: active.background_color?.toUpperCase() === '#FFC83D' ? '#111827' : '#FFFFFF',
                     fontStyle:
                       active.font_style === "italic" ? "italic" : "normal",
                     fontWeight: active.font_style === "bold" ? "800" : "600",
@@ -418,7 +472,15 @@ export default function StatusTray({
                 </Pressable>
               </View>
             )}
-            <View style={styles.viewerHeader}>
+            {active.user.id === currentUserId && Number.isFinite(active.view_count) && (
+              <View style={[styles.viewCount, { bottom: insets.bottom + rs(20) }]}>
+                <MaterialCommunityIcons name="eye-outline" size={rs(20)} color="#FFFFFF" />
+                <Text style={styles.viewCountText}>
+                  {active.view_count} {active.view_count === 1 ? 'view' : 'views'}
+                </Text>
+              </View>
+            )}
+            <View style={[styles.viewerHeader, { top: insets.top + rs(12) }]}>
               <View style={styles.progressRow}>
                 {ordered[selected.group].statuses.map((item, index) => (
                   <View key={item.id} style={styles.progressTrack}>
@@ -476,8 +538,20 @@ export default function StatusTray({
               </View>
             </View>
             <View style={styles.tapArea}>
-              <Pressable style={styles.tapHalf} onPress={() => move(-1)} />
-              <Pressable style={styles.tapHalf} onPress={() => move(1)} />
+              {([-1, 1] as const).map(direction => (
+                <Pressable
+                  key={direction}
+                  style={styles.tapHalf}
+                  delayLongPress={220}
+                  onPressIn={() => { longPressed.current = false; }}
+                  onLongPress={() => { longPressed.current = true; setPaused(true); }}
+                  onPressOut={() => setPaused(false)}
+                  onPress={() => {
+                    if (longPressed.current) { longPressed.current = false; return; }
+                    move(direction);
+                  }}
+                />
+              ))}
             </View>
           </View>
         )}
@@ -488,15 +562,15 @@ export default function StatusTray({
         animationType="slide"
         onRequestClose={() => setCreating(false)}
       >
-        <View style={styles.create}>
-        <ScrollView contentContainerStyle={styles.createContent} keyboardShouldPersistTaps="handled">
+        <KeyboardAvoidingView style={[styles.create, isDark && styles.darkSection]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={[styles.createContent, { paddingTop: insets.top + rs(18) }]} keyboardShouldPersistTaps="handled">
           <View style={styles.createHeader}>
-            <Text style={styles.createTitle}>Create Status</Text>
+            <Text style={[styles.createTitle, isDark && styles.darkText]}>Create Status</Text>
             <Pressable onPress={() => setCreating(false)}>
-              <MaterialCommunityIcons name="close" size={26} color="#111827" />
+              <MaterialCommunityIcons name="close" size={26} color={isDark ? '#FFFFFF' : '#111827'} />
             </Pressable>
           </View>
-          <Text style={styles.field}>Who can see this status?</Text>
+          <Text style={[styles.field, isDark && styles.darkText]}>Who can see this status?</Text>
           <View style={styles.audienceChoices}>
             {VISIBILITY.map(item => (
               <Pressable
@@ -504,18 +578,22 @@ export default function StatusTray({
                 accessibilityRole="radio"
                 accessibilityState={{ selected: visibility === item.value }}
                 onPress={() => setVisibility(item.value)}
-                style={[styles.audienceChoice, visibility === item.value && styles.audienceSelected]}
+                style={[styles.audienceChoice, isDark && styles.darkChoice, visibility === item.value && styles.audienceSelected, isDark && visibility === item.value && styles.darkAudienceSelected]}
               >
                 <MaterialCommunityIcons
-                  name={visibility === item.value ? 'radiobox-marked' : 'radiobox-blank'}
+                  name={item.icon}
                   size={rs(21)}
                   color="#6A00FF"
                 />
-                <Text style={styles.audienceText}>{item.label}</Text>
+                <View style={styles.audienceCopy}>
+                  <Text style={[styles.audienceText, isDark && styles.darkText]}>{item.label}</Text>
+                  <Text style={[styles.audienceDescription, isDark && styles.darkMuted]}>{item.description}</Text>
+                </View>
+                <MaterialCommunityIcons name={visibility === item.value ? 'check-circle' : 'circle-outline'} size={rs(16)} color={visibility === item.value ? '#6A00FF' : '#9CA3AF'} />
               </Pressable>
             ))}
           </View>
-          <View style={styles.choices}>
+          <View style={[styles.typeChoices, isDark && styles.darkChoice]}>
             {(["text", "image", "video"] as StatusType[]).map((item) => (
               <Pressable
                 key={item}
@@ -523,9 +601,9 @@ export default function StatusTray({
                   if (item !== type) setMedia(null);
                   setType(item);
                 }}
-                style={[styles.choice, type === item && styles.selected]}
+                style={[styles.typeChoice, type === item && styles.typeSelected]}
               >
-                <Text style={styles.choiceText}>{item.toUpperCase()}</Text>
+                <Text style={[styles.choiceText, isDark && styles.darkText, type === item && styles.typeSelectedText]}>{item === 'image' ? 'PHOTO' : item.toUpperCase()}</Text>
               </Pressable>
             ))}
           </View>
@@ -540,13 +618,14 @@ export default function StatusTray({
                 styles.textInput,
                 {
                   backgroundColor: color,
+                  color: color === '#FFC83D' ? '#111827' : '#FFFFFF',
                   fontStyle: font === "italic" ? "italic" : "normal",
                   fontWeight: font === "bold" ? "700" : "400",
                 },
               ]}
             />
           ) : (
-            <><Pressable onPress={() => chooseMedia(type)} style={styles.picker}>
+            <><Pressable onPress={() => chooseMedia(type)} style={[styles.picker, isDark && styles.darkChoice]}>
               {media?.uri && media.type?.startsWith("image/") ? (
                 <Image
                   source={{ uri: media.uri }}
@@ -569,10 +648,10 @@ export default function StatusTray({
               placeholderTextColor="#6B7280"
               value={draft}
               onChangeText={setDraft}
-              style={styles.captionInput}
+              style={[styles.captionInput, isDark && styles.darkInput]}
             /></>
           )}
-          {type === 'text' && <><Text style={styles.field}>Background color</Text>
+          {type === 'text' && <><Text style={[styles.field, isDark && styles.darkText]}>Background color</Text>
           <View style={styles.choices}>
             {["#4B0082", "#6A00FF", "#FF2D7A", "#FFC83D", "#111827"].map(
               (item) => (
@@ -588,15 +667,15 @@ export default function StatusTray({
               )
             )}
           </View>
-          <Text style={styles.field}>Font style</Text>
+          <Text style={[styles.field, isDark && styles.darkText]}>Font style</Text>
           <View style={styles.choices}>
             {["default", "italic", "bold"].map((item) => (
               <Pressable
                 key={item}
                 onPress={() => setFont(item)}
-                style={[styles.choice, font === item && styles.selected]}
+                style={[styles.choice, isDark && styles.darkChoice, font === item && styles.selected, isDark && font === item && styles.darkAudienceSelected]}
               >
-                <Text style={styles.choiceText}>{item}</Text>
+                <Text style={[styles.choiceText, isDark && styles.darkText]}>{item}</Text>
               </Pressable>
             ))}
           </View>
@@ -605,12 +684,14 @@ export default function StatusTray({
           <Pressable
             disabled={posting}
             onPress={publish}
-            style={[styles.postDisabled, !posting && styles.postEnabled, styles.postFooter]}
+            style={[styles.postDisabled, styles.postFooter, { marginBottom: insets.bottom + rs(12) }]}
             accessibilityLabel="Post status"
           >
-            {posting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.postText}>Post Status</Text>}
+            <LinearGradient colors={posting ? ['#9CA3AF', '#9CA3AF'] : ['#4B0082', '#6A00FF']} style={styles.postGradient}>
+              {posting ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.postText}>Post Status</Text>}
+            </LinearGradient>
           </Pressable>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -628,6 +709,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 3 },
   },
+  darkSection: { backgroundColor: '#18181B' },
+  darkText: { color: '#F9FAFB' },
+  darkMuted: { color: '#A1A1AA' },
   headerSection: {
     backgroundColor: 'transparent',
     borderRadius: 0,
@@ -701,11 +785,12 @@ const styles = StyleSheet.create({
     maxWidth: rs(72),
     textAlign: "center",
   },
+  addHint: { color: '#6B7280', fontSize: rs(9), marginTop: rs(2), textAlign: 'center' },
   feedback: { color: "#6A00FF", textAlign: "center", marginTop: rs(8) },
-  previewRow: { paddingHorizontal: rs(12), paddingTop: rs(12), gap: rs(8) },
+  previewRow: { paddingHorizontal: rs(12), paddingTop: rs(12), gap: rs(8), flexDirection: 'row', flexWrap: 'wrap' },
   preview: {
-    width: rs(96),
-    height: rs(98),
+    width: '31%',
+    height: rs(112),
     borderRadius: rs(12),
     padding: rs(8),
     justifyContent: "flex-end",
@@ -722,11 +807,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: rs(5),
   },
+  previewViews: { flexDirection: 'row', alignItems: 'center', gap: rs(3), marginTop: rs(4) },
+  previewViewsText: { color: '#FFFFFF', fontSize: rs(10), fontWeight: '700' },
   addButton: { flexDirection: "row", alignItems: "center", gap: 3 },
   addText: { color: "#6A00FF", fontWeight: "700" },
   viewer: { flex: 1, alignItems: "center", justifyContent: "center" },
   media: { width: "100%", height: "100%" },
-  caption: { position: 'absolute', bottom: rs(80), left: rs(20), right: rs(20), color: '#FFFFFF', fontSize: rs(16), textAlign: 'center', zIndex: 3, backgroundColor: 'rgba(0,0,0,0.4)', padding: rs(10), borderRadius: rs(8) },
+  topShade: { position: 'absolute', top: 0, left: 0, right: 0, height: '25%', zIndex: 1 },
+  bottomShade: { position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%', zIndex: 1 },
+  viewCount: { position: 'absolute', bottom: rs(36), left: rs(22), flexDirection: 'row', alignItems: 'center', gap: rs(7), zIndex: 3 },
+  viewCountText: { color: '#FFFFFF', fontSize: rs(14), fontWeight: '700' },
+  caption: { position: 'absolute', bottom: rs(80), left: rs(20), right: rs(20), color: '#FFFFFF', fontSize: rs(16), textAlign: 'center', zIndex: 3, padding: rs(10), textShadowColor: '#000000', textShadowRadius: 8 },
   statusText: {
     color: "#FFFFFF",
     fontSize: rs(28),
@@ -782,9 +873,14 @@ const styles = StyleSheet.create({
     paddingBottom: rs(25),
   },
   audienceChoices: { flexDirection: 'row', gap: rs(10), marginTop: rs(10) },
-  audienceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: rs(6), borderWidth: 1, borderColor: '#D1D5DB', borderRadius: rs(12), padding: rs(10) },
+  audienceChoice: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: rs(6), borderWidth: 1, borderColor: '#D1D5DB', borderRadius: rs(12), padding: rs(10), minHeight: rs(72) },
   audienceSelected: { borderColor: '#6A00FF', backgroundColor: '#F5F3FF' },
+  darkAudienceSelected: { backgroundColor: '#2E1065' },
   audienceText: { color: '#111827', fontSize: rs(11), fontWeight: '700', flexShrink: 1 },
+  audienceCopy: { flex: 1 },
+  audienceDescription: { color: '#6B7280', fontSize: rs(9), marginTop: rs(3), lineHeight: rs(12) },
+  darkChoice: { backgroundColor: '#27272A', borderColor: '#52525B' },
+  darkInput: { backgroundColor: '#27272A', color: '#FFFFFF' },
   createHeader: {
     flexDirection: "row",
     alignItems: "center",
@@ -797,6 +893,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     marginTop: rs(8),
   },
+  typeChoices: { flexDirection: 'row', backgroundColor: '#EDE9FE', borderRadius: rs(14), padding: rs(4), marginTop: rs(20) },
+  typeChoice: { flex: 1, alignItems: 'center', paddingVertical: rs(11), borderRadius: rs(11) },
+  typeSelected: { backgroundColor: '#6A00FF' },
+  typeSelectedText: { color: '#FFFFFF' },
   choice: {
     paddingHorizontal: rs(11),
     paddingVertical: rs(8),
@@ -829,13 +929,11 @@ const styles = StyleSheet.create({
   color: { width: rs(30), height: rs(30), borderRadius: rs(15) },
   colorSelected: { borderWidth: 3, borderColor: "#111827" },
   postDisabled: {
-    backgroundColor: "#D1D5DB",
+    backgroundColor: "transparent",
     borderRadius: rs(14),
-    paddingVertical: rs(13),
-    alignItems: "center",
-    marginTop: rs(25),
+    overflow: 'hidden',
   },
-  postEnabled: { backgroundColor: '#6A00FF' },
+  postGradient: { alignItems: 'center', justifyContent: 'center', paddingVertical: rs(14) },
   postFooter: { marginTop: 0, marginHorizontal: rs(18), marginBottom: rs(25) },
   postText: { color: "#FFFFFF", fontWeight: "800", fontSize: rs(15) },
   notice: { color: "#6B7280", marginTop: rs(10), lineHeight: rs(18) },

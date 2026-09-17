@@ -154,7 +154,13 @@ export async function fetchDashboardStatuses(userIds: number[]): Promise<StatusF
   return [ownGroup, ...feed.filter(group => group.user.id !== ownGroup.user.id)];
 }
 
-export async function markStatusViewed(statusId: number): Promise<void> {
+export type StatusViewResult = {
+  id: number;
+  viewed: boolean;
+  view_count: number;
+};
+
+export async function markStatusViewed(statusId: number): Promise<StatusViewResult> {
   const url = statusUrl(`/${statusId}/view`);
   if (__DEV__) {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -167,12 +173,18 @@ export async function markStatusViewed(statusId: number): Promise<void> {
   }
 
   try {
-    const response = await api.post(url, undefined, { headers: await statusAuthHeaders() });
+    const response = await api.post<{ success: boolean; data: StatusViewResult }>(
+      url, undefined, { headers: await statusAuthHeaders() },
+    );
     if (__DEV__) {
       console.log('✅ [STATUS API] MARK VIEWED RESPONSE');
       console.log('📊 HTTP Status:', response.status);
       console.log('📦 Response:', sanitizeStatusDebugData(response.data));
     }
+    if (!response.data?.success || !response.data.data) {
+      throw new Error('Could not mark status as viewed.');
+    }
+    return response.data.data;
   } catch (error) {
     if (__DEV__) {
       const requestError = error as AxiosError;
