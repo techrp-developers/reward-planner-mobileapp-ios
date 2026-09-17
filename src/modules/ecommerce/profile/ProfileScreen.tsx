@@ -3,15 +3,13 @@
 // API:    GET /v1/auth/user-info  (via getAuthHeaders)
 // Deps:   useAuth, useAppTheme, LogoutConfirmationModal, rs, fs
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
     View, Text, ScrollView, StyleSheet, TouchableOpacity,
-    Image, ActivityIndicator, Alert, Platform, Linking, Switch, Modal, PermissionsAndroid,
+    Image, ActivityIndicator, Alert, Platform, Linking, Switch,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import ViewShot, { type ViewShotRef } from 'react-native-view-shot';
-import { CameraRoll } from '@react-native-camera-roll/camera-roll';
-import Share from 'react-native-share';
+import VisitingCardModal from './VisitingCardModal';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -117,8 +115,6 @@ const ProfileScreen: React.FC = () => {
     const [logoutModalVisible, setLogoutModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [visitCardVisible, setVisitCardVisible] = useState(false);
-    const [visitCardExporting, setVisitCardExporting] = useState(false);
-    const visitCardCaptureRef = useRef<ViewShotRef>(null);
     const [logoutLoading, setLogoutLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deletionScheduled, setDeletionScheduled] = useState<{
@@ -262,63 +258,6 @@ const ProfileScreen: React.FC = () => {
             );
         }
     }, []);
-
-    const captureVisitCard = useCallback(async () => {
-        if (!visitCardCaptureRef.current) throw new Error('The visiting card is not ready yet.');
-        return visitCardCaptureRef.current.capture();
-    }, []);
-
-    const handleDownloadVisitCard = useCallback(async () => {
-        try {
-            setVisitCardExporting(true);
-            if (Platform.OS === 'android' && Number(Platform.Version) <= 28) {
-                const permission = await PermissionsAndroid.request(
-                    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
-                    {
-                        title: 'Save visiting card',
-                        message: 'Allow Reward Planners to save your visiting card to Photos.',
-                        buttonPositive: 'Allow',
-                        buttonNegative: 'Cancel',
-                    },
-                );
-                if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-                    Alert.alert('Permission required', 'Storage access is needed to save the card.');
-                    return;
-                }
-            }
-            const uri = await captureVisitCard();
-            await CameraRoll.save(uri, {
-                type: 'photo',
-                album: Platform.OS === 'android' ? 'Reward Planners' : undefined,
-            });
-            Alert.alert('Card saved', 'Your visiting card has been saved to Photos.');
-        } catch (error: any) {
-            Alert.alert('Could not save card', error?.message || 'Please try again.');
-        } finally {
-            setVisitCardExporting(false);
-        }
-    }, [captureVisitCard]);
-
-    const handleShareVisitCard = useCallback(async () => {
-        try {
-            setVisitCardExporting(true);
-            const uri = await captureVisitCard();
-            const message = [displayName, userInfo?.employeeInfo?.role, userInfo?.company?.name,
-                userInfo?.phone, userInfo?.email].filter(Boolean).join('\n');
-            await Share.open({
-                title: `${displayName}'s visiting card`,
-                subject: `${displayName}'s visiting card`,
-                message,
-                url: uri,
-                type: 'image/jpeg',
-                failOnCancel: false,
-            });
-        } catch (error: any) {
-            Alert.alert('Could not share card', error?.message || 'Please try again.');
-        } finally {
-            setVisitCardExporting(false);
-        }
-    }, [captureVisitCard, displayName, userInfo]);
 
     // ─────────────────────────────────────────────────────────────────────────
     if (loading) {
@@ -621,100 +560,17 @@ const ProfileScreen: React.FC = () => {
                 </View>
             </ScrollView>
 
-            <Modal
+            <VisitingCardModal
                 visible={visitCardVisible}
-                transparent
-                statusBarTranslucent
-                animationType="fade"
-                onRequestClose={() => !visitCardExporting && setVisitCardVisible(false)}
-            >
-                <View style={styles.visitCardBackdrop}>
-                    <View style={styles.visitCardModal}>
-                        <View style={styles.visitCardModalHeader}>
-                            <Text style={styles.visitCardModalTitle}>My Visiting Card</Text>
-                            <TouchableOpacity
-                                onPress={() => setVisitCardVisible(false)}
-                                disabled={visitCardExporting}
-                                accessibilityLabel="Close visiting card"
-                                style={styles.visitCardClose}
-                            >
-                                <MaterialCommunityIcons name="close" size={rs(23)} color="#FFFFFF" />
-                            </TouchableOpacity>
-                        </View>
-                        <ViewShot
-                            ref={visitCardCaptureRef}
-                            options={{ format: 'jpg', quality: 0.95, result: 'tmpfile', fileName: 'reward-planners-visiting-card' }}
-                            style={styles.visitCardCapture}
-                        >
-                            <LinearGradient
-                                colors={['#09090B', '#18181B', '#312E81']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.visitCardFace}
-                                collapsable={false}
-                            >
-                                <View style={styles.visitCardBrandRow}>
-                                    <View style={styles.visitCardBrandIcon}>
-                                        <MaterialCommunityIcons name="gift-outline" size={rs(22)} color="#FBBF24" />
-                                    </View>
-                                    <Text style={styles.visitCardBrandName}>Reward Planners</Text>
-                                    {userInfo?.company?.logo ? (
-                                        <Image source={{ uri: userInfo.company.logo }} style={styles.visitCardCompanyLogo} resizeMode="contain" />
-                                    ) : null}
-                                </View>
-                                <View style={styles.visitCardAvatarRing}>
-                                    {(avatarUri || userInfo?.userImage) ? (
-                                        <Image source={{ uri: (avatarUri || userInfo?.userImage)! }} style={styles.visitCardAvatar} />
-                                    ) : (
-                                        <MaterialCommunityIcons name="account" size={rs(50)} color="#FFFFFF" />
-                                    )}
-                                </View>
-                                <Text style={styles.visitCardName} numberOfLines={2}>{displayName}</Text>
-                                {!!userInfo?.employeeInfo?.role && (
-                                    <Text style={styles.visitCardRole} numberOfLines={1}>{userInfo.employeeInfo.role}</Text>
-                                )}
-                                {!!userInfo?.company?.name && (
-                                    <Text style={styles.visitCardCompany} numberOfLines={1}>{userInfo.company.name}</Text>
-                                )}
-                                <View style={styles.visitCardDivider} />
-                                {!!userInfo?.phone && (
-                                    <View style={styles.visitCardContactRow}>
-                                        <MaterialCommunityIcons name="phone-outline" size={rs(18)} color="#C4B5FD" />
-                                        <Text style={styles.visitCardContactText} numberOfLines={1}>{formatPhone(userInfo.phone)}</Text>
-                                    </View>
-                                )}
-                                {!!userInfo?.email && (
-                                    <View style={styles.visitCardContactRow}>
-                                        <MaterialCommunityIcons name="email-outline" size={rs(18)} color="#C4B5FD" />
-                                        <Text style={styles.visitCardContactText} numberOfLines={1}>{userInfo.email}</Text>
-                                    </View>
-                                )}
-                                <Text style={styles.visitCardFooter}>GOOD PEOPLE · GREAT REWARDS</Text>
-                            </LinearGradient>
-                        </ViewShot>
-                        <View style={styles.visitCardActions}>
-                            <TouchableOpacity
-                                style={styles.visitCardDownloadButton}
-                                onPress={handleDownloadVisitCard}
-                                disabled={visitCardExporting}
-                                accessibilityLabel="Save visiting card to Photos"
-                            >
-                                {visitCardExporting ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialCommunityIcons name="download-outline" size={rs(18)} color="#FFFFFF" />}
-                                <Text style={styles.visitCardActionText}>Download</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.visitCardShareButton}
-                                onPress={handleShareVisitCard}
-                                disabled={visitCardExporting}
-                                accessibilityLabel="Share visiting card"
-                            >
-                                <MaterialCommunityIcons name="share-variant-outline" size={rs(18)} color="#FFFFFF" />
-                                <Text style={styles.visitCardActionText}>Share</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+                onClose={() => setVisitCardVisible(false)}
+                name={displayName}
+                role={userInfo?.employeeInfo?.role}
+                companyName={userInfo?.company?.name}
+                companyLogo={userInfo?.company?.logo}
+                imageUri={avatarUri || userInfo?.userImage}
+                phone={userInfo?.phone}
+                email={userInfo?.email}
+            />
 
             {/* Fixed outside ScrollView so Back is always visible while dragging. */}
             <TouchableOpacity
@@ -1151,30 +1007,6 @@ const styles = StyleSheet.create({
     flex1: { flex: 1 },
     subRow: { paddingLeft: rs(10) },
 
-    visitCardBackdrop: { flex: 1, justifyContent: 'center', paddingHorizontal: rs(18), backgroundColor: 'rgba(9,9,11,0.78)' },
-    visitCardModal: { width: '100%', maxWidth: rs(420), alignSelf: 'center' },
-    visitCardModalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: rs(12) },
-    visitCardModalTitle: { color: '#FFFFFF', fontSize: fs(17), fontWeight: '800' },
-    visitCardClose: { width: rs(38), height: rs(38), borderRadius: rs(19), alignItems: 'center', justifyContent: 'center', backgroundColor: '#27272A' },
-    visitCardCapture: { width: '100%', borderRadius: rs(22), overflow: 'hidden', backgroundColor: '#09090B' },
-    visitCardFace: { minHeight: rs(380), padding: rs(20), borderRadius: rs(22), overflow: 'hidden' },
-    visitCardBrandRow: { flexDirection: 'row', alignItems: 'center', gap: rs(8) },
-    visitCardBrandIcon: { width: rs(34), height: rs(34), borderRadius: rs(10), alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.12)' },
-    visitCardBrandName: { flex: 1, color: '#FFFFFF', fontSize: fs(13), fontWeight: '900' },
-    visitCardCompanyLogo: { width: rs(48), height: rs(34), borderRadius: rs(8), backgroundColor: '#FFFFFF' },
-    visitCardAvatarRing: { width: rs(82), height: rs(82), borderRadius: rs(41), alignSelf: 'center', alignItems: 'center', justifyContent: 'center', marginTop: rs(18), borderWidth: rs(3), borderColor: '#FBBF24', backgroundColor: '#4F46E5', overflow: 'hidden' },
-    visitCardAvatar: { width: '100%', height: '100%' },
-    visitCardName: { color: '#FFFFFF', fontSize: fs(22), fontWeight: '900', textAlign: 'center', marginTop: rs(12) },
-    visitCardRole: { color: '#C4B5FD', fontSize: fs(13), fontWeight: '700', textAlign: 'center', marginTop: rs(4) },
-    visitCardCompany: { color: '#FDE68A', fontSize: fs(12), fontWeight: '700', textAlign: 'center', marginTop: rs(5) },
-    visitCardDivider: { height: 1, backgroundColor: 'rgba(255,255,255,0.20)', marginTop: rs(20), marginBottom: rs(18) },
-    visitCardContactRow: { flexDirection: 'row', alignItems: 'center', gap: rs(10), marginBottom: rs(12) },
-    visitCardContactText: { color: '#FFFFFF', fontSize: fs(12), fontWeight: '600', flex: 1 },
-    visitCardFooter: { color: '#FBBF24', fontSize: fs(8), fontWeight: '800', letterSpacing: 1.3, textAlign: 'center', marginTop: 'auto' },
-    visitCardActions: { flexDirection: 'row', gap: rs(10), marginTop: rs(16) },
-    visitCardDownloadButton: { flex: 1, minHeight: rs(48), borderRadius: rs(14), backgroundColor: '#27272A', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: rs(7) },
-    visitCardShareButton: { flex: 1, minHeight: rs(48), borderRadius: rs(14), backgroundColor: '#4F46E5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: rs(7) },
-    visitCardActionText: { color: '#FFFFFF', fontSize: fs(13), fontWeight: '800' },
 
     // Footer
     footer: { alignItems: 'center', paddingVertical: rs(28), gap: rs(5) },
