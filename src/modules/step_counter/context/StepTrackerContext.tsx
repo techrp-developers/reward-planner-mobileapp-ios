@@ -208,6 +208,14 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     if (count <= 0) return false;
     if (isSyncing.current) return false;
 
+    if (Platform.OS === 'ios') {
+      // The dashboard can read steps immediately from HealthKit, but the
+      // server also needs the first few steps for summaries and rewards.
+      if (lastSyncedDate.current !== today || lastSyncedSteps.current < 0) return true;
+      if (count <= lastSyncedSteps.current) return false;
+      return Date.now() - lastSyncTime.current >= 60_000;
+    }
+
     if (lastSyncedDate.current !== today) {
       // New day — skip cooldown (fresh start) but still require MIN_STEP_DIFF
       // so a midnight wakeup with 2 steps doesn't fire an API call.

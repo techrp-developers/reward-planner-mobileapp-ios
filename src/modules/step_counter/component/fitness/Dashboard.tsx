@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import Svg, { Circle } from "react-native-svg";
 
@@ -324,6 +324,12 @@ const Dashboard: React.FC = () => {
     refreshSteps,
     isSetupComplete,
   } = useStepTracker();
+
+  useFocusEffect(useCallback(() => {
+    void refreshSteps();
+    const interval = setInterval(() => { void refreshSteps(); }, 60_000);
+    return () => clearInterval(interval);
+  }, [refreshSteps]));
 
   // If Health Connect is uninstalled while the user is on the Dashboard (or on
   // a fresh install where HC is gone), the context resets isSetupComplete to
