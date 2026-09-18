@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+/ios/Pods/
+
+# Native build output and local caches
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/app/.cxx/
+/ios/build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+.DS_Store
+
+# Local configuration and logs
+/android/local.properties
+*.log
+coverage/

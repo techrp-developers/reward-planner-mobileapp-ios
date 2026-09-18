@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Alert, Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RESULTS } from "react-native-permissions";
@@ -9,8 +9,9 @@ import {
   getNotificationPermissionStatus,
   openNotificationSettings,
 } from "../modules/notifications/FCMService";
-import { checkAppVersion } from "../modules/common/versionupdate/checkAppVersion";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
+import { OtaUpdatePrompt } from "../modules/common/versionupdate/OtaUpdatePrompt";
+import { useUpdateGates } from "../modules/common/versionupdate/useUpdateGates";
 import { RewardModal } from "../modules/common/reward/RewardModal";
 
 // import Dashbord from "../modules/dashboard/dashboard";
@@ -303,23 +304,9 @@ function AppNavigator() {
 //  isAuthenticated = true, termsAccepted = true
 //    └─ App  (normal app flow)
 
-type VersionModalState = {
-  visible: boolean;
-  forceUpdate: boolean;
-  maintenance: boolean;
-  updateUrl: string;
-};
-
-const MODAL_HIDDEN: VersionModalState = {
-  visible: false,
-  forceUpdate: false,
-  maintenance: false,
-  updateUrl: "",
-};
-
 export default function RootNavigator() {
   const { isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
-  const [versionModal, setVersionModal] = useState<VersionModalState>(MODAL_HIDDEN);
+  const { storeUpdate, onStoreUpdateLater, otaPrompt, onOtaUpdate, onOtaLater } = useUpdateGates();
   const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
   const deniedAlertShownRef = useRef(false);
 
@@ -353,31 +340,6 @@ export default function RootNavigator() {
       fcmUnsubscribeRef.current?.();
     };
   }, [isAuthenticated]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    const checkVersion = async () => {
-      const result = await checkAppVersion();
-
-      if (!mounted || !result.success) return;
-
-      if (result.maintenance || result.updateAvailable) {
-        setVersionModal({
-          visible: true,
-          maintenance: result.maintenance,
-          forceUpdate: result.forceUpdate,
-          updateUrl: result.updateUrl,
-        });
-      }
-    };
-
-    checkVersion();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   // Show Splash while: (a) session is hydrating, OR (b) authenticated but
   // terms status API call hasn't resolved yet (termsAccepted is still null).
@@ -430,11 +392,17 @@ export default function RootNavigator() {
     <>
       {navigator}
       <AppUpdateModal
-        visible={versionModal.visible}
-        forceUpdate={versionModal.forceUpdate}
-        maintenance={versionModal.maintenance}
-        updateUrl={versionModal.updateUrl}
-        onLater={() => setVersionModal(MODAL_HIDDEN)}
+        visible={storeUpdate.visible}
+        forceUpdate={storeUpdate.forceUpdate}
+        maintenance={storeUpdate.maintenance}
+        updateUrl={storeUpdate.updateUrl}
+        onLater={onStoreUpdateLater}
+      />
+      <OtaUpdatePrompt
+        visible={otaPrompt.visible}
+        releaseNotes={otaPrompt.releaseNotes}
+        onUpdate={onOtaUpdate}
+        onLater={onOtaLater}
       />
       <RewardModal
         visible={showRewardModal}
