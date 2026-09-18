@@ -78,8 +78,6 @@ final class HealthKitManager: NSObject {
       quantitySamplePredicate: predicate,
       options: .cumulativeSum
     ) { _, statistics, error in
-      let loggedSteps = statistics?.sumQuantity()?.doubleValue(for: .count()) ?? -1
-      NSLog("[Steps] HealthKit range %@ to %@; sum %@; error %@", start as NSDate, end as NSDate, NSNumber(value: loggedSteps), error?.localizedDescription ?? "none")
       if let error {
         // An empty day is a valid step count. HealthKit reports it as
         // errorNoData for statistics queries instead of returning a zero sum.
