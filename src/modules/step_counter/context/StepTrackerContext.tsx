@@ -272,6 +272,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         const nextState: StepDataState = total > 0 ? 'ok' : 'no_steps_today';
         stepDataStateRef.current = nextState;
         setStepDataState(nextState);
+        setHealthConnectError(null);
         if (total > 0) await doSync(total);
         return total;
       }

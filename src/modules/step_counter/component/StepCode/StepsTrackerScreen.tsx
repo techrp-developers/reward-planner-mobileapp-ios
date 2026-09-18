@@ -209,7 +209,7 @@ export default function StepsTrackerScreen() {
   const hasStepsPerm  = hasStepsPermission(grantedPermissions);
   const isHCReady     = healthConnectStatus === String(SdkAvailabilityStatus.SDK_AVAILABLE) && hasStepsPerm;
   const showGuide     = isHCInstalled && !hasStepsPerm;
-  const canProceed    = isHCReady && totalSteps > 0;
+  const canProceed    = isHCReady && (isIOS || totalSteps > 0);
 
   // Prevent a double-navigation crash: when handleContinue calls
   // requestStepsPermission(), that sets isSetupComplete = true which would
@@ -302,7 +302,7 @@ export default function StepsTrackerScreen() {
       if (isHCInstalled) setGuideOpen(true);
       return;
     }
-    if (totalSteps <= 0) {
+    if (!isIOS && totalSteps <= 0) {
       alert.warning(
         'No Steps Found',
         isIOS

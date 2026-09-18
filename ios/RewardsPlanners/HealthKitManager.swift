@@ -79,6 +79,12 @@ final class HealthKitManager: NSObject {
       options: .cumulativeSum
     ) { _, statistics, error in
       if let error {
+        // An empty day is a valid step count. HealthKit reports it as
+        // errorNoData for statistics queries instead of returning a zero sum.
+        if let healthError = error as? HKError, healthError.code == .errorNoData {
+          resolve(0)
+          return
+        }
         reject("healthkit_query_failed", error.localizedDescription, error)
         return
       }
