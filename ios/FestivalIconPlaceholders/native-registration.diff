@@ -1,0 +1,38 @@
+--- a/ios/RewardsPlanners.xcodeproj/project.pbxproj
++++ b/ios/RewardsPlanners.xcodeproj/project.pbxproj
+@@ -15,6 +15,8 @@
+ 		D0448B4C30230320009614DA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D0448B4B30230320009614DA /* GoogleService-Info.plist */; };
+ 		D9391CF4F9EA7A37C2E19E30 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+ 		EC084C1F492095FFE70812F1 /* libPods-RewardsPlanners.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9B584F931515DD7845CFA9CD /* libPods-RewardsPlanners.a */; };
++		F351CA120000000000000001 /* AppIconSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F351CA110000000000000001 /* AppIconSwitcher.swift */; };
++		F351CA120000000000000002 /* AppIconSwitcher.m in Sources */ = {isa = PBXBuildFile; fileRef = F351CA110000000000000002 /* AppIconSwitcher.m */; };
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXContainerItemProxy section */
+@@ -916,6 +918,8 @@
+ 		F554E4E116AF46319AD76FF4 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
+ 		FF33BEFA6C204E6E8CD4D60E /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
+ 		FF7D26E2E7B94E0F91CE9886 /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
++		F351CA110000000000000001 /* AppIconSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconSwitcher.swift; sourceTree = "<group>"; };
++		F351CA110000000000000002 /* AppIconSwitcher.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppIconSwitcher.m; sourceTree = "<group>"; };
+ /* End PBXFileReference section */
+ 
+ /* Begin PBXFrameworksBuildPhase section */
+@@ -939,6 +943,8 @@
+ 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+ 				A11CE00230E1000100ABCDEF /* HealthKitManager.swift */,
+ 				A11CE00430E1000100ABCDEF /* HealthKitManagerBridge.m */,
++				F351CA110000000000000002 /* AppIconSwitcher.m */,
++				F351CA110000000000000001 /* AppIconSwitcher.swift */,
+ 				13B07FB61A68108700A75B9A /* Info.plist */,
+ 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
+ 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+@@ -2181,6 +2187,8 @@
+ 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+ 				A11CE00130E1000100ABCDEF /* HealthKitManager.swift in Sources */,
+ 				A11CE00330E1000100ABCDEF /* HealthKitManagerBridge.m in Sources */,
++				F351CA120000000000000002 /* AppIconSwitcher.m in Sources */,
++				F351CA120000000000000001 /* AppIconSwitcher.swift in Sources */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};

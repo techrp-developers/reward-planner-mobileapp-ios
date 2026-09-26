@@ -12,6 +12,7 @@ import { AppThemeProvider } from './src/theme/ThemeContext';
 import { flushPendingNavigation, navigationRef } from './src/navigation/navigationRef';
 import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
 import { CmsAppShellProvider } from './src/modules/common/cms/CmsAppShellContext';
+import { useFestivalIcon } from './src/hooks/useFestivalIcon';
 
 type AuthModalStackParamList = {
   Login: undefined;
@@ -79,6 +80,7 @@ const eb = StyleSheet.create({
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  useFestivalIcon();
   console.log('[Startup] App() rendering');
   return (
     <ErrorBoundary>
