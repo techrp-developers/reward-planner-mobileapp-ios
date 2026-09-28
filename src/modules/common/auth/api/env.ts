@@ -1,1 +1,1 @@
-export const API_BASE_URL = "https://rewardplanners.com/api/crm";
+export { API_BASE_URL } from "../../../../config/apiConfig";

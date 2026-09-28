@@ -122,7 +122,7 @@ const shouldShowNavbar = (routeChain: string[]): boolean => {
   }
 
   if (moduleRoute === "DineOutModule") {
-    return ["DineOutModule"].includes(leafRoute);
+    return ["DineOutModule", "BookingHomeScreen"].includes(leafRoute);
   }
 
   return false;
@@ -345,7 +345,7 @@ function MainLayout() {
           />
           <ModuleStack.Screen
             name="DineOutModule"
-            getComponent={() => require("../modules/ecommerce/constants/ComingSoon").default}
+            getComponent={() => require("../modules/busbooking/navigation/BusBookingStack").default}
             initialParams={{ moduleName: "DineOut" }}
           />
         </ModuleStack.Navigator>

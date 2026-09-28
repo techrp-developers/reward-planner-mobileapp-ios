@@ -44,6 +44,7 @@ export type AppStackParamList = {
   AddressDetails: undefined | { mode?: 'add' | 'edit'; addressId?: number; manageOnly?: boolean; initialData?: any };
   Profile: { context?: 'dashboard' } | undefined;
   ServiceStack: undefined;
+  InssuranceStack: undefined;
   RewardStack: undefined;
   BBPSHomeStack: undefined;
   Search: undefined;
@@ -260,6 +261,12 @@ function AppNavigator() {
           }
         />
 
+        <AppStack.Screen
+          name="InssuranceStack"
+          getComponent={() =>
+            require("../modules/inssurance/navigation/InssuranceStack").default
+          }
+        />
         <AppStack.Screen
           name="GlobalSearchScreen"
           getComponent={() =>
