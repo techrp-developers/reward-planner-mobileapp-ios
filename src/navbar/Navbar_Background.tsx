@@ -25,7 +25,7 @@ export const NAVBAR_BACKGROUND_ASPECT_RATIO = 1317 / 551;
 // profile/search block collapses away above it.
 export const NAVBAR_COLLAPSED_BACKGROUND_HEIGHT = 105;
 export const NAVBAR_COLLAPSE_DISTANCE = 90;
-export const NAVBAR_WHITE_BACKGROUND_OFFSET = 45;
+export const NAVBAR_SCROLLED_BACKGROUND_OFFSET = 45;
 
 export default function Navbar_Background({
   activeTab,
@@ -44,8 +44,8 @@ export default function Navbar_Background({
     ],
     extrapolate: "clamp",
   });
-  const whiteBackgroundOpacity = scrollY.interpolate({
-    inputRange: [0, NAVBAR_WHITE_BACKGROUND_OFFSET],
+  const scrolledBackgroundOpacity = scrollY.interpolate({
+    inputRange: [0, NAVBAR_SCROLLED_BACKGROUND_OFFSET],
     outputRange: [0, 1],
     extrapolate: "clamp",
   });
@@ -74,17 +74,15 @@ export default function Navbar_Background({
   const hasVisibleImage = (banner: typeof currentBanner) =>
     Boolean(banner?.imageUrl && !failedImages[banner.imageUrl]);
   const showOverlay = hasVisibleImage(currentBanner) || hasVisibleImage(previousBanner);
-  // The CMS only stores a single navbar_background color per module — when
-  // no color/image has been published for a module at all, fall back to a
-  // theme-aware surface instead of "transparent", which let whatever sits
-  // behind Navbar show through and read as a stuck-white bar in dark mode.
+  // CMS colors have no dark variant; use the dark surface and dim artwork
+  // so the navbar remains readable in either theme.
   const defaultBgColor = isDark ? "#09090B" : "#FFFFFF";
 
   const renderLayer = (tab: TopTab, opacity?: Animated.Value | number) => {
     const banner = banners[tab];
     const imageUrl = banner?.imageUrl;
     const showImage = Boolean(imageUrl && !failedImages[imageUrl]);
-    const bgColor = banner?.bgColor ?? defaultBgColor;
+    const bgColor = isDark ? defaultBgColor : banner?.bgColor ?? defaultBgColor;
 
     console.log('[CMS] renderLayer:', {
       tab,
@@ -123,7 +121,7 @@ export default function Navbar_Background({
   };
 
   const resolvedBgColor =
-    currentBanner?.bgColor ?? previousBanner?.bgColor ?? defaultBgColor;
+    isDark ? defaultBgColor : currentBanner?.bgColor ?? previousBanner?.bgColor ?? defaultBgColor;
   const hasDynamicBackground =
     resolvedBgColor !== "transparent" || showOverlay;
   const backgroundFrameStyle = React.useMemo(
@@ -151,8 +149,11 @@ export default function Navbar_Background({
       <View style={[styles.root, showOverlay && styles.imageRoot]}>
         {previousTab !== activeTab ? renderLayer(previousTab, 1) : null}
         {renderLayer(activeTab, previousTab === activeTab ? 1 : fade)}
+        {isDark && showOverlay ? (
+          <View style={[StyleSheet.absoluteFill, styles.darkImageOverlay]} />
+        ) : null}
         <Animated.View
-          style={[StyleSheet.absoluteFill, styles.scrolledBackground, { opacity: whiteBackgroundOpacity }]}
+          style={[StyleSheet.absoluteFill, { backgroundColor: defaultBgColor, opacity: scrolledBackgroundOpacity }]}
         />
       </View>
     </Animated.View>
@@ -182,7 +183,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
   },
-  scrolledBackground: {
-    backgroundColor: "#FFFFFF",
+  darkImageOverlay: {
+    backgroundColor: "rgba(9,9,11,0.6)",
   },
 });

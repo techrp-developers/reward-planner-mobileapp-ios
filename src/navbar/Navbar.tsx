@@ -28,7 +28,7 @@ import { getNotificationBadge } from "../modules/dashboard/notification/Notifica
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { handleNavigateWithPrefetch } from "../modules/ecommerce/navigation/navigationPerformance";
 
-import Navbar_Background, { NAVBAR_WHITE_BACKGROUND_OFFSET } from "./Navbar_Background";
+import Navbar_Background, { NAVBAR_SCROLLED_BACKGROUND_OFFSET } from "./Navbar_Background";
 import { useNavbarBanners } from "./hooks/useNavbarBanners";
 import { TAB_MODULE_MAP, TopTab, isTopTab } from "./navbarConstants";
 import { useModuleIcons } from "./hooks/useModuleIcons";
@@ -450,14 +450,15 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   const { isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   const { scrollY } = useNavbarScroll();
-  const [isScrolledWhite, setIsScrolledWhite] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
   React.useEffect(() => {
     const listener = scrollY.addListener(({ value }) => {
-      const next = value >= NAVBAR_WHITE_BACKGROUND_OFFSET;
-      setIsScrolledWhite((current) => current === next ? current : next);
+      const next = value >= NAVBAR_SCROLLED_BACKGROUND_OFFSET;
+      setIsScrolled((current) => current === next ? current : next);
     });
     return () => scrollY.removeListener(listener);
   }, [scrollY]);
+  const isScrolledWhite = isScrolled && !isDark;
   const [rewardPoints, setRewardPoints] = React.useState(0);
   const [customerName, setCustomerName] = React.useState("Guest");
   const [customerLocation, setCustomerLocation] = React.useState("Set delivery location");
@@ -564,7 +565,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   const frostedSurface = isScrolledWhite ? "#FFFFFF" : isDark ? "rgba(20,20,20,0.55)" : "rgba(255,255,255,0.88)";
   const navbarBorder = isScrolledWhite ? "rgba(0,0,0,0.08)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
   const activeBanner = banners[activeTab];
-  const navbarIconColor = isScrolledWhite ? "#111827" : activeBanner?.imageUrl
+  const navbarIconColor = isDark ? "#FFFFFF" : isScrolledWhite ? "#111827" : activeBanner?.imageUrl
     ? "#FFFFFF"
     : activeBanner?.bgColor
       ? getReadableTextColor(activeBanner.bgColor)
