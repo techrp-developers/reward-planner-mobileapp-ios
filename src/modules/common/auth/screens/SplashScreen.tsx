@@ -7,7 +7,7 @@ const { width } = Dimensions.get("window");
 
 const SplashScreen = () => {
   return (
-    
+
     <View style={styles.container}>
       <View style={styles.content}>
         <Image source={logo} style={styles.logo} resizeMode="contain" />

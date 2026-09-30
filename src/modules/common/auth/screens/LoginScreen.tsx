@@ -102,7 +102,7 @@ export default function LoginScreen({ navigation }: Props) {
   return (
     <AuthLayout onBack={method && !sending ? backToMethods : undefined}>
       {!method ? <>
-        <Text style={[authStyles.title, { color: theme.text }]}>Welcome to RewardsPlanners</Text>
+        <Text style={[authStyles.title, { color: theme.text }]}>Welcome to Reward Planners</Text>
         <Text style={[authStyles.description, { color: theme.secondaryText }]}>Access the benefits your workplace has chosen for you.</Text>
         <AuthButton title="Continue with Mobile" onPress={() => { void chooseMethod("phone"); }} />
         <TouchableOpacity onPress={() => { void chooseMethod("email"); }} accessibilityRole="button" style={[styles.emailButton, { borderColor: theme.border }]}>
