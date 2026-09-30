@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { BackHandler, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { BackHandler, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -9,6 +9,7 @@ import { normalizeIndianMobile, parseLoginIdentifier } from "../utils/loginIdent
 import { authErrorMessage, rateLimitDelay } from "../utils/otpInput";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 import { AuthButton, AuthLayout, authStyles } from "../components/AuthLayout";
+import { AuthPressable } from "../components/AuthMotion";
 import { getPhoneNumberHint } from "../hooks/usePhoneHint";
 import { useOtpTimer } from "../hooks/useOtpTimer";
 import { OTP_RESEND_COOLDOWN_SECONDS } from "../constants/otp";
@@ -100,16 +101,16 @@ export default function LoginScreen({ navigation }: Props) {
   };
 
   return (
-    <AuthLayout onBack={method && !sending ? backToMethods : undefined}>
+    <AuthLayout welcome={!method} onBack={method && !sending ? backToMethods : undefined}>
       {!method ? <>
-        <Text style={[authStyles.title, { color: theme.text }]}>Welcome to Reward Planners</Text>
+        <Text style={[authStyles.title, { color: theme.text }]}>Welcome</Text>
         <Text style={[authStyles.description, { color: theme.secondaryText }]}>Access the benefits your workplace has chosen for you.</Text>
-        <AuthButton title="Continue with Mobile" onPress={() => { void chooseMethod("phone"); }} />
-        <TouchableOpacity onPress={() => { void chooseMethod("email"); }} accessibilityRole="button" style={[styles.emailButton, { borderColor: theme.border }]}>
+        <AuthButton animatePress title="Continue with Mobile" onPress={() => { void chooseMethod("phone"); }} />
+        <AuthPressable onPress={() => { void chooseMethod("email"); }} accessibilityRole="button" accessibilityLabel="Continue with Email" style={[styles.emailButton, { borderColor: theme.border }]}>
           <MaterialCommunityIcons name="email-outline" size={21} color={theme.text} />
           <Text style={[styles.emailButtonText, { color: theme.text }]}>Continue with Email</Text>
-        </TouchableOpacity>
-        <Text style={[styles.hint, { color: theme.secondaryText }]}>Sign in with a verification code. No password needed.</Text>
+        </AuthPressable>
+        <Text style={[styles.hint, { color: theme.secondaryText }]}>Sign in securely with a verification code. No password needed.</Text>
       </> : <>
         <Text style={[authStyles.title, { color: theme.text }]}>{method === "phone" ? "Mobile Number" : "Email Address"}</Text>
         <Text style={[authStyles.description, { color: theme.secondaryText }]}>
@@ -145,7 +146,7 @@ export default function LoginScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   emailButton: { flexDirection: "row", gap: 10, minHeight: 54, borderWidth: 1, borderRadius: 15, alignItems: "center", justifyContent: "center", marginTop: 14, padding: 12 },
-  emailButtonText: { fontSize: 16, fontWeight: "600" },
+  emailButtonText: { flexShrink: 1, textAlign: "center", fontSize: 16, fontWeight: "600" },
   hint: { fontSize: 13, lineHeight: 20, textAlign: "center", marginTop: 18, marginBottom: 8 },
   inputWrap: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 14, minHeight: 56, marginBottom: 20 },
   prefix: { fontSize: 17, fontWeight: "600", marginRight: 12 },
