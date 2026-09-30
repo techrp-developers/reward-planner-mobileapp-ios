@@ -1,30 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
+import { AppState } from "react-native";
 
-type UseOtpTimerResult = {
-  secondsLeft: number;
-  canResend: boolean;
-  reset: (seconds?: number) => void;
-};
-
-export function useOtpTimer(initialSeconds: number): UseOtpTimerResult {
-  const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
+export function useOtpTimer(initialSeconds: number, initialDeadline?: number) {
+  const [deadline, setDeadline] = useState(
+    () => initialDeadline ?? Date.now() + initialSeconds * 1000,
+  );
+  const [now, setNow] = useState(Date.now);
 
   useEffect(() => {
-    if (secondsLeft <= 0) return;
+    const tick = () => setNow(Date.now());
+    const interval = setInterval(tick, 1000);
+    // Reconcile elapsed time after returning from WhatsApp or email.
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") tick();
+    });
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+    };
+  }, []);
 
-    const interval = setInterval(() => {
-      setSecondsLeft((prev) => prev - 1);
-    }, 1000);
+  const reset = useCallback((seconds = initialSeconds) => {
+    const current = Date.now();
+    setNow(current);
+    setDeadline(current + seconds * 1000);
+  }, [initialSeconds]);
 
-    return () => clearInterval(interval);
-  }, [secondsLeft]);
-
-  const reset = useCallback(
-    (seconds: number = initialSeconds) => {
-      setSecondsLeft(seconds);
-    },
-    [initialSeconds],
-  );
-
-  return { secondsLeft, canResend: secondsLeft <= 0, reset };
+  const secondsLeft = Math.max(0, Math.ceil((deadline - now) / 1000));
+  return { secondsLeft, canResend: secondsLeft === 0, reset };
 }

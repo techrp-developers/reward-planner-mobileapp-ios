@@ -6,7 +6,7 @@ export type AuthMethod = "phone" | "email";
 export type AuthStackParamList = {
   Welcome: undefined;
   Login: undefined;
-  LoginOTP:{identifier: string};
+  LoginOTP: { identifier: string; resendAvailableAt?: number };
   OTPScreen: {
     method: AuthMethod;
     destination: string;

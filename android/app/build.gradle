@@ -141,6 +141,7 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation("com.google.android.gms:play-services-auth:22.0.0")
 
     // Keep Fresco add-ons aligned with the Fresco version pulled by react-android.
     implementation("com.facebook.fresco:webpsupport:3.6.0")

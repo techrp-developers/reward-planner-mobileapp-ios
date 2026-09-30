@@ -8,13 +8,13 @@ import React, {
   useState,
 } from "react";
 import { Platform } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import DeviceInfo from "react-native-device-info";
 import api, { API_BASE_URL, setSessionHandlers } from "../api/axios";
 import { clearAuthToken, persistAuthToken } from "../api/AuthAPI";
 import { fetchTermsStatus } from "../../../ecommerce/api/TermsConditionAPI";
 import { isTokenExpiringSoon } from "../utils/jwtUtils";
+import { secureSetItem, secureGetItem, secureDeleteItem } from "../utils/secureSessionStorage";
 
 const REFRESH_TOKEN_KEY = "@rewardsplanners_refresh_token";
 const DEVICE_ID_KEY = "@rewardsplanners_device_id";
@@ -59,53 +59,6 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
-
-const loadSecureStore = () => {
-  try {
-    const SecureStore = require("expo-secure-store");
-
-    if (
-      SecureStore &&
-      typeof SecureStore.getItemAsync === "function" &&
-      typeof SecureStore.setItemAsync === "function" &&
-      typeof SecureStore.deleteItemAsync === "function"
-    ) {
-      return SecureStore;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-};
-
-const secureStore = loadSecureStore();
-
-const secureSetItem = async (key: string, value: string) => {
-  if (secureStore) {
-    await secureStore.setItemAsync(key, value);
-    return;
-  }
-
-  await AsyncStorage.setItem(key, value);
-};
-
-const secureGetItem = async (key: string) => {
-  if (secureStore) {
-    return secureStore.getItemAsync(key);
-  }
-
-  return AsyncStorage.getItem(key);
-};
-
-const secureDeleteItem = async (key: string) => {
-  if (secureStore) {
-    await secureStore.deleteItemAsync(key);
-    return;
-  }
-
-  await AsyncStorage.removeItem(key);
-};
 
 const extractUser = (payload: any): AuthUser | null => {
   const user = payload?.user || payload?.data?.user || payload?.data || null;
