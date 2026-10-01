@@ -174,7 +174,7 @@ const pollForFinalPaymentStatus = async (orderId: number) => {
 export default function OrderStepUI() {
   const { isAuthenticated, logout, user } = useAuth();
   const { isDark, theme } = useAppTheme();
-  const stickyCTA = useStickyBottomCTA();
+  const stickyCTA = useStickyBottomCTA({ tabBarAware: false });
   const { removeItem: removeFromCart } = useCart();
   const alert = useAlert();
   const alertRef = useRef(alert);
@@ -205,13 +205,8 @@ export default function OrderStepUI() {
       console.warn('Failed to clear session during unauthorized handling', e);
     }
 
-    const parent = (navigation as any)?.getParent?.();
-    if (parent && typeof parent.reset === 'function') {
-      parent.reset({ index: 0, routes: [{ name: 'AuthStack' }] });
-    } else {
-      navigation.navigate('Home');
-    }
-  }, [logout, navigation]);
+    // RootNavigator observes logout and mounts the existing Auth flow.
+  }, [logout]);
 
   const route = useRoute<RouteT>();
   const mode = route?.params?.mode === 'buy_now' ? 'buy_now' : 'cart';
@@ -241,11 +236,13 @@ export default function OrderStepUI() {
           toValue: 1,
           duration: 700,
           useNativeDriver: true,
+          isInteraction: false,
         }),
         Animated.timing(pulse, {
           toValue: 0,
           duration: 700,
           useNativeDriver: true,
+          isInteraction: false,
         }),
       ]),
     );
@@ -369,6 +366,7 @@ export default function OrderStepUI() {
     data: checkoutData,
     isFetching: isCheckoutFetching,
     error: checkoutError,
+    refetch: retryCheckout,
   } = useQuery({
     queryKey: checkoutQueryKey,
     queryFn: async () => {
@@ -1285,15 +1283,33 @@ export default function OrderStepUI() {
 
   const loading =
     isAuthenticated &&
-    (!isBuyNowValid ||
-      !hasCheckoutStarted ||
+    isBuyNowValid &&
+    (!hasCheckoutStarted ||
       (isCheckoutFetching && checkoutData === undefined) ||
       (hasCheckoutStarted && checkoutData === undefined && !checkoutError) ||
-      checkoutHasItemsPendingSync ||
-      (mode === 'buy_now' &&
-        isBuyNowValid &&
-        items.length === 0 &&
-        !checkoutError));
+      checkoutHasItemsPendingSync);
+
+  const emptyBuyNowPreview = mode === 'buy_now' && checkoutData !== undefined &&
+    !isCheckoutFetching && checkoutDataItems.length === 0;
+
+  if (!isBuyNowValid || checkoutError || emptyBuyNowPreview) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
+        <ProductHeadColor title="Checkout" onBackPress={() => navigation.goBack()} showSearch={false} isDark={isDark} />
+        <View style={{ padding: 24 }}>
+          <Text style={{ color: theme.text }}>Unable to load checkout</Text>
+          <Text style={{ color: theme.secondaryText, marginVertical: 12 }}>
+            {!isBuyNowValid ? 'Please select a valid product option.' :
+              emptyBuyNowPreview ? 'This product is currently unavailable for checkout.' :
+              'We could not load your order preview. Please try again.'}
+          </Text>
+          {isBuyNowValid && <TouchableOpacity disabled={isCheckoutFetching} onPress={() => { void retryCheckout(); }}>
+            <Text style={{ color: theme.text }}>{isCheckoutFetching ? 'Retrying...' : 'Try again'}</Text>
+          </TouchableOpacity>}
+        </View>
+      </View>
+    );
+  }
 
   if (loading) {
     return (
@@ -1508,7 +1524,7 @@ export default function OrderStepUI() {
         count={checkoutItemCount}
         loading={placing}
         onPlaceOrder={handlePlaceOrder}
-        bottomOffset={0}
+        bottomOffset={stickyCTA.bottomOffset}
         onLayout={stickyCTA.onCtaLayout}
       />
     </View>

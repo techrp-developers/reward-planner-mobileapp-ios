@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/formatCurrency'
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -125,10 +126,10 @@ export default function CheckoutItemCart({
 
           {/* Price — sale price + strikethrough MRP + discount badge */}
           <View style={styles.priceRow}>
-            <Text style={[styles.salePrice, { color: theme.text }]}>₹{salePrice.toLocaleString("en-IN")}</Text>
+            <Text style={[styles.salePrice, { color: theme.text }]}>{formatCurrency(salePrice)}</Text>
             {discountPct > 0 && (
               <>
-                <Text style={styles.mrpText}>₹{mrp.toLocaleString("en-IN")}</Text>
+                <Text style={styles.mrpText}>{formatCurrency(mrp)}</Text>
                 <View style={styles.discountBadge}>
                   <Text style={styles.discountText}>{discountPct}% off</Text>
                 </View>

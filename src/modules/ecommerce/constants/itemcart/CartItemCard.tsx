@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/formatCurrency'
 import React from 'react'
 import {
   View,
@@ -22,6 +23,7 @@ type Props = {
   onIncrease?: () => void
   onDecrease?: () => void
   onRemove?: () => void
+  isBuyingNow?: boolean
   onBuyNow?: () => void
   onPress?: () => void
 }
@@ -40,6 +42,7 @@ export default function CartItemCard({
   onDecrease,
   onRemove,
   onBuyNow,
+  isBuyingNow = false,
   onPress,
 }: Props) {
   const { isDark, theme } = useAppTheme()
@@ -79,8 +82,8 @@ export default function CartItemCard({
             <Text style={styles.returnText}>{returnText}</Text>
 
             <View style={styles.priceRow}>
-              <Text style={[styles.mrp, { color: theme.secondaryText }]}>₹{mrp}</Text>
-              <Text style={[styles.price, { color: theme.text }]}> ₹{price}</Text>
+              <Text style={[styles.mrp, { color: theme.secondaryText }]}>{formatCurrency(mrp)}</Text>
+              <Text style={[styles.price, { color: theme.text }]}> {formatCurrency(price)}</Text>
               <Text style={styles.discount}> {discountText}</Text>
             </View>
           </View>
@@ -109,9 +112,9 @@ export default function CartItemCard({
 
         <View style={[styles.verticalDivider, { backgroundColor: theme.border }]} />
 
-        <TouchableOpacity style={styles.actionBtn} onPress={onBuyNow}>
+        <TouchableOpacity style={[styles.actionBtn, { opacity: isBuyingNow ? 0.5 : 1 }]} disabled={isBuyingNow} onPress={onBuyNow}>
           <MaterialIcons name="auto-awesome" size={18} color={theme.secondaryText} />
-          <Text style={[styles.actionText, { color: theme.text }]}>Buy this Now</Text>
+          <Text style={[styles.actionText, { color: theme.text }]}>{isBuyingNow ? 'Please wait...' : 'Buy this Now'}</Text>
         </TouchableOpacity>
       </View>
     </View>

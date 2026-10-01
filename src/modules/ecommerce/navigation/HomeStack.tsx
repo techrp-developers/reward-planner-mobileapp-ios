@@ -25,7 +25,7 @@ export default function HomeStack() {
         getComponent={() => require("../components/product/product_section/Categories_Product").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -34,9 +34,9 @@ export default function HomeStack() {
         getComponent={() => require("../screens/product_description_screen").default}
         options={{
           animation: "slide_from_right",
-          // Keep Home attached behind this opaque screen so popping cannot
-          // briefly expose the outgoing product image while Home reattaches.
-          presentation: "transparentModal",
+          // Full-screen shopping pages must stay in the push stack so
+          // checkout cannot be pushed underneath a presented iOS modal.
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -45,7 +45,7 @@ export default function HomeStack() {
         getComponent={() => require("../screens/cartScreen").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -61,7 +61,7 @@ export default function HomeStack() {
         getComponent={() => require("../screens/CategoriesScreen").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -71,7 +71,7 @@ export default function HomeStack() {
         getComponent={() => require("../screens/SearchScreen").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -92,7 +92,7 @@ export default function HomeStack() {
         getComponent={() => require("../profile/TodoList").default}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />
@@ -102,7 +102,7 @@ export default function HomeStack() {
         initialParams={{ context: "ecommerce" }}
         options={{
           animation: "fade",
-          presentation: "transparentModal",
+          presentation: "card",
           contentStyle: { backgroundColor: theme.background },
         }}
       />

@@ -11,7 +11,9 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useNavigation } from '@react-navigation/native'
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import type { ShoppingNavigation } from '../../navigation/checkoutFlow'
+import { useCheckoutFlow } from '../../hooks/useCheckoutFlow'
+import { formatCurrency } from '../../utils/formatCurrency'
 import type { HomeStackParamList } from '../../navigation/types'
 
 import ProductHeadColor from '../../constants/heading/Poduct_Head_Color'
@@ -32,12 +34,11 @@ import {
   cartItemsQueryKey,
   cartSummaryQueryKey,
   checkoutPreviewQueryKey,
-  prefetchCheckoutScreenData,
 } from '../../navigation/navigationPerformance'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
 import { useAppTheme } from '../../../../theme/ThemeContext'
 
-type Nav = NativeStackNavigationProp<HomeStackParamList>
+type Nav = ShoppingNavigation
 
 // const COUPONS = [
 //   { id: 1, code: 'RPSLAY200', title: 'Add ₹248 more to avail this offer', subtitle: 'Get Flat ₹200 off' },
@@ -60,6 +61,7 @@ const getCartItems = (cartData: any) => {
 
 type CartRowProps = {
   item: any
+  isCheckingOut: boolean
   navigation: Nav
   goToCheckout: (params?: HomeStackParamList['OrderStepUI']) => void
   onIncrease: (item: any) => void
@@ -69,6 +71,7 @@ type CartRowProps = {
 
 const CartRow = React.memo(function CartRow({
   item,
+  isCheckingOut,
   navigation,
   goToCheckout,
   onIncrease,
@@ -87,12 +90,12 @@ const CartRow = React.memo(function CartRow({
       returnText="7 Days Returnable"
       mrp={mrp}
       price={price}
-      discountText={`₹${discount} off`}
+      discountText={`${formatCurrency(discount)} off`}
       quantity={item.quantity}
       attributes={item.attributes || item.variant_attributes}
       onPress={() =>
         Number(item?.product_id) > 0 &&
-        navigation.navigate('ProductDescription', {
+        navigation.navigate(navigation.getState().routeNames.includes('ProductDescription') ? 'ProductDescription' : 'ProductDetails', {
           productId: Number(item.product_id),
           variantId: Number(item.variant_id),
         })
@@ -101,12 +104,14 @@ const CartRow = React.memo(function CartRow({
       onIncrease={() => onIncrease(item)}
       onDecrease={() => onDecrease(item)}
       onRemove={() => onRemove(item)}
+      isBuyingNow={isCheckingOut}
       onBuyNow={() =>
         goToCheckout({
           mode: 'buy_now',
           product_id: item.product_id,
           variant_id: item.variant_id,
           qty: item.quantity,
+          campaign_id: item.flash_sale_campaign_id ?? undefined,
         })
       }
     />
@@ -115,7 +120,8 @@ const CartRow = React.memo(function CartRow({
 
 export default function WithAddress() {
   const navigation = useNavigation<Nav>()
-  const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 0 })
+  const { goToCheckout, isCheckingOut } = useCheckoutFlow()
+  const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 16 })
   const { isAuthenticated } = useAuth()
   const queryClient = useQueryClient()
   const pulse = useRef(new Animated.Value(0)).current
@@ -123,26 +129,11 @@ export default function WithAddress() {
   // const [showAllCoupons, setShowAllCoupons] = useState(false)
   const [useRewards, setUseRewards] = useState(true)
 
-  const goToCheckout = useCallback((params?: HomeStackParamList['OrderStepUI']) => {
-    const checkoutParams = params ?? { mode: 'cart' as const }
-
-    prefetchCheckoutScreenData({
-      mode: checkoutParams.mode === 'buy_now' ? 'buy_now' : 'cart',
-      product_id: checkoutParams.product_id,
-      variant_id: checkoutParams.variant_id,
-      qty: checkoutParams.qty,
-    }).catch(() => {
-      // Ignore prefetch failures and continue navigation.
-    })
-
-    navigation.push('OrderStepUI', checkoutParams)
-  }, [navigation])
-
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: true, isInteraction: false }),
+        Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: true, isInteraction: false }),
       ])
     )
 
@@ -359,6 +350,7 @@ export default function WithAddress() {
     return (
       <CartRow
         item={item}
+        isCheckingOut={isCheckingOut}
         navigation={navigation}
         goToCheckout={goToCheckout}
         onIncrease={increaseQty}
@@ -366,7 +358,7 @@ export default function WithAddress() {
         onRemove={removeItem}
       />
     )
-  }, [decreaseQty, goToCheckout, increaseQty, navigation, removeItem])
+  }, [decreaseQty, goToCheckout, increaseQty, isCheckingOut, navigation, removeItem])
 
   const keyExtractor = useCallback((item: any, index: number) => {
     return String(item?.cart_item_id ?? item?.id ?? index)
@@ -460,7 +452,8 @@ export default function WithAddress() {
         total={checkoutTotal}
         count={items.length}
         onProceedToBuy={() => goToCheckout()}
-        bottomOffset={0}
+        loading={isCheckingOut}
+        bottomOffset={stickyCTA.bottomOffset}
         onLayout={stickyCTA.onCtaLayout}
       />
     </View>

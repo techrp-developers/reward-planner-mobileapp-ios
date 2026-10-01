@@ -1,3 +1,4 @@
+import { shouldShowBottomTabs } from "./shoppingChrome";
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { useNavigation, useNavigationState, useRoute } from "@react-navigation/native";
@@ -135,10 +136,6 @@ const getActiveMode = (routeChain: string[]): AppMode => {
   return "Product";
 };
 
-const shouldShowBottomTabs = (activeMode: AppMode): boolean => {
-  return activeMode !== "DineOut";
-};
-
 function MainLayout() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -204,8 +201,8 @@ function MainLayout() {
   }, [navigation]);
   const showNavbar = React.useMemo(() => shouldShowNavbar(routeChain), [routeChain]);
   const showBottomTabs = React.useMemo(
-    () => shouldShowBottomTabs(activeMode),
-    [activeMode]
+    () => shouldShowBottomTabs(activeMode, routeChain),
+    [activeMode, routeChain]
   );
 
   // Each module owns its own cart count — add a new entry here (and its

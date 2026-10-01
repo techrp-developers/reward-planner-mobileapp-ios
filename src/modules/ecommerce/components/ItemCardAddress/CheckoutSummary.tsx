@@ -1,3 +1,4 @@
+import { formatCurrency } from '../../utils/formatCurrency'
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -15,7 +16,8 @@ type Props = {
   address: any
   total: number
   count: number
-  onProceedToBuy?: () => void
+  loading?: boolean
+  onProceedToBuy: () => void
   wrapperPaddingBottom?: number
   bottomOffset?: number
   onLayout?: ReturnType<typeof useStickyBottomCTA>['onCtaLayout']
@@ -26,12 +28,13 @@ export default function CheckoutSummary({
   total,
   count,
   onProceedToBuy,
+  loading = false,
   wrapperPaddingBottom = 16,
   bottomOffset,
   onLayout,
 }: Props) {
   const navigation = useNavigation<Nav>()
-  const autoSticky = useStickyBottomCTA()
+  const autoSticky = useStickyBottomCTA({ tabBarAware: false })
   const { theme } = useAppTheme()
   const resolvedBottomOffset = bottomOffset ?? autoSticky.bottomOffset
   const resolvedOnLayout = onLayout ?? autoSticky.onCtaLayout
@@ -61,13 +64,13 @@ export default function CheckoutSummary({
 
         <View style={styles.bottomBar}>
           <View>
-            <Text style={[styles.price, { color: theme.text }]}>₹{total}</Text>
+            <Text style={[styles.price, { color: theme.text }]}>{formatCurrency(total)}</Text>
             <Text style={[styles.items, { color: theme.secondaryText }]}>{count} items selected</Text>
           </View>
 
-          <TouchableOpacity onPress={() => (onProceedToBuy ? onProceedToBuy() : navigation.push('OrderStepUI', { mode: 'cart' }))}>
+          <TouchableOpacity disabled={loading} onPress={onProceedToBuy}>
             <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
-              <Text style={styles.buttonText}>Proceed To Buy</Text>
+              <Text style={styles.buttonText}>{loading ? 'Please wait...' : 'Proceed To Buy'}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -101,6 +104,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   addressTextWrap: {
+    flex: 1,
     marginLeft: 8,
   },
   addressTitle: {

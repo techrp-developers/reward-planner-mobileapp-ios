@@ -3,14 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "rea
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import LinearGradient from "react-native-linear-gradient";
-import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { HomeStackParamList } from "../../navigation/types";
 // import RewardIcon from "../../../../assets/product/rewards.svg";
-import { prefetchCartScreenData } from "../../navigation/navigationPerformance";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 
-type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 type Props = {
   offPercent: string;
@@ -23,8 +18,11 @@ type Props = {
   inStock: boolean;
   onQtyChange: (v: number) => void;
   onAddToCart: () => void;
-  onBuyNow?: () => void;
+  onBuyNow: () => void;
   isAdding?: boolean;
+  isBuyingNow?: boolean;
+  showDetails?: boolean;
+  showActions?: boolean;
   isInCart?: boolean;
 };
 
@@ -40,9 +38,11 @@ export default function BuySection({
   onAddToCart,
   onBuyNow,
   isAdding = false,
+  isBuyingNow = false,
+  showDetails = true,
+  showActions = true,
   isInCart = false,
 }: Props) {
-  const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -53,25 +53,18 @@ export default function BuySection({
   const quantities = Array.from({ length: maxQty }, (_, i) => i + 1);
   const cartButtonTextColor = isDark ? "#FACC15" : "#111827";
 
-  const handleGoToCart = () => {
-    if (!inStock) return;
+  const handleBuyNow = () => {
+    if (!inStock || isAdding || isBuyingNow) return;
     setOpen(false);
-    // If an onBuyNow callback is provided (product page), prefer buy-now flow
-    if (onBuyNow) {
-      onBuyNow();
-    } else {
-      prefetchCartScreenData().catch(() => {
-        // Ignore prefetch errors and continue navigation.
-      });
-      navigation.navigate("Cart");
-    }
+    onBuyNow();
   };
 
   return (
-    <View style={styles.wrap}>
+    <View style={showDetails ? styles.wrap : undefined}>
       <View style={[styles.dividerFull, { backgroundColor: theme.border }]} />
 
       <View style={styles.buyWrap}>
+        {showDetails && <>
         {/* Secure pill */}
         <LinearGradient
           colors={["#A654CD", "#FC8BAD"]}
@@ -140,12 +133,14 @@ export default function BuySection({
 
         {!inStock && <Text style={styles.outStockText}>Out of stock</Text>}
 
+        </>}
+        {showActions && <>
         {/* Add to Cart / Go to Cart */}
         <TouchableOpacity
           activeOpacity={0.9}
-          disabled={!inStock || isAdding}
+          disabled={!inStock || isAdding || isBuyingNow}
           onPress={onAddToCart}
-          style={(!inStock || isAdding) && styles.disabledInner}
+          style={(!inStock || isAdding || isBuyingNow) && styles.disabledInner}
         >
           <LinearGradient
             colors={["#FACC15", "#111827"]}
@@ -161,7 +156,7 @@ export default function BuySection({
                 </View>
               ) : (
                 <Text style={[styles.addToCartText, { color: cartButtonTextColor }]}>
-                  {isInCart ? "Go to Cart" : "Add to Cart"}
+                  {isInCart ? "Added to Cart" : "Add to Cart"}
                 </Text>
               )}
             </View>
@@ -169,10 +164,12 @@ export default function BuySection({
         </TouchableOpacity>
 
         {/* Buy Now */}
-
-
-        {/* Go to Cart */}
-        <TouchableOpacity activeOpacity={0.9} style={styles.wrapper} onPress={handleGoToCart}>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          style={[styles.wrapper, (!inStock || isAdding || isBuyingNow) && styles.disabledInner]}
+          disabled={!inStock || isAdding || isBuyingNow}
+          onPress={handleBuyNow}
+        >
           <LinearGradient
             colors={["#8665FF", "#5B47A3"]}
             start={{ x: 0, y: 0 }}
@@ -180,11 +177,13 @@ export default function BuySection({
             style={styles.container}
           >
             <View style={styles.row}>
-              <Text style={styles.buyNowText}>Buy Now</Text>
+              <Text style={styles.buyNowText}>{isBuyingNow ? "Please wait..." : "Buy Now"}</Text>
+              {isBuyingNow && <ActivityIndicator size="small" color="#FFF" />}
               {points > 0 ? <Text style={styles.pointsText}>+{points}</Text> : null}
             </View>
           </LinearGradient>
         </TouchableOpacity>
+        </>}
       </View>
     </View>
   );

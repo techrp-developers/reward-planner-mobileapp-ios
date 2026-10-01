@@ -428,7 +428,7 @@ export default function
     }
 
     if (selectedVariantInCart) {
-      navigation.navigate("Cart");
+      setSheetVisible(true);
       return;
     }
 
@@ -437,6 +437,7 @@ export default function
 
       if (selectedCartItem?.id && Number(selectedCartItem.quantity) !== Number(qty)) {
         await updateQuantity(selectedCartItem.id, qty);
+        setSheetVisible(true);
         alert.success("Cart Updated", "Cart quantity updated successfully.", 2500);
         return;
       }

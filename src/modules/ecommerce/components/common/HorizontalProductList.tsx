@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FlatList,
+  Platform,
   StyleProp,
   StyleSheet,
   View,
@@ -145,7 +146,8 @@ function HorizontalProductList<T extends ListItemBase>({
       ItemSeparatorComponent: separator,
       onViewableItemsChanged,
       viewabilityConfig,
-      removeClippedSubviews: true,
+      removeClippedSubviews: Platform.OS !== "ios",
+      extraData: loadedImageKeys,
       initialNumToRender: Math.min(Math.max(initialVisibleCount, 3), 6),
       maxToRenderPerBatch: 5,
       updateCellsBatchingPeriod: 48,
@@ -160,6 +162,7 @@ function HorizontalProductList<T extends ListItemBase>({
       gap,
       initialVisibleCount,
       itemWidth,
+      loadedImageKeys,
       onViewableItemsChanged,
       renderItem,
       resolveKey,

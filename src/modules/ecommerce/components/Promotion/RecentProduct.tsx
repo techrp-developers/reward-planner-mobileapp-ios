@@ -86,9 +86,9 @@ const RecentProduct = () => {
     return (
         <View style={[styles.sectionWrapper, { backgroundColor: theme.background }]}>
             <LinearGradient
-                colors={isDark ? ["#09090B", "#18120D", "#2A1A0C"] : ["#F6D58B", "#D69A33", "#8A531F"]} 
-                start={{ x: 0, y: 0 }} 
-                end={{ x: 1, y: 1 }}  
+                colors={isDark ? ["#09090B", "#18120D", "#2A1A0C"] : ["#F6D58B", "#D69A33", "#8A531F"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
                 style={styles.gradientSection}
             >
                 <View style={styles.headerRow}>
@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
     },
     listPadding: {
         paddingHorizontal: 16,
+        paddingBottom: 10
     }
 });
 

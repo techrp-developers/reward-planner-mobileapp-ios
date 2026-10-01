@@ -25,6 +25,7 @@ import LoginScreen from "../modules/common/auth/screens/LoginScreen";
 import LocationAccessScreen from "../modules/common/auth/screens/LocationAccessScreen";
 import OTPScreen from "../modules/common/auth/screens/OTPScreen";
 import OnboardingScreen from "../modules/common/auth/screens/OnboardingScreen";
+import type { HomeStackParamList } from "../modules/ecommerce/navigation/types";
 import type { AuthStackParamList } from "../modules/common/auth/navigation/types";
 import Dashbord from "../modules/dashboard/dashboard/dashbord";
 export type { AuthStackParamList };
@@ -32,8 +33,8 @@ export type { AuthStackParamList };
 export type AppStackParamList = {
   Dashboard: undefined;
   Home: undefined;
-  Checkout: undefined;
-  ProductDetails: { productId: number | string };
+  Checkout: HomeStackParamList["OrderStepUI"] | undefined;
+  ProductDetails: HomeStackParamList["ProductDescription"];
   Cart: undefined;
   Orders: undefined;
   MyOrder: undefined;
