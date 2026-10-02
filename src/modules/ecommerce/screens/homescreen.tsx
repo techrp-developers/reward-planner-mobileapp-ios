@@ -10,6 +10,9 @@ import {
 import CategoriesSection from '../components/home/categories_section';
 import HomeSectionSkeleton from '../components/home/HomeSectionSkeleton';
 import PromotionalBanner from '../components/home/PromotionalBanner';
+import { useNavbarScroll } from '../../../navbar/NavbarScrollContext';
+import { useFocusEffect } from '@react-navigation/native';
+import BrandPromotionalBanner from '../components/home/BrandPromotionalBanner';
 import { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAppTheme } from '../../../theme/ThemeContext';
@@ -48,6 +51,7 @@ type SectionKey =
   | 'categories'
   | 'bestSeller'
   | 'topRated'
+  | 'brandPromotionalBanner'
   | 'offerHome'
   | 'newArrivals'
   | 'mostView'
@@ -61,10 +65,11 @@ type HomeSection = {
 };
 
 const HOME_SECTIONS: HomeSection[] = [
+  { key: 'brandPromotionalBanner' },
+  { key: 'offerHome' },
   { key: 'categories' },
   { key: 'bestSeller' },
   { key: 'topRated' },
-  { key: 'offerHome' },
   { key: 'newArrivals' },
   { key: 'mostView' },
   { key: 'recommended' },
@@ -73,12 +78,13 @@ const HOME_SECTIONS: HomeSection[] = [
   { key: 'productCategory' },
 ];
 
-const INITIAL_VISIBLE_SECTIONS = ['categories'] as const;
+const INITIAL_VISIBLE_SECTIONS = ['brandPromotionalBanner', 'offerHome', 'categories'] as const;
 const INITIAL_VISIBLE_SECTION_SET = new Set<SectionKey>(INITIAL_VISIBLE_SECTIONS);
 const HOME_SECTION_KEYS = HOME_SECTIONS.map((section) => section.key);
 const SECTION_RENDER_AHEAD = 1;
 
 const SECTION_HEIGHTS: Record<SectionKey, number> = {
+  brandPromotionalBanner: 220,
   categories: 260,
   bestSeller: 360,
   topRated: 360,
@@ -189,6 +195,8 @@ const HomeSectionLoader = React.memo(function HomeSectionLoader({
       return <LazySection sectionKey={sectionKey}><LazyBestSeller /></LazySection>;
     case 'topRated':
       return <LazySection sectionKey={sectionKey}><LazyTopRated /></LazySection>;
+    case 'brandPromotionalBanner':
+      return <BrandPromotionalBanner module="product" />;
     case 'offerHome':
       return <LazySection sectionKey={sectionKey}><LazyOfferHome /></LazySection>;
     case 'newArrivals':
@@ -248,6 +256,8 @@ const ThemedHomeSurface = React.memo(function ThemedHomeSurface({
 });
 
 function HomeScreen() {
+  const { onScroll, resetScroll } = useNavbarScroll();
+  useFocusEffect(useCallback(() => { resetScroll(); return resetScroll; }, [resetScroll]));
   const { isAuthenticated, user } = useAuth();
   const [readySections, setReadySections] = useState<Set<SectionKey>>(
     () => new Set(INITIAL_VISIBLE_SECTION_SET),
@@ -368,6 +378,9 @@ function HomeScreen() {
   return (
     <ThemedHomeSurface>
       <FlatList
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        contentInsetAdjustmentBehavior="never"
         data={HOME_SECTIONS}
         ListHeaderComponent={<PromotionalBanner module="product" />}
         renderItem={renderItem}

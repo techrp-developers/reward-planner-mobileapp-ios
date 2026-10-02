@@ -28,7 +28,7 @@ import { getNotificationBadge } from "../modules/dashboard/notification/Notifica
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { handleNavigateWithPrefetch } from "../modules/ecommerce/navigation/navigationPerformance";
 
-import Navbar_Background, { NAVBAR_SCROLLED_BACKGROUND_OFFSET } from "./Navbar_Background";
+import Navbar_Background, { NAVBAR_SCROLLED_BACKGROUND_OFFSET, NAVBAR_COLLAPSE_DISTANCE } from "./Navbar_Background";
 import { useNavbarBanners } from "./hooks/useNavbarBanners";
 import { TAB_MODULE_MAP, TopTab, isTopTab } from "./navbarConstants";
 import { useModuleIcons } from "./hooks/useModuleIcons";
@@ -229,7 +229,8 @@ const MODULE_KEY_BY_TOP_TAB = Object.entries(TAB_MODULE_MAP).reduce(
 );
 
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
-const ACTIVE_TAB_SCALE = 1.04;
+// Keep the tab underline inside the measured row; press feedback still shrinks it.
+const ACTIVE_TAB_SCALE = 1;
 const PRESSED_SCALE_DELTA = 0.06;
 const NAV_TABS_H_PADDING = rs(16);
 const NAV_TAB_GAP = rs(10);
@@ -576,9 +577,9 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   const searchBorderColor = isScrolledWhite ? "rgba(0,0,0,0.08)" : isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.08)";
   const isNavigatingRef = React.useRef(false);
 
-  const headerOpacity = 1;
-  const headerTranslateY = 0;
-  const headerHeight = rs(78);
+  const [measuredHeaderHeight, setMeasuredHeaderHeight] = React.useState(rs(78));
+  const headerOpacity = scrollY.interpolate({ inputRange: [0, NAVBAR_COLLAPSE_DISTANCE], outputRange: [1, 0], extrapolate: "clamp" });
+  const headerHeight = scrollY.interpolate({ inputRange: [0, NAVBAR_COLLAPSE_DISTANCE], outputRange: [measuredHeaderHeight, 0], extrapolate: "clamp" });
   const headerMarginTop = 0;
   const headerPaddingBottom = rs(2);
   const searchHeight = rs(34);
@@ -818,19 +819,10 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
         scrollY={scrollY}
       />
 
-      <Animated.View
-        style={[
-          styles.searchActionsRow,
-          {
-            height: headerHeight,
-            marginTop: headerMarginTop,
-            paddingBottom: headerPaddingBottom,
-            opacity: headerOpacity,
-            transform: [{ translateY: headerTranslateY }],
-          },
-        ]}
-      >
-
+      <Animated.View style={{ height: headerHeight, opacity: headerOpacity, overflow: "hidden" }}>
+        <View onLayout={event => setMeasuredHeaderHeight(event.nativeEvent.layout.height)}
+          style={[styles.searchActionsRow, { position: "absolute", top: 0, left: 0, right: 0,
+            marginTop: headerMarginTop, paddingBottom: headerPaddingBottom }]}>
         <View style={styles.topRow}>
           <AnimatedTouchableOpacity
             activeOpacity={0.9}
@@ -912,6 +904,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
             {hasUnreadNotifications ? <View style={styles.bellDot} /> : null}
           </TouchableOpacity>
         </View>
+        </View>
       </Animated.View>
 
       {/* MODULE TABS */}
@@ -956,9 +949,8 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
 const styles = StyleSheet.create({
   wrapper: {
     // The safe-area inset is applied inline because the status bar is
-    // translucent. Extra top padding would make this content wrapper taller
-    // than the aspect-ratio navbar artwork and expose a strip above the
-    // promotion banner.
+    // translucent. The background fills this content-sized wrapper; the
+    // promotional banner below does not receive another top inset.
   },
 
   searchActionsRow: {
@@ -1220,7 +1212,7 @@ const styles = StyleSheet.create({
   },
 
   activeIndicatorSpacer: {
-    height: rs(7),
+    height: rs(3),
     marginTop: rs(4),
   },
 

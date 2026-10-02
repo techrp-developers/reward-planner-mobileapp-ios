@@ -4,11 +4,9 @@ import {
   Image,
   StyleSheet,
   View,
-  useWindowDimensions,
 } from "react-native";
 import { NavbarBannerMap } from "./api/NavbarContentApi";
 import { TopTab } from "./navbarConstants";
-import { rs } from "../utils/responsive";
 
 type Props = {
   activeTab: TopTab;
@@ -18,8 +16,7 @@ type Props = {
   scrollY: Animated.Value;
 };
 
-// Native CMS navbar artwork: 1317 × 551. The rendered height is derived
-// from the current device width instead of treating source pixels as points.
+// Recommended CMS artwork ratio only; navbar layout follows its content.
 export const NAVBAR_BACKGROUND_ASPECT_RATIO = 1317 / 551;
 // Collapsed state still needs to cover the pinned module-tabs row once the
 // profile/search block collapses away above it.
@@ -30,20 +27,9 @@ export const NAVBAR_SCROLLED_BACKGROUND_OFFSET = 45;
 export default function Navbar_Background({
   activeTab,
   banners,
-  insetsTop,
   isDark,
   scrollY,
 }: Props) {
-  const { width } = useWindowDimensions();
-  const expandedImageHeight = width / NAVBAR_BACKGROUND_ASPECT_RATIO;
-  const animatedHeight = scrollY.interpolate({
-    inputRange: [0, NAVBAR_COLLAPSE_DISTANCE],
-    outputRange: [
-      expandedImageHeight + insetsTop,
-      NAVBAR_COLLAPSED_BACKGROUND_HEIGHT + insetsTop,
-    ],
-    extrapolate: "clamp",
-  });
   const scrolledBackgroundOpacity = scrollY.interpolate({
     inputRange: [0, NAVBAR_SCROLLED_BACKGROUND_OFFSET],
     outputRange: [0, 1],
@@ -84,14 +70,6 @@ export default function Navbar_Background({
     const showImage = Boolean(imageUrl && !failedImages[imageUrl]);
     const bgColor = isDark ? defaultBgColor : banner?.bgColor ?? defaultBgColor;
 
-    console.log('[CMS] renderLayer:', {
-      tab,
-      imageUrl,
-      hasFailedBefore: imageUrl ? Boolean(failedImages[imageUrl]) : undefined,
-      showImage,
-      bgColor,
-    });
-
     return (
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
         {bgColor !== "transparent" ? (
@@ -122,31 +100,9 @@ export default function Navbar_Background({
 
   const resolvedBgColor =
     isDark ? defaultBgColor : currentBanner?.bgColor ?? previousBanner?.bgColor ?? defaultBgColor;
-  const hasDynamicBackground =
-    resolvedBgColor !== "transparent" || showOverlay;
-  const backgroundFrameStyle = React.useMemo(
-    () => ({
-      width,
-      height: animatedHeight,
-      backgroundColor: resolvedBgColor,
-      shadowOpacity: hasDynamicBackground && !showOverlay ? 0.12 : 0,
-      elevation: hasDynamicBackground && !showOverlay ? 6 : 0,
-    }),
-    [animatedHeight, hasDynamicBackground, resolvedBgColor, showOverlay, width],
-  );
-
   return (
-    // Shadow lives on this outer view (no overflow:hidden — iOS clips away
-    // any shadow on a view that also clips its own content) so the rounded
-    // bottom edge reads as a soft drop shadow instead of a hard color cutoff.
-    <Animated.View
-      pointerEvents="none"
-      style={[
-        styles.shadowWrap,
-        backgroundFrameStyle,
-      ]}
-    >
-      <View style={[styles.root, showOverlay && styles.imageRoot]}>
+    <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: resolvedBgColor }]}>
+      <View style={styles.root}>
         {previousTab !== activeTab ? renderLayer(previousTab, 1) : null}
         {renderLayer(activeTab, previousTab === activeTab ? 1 : fade)}
         {isDark && showOverlay ? (
@@ -161,27 +117,9 @@ export default function Navbar_Background({
 }
 
 const styles = StyleSheet.create({
-  shadowWrap: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    borderBottomLeftRadius: rs(28),
-    borderBottomRightRadius: rs(28),
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: rs(6) },
-    shadowOpacity: 0.12,
-    shadowRadius: rs(10),
-    elevation: 6,
-  },
   root: {
     flex: 1,
     overflow: "hidden",
-    borderBottomLeftRadius: rs(28),
-    borderBottomRightRadius: rs(28),
-  },
-  imageRoot: {
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
   },
   darkImageOverlay: {
     backgroundColor: "rgba(9,9,11,0.6)",

@@ -21,6 +21,7 @@ export interface CmsModule {
 
 export interface CmsZoneEntry {
   content_id: number;
+  display_mode?: "single" | "carousel" | "grid_2" | "grid_3";
   content_type: 'color' | 'image';
   color_value: string | null;
   text_color: string | null;
@@ -47,6 +48,7 @@ export interface CmsResolvedZones {
   navbar_background?: CmsZoneEntry | null;
   promotional_banner?: CmsZoneEntry | null;
   offers_banner?: CmsOffersBannerEntry | null;
+  brand_promotional_banner?: CmsOffersBannerEntry | null;
 }
 
 interface CmsModulesResponse {
@@ -107,6 +109,7 @@ const normalizeResolvedZones = (
   navbar_background: normalizeZoneEntry(zones?.navbar_background),
   promotional_banner: normalizeZoneEntry(zones?.promotional_banner),
   offers_banner: normalizeZoneEntry(zones?.offers_banner) as CmsOffersBannerEntry | null,
+  brand_promotional_banner: normalizeZoneEntry(zones?.brand_promotional_banner) as CmsOffersBannerEntry | null,
 });
 
 export const fetchResolvedModules = async (): Promise<CmsModule[]> => {

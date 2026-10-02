@@ -12,7 +12,7 @@ import {
   Linking,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import HomeSectionSkeleton from "./HomeSectionSkeleton";
+import CmsBannerGallery from "./CmsBannerGallery";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import LinearGradient from "react-native-linear-gradient";
@@ -475,16 +475,12 @@ export default function OfferHome({ module = "product" }: Props) {
     staleTime: 10 * 60 * 1000,
   });
 
-  const { data: cmsOffer, isLoading: isProductsLoading } = useQuery({
+  const { data: cmsOffer } = useQuery({
     queryKey: CMS_FLASH_PRODUCTS_QUERY_KEY,
     queryFn: fetchCmsFlashProducts,
     staleTime: 5 * 60 * 1000,
   });
   const products = cmsOffer?.products ?? [];
-  const promotionalContentId = module === "product"
-    ? Number(moduleContent?.promotional_banner?.content_id ?? cmsOffer?.campaignId ?? 0)
-    : 0;
-
   const banner = useMemo(() =>
     (campaignHome?.data?.posters ?? []).map(p => ({
       id: p.campaign_id,
@@ -528,7 +524,7 @@ export default function OfferHome({ module = "product" }: Props) {
     cmsOffersBanner?.content_type === "color" &&
     !!cmsOffersBanner.color_value;
   const shouldShowCmsOffersBanner =
-    cmsOffersSlides.length > 0 || hasCmsOffersColor;
+    cmsOffersSlides.length > 0 || (cmsOffersBanner?.content_type === "image" && !!cmsOffersBanner.image_url) || hasCmsOffersColor;
 
   const flashSalesPoster = useMemo(() => {
     const flash = campaignHome?.data?.flash_sales?.[0];
@@ -551,10 +547,6 @@ export default function OfferHome({ module = "product" }: Props) {
     }
   };
 
-  if (isProductsLoading) {
-    return <HomeSectionSkeleton height={390} backgroundColor={theme.background} />;
-  }
-
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Banner Carousel */}
@@ -575,53 +567,10 @@ export default function OfferHome({ module = "product" }: Props) {
           </TouchableOpacity>
         </View>
       ) : shouldShowCmsOffersBanner ? (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.offersScroll}
-        >
-          {cmsOffersSlides.length > 0 ? (
-            cmsOffersSlides.map((offer) => (
-              <TouchableOpacity
-                key={offer.id}
-                style={[styles.offerCard, { backgroundColor: theme.card }]}
-                activeOpacity={promotionalContentId > 0 || cmsOffersBanner?.redirect_link ? 0.85 : 1}
-                onPress={() => {
-                  if (promotionalContentId > 0) {
-                    navigation.navigate("CampaignProducts", {
-                      contentId: promotionalContentId,
-                      title: cmsOffersBanner?.title || "Offers",
-                    });
-                  } else if (cmsOffersBanner?.redirect_link) {
-                    Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
-                  }
-                }}
-                disabled={promotionalContentId <= 0 && !cmsOffersBanner?.redirect_link}
-              >
-                <OfferSlideImage uri={offer.image} />
-              </TouchableOpacity>
-            ))
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.offerCard,
-                { backgroundColor: cmsOffersBanner!.color_value! },
-              ]}
-              activeOpacity={promotionalContentId > 0 || cmsOffersBanner?.redirect_link ? 0.85 : 1}
-              onPress={() => {
-                if (promotionalContentId > 0) {
-                  navigation.navigate("CampaignProducts", {
-                    contentId: promotionalContentId,
-                    title: cmsOffersBanner?.title || "Offers",
-                  });
-                } else if (cmsOffersBanner?.redirect_link) {
-                  Linking.openURL(cmsOffersBanner.redirect_link).catch(() => undefined);
-                }
-              }}
-              disabled={promotionalContentId <= 0 && !cmsOffersBanner?.redirect_link}
-            />
-          )}
-        </ScrollView>
+        <CmsBannerGallery banner={cmsOffersBanner} fallbackRatio={720 / 900} inset={12}
+          onPress={cmsOffersBanner?.redirect_link ? () => {
+            Linking.openURL(cmsOffersBanner.redirect_link!).catch(() => undefined);
+          } : undefined} />
       ) : banner.length > 0 ? (
         <ScrollView
           horizontal
