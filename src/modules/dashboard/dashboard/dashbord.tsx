@@ -39,6 +39,7 @@ import OffersBanner from '../../ecommerce/components/home/OffersBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
 import LivePollCard from '../polls/components/LivePollCard';
+import GamesDrawer from '../../games/components/GamesDrawer';
 import { fetchDashboardStatuses, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
 import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
@@ -334,6 +335,9 @@ function Dashbord() {
   const handleTabPress = useCallback(
     (tab: TabKey) => {
       switch (tab) {
+        case 'Chat':
+          navigation.navigate('ChatStack');
+          break;
         case 'Notes':
           navigation.navigate('TodoList');
           break;
@@ -480,6 +484,7 @@ function Dashbord() {
           onSearchOverlayChange={setSearchOverlay}
           onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
           onNotificationPress={() => navigation.navigate('Notification')}
+          onProfilePress={() => navigation.navigate('Profile', { context: 'dashboard' })}
           showRewardPoints
           rewardPoints={rewardPoints}
         />
@@ -661,6 +666,7 @@ function Dashbord() {
           />
         </View>
       )}
+      {isFocused && !isSearchOpen && !openingModule && <GamesDrawer />}
       {/* <FloatingBottomBar/> */}
     </LinearGradient>
   );

@@ -24,6 +24,10 @@ export const SERVER_URL =
 // Live traffic uses the reverse-proxy prefix; the local Express server does not.
 export const API_BASE_URL =
   IS_LOCAL_ENVIRONMENT ? SERVER_URL : `${SERVER_URL}/api/crm`;
+// Chat shares the configured API server; sockets use its origin.
+export const CHAT_API_BASE_URL = API_BASE_URL;
+export const CHAT_SERVER_URL = SERVER_URL;
+
 export const API_V1_URL = `${API_BASE_URL}/v1`;
 export const API_V1_URL_WITH_SLASH = `${API_V1_URL}/`;
 export const UPLOADS_URL =

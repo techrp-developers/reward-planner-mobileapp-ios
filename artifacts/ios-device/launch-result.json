@@ -1,0 +1,47 @@
+{
+  "error" : {
+    "code" : 3,
+    "domain" : "com.apple.dt.CoreDeviceError",
+    "userInfo" : {
+      "NSLocalizedDescription" : {
+        "string" : "An error occurred while communicating with a remote process."
+      },
+      "NSUnderlyingError" : {
+        "error" : {
+          "code" : 1001,
+          "domain" : "com.apple.Mercury.error",
+          "userInfo" : {
+            "NSLocalizedDescription" : {
+              "string" : "The connection was invalidated."
+            },
+            "XPCConnectionDescription" : {
+              "string" : "<RemoteXPCPeerConnection 0x124f06ef0> { <remote connection: 0x124f0f210> { type = preconnected, state = canceled, remote service name = (null), server mode = 0, protocol version number = 1, protocol feature flags = 0x6, local service version = 0, remote service version = 0, traffic class = 0, (root, reply) helo received = (1, 1), next msg id = 5, first msg id = 1, send in progress = 0, preexisting socket = -1 }"
+            }
+          }
+        }
+      }
+    }
+  },
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "process",
+      "launch",
+      "--device",
+      "00008101-001658210A11001E",
+      "--terminate-existing",
+      "--console",
+      "--json-output",
+      "artifacts/ios-device/launch-result.json",
+      "com.mpstech.rewardsplanners"
+    ],
+    "commandType" : "devicectl.device.process.launch",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "failed",
+    "version" : "506.7"
+  }
+}

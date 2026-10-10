@@ -42,6 +42,7 @@ it.each(['loading', 'empty', 'failed'])('renders CMS offers while flash-sale pro
     expect(gallery.props.banner).toBe(mockOffers);
     expect(gallery.props.banner.content_id).toBe(42);
     expect(gallery.props.fallbackRatio).toBe(720 / 900);
+    expect(gallery.props.visibleItems).toBe(2.5);
     await act(async () => renderer!.unmount());
   } finally { jest.restoreAllMocks(); }
 });

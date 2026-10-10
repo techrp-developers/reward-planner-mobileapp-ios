@@ -25,10 +25,11 @@ type Props = {
   banner?: CmsOffersBannerEntry | null;
   fallbackRatio: number;
   inset?: number;
+  visibleItems?: number;
   onPress?: () => void;
 };
 
-export default function CmsBannerGallery({ banner, fallbackRatio, inset = 0, onPress }: Props) {
+export default function CmsBannerGallery({ banner, fallbackRatio, inset = 0, visibleItems = 1, onPress }: Props) {
   const { width: screenWidth } = useWindowDimensions();
   const [measuredWidth, setMeasuredWidth] = React.useState<number | null>(null);
   const [page, setPage] = React.useState(0);
@@ -44,18 +45,30 @@ export default function CmsBannerGallery({ banner, fallbackRatio, inset = 0, onP
       .map(image => ({ ...image, image_url: normalizeLocalCmsImageUrl(image.image_url) || '' }))
       .filter(image => image.image_url);
   }, [banner]);
-  const identity = `${banner?.content_id}-${banner?.display_mode}-${images.map(image => image.image_url).join('|')}`;
+  const mode = banner?.display_mode || 'carousel';
+  const itemsPerView = mode === 'carousel' ? Math.min(Math.max(visibleItems, 1), Math.max(1, images.length - 0.5)) : 1;
+  const gap = itemsPerView > 1 ? 8 : 0;
+  const slideWidth = Math.max(0, (width - Math.ceil(itemsPerView - 1) * gap) / itemsPerView);
+  const slideInterval = slideWidth + gap;
+  const visibleRange = (offset: number): [number, number] => [
+    Math.max(0, Math.min(images.length - 1, Math.floor(offset / slideInterval))),
+    Math.max(0, Math.min(images.length - 1, Math.ceil((offset + width) / slideInterval) - 1)),
+  ];
+  const identity = `${banner?.content_id}-${banner?.display_mode}-${visibleItems}-${images.map(image => image.image_url).join('|')}`;
   React.useEffect(() => {
     let active = true;
     Promise.all(images.map(image => measure(image.image_url))).then(() => { if (active) updateRatios(); });
     return () => { active = false; };
   }, [images]);
   React.useEffect(() => { setPage(0); setVisiblePages([0, 0]); setFailed({}); scroller.current?.scrollTo({ x: 0, animated: false }); }, [identity]);
-  React.useEffect(() => { scroller.current?.scrollTo({ x: page * width, animated: false }); }, [width, page]);
+  React.useEffect(() => {
+    scroller.current?.scrollTo({ x: page * slideInterval, animated: false });
+    const [first, last] = visibleRange(page * slideInterval);
+    setVisiblePages(previous => previous[0] === first && previous[1] === last ? previous : [first, last]);
+  }, [width, slideInterval, page, images.length, identity]);
   // Metadata causes one update after it arrives; loading image bytes does
   // not subsequently change layout. Cold, unknown dimensions use the zone ratio.
   if (!banner) return null;
-  const mode = banner.display_mode || 'carousel';
   const ratioFor = (uri: string) => ratios.get(uri) || fallbackRatio;
   const tile = (image: typeof images[number], tileWidth: number) => (
     <TouchableOpacity key={`${image.image_id}-${image.image_url}`} disabled={!onPress} onPress={onPress}
@@ -91,22 +104,24 @@ export default function CmsBannerGallery({ banner, fallbackRatio, inset = 0, onP
       const firstVisible = Math.min(visiblePages[0], images.length - 1);
       const lastVisible = Math.min(visiblePages[1], images.length - 1);
       const settle = (offset: number) => {
-        const next = Math.max(0, Math.min(images.length - 1, Math.round(offset / width)));
+        const next = Math.max(0, Math.min(images.length - 1, Math.round(offset / slideInterval)));
         setPage(next);
-        setVisiblePages([next, next]);
+        setVisiblePages(visibleRange(offset));
       };
-      body = <><ScrollView ref={scroller} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
-        style={{ height: Math.max(width / ratioFor(images[firstVisible].image_url), width / ratioFor(images[lastVisible].image_url)) }} contentContainerStyle={styles.slides}
+      body = <><ScrollView ref={scroller} horizontal pagingEnabled={itemsPerView === 1}
+        snapToInterval={itemsPerView > 1 ? slideInterval : undefined}
+        decelerationRate={itemsPerView > 1 ? 'fast' : 'normal'}
+        showsHorizontalScrollIndicator={false}
+        style={{ height: Math.max(...images.slice(firstVisible, lastVisible + 1).map(image => slideWidth / ratioFor(image.image_url))) }}
+        contentContainerStyle={[styles.slides, { gap, paddingRight: Math.max(0, width - slideWidth) }]}
         scrollEventThrottle={16}
         onScroll={event => {
-          const position = Math.max(0, Math.min(images.length - 1, event.nativeEvent.contentOffset.x / width));
-          const first = Math.floor(position);
-          const last = Math.ceil(position);
+          const [first, last] = visibleRange(event.nativeEvent.contentOffset.x);
           setVisiblePages(previous => previous[0] === first && previous[1] === last ? previous : [first, last]);
         }}
         onScrollEndDrag={event => { if (!event.nativeEvent.velocity?.x) settle(event.nativeEvent.contentOffset.x); }}
         onMomentumScrollEnd={event => settle(event.nativeEvent.contentOffset.x)}>
-        {images.map(image => tile(image, width))}
+        {images.map(image => tile(image, slideWidth))}
       </ScrollView>{images.length > 1 && <View style={styles.dots}>{images.map((image, index) =>
         <View key={`${image.image_id}-${index}`} style={[styles.dot, { opacity: index === currentPage ? 1 : 0.3 }]} />)}</View>}</>;
     }

@@ -1,0 +1,37 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "install",
+      "app",
+      "--device",
+      "00008101-001658210A11001E",
+      "ios/build/device-derived-data/Build/Products/Debug-iphoneos/Reward Planners.app",
+      "--json-output",
+      "artifacts/ios-device/install-result.json"
+    ],
+    "commandType" : "devicectl.device.install.app",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "506.7"
+  },
+  "result" : {
+    "deviceIdentifier" : "E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F",
+    "installedApplications" : [
+      {
+        "bundleID" : "com.mpstech.rewardsplanners",
+        "databaseSequenceNumber" : 1776,
+        "databaseUUID" : "074AEA83-B7CA-4FC7-B78D-74B49F2E3AEF",
+        "installationURL" : "file:///private/var/containers/Bundle/Application/79926027-2F04-46B3-945D-3E182B01A86C/Reward%20Planners.app/",
+        "launchServicesIdentifier" : "unknown",
+        "options" : {
+
+        }
+      }
+    ]
+  }
+}

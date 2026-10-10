@@ -14,7 +14,7 @@ jest.mock('../src/modules/ecommerce/components/home/OfferHome', () => ({ __esMod
 jest.mock('../src/bottombar/BottomTabs', () => ({ TAB_BAR_HEIGHT: 60 }));
 jest.mock('../src/modules/common/auth/context/AuthContext', () => ({ useAuth: () => ({ isAuthenticated: false }) }));
 jest.mock('../src/theme/ThemeContext', () => ({ useAppTheme: () => ({ theme: { background: '#fff' } }) }));
-it('keeps main → brand → offers → other content in one vertical list without another top inset', async () => {
+it('keeps main → brand → categories → offers → other content in one vertical list without another top inset', async () => {
   jest.spyOn(console, 'error').mockImplementation(() => {});
   jest.spyOn(InteractionManager, 'runAfterInteractions').mockReturnValue({ cancel: jest.fn() } as any);
   let renderer: ReturnType<typeof create>;
@@ -22,7 +22,7 @@ it('keeps main → brand → offers → other content in one vertical list witho
     await act(async () => { renderer = create(<HomeScreen />); });
     const list = renderer!.root.findByType(FlatList);
     expect(list.props.ListHeaderComponent.type).toBe('MainPromotion');
-    expect(list.props.data.slice(0, 3).map((item: any) => item.key)).toEqual(['brandPromotionalBanner', 'offerHome', 'categories']);
+    expect(list.props.data.slice(0, 3).map((item: any) => item.key)).toEqual(['brandPromotionalBanner', 'categories', 'offerHome']);
     expect(list.props.onScroll).toBe(mockScroll);
     expect(list.props.contentInsetAdjustmentBehavior).toBe('never');
     expect(StyleSheet.flatten(list.props.contentContainerStyle).paddingTop || 0).toBe(0);

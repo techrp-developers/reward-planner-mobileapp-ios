@@ -1,0 +1,7 @@
+{
+  "target": "com.mpstech.rewardsplanners (iPhone)",
+  "observedSeconds": 30,
+  "runtime": "{\"dev\":true,\"hermes\":true}",
+  "exceptions": [],
+  "consoleErrors": []
+}

@@ -5,7 +5,7 @@ import { useNavigation, useNavigationState, useRoute } from "@react-navigation/n
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import Navbar, { type TopTab } from "../navbar/Navbar";
-import BottomTabs from "../bottombar/BottomTabs";
+import BottomTabs, { type TabKey } from "../bottombar/BottomTabs";
 import { useCart } from "../modules/ecommerce/context/CartContext";
 import { useServiceCartCount } from "../modules/services/hooks/useServiceCartCount";
 import { useAppTheme } from "../theme/ThemeContext";
@@ -245,7 +245,7 @@ function MainLayout() {
 
   const contentBottomSpacing = 0;
   const handleBottomTabPress = React.useCallback(
-    (tab: "Home" | "Search" | "Notes" | "Cart" | "History" | "Profile") => {
+    (tab: TabKey) => {
       if (tab === "History") {
         if (activeMode === "Payments") {
           navigateWithinModule("PaymentsModule", "OrderHistory");

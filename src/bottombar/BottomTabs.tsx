@@ -11,6 +11,7 @@ import SearchIcon from "../assets/menu/Search.svg";
 import HistoryIcon from "../assets/menu/History.svg";
 import { useAppTheme } from "../theme/ThemeContext";
 import RewardIcon from "../assets/homepage/RewardPlannersLogo.png";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 // Keep the floating bar close to the system safe area without adding a large
 // second gap above it.
@@ -21,7 +22,7 @@ export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP;
 
 type AppMode = "Product" | "Services" | "Payments" | "DineOut";
 
-export type TabKey = "Home" | "Notes" | "Cart" | "History" | "Profile" | "Search";
+export type TabKey = "Home" | "Notes" | "Cart" | "History" | "Profile" | "Search" | "Chat";
 
 type Props = {
   activeMode?: AppMode;
@@ -76,9 +77,13 @@ const PAYMENT_TABS: TabConfig[] = [
   { key: "Profile", label: "Profile", Icon: ProfileIcon },
 ];
 
+const ChatIcon = ({ width, color }: { width: number; height: number; color?: string }) => (
+  <MaterialCommunityIcons name="chat-outline" size={width} color={color} />
+);
+
 const DASHBOARD_TABS: TabConfig[] = [
   { key: "Notes", label: "Todo List", Icon: ExploreIcon },
-  { key: "Profile", label: "Profile", Icon: ProfileIcon },
+  { key: "Chat", label: "Chat", Icon: ChatIcon },
 ];
 
 const INACTIVE_COLOR = "#9CA3AF";
@@ -152,6 +157,9 @@ const TabItem = React.memo(({
   return (
     <TouchableOpacity
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: active }}
       onPress={onPress}
       style={styles.item}
       hitSlop={HIT_SLOP}
@@ -192,6 +200,8 @@ const CenterButton = React.memo(function CenterButton({
   return (
     <TouchableOpacity
       activeOpacity={0.9}
+      accessibilityRole="button"
+      accessibilityLabel="Home"
       onPress={onPress}
       style={styles.fabWrap}
       hitSlop={HIT_SLOP}
@@ -246,8 +256,30 @@ function BottomTabs({
 
   // Ref guards the early-return check so handlePress never needs activeTab as a dep.
   // Without this, every tab press invalidates handlePress → pressHandlers → all TabItem memos.
-  const activeTabRef = useRef<TabKey>("Home");
-  const [activeTab, setActiveTab] = useState<TabKey>("Home");
+  const activeTabRef = useRef<TabKey>(activeTabKey ?? "Home");
+  const [activeTab, setActiveTab] = useState<TabKey>(activeTabKey ?? "Home");
+  const [dashboardWidth, setDashboardWidth] = useState(0);
+  const dashboardIndicator = useRef(new Animated.Value(
+    activeTabKey === "Notes" ? 0 : activeTabKey === "Chat" ? 2 : 1,
+  )).current;
+  const animateDashboardIndicator = useCallback((index: number) => {
+    Animated.spring(dashboardIndicator, {
+      toValue: index,
+      ...ICON_SPRING_CONFIG,
+    }).start();
+  }, [dashboardIndicator]);
+
+  const handleDashboardPress = useCallback((tab: "Notes" | "Home" | "Chat") => {
+    const index = tab === "Notes" ? 0 : tab === "Home" ? 1 : 2;
+    activeTabRef.current = tab;
+    setActiveTab(tab);
+    animateDashboardIndicator(index);
+    if (tab === "Home") {
+      onCenterPress?.();
+      return;
+    }
+    onTabPress?.(tab);
+  }, [animateDashboardIndicator, onCenterPress, onTabPress]);
 
   const handlePress = useCallback(
     (tab: TabKey) => {
@@ -273,14 +305,15 @@ function BottomTabs({
   // not on every tab press. Passing these as onPress keeps TabItem React.memo effective.
   const pressHandlers = useMemo<Record<TabKey, () => void>>(
     () => ({
-      Home: () => handlePress("Home"),
-      Notes: () => handlePress("Notes"),
+      Home: () => isDashboard ? handleDashboardPress("Home") : handlePress("Home"),
+      Notes: () => isDashboard ? handleDashboardPress("Notes") : handlePress("Notes"),
+      Chat: () => isDashboard ? handleDashboardPress("Chat") : handlePress("Chat"),
       Search: () => handlePress("Search"),
       Cart: () => handlePress("Cart"),
       History: () => handlePress("History"),
       Profile: () => handlePress("Profile"),
     }),
-    [handlePress],
+    [handleDashboardPress, handlePress, isDashboard],
   );
 
   // Keep local active tab state in sync with navigation-driven activeTabKey from parent.
@@ -291,8 +324,10 @@ function BottomTabs({
       activeTabRef.current = activeTabKey;
       setActiveTab(activeTabKey);
     }
-
-  }, [activeTabKey, isFocused]);
+    if (isDashboard) {
+      animateDashboardIndicator(activeTabKey === "Notes" ? 0 : activeTabKey === "Chat" ? 2 : 1);
+    }
+  }, [activeTabKey, animateDashboardIndicator, isDashboard, isFocused]);
 
   return (
     <View
@@ -305,6 +340,7 @@ function BottomTabs({
       ]}
     >
       <View
+        onLayout={isDashboard ? event => setDashboardWidth(event.nativeEvent.layout.width) : undefined}
         style={[
           styles.bar,
           {
@@ -316,6 +352,22 @@ function BottomTabs({
           },
         ]}
       >
+        {isDashboard && dashboardWidth > 0 && (
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.dashboardIndicator, {
+              backgroundColor: tabTheme.activeIcon,
+              transform: [{ translateX: dashboardIndicator.interpolate({
+                inputRange: [0, 1, 2],
+                outputRange: [
+                  14 + (dashboardWidth - 28 - 64) / 4 - 12,
+                  dashboardWidth / 2 - 12,
+                  dashboardWidth - 14 - (dashboardWidth - 28 - 64) / 4 - 12,
+                ],
+              }) }],
+            }]}
+          />
+        )}
         {/* LEFT SIDE */}
         {tabs.slice(0, isDashboard ? 1 : 2).map((tab) => (
           <TabItem
@@ -354,7 +406,7 @@ function BottomTabs({
             and MainTabs (HomeStack) contexts without needing useNavigation. */}
         <CenterButton
           activeMode={activeMode}
-          onPress={onCenterPress ?? NOOP}
+          onPress={isDashboard ? pressHandlers.Home : onCenterPress ?? NOOP}
           hasUnviewedStatus={isDashboard ? hasUnviewedStatus : undefined}
         />
       </View>
@@ -409,6 +461,7 @@ const styles = StyleSheet.create({
   labelActive: {
     fontWeight: "700",
   },
+  dashboardIndicator: { position: "absolute", left: 0, bottom: 3, width: 24, height: 3, borderRadius: 2 },
   centerSpacer: {
     width: 64,
   },

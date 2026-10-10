@@ -567,7 +567,7 @@ export default function OfferHome({ module = "product" }: Props) {
           </TouchableOpacity>
         </View>
       ) : shouldShowCmsOffersBanner ? (
-        <CmsBannerGallery banner={cmsOffersBanner} fallbackRatio={720 / 900} inset={12}
+        <CmsBannerGallery banner={cmsOffersBanner} fallbackRatio={720 / 900} inset={12} visibleItems={2.5}
           onPress={cmsOffersBanner?.redirect_link ? () => {
             Linking.openURL(cmsOffersBanner.redirect_link!).catch(() => undefined);
           } : undefined} />

@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import type { NavigatorScreenParams } from "@react-navigation/native";
+import type { ChatStackParamList } from "../modules/chat/types";
 import { Alert, Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RESULTS } from "react-native-permissions";
@@ -62,6 +64,8 @@ export type AppStackParamList = {
   ExploreModule: undefined;
   AIAssistant: undefined;
   TodoList: undefined;
+  Quiz: undefined;
+  ChatStack: NavigatorScreenParams<ChatStackParamList> | undefined;
 };
 
 export type RootStackParamList = {
@@ -108,6 +112,14 @@ function AppNavigator() {
       >
 
         <AppStack.Screen name="Dashboard" component={Dashbord} />
+        <AppStack.Screen
+          name="ChatStack"
+          getComponent={() => require("../modules/chat/navigation/ChatStack").default}
+        />
+        <AppStack.Screen
+          name="Quiz"
+          getComponent={() => require("../modules/games/screens/QuizScreen").default}
+        />
         <AppStack.Screen
           name="Home"
           component={MainLayout}

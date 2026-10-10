@@ -1,0 +1,498 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "list",
+      "devices",
+      "--json-output",
+      "artifacts/ios-device/devices.json"
+    ],
+    "commandType" : "devicectl.list.devices",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "506.7"
+  },
+  "result" : {
+    "devices" : [
+      {
+        "capabilities" : [
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.acquireusageassertion",
+            "name" : "Acquire Usage Assertion"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.applicationcontrol",
+            "name" : "Application Control"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.capturesysdiagnose",
+            "name" : "Capture Sysdiagnose"
+          },
+          {
+            "featureIdentifier" : "com.apple.dt.serviceconnection.create",
+            "name" : "Create Service Connection"
+          },
+          {
+            "featureIdentifier" : "com.apple.dt.servicesocket.create",
+            "name" : "Create Service Socket"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.disableddiservices",
+            "name" : "Disable Developer Disk Image Services"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.disconnectdevice",
+            "name" : "Disconnect from Device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.fetchappicons",
+            "name" : "Fetch Application Icons"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.getauthlistingidentifiers",
+            "name" : "Fetch AuthListing Identifiers"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.fetchddimetadata",
+            "name" : "Fetch Developer Disk Image Services Metadata"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.getdeviceinfo",
+            "name" : "Fetch Extended Device Info"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.getdisplayinfo",
+            "name" : "Get Display Information"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.getlockstate",
+            "name" : "Get Lock State"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.installapp",
+            "name" : "Install Application"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.installroot",
+            "name" : "Install Root"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.launchapplication",
+            "name" : "Launch Application"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.listFiles",
+            "name" : "List Files"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.listroots",
+            "name" : "List Roots"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.tags",
+            "name" : "Modify Tags"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.default.user.credentials",
+            "name" : "Modify credentials for default users for a device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.monitorprocesstermination",
+            "name" : "Monitor Process for Termination"
+          },
+          {
+            "featureIdentifier" : "com.apple.dt.customer.postdarwinnotification",
+            "name" : "Post Darwin Notification"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.processcontrol",
+            "name" : "Process Control"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.querymobilegestalt",
+            "name" : "Query MobileGestalt"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.rebootdevice",
+            "name" : "Reboot Device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.sendmemorywarningtoprocess",
+            "name" : "Send Memory Warning to Process"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.sendsignaltoprocess",
+            "name" : "Send Signal to Process"
+          },
+          {
+            "featureIdentifier" : "com.apple.dt.profile",
+            "name" : "Service Hub Profile"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.spawnexecutable",
+            "name" : "Spawn Executable"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.streamapplist",
+            "name" : "Stream Application List"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.streamprocesslist",
+            "name" : "Stream Process List"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.transferFiles",
+            "name" : "Transfer Files"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.uninstallapp",
+            "name" : "Uninstall Application"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.uninstallroot",
+            "name" : "Uninstall Root"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.unpairdevice",
+            "name" : "Unpair Device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.viewdevicescreen",
+            "name" : "View Device Screen"
+          }
+        ],
+        "connectionProperties" : {
+          "authenticationType" : "manualPairing",
+          "isMobileDeviceOnly" : false,
+          "lastConnectionDate" : "2026-10-10T07:37:00.000Z",
+          "localHostnames" : [
+            "Kunmuns-iPhone.coredevice.local",
+            "E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F.coredevice.local",
+            "00008101-001658210A11001E.coredevice.local"
+          ],
+          "pairingState" : "paired",
+          "potentialHostnames" : [
+            "Kunmuns-iPhone.coredevice.local",
+            "E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F.coredevice.local",
+            "00008101-001658210A11001E.coredevice.local"
+          ],
+          "transportType" : "wired",
+          "tunnelIPAddress" : "fdc1:d8a:1a74::1",
+          "tunnelState" : "connected",
+          "tunnelTransportProtocol" : "tcp"
+        },
+        "deviceProperties" : {
+          "bootState" : "booted",
+          "bootedFromSnapshot" : true,
+          "bootedSnapshotName" : "com.apple.os.update-2EE7542680A07E40A4D3F4A62C80440C22D448F1E62DD4FA4C33086C4F2814A5",
+          "ddiServicesAvailable" : true,
+          "developerModeStatus" : "enabled",
+          "hasInternalOSBuild" : false,
+          "name" : "Kunmun’s iPhone",
+          "osBuildUpdate" : "23G71",
+          "osVersionNumber" : "26.6",
+          "providerSpecificValues" : {
+            "hasAMRestorableDeviceRef" : "true"
+          },
+          "rootFileSystemIsWritable" : false,
+          "screenViewingURL" : "devices://device/open?id=E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F",
+          "supportsCheckedAllocations" : false
+        },
+        "hardwareProperties" : {
+          "cpuType" : {
+            "name" : "arm64e",
+            "subType" : 2,
+            "type" : 16777228
+          },
+          "deviceType" : "iPhone",
+          "ecid" : 6289348413685790,
+          "hardwareModel" : "D53gAP",
+          "internalStorageCapacity" : 128000000000,
+          "isProductionFused" : true,
+          "marketingName" : "iPhone 12",
+          "platform" : "iOS",
+          "productType" : "iPhone13,2",
+          "reality" : "physical",
+          "serialNumber" : "H4YH65MM0F11",
+          "supportedCPUTypes" : [
+            {
+              "name" : "arm64e",
+              "subType" : 2,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64",
+              "subType" : 0,
+              "type" : 16777228
+            }
+          ],
+          "supportedDeviceFamilies" : [
+            1
+          ],
+          "thinningProductType" : "iPhone13,2",
+          "udid" : "00008101-001658210A11001E"
+        },
+        "identifier" : "E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F",
+        "tags" : [
+
+        ],
+        "visibilityClass" : "default"
+      },
+      {
+        "capabilities" : [
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.tags",
+            "name" : "Modify Tags"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.default.user.credentials",
+            "name" : "Modify credentials for default users for a device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.unpairdevice",
+            "name" : "Unpair Device"
+          }
+        ],
+        "connectionProperties" : {
+          "authenticationType" : "manualPairing",
+          "isMobileDeviceOnly" : false,
+          "lastConnectionDate" : "2025-10-29T12:25:36.969Z",
+          "pairingState" : "paired",
+          "potentialHostnames" : [
+            "Ujjwals-iPhone.coredevice.local",
+            "A6E3273C-0DFA-5109-AE91-09DAB559D09C.coredevice.local",
+            "00008101-000838E90EC0001E.coredevice.local"
+          ],
+          "tunnelState" : "unavailable"
+        },
+        "deviceProperties" : {
+          "bootedFromSnapshot" : true,
+          "bootedSnapshotName" : "com.apple.os.update-6BC8B57DFC148FF764E95BE609DC16464BB9E4AF19BD66A7ABFB2A4D259AE53A",
+          "ddiServicesAvailable" : false,
+          "developerModeStatus" : "enabled",
+          "hasInternalOSBuild" : false,
+          "name" : "Ujjwal’s iPhone",
+          "osBuildUpdate" : "22F76",
+          "osVersionNumber" : "18.5",
+          "rootFileSystemIsWritable" : false,
+          "supportsCheckedAllocations" : false
+        },
+        "hardwareProperties" : {
+          "cpuType" : {
+            "name" : "arm64e",
+            "subType" : 2,
+            "type" : 16777228
+          },
+          "deviceType" : "iPhone",
+          "ecid" : 2314373439684638,
+          "hardwareModel" : "D53gAP",
+          "internalStorageCapacity" : 128000000000,
+          "isProductionFused" : true,
+          "marketingName" : "iPhone 12",
+          "platform" : "iOS",
+          "productType" : "iPhone13,2",
+          "reality" : "physical",
+          "serialNumber" : "F17DHFD60F0X",
+          "supportedCPUTypes" : [
+            {
+              "name" : "arm64e",
+              "subType" : 2,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64",
+              "subType" : 0,
+              "type" : 16777228
+            },
+            {
+              "name" : "unknown-12-13",
+              "subType" : 13,
+              "type" : 12
+            }
+          ],
+          "supportedDeviceFamilies" : [
+            1
+          ],
+          "thinningProductType" : "iPhone13,2",
+          "udid" : "00008101-000838E90EC0001E"
+        },
+        "identifier" : "A6E3273C-0DFA-5109-AE91-09DAB559D09C",
+        "tags" : [
+
+        ],
+        "visibilityClass" : "default"
+      },
+      {
+        "capabilities" : [
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.tags",
+            "name" : "Modify Tags"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.default.user.credentials",
+            "name" : "Modify credentials for default users for a device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.unpairdevice",
+            "name" : "Unpair Device"
+          }
+        ],
+        "connectionProperties" : {
+          "authenticationType" : "manualPairing",
+          "isMobileDeviceOnly" : false,
+          "lastConnectionDate" : "2026-07-16T05:23:00.000Z",
+          "pairingState" : "paired",
+          "potentialHostnames" : [
+            "iPhone.coredevice.local",
+            "8EFC8BC8-0EC1-53B9-9D46-C95DCB490F87.coredevice.local",
+            "00008120-001464A43472201E.coredevice.local"
+          ],
+          "tunnelState" : "unavailable"
+        },
+        "deviceProperties" : {
+          "bootedFromSnapshot" : true,
+          "bootedSnapshotName" : "com.apple.os.update-7254BD5D385A367D9D6E061055C3C526D7AD935AC07C78F125B6D1F019DB0171",
+          "ddiServicesAvailable" : false,
+          "developerModeStatus" : "enabled",
+          "hasInternalOSBuild" : false,
+          "name" : "iPhone",
+          "osBuildUpdate" : "23F77",
+          "osVersionNumber" : "26.5",
+          "rootFileSystemIsWritable" : false,
+          "supportsCheckedAllocations" : false
+        },
+        "hardwareProperties" : {
+          "cpuType" : {
+            "name" : "arm64e",
+            "subType" : 2,
+            "type" : 16777228
+          },
+          "deviceType" : "iPhone",
+          "ecid" : 5740155951521822,
+          "hardwareModel" : "D37AP",
+          "internalStorageCapacity" : 128000000000,
+          "isProductionFused" : true,
+          "marketingName" : "iPhone 15",
+          "platform" : "iOS",
+          "productType" : "iPhone15,4",
+          "reality" : "physical",
+          "serialNumber" : "HWX7X24XMJ",
+          "supportedCPUTypes" : [
+            {
+              "name" : "arm64e",
+              "subType" : 2,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64",
+              "subType" : 0,
+              "type" : 16777228
+            }
+          ],
+          "supportedDeviceFamilies" : [
+            1
+          ],
+          "thinningProductType" : "iPhone15,4",
+          "udid" : "00008120-001464A43472201E"
+        },
+        "identifier" : "8EFC8BC8-0EC1-53B9-9D46-C95DCB490F87",
+        "tags" : [
+
+        ],
+        "visibilityClass" : "default"
+      },
+      {
+        "capabilities" : [
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.tags",
+            "name" : "Modify Tags"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.default.user.credentials",
+            "name" : "Modify credentials for default users for a device"
+          },
+          {
+            "featureIdentifier" : "com.apple.coredevice.feature.unpairdevice",
+            "name" : "Unpair Device"
+          }
+        ],
+        "connectionProperties" : {
+          "authenticationType" : "manualPairing",
+          "isMobileDeviceOnly" : false,
+          "lastConnectionDate" : "2026-06-19T09:39:00.000Z",
+          "pairingState" : "paired",
+          "potentialHostnames" : [
+            "iPhone-3.coredevice.local",
+            "ADF7716D-C698-55E9-8DBD-851C631F6894.coredevice.local",
+            "00008120-00045D511122201E.coredevice.local"
+          ],
+          "tunnelState" : "unavailable"
+        },
+        "deviceProperties" : {
+          "bootedFromSnapshot" : true,
+          "bootedSnapshotName" : "com.apple.os.update-B3B551C8B35CB69D6EC049AEA29A0E8557AAB903D9274D644A7397CB102670FA",
+          "ddiServicesAvailable" : false,
+          "developerModeStatus" : "disabled",
+          "hasInternalOSBuild" : false,
+          "name" : "iPhone (3)",
+          "osBuildUpdate" : "23B85",
+          "osVersionNumber" : "26.1",
+          "rootFileSystemIsWritable" : false,
+          "supportsCheckedAllocations" : false
+        },
+        "hardwareProperties" : {
+          "cpuType" : {
+            "name" : "arm64e",
+            "subType" : -2147483646,
+            "type" : 16777228
+          },
+          "deviceType" : "iPhone",
+          "ecid" : 1228502668025886,
+          "hardwareModel" : "D38AP",
+          "internalStorageCapacity" : 256000000000,
+          "isProductionFused" : true,
+          "marketingName" : "iPhone 15 Plus",
+          "platform" : "iOS",
+          "productType" : "iPhone15,5",
+          "reality" : "physical",
+          "serialNumber" : "D17FVR7L75",
+          "supportedCPUTypes" : [
+            {
+              "name" : "arm64e",
+              "subType" : -2147483646,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64",
+              "subType" : 0,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64",
+              "subType" : 1,
+              "type" : 16777228
+            },
+            {
+              "name" : "arm64_32",
+              "subType" : 1,
+              "type" : 33554444
+            }
+          ],
+          "supportedDeviceFamilies" : [
+            1
+          ],
+          "thinningProductType" : "iPhone15,5",
+          "udid" : "00008120-00045D511122201E"
+        },
+        "identifier" : "ADF7716D-C698-55E9-8DBD-851C631F6894",
+        "tags" : [
+
+        ],
+        "visibilityClass" : "default"
+      }
+    ]
+  }
+}

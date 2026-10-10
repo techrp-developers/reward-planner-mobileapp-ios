@@ -115,3 +115,41 @@ it('does not reserve height for an offscreen tall slide during a swipe', async (
   await act(async () => renderer!.root.findByType(ScrollView).props.onMomentumScrollEnd({ nativeEvent: { contentOffset: { x: 780 } } }));
   expect(StyleSheet.flatten(renderer!.root.findByType(ScrollView).props.style).height).toBe(1170);
 });
+
+it.each([2, 3])('shows half of the next offer with %s images and snaps by card width', async count => {
+  mockWidth = 390;
+  const entry = banner(888 + count, 'carousel', `peek-${count}`);
+  entry.images = Array.from({ length: count }, (_, index) => ({
+    image_id: index + 1, image_url: `peek-${count}-${index}-wide`, sort_order: index, is_active: 1 as const,
+  }));
+  await act(async () => {
+    renderer = create(<CmsBannerGallery banner={entry} fallbackRatio={2} inset={12} visibleItems={2.5} />);
+  });
+  const viewport = 390 - 24;
+  const visibleItems = count === 2 ? 1.5 : 2.5;
+  const gaps = Math.ceil(visibleItems - 1) * 8;
+  const tileWidth = renderer!.root.findAllByType(TouchableOpacity)[0].props.style.width;
+  expect(tileWidth * visibleItems + gaps).toBeCloseTo(viewport);
+  expect(renderer!.root.findByType(ScrollView).props.pagingEnabled).toBe(false);
+  expect(renderer!.root.findByType(ScrollView).props.snapToInterval).toBeCloseTo(tileWidth + 8);
+  expect(renderer!.root.findAllByType(Image).every(image => image.props.resizeMode === 'contain')).toBe(true);
+});
+
+it('includes the tallest visible offer when three cards share the viewport', async () => {
+  mockWidth = 390;
+  jest.mocked(Image.getSize).mockImplementation((uri, success) => success(1000, uri.includes('middle') ? 2000 : 500));
+  const entry = banner(895, 'carousel', 'peek-height');
+  entry.images = ['left', 'middle', 'right'].map((name, index) => ({
+    image_id: index + 1, image_url: `peek-height-${name}`, sort_order: index, is_active: 1 as const,
+  }));
+  await act(async () => {
+    renderer = create(<CmsBannerGallery banner={entry} fallbackRatio={2} visibleItems={2.5} />);
+  });
+  const tileWidth = renderer!.root.findAllByType(TouchableOpacity)[0].props.style.width;
+  expect(StyleSheet.flatten(renderer!.root.findByType(ScrollView).props.style).height).toBeCloseTo(tileWidth * 2);
+  const refreshed = { ...entry, images: entry.images.map(image => ({ ...image, image_url: `${image.image_url}-refreshed` })) };
+  await act(async () => {
+    renderer!.update(<CmsBannerGallery banner={refreshed} fallbackRatio={2} visibleItems={2.5} />);
+  });
+  expect(StyleSheet.flatten(renderer!.root.findByType(ScrollView).props.style).height).toBeCloseTo(tileWidth * 2);
+});

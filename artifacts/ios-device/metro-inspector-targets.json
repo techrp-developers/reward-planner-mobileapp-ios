@@ -1,0 +1,20 @@
+[
+  {
+    "id": "f006bb6bf6b28f3949133b5fb37b7fde51aff4a5-1",
+    "title": "com.mpstech.rewardsplanners (iPhone)",
+    "description": "React Native Bridgeless [C++ connection]",
+    "appId": "com.mpstech.rewardsplanners",
+    "type": "node",
+    "devtoolsFrontendUrl": "/debugger-frontend/rn_fusebox.html?ws=%2Finspector%2Fdebug%3Fdevice%3Df006bb6bf6b28f3949133b5fb37b7fde51aff4a5%26page%3D1&sources.hide_add_folder=true",
+    "webSocketDebuggerUrl": "ws://localhost:8081/inspector/debug?device=f006bb6bf6b28f3949133b5fb37b7fde51aff4a5&page=1",
+    "deviceName": "iPhone",
+    "reactNative": {
+      "logicalDeviceId": "f006bb6bf6b28f3949133b5fb37b7fde51aff4a5",
+      "capabilities": {
+        "nativePageReloads": true,
+        "nativeSourceCodeFetching": false,
+        "prefersFuseboxFrontend": true
+      }
+    }
+  }
+]

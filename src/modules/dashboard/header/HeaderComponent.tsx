@@ -49,6 +49,7 @@ interface HeaderProps {
   textColor?:             string;
   dismissSignal?:         number;
   onNotificationPress?:   () => void;
+  onProfilePress?:        () => void;
   onAIToggle?:            (value: boolean) => void;
   onSearchSubmit?:        (query: string) => void;
   onSearchActiveChange?:  (active: boolean) => void;
@@ -71,6 +72,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   textColor,
   dismissSignal = 0,
   onNotificationPress,
+  onProfilePress,
   onSearchSubmit,
   onSearchActiveChange,
   onSearchDropdownChange,
@@ -242,6 +244,11 @@ const HeaderComponent: React.FC<HeaderProps> = ({
               </View>
             ) : (
               <View style={styles.logoPill}><MaterialCommunityIcons name="domain" size={rs(23)} color="#6A00FF" /></View>
+            )}
+            {onProfilePress && (
+              <TouchableOpacity onPress={onProfilePress} style={[styles.actionButton, { backgroundColor: tk.searchBg }]} accessibilityRole="button" accessibilityLabel="Open profile" activeOpacity={0.75}>
+                <MaterialCommunityIcons name="account-circle-outline" size={rs(24)} color={tk.searchTextColor} />
+              </TouchableOpacity>
             )}
             <TouchableOpacity onPress={openSearch} style={[styles.actionButton, { backgroundColor: tk.searchBg }]} accessibilityLabel="Search" activeOpacity={0.75}>
               <MaterialCommunityIcons name="magnify" size={rs(21)} color={tk.searchTextColor} />

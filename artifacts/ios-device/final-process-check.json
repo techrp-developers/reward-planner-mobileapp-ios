@@ -1,0 +1,32 @@
+{
+  "info" : {
+    "arguments" : [
+      "devicectl",
+      "device",
+      "info",
+      "processes",
+      "--device",
+      "00008101-001658210A11001E",
+      "--filter",
+      "processIdentifier == 1590",
+      "--json-output",
+      "artifacts/ios-device/final-process-check.json"
+    ],
+    "commandType" : "devicectl.device.info.processes",
+    "environment" : {
+      "TERM" : "dumb"
+    },
+    "jsonVersion" : 3,
+    "outcome" : "success",
+    "version" : "506.7"
+  },
+  "result" : {
+    "deviceIdentifier" : "E1CE3FC7-E27E-5DB5-BE60-13E45DC9E99F",
+    "runningProcesses" : [
+      {
+        "executable" : "file:///private/var/containers/Bundle/Application/79926027-2F04-46B3-945D-3E182B01A86C/Reward%20Planners.app/Reward%20Planners",
+        "processIdentifier" : 1590
+      }
+    ]
+  }
+}
