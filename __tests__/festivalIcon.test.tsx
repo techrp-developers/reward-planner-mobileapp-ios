@@ -11,7 +11,7 @@ const get = axios.get as jest.Mock;
 const bridge = {
   isSupported: jest.fn().mockResolvedValue(true),
   getCurrentIcon: jest.fn().mockResolvedValue('Default'),
-  setIcon: jest.fn().mockResolvedValue(true),
+  setAppIcon: jest.fn().mockResolvedValue(true),
 };
 let renderer: ReactTestRenderer | undefined;
 let listener: (state: string) => void;
@@ -31,7 +31,7 @@ beforeEach(() => {
   NativeModules.AppIconSwitcher = bridge;
   bridge.isSupported.mockResolvedValue(true);
   bridge.getCurrentIcon.mockResolvedValue('Default');
-  bridge.setIcon.mockResolvedValue(true);
+  bridge.setAppIcon.mockResolvedValue(true);
   get.mockResolvedValue({ data: { success: true, data: { platform: 'ios', icon_key: 'diwali' } } });
   jest.spyOn(console, 'warn').mockImplementation(() => {});
   jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
@@ -50,17 +50,20 @@ afterEach(async () => {
 });
 
 it('maps known keys and safely defaults unknown/prototype keys', () => {
+  expect(resolveIconName('navratri')).toBe('NavratriIcon');
+  expect(resolveIconName('dasera')).toBeNull();
+  expect(resolveIconName('__proto__')).toBeNull();
   expect(resolveIconName('diwali')).toBe('DiwaliIcon');
   expect(resolveIconName('independence_day')).toBe('IndependenceDayIcon');
-  expect(resolveIconName('default')).toBe('Default');
-  expect(resolveIconName('new_festival')).toBe('Default');
-  expect(resolveIconName('toString')).toBe('Default');
+  expect(resolveIconName('default')).toBeNull();
+  expect(resolveIconName('new_festival')).toBeNull();
+  expect(resolveIconName('toString')).toBeNull();
 });
 
 it('restores with null and absorbs native failures or a missing module', async () => {
-  expect(await IconService.setIcon('Default')).toBe(true);
-  expect(bridge.setIcon).toHaveBeenCalledWith(null);
-  bridge.setIcon.mockRejectedValueOnce(new Error('Missing asset'));
+  expect(await IconService.setIcon(null)).toBe(true);
+  expect(bridge.setAppIcon).toHaveBeenCalledWith(null);
+  bridge.setAppIcon.mockRejectedValueOnce(new Error('Missing asset'));
   expect(await IconService.setIcon('DiwaliIcon')).toBe(false);
   delete NativeModules.AppIconSwitcher;
   expect(await IconService.getCurrentIcon()).toBe('Default');
@@ -73,22 +76,22 @@ it('does no native or network work on Android', async () => {
   expect(await IconService.setIcon('DiwaliIcon')).toBe(false);
   expect(await IconService.getCurrentIcon()).toBe('Default');
   expect(get).not.toHaveBeenCalled();
-  expect(bridge.setIcon).not.toHaveBeenCalled();
+  expect(bridge.setAppIcon).not.toHaveBeenCalled();
 });
 
 it('fetches on mount/foreground, skips an unchanged icon and cleans up', async () => {
   await act(async () => { renderer = create(<Root />); });
   expect(get).toHaveBeenCalledWith(expect.stringContaining('/content/resolved/app-icon?platform=ios'), expect.any(Object));
-  expect(bridge.setIcon).toHaveBeenCalledTimes(1);
+  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
   bridge.getCurrentIcon.mockResolvedValue('DiwaliIcon');
   await act(async () => { listener('background'); listener('active'); });
   expect(get).toHaveBeenCalledTimes(2);
-  expect(bridge.setIcon).toHaveBeenCalledTimes(1);
-  const signal = get.mock.calls[0][1].signal;
+  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
+  expect(get.mock.calls[0][1].timeout).toBe(2500);
   await act(async () => renderer?.unmount());
   renderer = undefined;
   expect(remove).toHaveBeenCalledTimes(1);
-  expect(signal.aborted).toBe(true);
+
 });
 
 it('leaves the icon alone on invalid and failed network responses', async () => {
@@ -96,7 +99,7 @@ it('leaves the icon alone on invalid and failed network responses', async () => 
   await act(async () => { renderer = create(<Root />); });
   get.mockRejectedValueOnce(new Error('Offline'));
   await act(async () => { listener('inactive'); listener('active'); });
-  expect(bridge.setIcon).not.toHaveBeenCalled();
+  expect(bridge.setAppIcon).not.toHaveBeenCalled();
   expect(console.warn).toHaveBeenCalledTimes(2);
 });
 
@@ -107,5 +110,43 @@ it('does not apply a response after unmount', async () => {
   await act(async () => renderer?.unmount());
   renderer = undefined;
   await act(async () => { finish({ data: { success: true, data: { platform: 'ios', icon_key: 'diwali' } } }); });
-  expect(bridge.setIcon).not.toHaveBeenCalled();
+  expect(bridge.setAppIcon).not.toHaveBeenCalled();
+});
+
+ it('shares overlapping refreshes instead of queuing another request', async () => {
+  let finish!: (value: unknown) => void;
+  get.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  await act(async () => { renderer = create(<Root />); });
+  await act(async () => { listener('background'); listener('active'); listener('inactive'); listener('active'); });
+  expect(get).toHaveBeenCalledTimes(1);
+  await act(async () => { finish({ data: { success: true, data: { platform: 'ios', icon_key: 'navratri' } } }); });
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(bridge.setAppIcon).toHaveBeenCalledWith('NavratriIcon');
+});
+
+it.each([
+  { platform: 'android', icon_key: 'diwali' },
+  { platform: 'ios', icon_key: 123 },
+])('keeps the current icon for invalid data %j', async data => {
+  get.mockResolvedValueOnce({ data: { success: true, data } });
+  await act(async () => { renderer = create(<Root />); });
+  expect(bridge.setAppIcon).not.toHaveBeenCalled();
+  expect(bridge.getCurrentIcon).not.toHaveBeenCalled();
+});
+
+it('restores default after a campaign ends and skips an already default icon', async () => {
+  get.mockResolvedValue({ data: { success: true, data: { platform: 'ios', icon_key: 'default' } } });
+  bridge.getCurrentIcon.mockResolvedValue('NavratriIcon');
+  await act(async () => { renderer = create(<Root />); });
+  expect(bridge.setAppIcon).toHaveBeenCalledWith(null);
+  bridge.getCurrentIcon.mockResolvedValue('Default');
+  await act(async () => { listener('background'); listener('active'); });
+  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
+});
+
+it('keeps the current icon after a request timeout', async () => {
+  get.mockRejectedValueOnce(Object.assign(new Error('timeout'), { code: 'ECONNABORTED' }));
+  await act(async () => { renderer = create(<Root />); });
+  expect(bridge.setAppIcon).not.toHaveBeenCalled();
+  expect(bridge.isSupported).not.toHaveBeenCalled();
 });

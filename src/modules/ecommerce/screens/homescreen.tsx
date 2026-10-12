@@ -65,20 +65,20 @@ type HomeSection = {
 };
 
 const HOME_SECTIONS: HomeSection[] = [
-  { key: 'brandPromotionalBanner' },
   { key: 'categories' },
   { key: 'offerHome' },
   { key: 'bestSeller' },
   { key: 'topRated' },
   { key: 'newArrivals' },
   { key: 'mostView' },
+  { key: 'brandPromotionalBanner' },
   { key: 'recommended' },
   { key: 'features' },
   { key: 'recent' },
   { key: 'productCategory' },
 ];
 
-const INITIAL_VISIBLE_SECTIONS = ['brandPromotionalBanner', 'categories', 'offerHome'] as const;
+const INITIAL_VISIBLE_SECTIONS = ['categories', 'offerHome', 'bestSeller'] as const;
 const INITIAL_VISIBLE_SECTION_SET = new Set<SectionKey>(INITIAL_VISIBLE_SECTIONS);
 const HOME_SECTION_KEYS = HOME_SECTIONS.map((section) => section.key);
 const SECTION_RENDER_AHEAD = 1;

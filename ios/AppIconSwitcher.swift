@@ -6,13 +6,13 @@ import React
 class AppIconSwitcher: NSObject {
   @objc static func requiresMainQueueSetup() -> Bool { true }
 
-  @objc(setIcon:resolver:rejecter:)
-  func setIcon(_ iconName: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
+  @objc(setAppIcon:resolver:rejecter:)
+  func setAppIcon(_ iconName: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
                rejecter reject: @escaping RCTPromiseRejectBlock) {
     DispatchQueue.main.async {
       let application = UIApplication.shared
       guard application.supportsAlternateIcons else {
-        reject("ICON_UNSUPPORTED", "Alternate app icons are not supported", nil)
+        resolve(false)
         return
       }
       let targetName = (iconName == nil || iconName == "" || iconName == "Default") ? nil : iconName

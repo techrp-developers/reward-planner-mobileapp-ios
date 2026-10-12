@@ -6,13 +6,17 @@ export type ApiEnvironment = 'local' | 'live';
 export const API_ENVIRONMENT: ApiEnvironment = 'live';
 
 const isLocalEnvironment = (environment: ApiEnvironment) => environment === 'local';
-const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT);
+const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT) &&
+  (Platform.OS !== 'ios' || __DEV__);
+
+// For a physical iPhone, replace localhost with your Mac's LAN IP.
+export const IOS_LOCAL_SERVER_URL = 'http://localhost:5000';
 
 const LOCAL_SERVER_URL = Platform.select({
   // Physical Android device connected over USB. Run:
   // adb reverse tcp:5000 tcp:5000
   android: 'http://localhost:5000',
-  ios: 'http://localhost:5000',
+  ios: IOS_LOCAL_SERVER_URL,
   default: 'http://localhost:5000',
 }) as string;
 

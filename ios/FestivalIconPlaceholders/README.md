@@ -6,7 +6,9 @@ Each matching set under `../RewardsPlanners/Images.xcassets/` was produced with 
 
 To replace artwork, replace each master here and regenerate all sizes in its matching `.appiconset`, including the 1024px marketing image. Merely replacing these master files does not update the catalog. Preserve asset names and rebuild/reinstall the native app; no further icon build-setting changes are required. Do not change `AppIcon.appiconset`.
 
-Mapping: diwali → DiwaliIcon, eid → EidIcon, christmas → ChristmasIcon, holi → HoliIcon, independence-day → IndependenceDayIcon.
+Mapping: diwali → DiwaliIcon, eid → EidIcon, christmas → ChristmasIcon, holi → HoliIcon, independence_day → IndependenceDayIcon.
+
+Current runtime map also includes navratri → NavratriIcon. Dasera falls back to the default until a DaseraIcon set is supplied and registered. The verification below is historical; see ../../artifacts/festival-icon/REPORT.md for the latest checks.
 
 `native-registration.diff` records the additional project edits that include the existing AppIconSwitcher Swift and Objective-C files in the app target. Their source contents were not changed.
 

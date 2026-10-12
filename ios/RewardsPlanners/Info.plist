@@ -38,7 +38,7 @@
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<false/>
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>RewardsPlanners needs access to your local network to connect to the Metro bundler during development.</string>

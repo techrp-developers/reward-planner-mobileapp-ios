@@ -1,19 +1,24 @@
 import { NativeModules, Platform } from 'react-native';
 
 // These exact alternate asset names must be bundled using XCODE_SETUP.md.
-const ICON_NAMES = {
-  default: 'Default',
-  diwali: 'DiwaliIcon',
-  eid: 'EidIcon',
-  christmas: 'ChristmasIcon',
-  holi: 'HoliIcon',
-  independence_day: 'IndependenceDayIcon',
+export const ICON_MAP = {
+  ios: {
+    default: null,
+    diwali: 'DiwaliIcon',
+    eid: 'EidIcon',
+    christmas: 'ChristmasIcon',
+    holi: 'HoliIcon',
+    independence_day: 'IndependenceDayIcon',
+    navratri: 'NavratriIcon',
+    // Dasera intentionally falls back to default until artwork is bundled.
+  },
 } as const;
+const ICON_NAMES = ICON_MAP.ios;
 
 export type FestivalIconName = (typeof ICON_NAMES)[keyof typeof ICON_NAMES];
 
 interface AppIconSwitcherModule {
-  setIcon(name: string | null): Promise<boolean>;
+  setAppIcon(name: string | null): Promise<boolean>;
   getCurrentIcon(): Promise<string>;
   isSupported(): Promise<boolean>;
 }
@@ -29,7 +34,7 @@ function nativeModule(): AppIconSwitcherModule {
 export function resolveIconName(serverKey: string): FestivalIconName {
   return Object.prototype.hasOwnProperty.call(ICON_NAMES, serverKey)
     ? ICON_NAMES[serverKey as keyof typeof ICON_NAMES]
-    : 'Default';
+    : null;
 }
 
 export const IconService = {
@@ -47,7 +52,7 @@ export const IconService = {
     // TODO: Implement Android activity-alias switching in a future native build.
     if (Platform.OS !== 'ios') return false;
     try {
-      return await nativeModule().setIcon(name === 'Default' ? null : name);
+      return await nativeModule().setAppIcon(name);
     } catch (error) {
       console.warn('[IconService] Could not change icon:', error);
       return false;

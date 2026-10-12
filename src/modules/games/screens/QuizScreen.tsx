@@ -121,7 +121,7 @@ export default function QuizScreen() {
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="light-content" backgroundColor="#080B13" />
       {page === 'leaderboard' ? (
-        <ScrollView contentContainerStyle={styles.landing} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.landing} showsVerticalScrollIndicator={false}>
           <View style={styles.brandRow}>
             <Text style={styles.brand}>Quivio <Text style={styles.gold}>🏆</Text></Text>
           </View>
@@ -140,14 +140,16 @@ export default function QuizScreen() {
               ))}
             </View>
           </View>
-          <LinearGradient colors={['#071A32', '#030812']} style={styles.arena}>
+          <View style={styles.arena}>
+            <LinearGradient pointerEvents="none" colors={['#071A32', '#030812']} style={[StyleSheet.absoluteFillObject, styles.arenaBackground]} />
             <View style={styles.trophy}><Icon name="trophy" size={40} color="#FFCB42" /></View>
             <Text style={styles.playTitle}>Play Smart Quiz Every Day</Text>
             <Text style={styles.tagline}>Boost knowledge daily, win challenges,{ '\n' }become smarter every day.</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Start quiz" disabled={busy || loadingLeaders} onPress={start} style={styles.startWrap}>
-              <LinearGradient colors={['#FFE363', '#FFB800', '#FF9C00']} style={styles.start}>
+              <View style={styles.start}>
+                <LinearGradient pointerEvents="none" colors={['#FFE363', '#FFB800', '#FF9C00']} style={StyleSheet.absoluteFillObject} />
                 {busy || loadingLeaders ? <ActivityIndicator color="#121212" /> : <><Text style={styles.startText}>{session?.status === 'playing' ? 'Resume' : 'Start'}</Text><Icon name="play-outline" size={25} color="#121212" /></>}
-              </LinearGradient>
+              </View>
             </Pressable>
             <View style={styles.leaderboard}>
               <Text accessibilityRole="header" style={styles.leaderTitle}>Leaderboard 🏆</Text>
@@ -164,7 +166,7 @@ export default function QuizScreen() {
                     </View>
                     <View style={[styles.player, styles.playerRow]}>
                       <View style={styles.avatar}><Text style={styles.initial}>{player.name?.[0] || '?'}</Text></View>
-                      <Text style={styles.cell}>{player.name}</Text>
+                      <Text style={[styles.cell, styles.playerName]}>{player.name}</Text>
                     </View>
                     <Text style={[styles.cell, styles.score]}>{player.score}</Text>
                   </View>
@@ -175,11 +177,11 @@ export default function QuizScreen() {
             </View>
             <Text style={styles.previewNote}>Best completed score · Quiz points are separate from wallet rewards</Text>
             {!!error && <Pressable accessibilityRole="button" onPress={loadLeaders}><Text style={styles.error}>{error} Tap to retry.</Text></Pressable>}
-          </LinearGradient>
+          </View>
         </ScrollView>
       ) : page === 'question' && session && question ? (
         <View style={styles.questionContainer}>
-        <ScrollView key={questionIndex} contentContainerStyle={styles.questionPage} showsVerticalScrollIndicator={false}>
+        <ScrollView key={questionIndex} style={styles.scroll} contentContainerStyle={styles.questionPage} showsVerticalScrollIndicator={false}>
           <View style={styles.questionHeader}>
             <Pressable accessibilityRole="button" accessibilityLabel="Back to leaderboard" onPress={goBack} style={styles.back}><Icon name="chevron-left" color="#FFFFFF" size={28} /></Pressable>
             <Text accessibilityRole="header" style={styles.questionCount}>Question {questionIndex + 1} of {session.total}</Text>
@@ -243,50 +245,53 @@ export default function QuizScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#080B13' },
-  landing: { paddingHorizontal: 20, paddingBottom: 20, maxWidth: 540, width: '100%', alignSelf: 'center' },
-  brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  scroll: { flex: 1 },
+  landing: { flexGrow: 1, paddingLeft: 20, paddingRight: 20, paddingBottom: 20, maxWidth: 540, width: '100%', alignSelf: 'center' },
+  brandRow: { flexShrink: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brand: { color: '#FFFFFF', fontSize: 23, fontWeight: '700' },
   gold: { color: '#FFCB42' },
   touchTarget: { minHeight: 44, minWidth: 44, alignItems: 'center', justifyContent: 'center' },
   skip: { color: '#EDEEF4', fontSize: 14 },
-  hero: { flexDirection: 'row', marginHorizontal: -10 },
+  hero: { flexShrink: 0, flexDirection: 'row', marginLeft: -10, marginRight: -10, marginBottom: 28 },
   host: { position: 'absolute', left: 0, bottom: -16, width: '44%', height: '105%', zIndex: 1 },
   facts: { flex: 1, marginLeft: '44%', gap: 2, paddingTop: 8, paddingRight: 10, paddingBottom: 12 },
   factImage: { alignSelf: 'center', flexShrink: 0 },
-  arena: { borderWidth: 1, borderColor: '#168BFF', borderRadius: 28, padding: 9, paddingTop: 30, shadowColor: '#008CFF', shadowOpacity: 0.45, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
+  arenaBackground: { borderRadius: 27 },
+  arena: { flexShrink: 0, alignSelf: 'stretch', borderWidth: 1, borderColor: '#168BFF', borderRadius: 28, paddingLeft: 12, paddingRight: 12, paddingBottom: 16, paddingTop: 30, shadowColor: '#008CFF', shadowOpacity: 0.45, shadowRadius: 14, shadowOffset: { width: 0, height: 0 } },
   trophy: { position: 'absolute', top: -23, alignSelf: 'center' },
   playTitle: { color: '#FFFFFF', fontSize: 18, fontWeight: '700', textAlign: 'center' },
   tagline: { color: '#CCD1DC', textAlign: 'center', fontSize: 11, lineHeight: 15, marginTop: 5 },
   startWrap: { alignSelf: 'center', width: '68%', marginVertical: 14, borderRadius: 26, borderWidth: 1, borderColor: '#FFEB97', overflow: 'hidden' },
   start: { minHeight: 44, flexDirection: 'row', gap: 14, alignItems: 'center', justifyContent: 'center' },
   startText: { fontSize: 19, fontWeight: '700', color: '#111111' },
-  leaderboard: { borderWidth: 1, borderColor: '#2476C5', borderRadius: 18, padding: 6 },
-  leaderTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', textAlign: 'center', paddingVertical: 6 },
+  leaderboard: { alignSelf: 'stretch', flexShrink: 0, borderWidth: 1, borderColor: '#2476C5', borderRadius: 18, padding: 6 },
+  leaderTitle: { color: '#FFFFFF', fontSize: 15, fontWeight: '600', textAlign: 'center', paddingTop: 6, paddingBottom: 6 },
   table: { borderWidth: 1, borderColor: '#1C3049', borderRadius: 10, overflow: 'hidden' },
-  tableRow: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#1C3049', minHeight: 31 },
-  tableHeading: { color: '#B9C2D1', fontSize: 10, paddingVertical: 4 },
+  tableRow: { alignSelf: 'stretch', flexDirection: 'row', alignItems: 'center', borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#1C3049', minHeight: 31 },
+  tableHeading: { color: '#B9C2D1', fontSize: 10, paddingTop: 4, paddingBottom: 4 },
   rank: { width: '19%', alignItems: 'center', textAlign: 'center' },
-  player: { flex: 1, paddingLeft: 8 },
+  player: { flex: 1, minWidth: 0, paddingLeft: 8 },
   score: { width: '23%', textAlign: 'center' },
-  playerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1C3049', paddingVertical: 3 },
+  playerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderLeftWidth: 1, borderRightWidth: 1, borderColor: '#1C3049', paddingTop: 3, paddingBottom: 3 },
   avatar: { width: 23, height: 23, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#9BB9F7' },
   initial: { color: '#14213C', fontSize: 12, fontWeight: '700' },
+  playerName: { flex: 1, flexShrink: 1 },
   cell: { color: '#F4F6FC', fontSize: 12 },
-  previewNote: { color: '#94A3B8', fontSize: 10, textAlign: 'center', marginVertical: 8 },
-  error: { color: '#FF9DA9', fontSize: 13, textAlign: 'center', marginVertical: 8 },
+  previewNote: { alignSelf: 'stretch', flexShrink: 0, color: '#94A3B8', fontSize: 10, textAlign: 'center', marginVertical: 8 },
+  error: { alignSelf: 'stretch', flexShrink: 0, color: '#FF9DA9', fontSize: 13, textAlign: 'center', marginVertical: 8 },
   points: { color: '#9BCFF5', fontSize: 12, textAlign: 'center', marginTop: 14 },
   timerUrgent: { borderColor: '#FF5964' },
   usedOption: { opacity: 0.4 },
   questionContainer: { flex: 1 },
-  questionFooter: { paddingHorizontal: 24, paddingBottom: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
-  questionPage: { flexGrow: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16, maxWidth: 480, width: '100%', alignSelf: 'center' },
-  questionHeader: { minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 44 },
+  questionFooter: { flexShrink: 0, paddingLeft: 24, paddingRight: 24, paddingBottom: 24, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  questionPage: { flexGrow: 1, paddingLeft: 24, paddingRight: 24, paddingTop: 16, paddingBottom: 16, maxWidth: 480, width: '100%', alignSelf: 'center' },
+  questionHeader: { minHeight: 44, alignItems: 'center', justifyContent: 'center', paddingLeft: 44, paddingRight: 44 },
   back: { position: 'absolute', left: 0, width: 44, height: 44, justifyContent: 'center' },
   questionCount: { color: '#FFFFFF', fontSize: 16, fontWeight: '500', textAlign: 'center' },
   progress: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 16 },
   segment: { width: 23, height: 6, borderRadius: 3, backgroundColor: '#D9D9D9' },
   segmentActive: { backgroundColor: '#388BCD' },
-  timerSpace: { minHeight: 116, justifyContent: 'center', alignItems: 'center', paddingVertical: 14 },
+  timerSpace: { minHeight: 116, justifyContent: 'center', alignItems: 'center', paddingTop: 14, paddingBottom: 14 },
   timer: { width: 88, height: 88, borderRadius: 44, borderWidth: 4, borderColor: '#388BCD', alignItems: 'center', justifyContent: 'center' },
   timerValue: { color: '#F7FFFF', fontSize: 22, fontVariant: ['tabular-nums'] },
   seconds: { color: '#FFFFFF', fontSize: 12, letterSpacing: 1 },

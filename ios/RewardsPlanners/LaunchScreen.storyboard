@@ -16,25 +16,40 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="RewardsPlanners" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" minimumFontSize="18" translatesAutoresizingMaskIntoConstraints="NO" id="GJd-Yh-RWb">
-                                <rect key="frame" x="0.0" y="202" width="375" height="43"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="36"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Powered by MPS Global" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" translatesAutoresizingMaskIntoConstraints="NO" id="MN2-I3-ftu">
-                                <rect key="frame" x="0.0" y="626" width="375" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="splash-group">
+                                <subviews>
+                                    <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="splash-logo-frame">
+                                        <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="SplashLogo" translatesAutoresizingMaskIntoConstraints="NO" id="splash-logo"/>
+                                        </subviews>
+                                        <constraints>
+                                            <constraint firstItem="splash-logo" firstAttribute="centerX" secondItem="splash-logo-frame" secondAttribute="centerX" id="logo-x"/>
+                                            <constraint firstItem="splash-logo" firstAttribute="centerY" secondItem="splash-logo-frame" secondAttribute="centerY" id="logo-y"/>
+                                            <constraint firstItem="splash-logo" firstAttribute="width" secondItem="splash-logo-frame" secondAttribute="width" multiplier="2" id="logo-width"/>
+                                            <constraint firstItem="splash-logo" firstAttribute="height" secondItem="splash-logo-frame" secondAttribute="height" multiplier="2" id="logo-height"/>
+                                        </constraints>
+                                    </view>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="SplashWordLogo" translatesAutoresizingMaskIntoConstraints="NO" id="splash-word"/>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="splash-logo-frame" firstAttribute="top" secondItem="splash-group" secondAttribute="top" id="frame-top"/>
+                                    <constraint firstItem="splash-logo-frame" firstAttribute="centerX" secondItem="splash-group" secondAttribute="centerX" id="frame-x"/>
+                                    <constraint firstItem="splash-logo-frame" firstAttribute="width" secondItem="splash-group" secondAttribute="width" multiplier="0.6842105" id="frame-width"/>
+                                    <constraint firstItem="splash-logo-frame" firstAttribute="height" secondItem="splash-logo-frame" secondAttribute="width" id="frame-height"/>
+                                    <constraint firstItem="splash-word" firstAttribute="top" secondItem="splash-logo-frame" secondAttribute="bottom" constant="20" id="word-top"/>
+                                    <constraint firstItem="splash-word" firstAttribute="leading" secondItem="splash-group" secondAttribute="leading" id="word-left"/>
+                                    <constraint firstItem="splash-word" firstAttribute="trailing" secondItem="splash-group" secondAttribute="trailing" id="word-right"/>
+                                    <constraint firstItem="splash-word" firstAttribute="height" secondItem="splash-word" secondAttribute="width" multiplier="0.3277042" id="word-height"/>
+                                    <constraint firstAttribute="bottom" secondItem="splash-word" secondAttribute="bottom" id="group-bottom"/>
+                                </constraints>
+                            </view>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <color key="backgroundColor" red="0.9568627451" green="0.9450980392" blue="0.9764705882" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="bottom" secondItem="MN2-I3-ftu" secondAttribute="bottom" constant="20" id="OZV-Vh-mqD"/>
-                            <constraint firstItem="Bcu-3y-fUS" firstAttribute="centerX" secondItem="GJd-Yh-RWb" secondAttribute="centerX" id="Q3B-4B-g5h"/>
-                            <constraint firstItem="MN2-I3-ftu" firstAttribute="centerX" secondItem="Bcu-3y-fUS" secondAttribute="centerX" id="akx-eg-2ui"/>
-                            <constraint firstItem="MN2-I3-ftu" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" id="i1E-0Y-4RG"/>
-                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="bottom" multiplier="1/3" constant="1" id="moa-c2-u7t"/>
-                            <constraint firstItem="GJd-Yh-RWb" firstAttribute="leading" secondItem="Bcu-3y-fUS" secondAttribute="leading" symbolic="YES" id="x7j-FC-K8j"/>
+                            <constraint firstItem="splash-group" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="group-x"/>
+                            <constraint firstItem="splash-group" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="group-y"/>
+                            <constraint firstItem="splash-group" firstAttribute="width" secondItem="Ze5-6b-2t3" secondAttribute="width" multiplier="0.76" priority="750" id="group-width"/>
+                            <constraint firstItem="splash-group" firstAttribute="width" relation="lessThanOrEqual" constant="340" id="group-max-width"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
                     </view>
@@ -44,4 +59,8 @@
             <point key="canvasLocation" x="52.173913043478265" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="SplashLogo" width="1133" height="1133"/>
+        <image name="SplashWordLogo" width="2191" height="718"/>
+    </resources>
 </document>

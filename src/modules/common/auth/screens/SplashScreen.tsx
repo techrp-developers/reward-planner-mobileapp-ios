@@ -1,21 +1,32 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions } from "react-native";
+import { View, Image, StatusBar, StyleSheet, useWindowDimensions } from "react-native";
 
 import logo from "../../../../assets/menu/logo.png";
-
-const { width } = Dimensions.get("window");
+import logoword from "../../../../assets/homepage/Reward Planners word Logo.png";
 
 const SplashScreen = () => {
-  return (
+  const { width, height } = useWindowDimensions();
+  const logoSize = Math.min(width * 0.52, height * 0.32, 240);
+  const wordWidth = Math.min(width * 0.76, 340);
 
+  return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F4F1F9" />
       <View style={styles.content}>
-        <Image source={logo} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>
-          <Text style={styles.reward}>Reward</Text>
-          <Text style={styles.space}> </Text>
-          <Text style={styles.planners}>Planners</Text>
-        </Text>
+        <View style={[styles.logo, { width: logoSize, height: logoSize }]}>
+          <Image
+            source={logo}
+            style={{ width: logoSize * 2, height: logoSize * 2 }}
+            resizeMode="contain"
+          />
+        </View>
+        <Image
+          source={logoword}
+          style={{ width: wordWidth, height: wordWidth * 718 / 2191 }}
+          resizeMode="contain"
+          accessible
+          accessibilityLabel="Reward Planners"
+        />
       </View>
     </View>
   );
@@ -26,7 +37,7 @@ export default SplashScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F4F1F9", // light lavender bg from design
+    backgroundColor: "#F4F1F9",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -35,33 +46,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   logo: {
-    width: width * 0.32,
-    height: width * 0.32,
-    marginBottom: 16,
-  },
-  title: {
-    fontFamily: "Montserrat-SemiBold",
-    fontWeight: "600",
-    fontSize: 24,
-    lineHeight: 29,
-    letterSpacing: 0,
-    textAlign: "center",
-  },
-  reward: {
-    fontFamily: "Montserrat-SemiBold",
-    fontWeight: "600",
-    fontSize: 24,
-    lineHeight: 29,
-    color: "#852BAF",
-  },
-  space: {
-    fontSize: 24,
-  },
-  planners: {
-    fontFamily: "Montserrat-SemiBold",
-    fontWeight: "600",
-    fontSize: 24,
-    lineHeight: 29,
-    color: "#FC3F78",
+    marginBottom: 20,
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

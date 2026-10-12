@@ -10,6 +10,8 @@ import {
 import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TAB_BAR_HEIGHT } from '../../../bottombar/BottomTabs';
 
 import ProductHeadColor from '../constants/heading/Poduct_Head_Color';
 import ProductCard from '../constants/product_cart/ProductCard';
@@ -64,6 +66,7 @@ export default function CampaignProductsScreen() {
     const route = useRoute<CampaignRoute>();
     const { theme } = useAppTheme();
     const { width } = useWindowDimensions();
+    const insets = useSafeAreaInsets();
     const pulse = useRef(new Animated.Value(0)).current;
     const cardWidth = (width - 44) / 2;
     const campaignId = route.params.campaignId;
@@ -109,7 +112,9 @@ export default function CampaignProductsScreen() {
                     numColumns={2}
                     keyExtractor={(item: any, index) => String(item?.id ?? item?.product_id ?? index)}
                     columnWrapperStyle={styles.row}
-                    contentContainerStyle={styles.listContent}
+                    contentContainerStyle={[styles.listContent, {
+                        paddingBottom: TAB_BAR_HEIGHT + Math.max(insets.bottom, 0) + 16,
+                    }]}
                     showsVerticalScrollIndicator={false}
                     renderItem={({ item }) => (
                         <ProductCard
@@ -128,9 +133,6 @@ export default function CampaignProductsScreen() {
                             <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No products found in this campaign.</Text>
                         </View>
                     }
-                    ListFooterComponent={
-                        products.length > 0 ? <View style={styles.footerSpace} /> : null
-                    }
                 />
             )}
         </View>
@@ -147,5 +149,4 @@ const styles = StyleSheet.create({
     skeletonTextSmall: { marginTop: 6 },
     emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
     emptyText: { fontSize: 14, textAlign: 'center' },
-    footerSpace: { height: 24 },
 });

@@ -1,0 +1,511 @@
+diff --git a/__tests__/festivalIcon.test.tsx b/__tests__/festivalIcon.test.tsx
+index 3671ab375..df91e0f54 100644
+--- a/__tests__/festivalIcon.test.tsx
++++ b/__tests__/festivalIcon.test.tsx
+@@ -11,7 +11,7 @@ const get = axios.get as jest.Mock;
+ const bridge = {
+   isSupported: jest.fn().mockResolvedValue(true),
+   getCurrentIcon: jest.fn().mockResolvedValue('Default'),
+-  setIcon: jest.fn().mockResolvedValue(true),
++  setAppIcon: jest.fn().mockResolvedValue(true),
+ };
+ let renderer: ReactTestRenderer | undefined;
+ let listener: (state: string) => void;
+@@ -31,7 +31,7 @@ beforeEach(() => {
+   NativeModules.AppIconSwitcher = bridge;
+   bridge.isSupported.mockResolvedValue(true);
+   bridge.getCurrentIcon.mockResolvedValue('Default');
+-  bridge.setIcon.mockResolvedValue(true);
++  bridge.setAppIcon.mockResolvedValue(true);
+   get.mockResolvedValue({ data: { success: true, data: { platform: 'ios', icon_key: 'diwali' } } });
+   jest.spyOn(console, 'warn').mockImplementation(() => {});
+   jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, callback) => {
+@@ -50,17 +50,20 @@ afterEach(async () => {
+ });
+ 
+ it('maps known keys and safely defaults unknown/prototype keys', () => {
++  expect(resolveIconName('navratri')).toBe('NavratriIcon');
++  expect(resolveIconName('dasera')).toBeNull();
++  expect(resolveIconName('__proto__')).toBeNull();
+   expect(resolveIconName('diwali')).toBe('DiwaliIcon');
+   expect(resolveIconName('independence_day')).toBe('IndependenceDayIcon');
+-  expect(resolveIconName('default')).toBe('Default');
+-  expect(resolveIconName('new_festival')).toBe('Default');
+-  expect(resolveIconName('toString')).toBe('Default');
++  expect(resolveIconName('default')).toBeNull();
++  expect(resolveIconName('new_festival')).toBeNull();
++  expect(resolveIconName('toString')).toBeNull();
+ });
+ 
+ it('restores with null and absorbs native failures or a missing module', async () => {
+-  expect(await IconService.setIcon('Default')).toBe(true);
+-  expect(bridge.setIcon).toHaveBeenCalledWith(null);
+-  bridge.setIcon.mockRejectedValueOnce(new Error('Missing asset'));
++  expect(await IconService.setIcon(null)).toBe(true);
++  expect(bridge.setAppIcon).toHaveBeenCalledWith(null);
++  bridge.setAppIcon.mockRejectedValueOnce(new Error('Missing asset'));
+   expect(await IconService.setIcon('DiwaliIcon')).toBe(false);
+   delete NativeModules.AppIconSwitcher;
+   expect(await IconService.getCurrentIcon()).toBe('Default');
+@@ -73,22 +76,22 @@ it('does no native or network work on Android', async () => {
+   expect(await IconService.setIcon('DiwaliIcon')).toBe(false);
+   expect(await IconService.getCurrentIcon()).toBe('Default');
+   expect(get).not.toHaveBeenCalled();
+-  expect(bridge.setIcon).not.toHaveBeenCalled();
++  expect(bridge.setAppIcon).not.toHaveBeenCalled();
+ });
+ 
+ it('fetches on mount/foreground, skips an unchanged icon and cleans up', async () => {
+   await act(async () => { renderer = create(<Root />); });
+   expect(get).toHaveBeenCalledWith(expect.stringContaining('/content/resolved/app-icon?platform=ios'), expect.any(Object));
+-  expect(bridge.setIcon).toHaveBeenCalledTimes(1);
++  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
+   bridge.getCurrentIcon.mockResolvedValue('DiwaliIcon');
+   await act(async () => { listener('background'); listener('active'); });
+   expect(get).toHaveBeenCalledTimes(2);
+-  expect(bridge.setIcon).toHaveBeenCalledTimes(1);
+-  const signal = get.mock.calls[0][1].signal;
++  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
++  expect(get.mock.calls[0][1].timeout).toBe(2500);
+   await act(async () => renderer?.unmount());
+   renderer = undefined;
+   expect(remove).toHaveBeenCalledTimes(1);
+-  expect(signal.aborted).toBe(true);
++
+ });
+ 
+ it('leaves the icon alone on invalid and failed network responses', async () => {
+@@ -96,7 +99,7 @@ it('leaves the icon alone on invalid and failed network responses', async () =>
+   await act(async () => { renderer = create(<Root />); });
+   get.mockRejectedValueOnce(new Error('Offline'));
+   await act(async () => { listener('inactive'); listener('active'); });
+-  expect(bridge.setIcon).not.toHaveBeenCalled();
++  expect(bridge.setAppIcon).not.toHaveBeenCalled();
+   expect(console.warn).toHaveBeenCalledTimes(2);
+ });
+ 
+@@ -107,5 +110,43 @@ it('does not apply a response after unmount', async () => {
+   await act(async () => renderer?.unmount());
+   renderer = undefined;
+   await act(async () => { finish({ data: { success: true, data: { platform: 'ios', icon_key: 'diwali' } } }); });
+-  expect(bridge.setIcon).not.toHaveBeenCalled();
++  expect(bridge.setAppIcon).not.toHaveBeenCalled();
++});
++
++ it('shares overlapping refreshes instead of queuing another request', async () => {
++  let finish!: (value: unknown) => void;
++  get.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
++  await act(async () => { renderer = create(<Root />); });
++  await act(async () => { listener('background'); listener('active'); listener('inactive'); listener('active'); });
++  expect(get).toHaveBeenCalledTimes(1);
++  await act(async () => { finish({ data: { success: true, data: { platform: 'ios', icon_key: 'navratri' } } }); });
++  expect(get).toHaveBeenCalledTimes(1);
++  expect(bridge.setAppIcon).toHaveBeenCalledWith('NavratriIcon');
++});
++
++it.each([
++  { platform: 'android', icon_key: 'diwali' },
++  { platform: 'ios', icon_key: 123 },
++])('keeps the current icon for invalid data %j', async data => {
++  get.mockResolvedValueOnce({ data: { success: true, data } });
++  await act(async () => { renderer = create(<Root />); });
++  expect(bridge.setAppIcon).not.toHaveBeenCalled();
++  expect(bridge.getCurrentIcon).not.toHaveBeenCalled();
++});
++
++it('restores default after a campaign ends and skips an already default icon', async () => {
++  get.mockResolvedValue({ data: { success: true, data: { platform: 'ios', icon_key: 'default' } } });
++  bridge.getCurrentIcon.mockResolvedValue('NavratriIcon');
++  await act(async () => { renderer = create(<Root />); });
++  expect(bridge.setAppIcon).toHaveBeenCalledWith(null);
++  bridge.getCurrentIcon.mockResolvedValue('Default');
++  await act(async () => { listener('background'); listener('active'); });
++  expect(bridge.setAppIcon).toHaveBeenCalledTimes(1);
++});
++
++it('keeps the current icon after a request timeout', async () => {
++  get.mockRejectedValueOnce(Object.assign(new Error('timeout'), { code: 'ECONNABORTED' }));
++  await act(async () => { renderer = create(<Root />); });
++  expect(bridge.setAppIcon).not.toHaveBeenCalled();
++  expect(bridge.isSupported).not.toHaveBeenCalled();
+ });
+diff --git a/ios/AppIconSwitcher.m b/ios/AppIconSwitcher.m
+index 9bbb66a5a..51b18c49e 100644
+--- a/ios/AppIconSwitcher.m
++++ b/ios/AppIconSwitcher.m
+@@ -1,7 +1,7 @@
+ #import <React/RCTBridgeModule.h>
+ 
+ @interface RCT_EXTERN_MODULE(AppIconSwitcher, NSObject)
+-RCT_EXTERN_METHOD(setIcon:(NSString * _Nullable)iconName
++RCT_EXTERN_METHOD(setAppIcon:(NSString * _Nullable)iconName
+                   resolver:(RCTPromiseResolveBlock)resolve
+                   rejecter:(RCTPromiseRejectBlock)reject)
+ RCT_EXTERN_METHOD(getCurrentIcon:(RCTPromiseResolveBlock)resolve
+diff --git a/ios/AppIconSwitcher.swift b/ios/AppIconSwitcher.swift
+index 6114f6759..acd0048ff 100644
+--- a/ios/AppIconSwitcher.swift
++++ b/ios/AppIconSwitcher.swift
+@@ -6,13 +6,13 @@ import React
+ class AppIconSwitcher: NSObject {
+   @objc static func requiresMainQueueSetup() -> Bool { true }
+ 
+-  @objc(setIcon:resolver:rejecter:)
+-  func setIcon(_ iconName: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
++  @objc(setAppIcon:resolver:rejecter:)
++  func setAppIcon(_ iconName: String?, resolver resolve: @escaping RCTPromiseResolveBlock,
+                rejecter reject: @escaping RCTPromiseRejectBlock) {
+     DispatchQueue.main.async {
+       let application = UIApplication.shared
+       guard application.supportsAlternateIcons else {
+-        reject("ICON_UNSUPPORTED", "Alternate app icons are not supported", nil)
++        resolve(false)
+         return
+       }
+       let targetName = (iconName == nil || iconName == "" || iconName == "Default") ? nil : iconName
+diff --git a/ios/FestivalIconPlaceholders/README.md b/ios/FestivalIconPlaceholders/README.md
+index 5a9e5e2d6..8f0ddcbf0 100644
+--- a/ios/FestivalIconPlaceholders/README.md
++++ b/ios/FestivalIconPlaceholders/README.md
+@@ -6,7 +6,9 @@ Each matching set under `../RewardsPlanners/Images.xcassets/` was produced with
+ 
+ To replace artwork, replace each master here and regenerate all sizes in its matching `.appiconset`, including the 1024px marketing image. Merely replacing these master files does not update the catalog. Preserve asset names and rebuild/reinstall the native app; no further icon build-setting changes are required. Do not change `AppIcon.appiconset`.
+ 
+-Mapping: diwali → DiwaliIcon, eid → EidIcon, christmas → ChristmasIcon, holi → HoliIcon, independence-day → IndependenceDayIcon.
++Mapping: diwali → DiwaliIcon, eid → EidIcon, christmas → ChristmasIcon, holi → HoliIcon, independence_day → IndependenceDayIcon.
++
++Current runtime map also includes navratri → NavratriIcon. Dasera falls back to the default until a DaseraIcon set is supplied and registered. The verification below is historical; see ../../artifacts/festival-icon/REPORT.md for the latest checks.
+ 
+ `native-registration.diff` records the additional project edits that include the existing AppIconSwitcher Swift and Objective-C files in the app target. Their source contents were not changed.
+ 
+diff --git a/ios/RewardsPlanners.xcodeproj/project.pbxproj b/ios/RewardsPlanners.xcodeproj/project.pbxproj
+index 4b86b6dca..12bd8a537 100644
+--- a/ios/RewardsPlanners.xcodeproj/project.pbxproj
++++ b/ios/RewardsPlanners.xcodeproj/project.pbxproj
+@@ -2242,7 +2242,7 @@
+ 			isa = XCBuildConfiguration;
+ 			baseConfigurationReference = 0F8E4485DBABEEE2C8C6F185 /* Pods-RewardsPlanners.debug.xcconfig */;
+ 			buildSettings = {
+-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "DiwaliIcon EidIcon ChristmasIcon HoliIcon IndependenceDayIcon";
++				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "DiwaliIcon EidIcon ChristmasIcon HoliIcon IndependenceDayIcon NavratriIcon";
+ 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+ 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+@@ -2254,7 +2254,7 @@
+ 				CURRENT_PROJECT_VERSION = 2;
+ 				DEVELOPMENT_TEAM = W2JCTWQZLY;
+ 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+-				INFOPLIST_FILE = RewardsPlanners/Info.plist;
++				INFOPLIST_FILE = RewardsPlanners/Info.Debug.plist;
+ 				INFOPLIST_KEY_CFBundleDisplayName = "Reward Planners";
+ 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.business";
+ 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+@@ -2281,7 +2281,7 @@
+ 			isa = XCBuildConfiguration;
+ 			baseConfigurationReference = 9B9657EAEBDBB991961E275B /* Pods-RewardsPlanners.release.xcconfig */;
+ 			buildSettings = {
+-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "DiwaliIcon EidIcon ChristmasIcon HoliIcon IndependenceDayIcon";
++				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "DiwaliIcon EidIcon ChristmasIcon HoliIcon IndependenceDayIcon NavratriIcon";
+ 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+ 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+diff --git a/ios/RewardsPlanners/Info.plist b/ios/RewardsPlanners/Info.plist
+index 31ab1ed03..a12cc6ad4 100644
+--- a/ios/RewardsPlanners/Info.plist
++++ b/ios/RewardsPlanners/Info.plist
+@@ -38,7 +38,7 @@
+ 	<key>NSAppTransportSecurity</key>
+ 	<dict>
+ 		<key>NSAllowsArbitraryLoads</key>
+-		<true/>
++		<false/>
+ 	</dict>
+ 	<key>NSLocalNetworkUsageDescription</key>
+ 	<string>RewardsPlanners needs access to your local network to connect to the Metro bundler during development.</string>
+diff --git a/src/config/apiConfig.ts b/src/config/apiConfig.ts
+index 76475bdde..73199d954 100644
+--- a/src/config/apiConfig.ts
++++ b/src/config/apiConfig.ts
+@@ -6,13 +6,17 @@ export type ApiEnvironment = 'local' | 'live';
+ export const API_ENVIRONMENT: ApiEnvironment = 'live';
+ 
+ const isLocalEnvironment = (environment: ApiEnvironment) => environment === 'local';
+-const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT);
++const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT) &&
++  (Platform.OS !== 'ios' || __DEV__);
++
++// For a physical iPhone, replace localhost with your Mac's LAN IP.
++export const IOS_LOCAL_SERVER_URL = 'http://localhost:5000';
+ 
+ const LOCAL_SERVER_URL = Platform.select({
+   // Physical Android device connected over USB. Run:
+   // adb reverse tcp:5000 tcp:5000
+   android: 'http://localhost:5000',
+-  ios: 'http://localhost:5000',
++  ios: IOS_LOCAL_SERVER_URL,
+   default: 'http://localhost:5000',
+ }) as string;
+ 
+diff --git a/src/hooks/useFestivalIcon.ts b/src/hooks/useFestivalIcon.ts
+index 8a67f1fb0..2f86f1321 100644
+--- a/src/hooks/useFestivalIcon.ts
++++ b/src/hooks/useFestivalIcon.ts
+@@ -4,64 +4,56 @@ import axios from 'axios';
+ import { API_BASE_URL } from '../config/apiConfig';
+ import { IconService, resolveIconName } from '../services/iconService';
+ 
+-// Matches the existing CMS router prefix in cmsContentApi.ts.
+ const APP_ICON_URL = `${API_BASE_URL}/content/resolved/app-icon?platform=ios`;
++let inFlight: Promise<string> | undefined;
++
++// All hook instances and foreground events share the same pending request.
++function resolveCampaign(): Promise<string> {
++  if (inFlight) return inFlight;
++  inFlight = axios.get(APP_ICON_URL, { timeout: 2500 }).then(response => {
++    const payload = response.data;
++    if (payload?.success !== true || payload?.data?.platform !== 'ios' ||
++        typeof payload?.data?.icon_key !== 'string') {
++      throw new Error('Invalid resolved app-icon response');
++    }
++    return payload.data.icon_key as string;
++  }).finally(() => { inFlight = undefined; });
++  return inFlight;
++}
+ 
+ export function useFestivalIcon() {
+   useEffect(() => {
+     if (Platform.OS !== 'ios') return;
+-
+     let previousState = AppState.currentState;
+     let disposed = false;
+-    let running = false;
+-    let pending = false;
+-    const controller = new AbortController();
+-
+-    const refresh = async () => {
+-      // Serialize foreground events, including events caused by the OS icon alert.
+-      pending = true;
+-      if (running) return;
+-      running = true;
+-      try {
+-        while (pending && !disposed) {
+-          pending = false;
+-          try {
+-            const response = await axios.get(APP_ICON_URL, {
+-              signal: controller.signal,
+-              timeout: 10000,
+-            });
+-            const payload = response.data;
+-            if (payload?.success !== true || payload?.data?.platform !== 'ios' ||
+-                typeof payload?.data?.icon_key !== 'string') {
+-              throw new Error('Invalid resolved app-icon response');
+-            }
+-            if (disposed || AppState.currentState !== 'active') continue;
+-            const target = resolveIconName(payload.data.icon_key);
+-            if (!(await IconService.isSupported()) || disposed) continue;
+-            const current = await IconService.getCurrentIcon();
+-            if (!disposed && AppState.currentState === 'active' && target !== current) {
+-              await IconService.setIcon(target);
+-            }
+-          } catch (error) {
+-            if (!disposed) console.warn('[useFestivalIcon] Could not resolve/apply icon:', error);
++    let running: Promise<void> | undefined;
++    const refresh = () => {
++      if (running) return running;
++      running = (async () => {
++        try {
++          const key = await resolveCampaign();
++          if (disposed || AppState.currentState !== 'active') return;
++          const target = resolveIconName(key);
++          if (!(await IconService.isSupported()) || disposed) return;
++          const current = await IconService.getCurrentIcon();
++          if (!disposed && AppState.currentState === 'active' &&
++              target !== (current === 'Default' ? null : current)) {
++            await IconService.setIcon(target);
+           }
++        } catch (error) {
++          if (!disposed) console.warn('[useFestivalIcon] Could not resolve/apply icon:', error);
+         }
+-      } finally {
+-        running = false;
+-      }
++      })().finally(() => { running = undefined; });
++      return running;
+     };
+-
+     void refresh();
+     const subscription = AppState.addEventListener('change', nextState => {
+-      const becameActive = nextState === 'active' &&
+-        (previousState == null || previousState === 'background' || previousState === 'inactive');
++      const becameActive = nextState === 'active' && previousState !== 'active';
+       previousState = nextState;
+       if (becameActive) void refresh();
+     });
+-
+     return () => {
+       disposed = true;
+-      controller.abort();
+       subscription.remove();
+     };
+   }, []);
+diff --git a/src/services/iconService.ts b/src/services/iconService.ts
+index 2f6a5d26c..5a50fdc53 100644
+--- a/src/services/iconService.ts
++++ b/src/services/iconService.ts
+@@ -1,19 +1,24 @@
+ import { NativeModules, Platform } from 'react-native';
+ 
+ // These exact alternate asset names must be bundled using XCODE_SETUP.md.
+-const ICON_NAMES = {
+-  default: 'Default',
+-  diwali: 'DiwaliIcon',
+-  eid: 'EidIcon',
+-  christmas: 'ChristmasIcon',
+-  holi: 'HoliIcon',
+-  independence_day: 'IndependenceDayIcon',
++export const ICON_MAP = {
++  ios: {
++    default: null,
++    diwali: 'DiwaliIcon',
++    eid: 'EidIcon',
++    christmas: 'ChristmasIcon',
++    holi: 'HoliIcon',
++    independence_day: 'IndependenceDayIcon',
++    navratri: 'NavratriIcon',
++    // Dasera intentionally falls back to default until artwork is bundled.
++  },
+ } as const;
++const ICON_NAMES = ICON_MAP.ios;
+ 
+ export type FestivalIconName = (typeof ICON_NAMES)[keyof typeof ICON_NAMES];
+ 
+ interface AppIconSwitcherModule {
+-  setIcon(name: string | null): Promise<boolean>;
++  setAppIcon(name: string | null): Promise<boolean>;
+   getCurrentIcon(): Promise<string>;
+   isSupported(): Promise<boolean>;
+ }
+@@ -29,7 +34,7 @@ function nativeModule(): AppIconSwitcherModule {
+ export function resolveIconName(serverKey: string): FestivalIconName {
+   return Object.prototype.hasOwnProperty.call(ICON_NAMES, serverKey)
+     ? ICON_NAMES[serverKey as keyof typeof ICON_NAMES]
+-    : 'Default';
++    : null;
+ }
+ 
+ export const IconService = {
+@@ -47,7 +52,7 @@ export const IconService = {
+     // TODO: Implement Android activity-alias switching in a future native build.
+     if (Platform.OS !== 'ios') return false;
+     try {
+-      return await nativeModule().setIcon(name === 'Default' ? null : name);
++      return await nativeModule().setAppIcon(name);
+     } catch (error) {
+       console.warn('[IconService] Could not change icon:', error);
+       return false;
+
+diff --git a/ios/RewardsPlanners/Info.Debug.plist b/ios/RewardsPlanners/Info.Debug.plist
+new file mode 100644
+index 000000000..31ab1ed03
+--- /dev/null
++++ b/ios/RewardsPlanners/Info.Debug.plist
+@@ -0,0 +1,99 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
++<plist version="1.0">
++<dict>
++	<key>CADisableMinimumFrameDurationOnPhone</key>
++	<true/>
++	<key>CFBundleDevelopmentRegion</key>
++	<string>en</string>
++	<key>CFBundleDisplayName</key>
++	<string>Reward Planners</string>
++	<key>CFBundleExecutable</key>
++	<string>$(EXECUTABLE_NAME)</string>
++	<key>CFBundleIdentifier</key>
++	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
++	<key>CFBundleInfoDictionaryVersion</key>
++	<string>6.0</string>
++	<key>CFBundleName</key>
++	<string>$(PRODUCT_NAME)</string>
++	<key>CFBundlePackageType</key>
++	<string>APPL</string>
++	<key>CFBundleShortVersionString</key>
++	<string>$(MARKETING_VERSION)</string>
++	<key>CFBundleSignature</key>
++	<string>????</string>
++	<key>CFBundleURLTypes</key>
++	<array>
++		<dict>
++			<key>CFBundleURLSchemes</key>
++			<array>
++				<string>rewardplanners</string>
++			</array>
++		</dict>
++	</array>
++	<key>CFBundleVersion</key>
++	<string>$(CURRENT_PROJECT_VERSION)</string>
++	<key>LSRequiresIPhoneOS</key>
++	<true/>
++	<key>NSAppTransportSecurity</key>
++	<dict>
++		<key>NSAllowsArbitraryLoads</key>
++		<true/>
++	</dict>
++	<key>NSLocalNetworkUsageDescription</key>
++	<string>RewardsPlanners needs access to your local network to connect to the Metro bundler during development.</string>
++	<key>NSBonjourServices</key>
++	<array>
++		<string>_react-native-packager._tcp</string>
++	</array>
++	<key>NSLocationWhenInUseUsageDescription</key>
++	<string>We need location access to help you select your delivery address accurately.</string>
++	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
++	<string>We need location access to help you select your delivery address accurately.</string>
++	<key>NSHealthShareUsageDescription</key>
++	<string>RewardsPlanners reads your step count from Apple Health to track progress and award coins.</string>
++	<key>NSHealthUpdateUsageDescription</key>
++	<string>RewardsPlanners uses Apple Health access to support your fitness rewards.</string>
++
++	<key>NSPhotoLibraryUsageDescription</key>
++	<string>We need access to your photo library to upload images for your orders and profile.</string>
++	<key>NSPhotoLibraryAddUsageDescription</key>
++	<string>Reward Planners saves your visiting card image to your photo library.</string>
++	<key>RCTNewArchEnabled</key>
++	<true/>
++	<key>UILaunchStoryboardName</key>
++	<string>LaunchScreen</string>
++	<key>UIRequiredDeviceCapabilities</key>
++	<array>
++		<string>arm64</string>
++	</array>
++	<key>UISupportedInterfaceOrientations</key>
++	<array>
++		<string>UIInterfaceOrientationPortrait</string>
++	</array>
++	<key>UIAppFonts</key>
++	<array>
++		<string>MaterialIcons.ttf</string>
++		<string>MaterialCommunityIcons.ttf</string>
++		<string>FontAwesome.ttf</string>
++		<string>FontAwesome5_Brands.ttf</string>
++		<string>FontAwesome5_Regular.ttf</string>
++		<string>FontAwesome5_Solid.ttf</string>
++		<string>Ionicons.ttf</string>
++		<string>AntDesign.ttf</string>
++		<string>Entypo.ttf</string>
++		<string>EvilIcons.ttf</string>
++		<string>Feather.ttf</string>
++		<string>Foundation.ttf</string>
++		<string>Octicons.ttf</string>
++		<string>SimpleLineIcons.ttf</string>
++		<string>Zocial.ttf</string>
++	</array>
++	<key>UIBackgroundModes</key>
++	<array>
++		<string>remote-notification</string>
++	</array>
++	<key>UIViewControllerBasedStatusBarAppearance</key>
++	<false/>
++</dict>
++</plist>
