@@ -40,7 +40,7 @@ import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
 import LivePollCard from '../polls/components/LivePollCard';
 import GamesDrawer from '../../games/components/GamesDrawer';
-import { fetchDashboardStatuses, markStatusViewed, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
+import { fetchDashboardStatuses, markStatusViewed, sameStatusId, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
 import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
 
@@ -165,7 +165,7 @@ function Dashbord() {
     }
   }, [statusFeedQuery.data]);
   const hasUnviewedStatus = (statusFeedQuery.data ?? []).some(group =>
-    group.user.id !== user?.user_id && (group.has_unviewed || group.statuses.some(status => !status.viewed)),
+    !group.is_own && !sameStatusId(group.user.id, user?.user_id) && (group.has_unviewed || group.statuses.some(status => !status.viewed)),
   );
   const hasBirthdays = birthdays.length > 0;
   const { data: walletBalanceResponse } = useQuery({
@@ -391,10 +391,11 @@ function Dashbord() {
   const handleStatusCreated = useCallback((status: UserStatus) => {
     queryClient.setQueryData<StatusFeedGroup[]>(statusFeedQueryKey, current => {
       const groups = current ?? [];
-      const existing = groups.find(group => group.user.id === status.user.id);
-      if (!existing) return [{ user: status.user, has_unviewed: !status.viewed, statuses: [status] }, ...groups];
-      return groups.map(group => group.user.id === status.user.id
-        ? { ...group, statuses: [...group.statuses, status], has_unviewed: group.has_unviewed || !status.viewed }
+      // A status we just created is ours, whatever ID format the auth user has.
+      const existing = groups.find(group => group.is_own || sameStatusId(group.user.id, status.user.id));
+      if (!existing) return [{ user: status.user, has_unviewed: false, statuses: [status], is_own: true }, ...groups];
+      return groups.map(group => group === existing
+        ? { ...group, statuses: [...group.statuses, status], has_unviewed: false, is_own: true }
         : group);
     });
     queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });

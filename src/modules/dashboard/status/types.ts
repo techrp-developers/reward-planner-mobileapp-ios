@@ -39,6 +39,8 @@ export type StatusFeedGroup = {
   user: StatusUser;
   has_unviewed: boolean;
   statuses: UserStatus[];
+  /** Client-only: set when the group came from GET /status/mine. */
+  is_own?: boolean;
 };
 
 export type StatusViewer = {
@@ -66,4 +68,5 @@ export type StatusLike = {
   user: StatusUser;
   status_id?: number;
   created_at?: string;
+  liked_at?: string;
 };
