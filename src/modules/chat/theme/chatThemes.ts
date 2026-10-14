@@ -1,4 +1,4 @@
-import type { ChatThemeKey } from '../types';
+import type { ChatThemeKey } from "../types";
 
 export type ChatThemePreset = {
   key: ChatThemeKey;
@@ -11,13 +11,53 @@ export type ChatThemePreset = {
 };
 
 export const CHAT_THEMES: ChatThemePreset[] = [
-  { key: 'default', name: 'Classic', accent: '#7C3AED', lightBackground: '#FFFFFF', darkBackground: '#09090B', lightOtherBubble: '#F3F4F6', darkOtherBubble: '#27272A' },
-  { key: 'violet', name: 'Violet', accent: '#7C3AED', lightBackground: '#F5F3FF', darkBackground: '#17102A', lightOtherBubble: '#EDE9FE', darkOtherBubble: '#312E81' },
-  { key: 'ocean', name: 'Ocean', accent: '#0284C7', lightBackground: '#EFF6FF', darkBackground: '#071A2B', lightOtherBubble: '#DBEAFE', darkOtherBubble: '#0C4A6E' },
-  { key: 'forest', name: 'Forest', accent: '#059669', lightBackground: '#F0FDF4', darkBackground: '#071C12', lightOtherBubble: '#DCFCE7', darkOtherBubble: '#14532D' },
-  { key: 'sunset', name: 'Sunset', accent: '#EA580C', lightBackground: '#FFF7ED', darkBackground: '#25140A', lightOtherBubble: '#FFEDD5', darkOtherBubble: '#7C2D12' },
+  {
+    key: "default",
+    name: "Classic",
+    accent: "#6A00FF",
+    lightBackground: "#F4F5F9",
+    darkBackground: "#101722",
+    lightOtherBubble: "#FFFFFF",
+    darkOtherBubble: "#263141",
+  },
+  {
+    key: "violet",
+    name: "Violet",
+    accent: "#7C3AED",
+    lightBackground: "#F5F3FF",
+    darkBackground: "#17102A",
+    lightOtherBubble: "#EDE9FE",
+    darkOtherBubble: "#312E81",
+  },
+  {
+    key: "ocean",
+    name: "Ocean",
+    accent: "#0369A1",
+    lightBackground: "#EFF6FF",
+    darkBackground: "#071A2B",
+    lightOtherBubble: "#DBEAFE",
+    darkOtherBubble: "#0C4A6E",
+  },
+  {
+    key: "forest",
+    name: "Forest",
+    accent: "#047857",
+    lightBackground: "#F0FDF4",
+    darkBackground: "#071C12",
+    lightOtherBubble: "#DCFCE7",
+    darkOtherBubble: "#14532D",
+  },
+  {
+    key: "sunset",
+    name: "Sunset",
+    accent: "#C2410C",
+    lightBackground: "#FFF7ED",
+    darkBackground: "#25140A",
+    lightOtherBubble: "#FFEDD5",
+    darkOtherBubble: "#7C2D12",
+  },
 ];
 
 export function getChatTheme(key?: string | null) {
-  return CHAT_THEMES.find(theme => theme.key === key) || CHAT_THEMES[0];
+  return CHAT_THEMES.find((theme) => theme.key === key) || CHAT_THEMES[0];
 }

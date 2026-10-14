@@ -1,134 +1,525 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { AppStackParamList } from '../../../navigation/RootNavigator';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../common/auth/context/AuthContext';
-import { useAppTheme } from '../../../theme/ThemeContext';
-import { fetchConversations } from '../api/chatApi';
-import ChatAvatar from '../components/ChatAvatar';
-import { chatError, chatTime, conversationTitle, otherMember } from '../utils';
-import type { ChatConversation, ChatStackParamList } from '../types';
-import { chatSocket } from '../services/chatSocket';
-import BottomTabs, { TAB_BAR_HEIGHT, type TabKey } from '../../../bottombar/BottomTabs';
+// @refresh reset
+import { getChatUserId, sameChatId } from "../identity";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  AppState,
+  FlatList,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../../common/auth/context/AuthContext";
+import { fetchChatPresence, fetchConversations } from "../api/chatApi";
+import ChatAvatar from "../components/ChatAvatar";
+import { useChatColors } from "../components/chatUiTokens";
+import { chatError, chatTime, conversationTitle, otherMember, conversationMatchesQuery } from "../utils";
+import type { ChatConversation, ChatStackParamList } from "../types";
+import { chatSocket } from "../services/chatSocket";
+import BottomTabs, {
+  TAB_BAR_HEIGHT,
+  type TabKey,
+} from "../../../bottombar/BottomTabs";
 
 type Navigation = NativeStackNavigationProp<ChatStackParamList>;
-
 export default function ChatInboxScreen() {
   const navigation = useNavigation<Navigation>();
-  const { user, accessToken } = useAuth();
-  const { theme } = useAppTheme();
+  const { user } = useAuth();
+  const currentUserId = getChatUserId(user);
+  const theme = useChatColors();
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState<ChatConversation[]>([]);
+  const [presence, setPresence] = useState<Record<number, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState('');
-  const [query, setQuery] = useState('');
-  const appNavigation = navigation.getParent<NativeStackNavigationProp<AppStackParamList>>();
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const active = useRef(false);
+  const generation = useRef(0);
+  const fetching = useRef(false);
+  const pendingLoad = useRef(false);
+  const latestLoad = useRef<(refresh?: boolean) => Promise<void>>(async () => {});
+  const appNavigation = navigation.getParent<any>();
   const handleFooterPress = (tab: TabKey) => {
-    if (tab === 'Notes') appNavigation?.navigate('TodoList');
-    if (tab === 'Profile') appNavigation?.navigate('Profile', { context: 'dashboard' });
+    if (tab === "Notes") appNavigation?.navigate("TodoList");
   };
-
-  const load = useCallback(async (refresh = false) => {
-    refresh ? setRefreshing(true) : setLoading(true);
-    try { setItems(await fetchConversations()); setError(''); }
-    catch (e) { setError(chatError(e, 'Unable to load conversations.')); }
-    finally { setLoading(false); setRefreshing(false); }
-  }, []);
-
-  useFocusEffect(useCallback(() => { load(); }, [load]));
-  useEffect(() => {
-    if (accessToken) chatSocket.connect(accessToken);
-    return chatSocket.subscribe(event => {
-      if (event.type === 'conversation:theme') {
-        setItems(current => current.map(item => Number(item.conversation_id) === Number(event.data?.conversation_id) ? { ...item, theme_key: event.data.theme_key } : item));
-        return;
+  const load = useCallback(
+    async (refresh = false) => {
+      if (fetching.current) { pendingLoad.current = true; if (refresh) setRefreshing(true); return; }
+      fetching.current = true;
+      const request = ++generation.current;
+      if (refresh) setRefreshing(true);
+      try {
+        const conversations = await fetchConversations();
+        if (!active.current || generation.current !== request) return;
+        setItems(conversations);
+        setError("");
+        const ids = [
+          ...new Set(
+            conversations
+              .filter((item) => item.type === "direct")
+              .map((item) => otherMember(item, currentUserId)?.user_id)
+              .filter((value): value is number => Boolean(value))
+          ),
+        ];
+        const states = await fetchChatPresence(ids).catch(() => []);
+        if (active.current && generation.current === request)
+          setPresence((current) => ({
+            ...current,
+            ...Object.fromEntries(
+              states.map((state) => [state.user_id, state.online])
+            ),
+          }));
+      } catch (failure) {
+        if (active.current && generation.current === request)
+          setError(chatError(failure, "Unable to load conversations."));
+      } finally {
+        fetching.current = false;
+        if (active.current && generation.current === request) {
+          setLoading(false);
+          setRefreshing(false);
+        }
+        if (pendingLoad.current && active.current && AppState.currentState !== "background" && AppState.currentState !== "inactive") {
+          pendingLoad.current = false;
+          void latestLoad.current();
+        }
       }
-      if (event.type === 'message:new' || event.type === 'conversation:available') load(true);
-    });
-  }, [accessToken, load]);
-
-  const filteredItems = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return items;
-    return items.filter(conversation => {
-      const title = conversationTitle(conversation, user?.user_id);
-      const memberNames = conversation.members.map(member => member.name).join(' ');
-      return `${title} ${memberNames} ${conversation.description || ''}`.toLowerCase().includes(normalized);
-    });
-  }, [items, query, user?.user_id]);
-
+    },
+    [currentUserId]
+  );
+  latestLoad.current = load;
+  useFocusEffect(
+    useCallback(() => {
+      active.current = true;
+      void load();
+      const poll = setInterval(() => {
+        if (AppState.currentState === "active" && !chatSocket.isConnected())
+          void load();
+      }, 10000);
+      const unsubscribe = chatSocket.subscribe((event) => {
+        if (event.type === "presence") {
+          setPresence((current) => ({
+            ...current,
+            [Number(event.data?.user_id)]: Boolean(event.data?.online),
+          }));
+          return;
+        }
+        if (
+          event.type === "connected" &&
+          Array.isArray(event.data?.online_user_ids)
+        )
+          setPresence(
+            Object.fromEntries(
+              event.data.online_user_ids.map((id: number) => [id, true])
+            )
+          );
+        if (
+          event.type === "conversation:theme" ||
+          event.type === "conversation:updated"
+        )
+          setItems((current) =>
+            current.map((item) =>
+              Number(item.conversation_id) ===
+              Number(event.data?.conversation_id)
+                ? { ...item, ...event.data }
+                : item
+            )
+          );
+        if (
+          [
+            "message:new",
+            "message:deleted",
+            "message:read",
+            "conversation:available",
+            "conversation:updated",
+            "resync",
+          ].includes(event.type)
+        )
+          void load();
+      });
+      return () => {
+        active.current = false;
+        generation.current++;
+        pendingLoad.current = false;
+        clearInterval(poll);
+        unsubscribe();
+      };
+    }, [load])
+  );
+  const filtered = useMemo(() => {
+    return items
+      .filter(item => conversationMatchesQuery(item, query, currentUserId))
+      .sort(
+        (a, b) =>
+          (new Date(b.last_message_at || b.updated_at).getTime() || 0) -
+          (new Date(a.last_message_at || a.updated_at).getTime() || 0)
+      );
+  }, [items, query, currentUserId]);
   return (
-    <View style={[styles.screen, { backgroundColor: theme.background, paddingTop: insets.top }]}>
+    <View
+      style={[
+        styles.screen,
+        { backgroundColor: theme.background, paddingTop: insets.top },
+      ]}
+    >
       <View style={styles.header}>
-        <View><Text style={[styles.title, { color: theme.text }]}>Chats</Text><Text style={[styles.subtitle, { color: theme.secondaryText }]}>Your company conversations</Text></View>
+        <View style={{ flex: 1, paddingRight: 12 }}>
+          <Text style={[styles.title, { color: theme.text }]}>Chats</Text>
+          <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+            Stay connected with your team
+          </Text>
+        </View>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Start a new chat"
+          onPress={() => navigation.navigate("NewChat")}
+          style={[styles.newChat, { backgroundColor: `${theme.primary}12` }]}
+        >
+          <MaterialCommunityIcons
+            name="square-edit-outline"
+            size={25}
+            color={theme.primary}
+          />
+        </TouchableOpacity>
       </View>
-      <View style={[styles.search, { backgroundColor: theme.card, borderColor: theme.border }]}>
-        <MaterialCommunityIcons name="magnify" size={22} color={theme.secondaryText} />
+      <View
+        style={[
+          styles.search,
+          {
+            backgroundColor: theme.card,
+            borderColor: searchFocused ? theme.primary : theme.border,
+          },
+        ]}
+      >
+        <MaterialCommunityIcons
+          name="magnify"
+          size={23}
+          color={theme.secondaryText}
+        />
         <TextInput
+          accessibilityLabel="Search people or groups"
           value={query}
           onChangeText={setQuery}
+          onFocus={() => setSearchFocused(true)}
+          onBlur={() => setSearchFocused(false)}
           placeholder="Search people or groups"
           placeholderTextColor={theme.secondaryText}
-          style={[styles.searchInput, { color: theme.text }]}
+          style={[styles.input, { color: theme.text }]}
           returnKeyType="search"
           autoCorrect={false}
         />
-        {query ? <TouchableOpacity accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => setQuery('')} style={styles.clearSearch}><MaterialCommunityIcons name="close-circle" size={20} color={theme.secondaryText} /></TouchableOpacity> : null}
+        {!!query && (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            onPress={() => setQuery("")}
+            style={styles.clear}
+          >
+            <MaterialCommunityIcons
+              name="close-circle"
+              size={20}
+              color={theme.secondaryText}
+            />
+          </TouchableOpacity>
+        )}
       </View>
-      {loading && !items.length ? <View style={styles.center}><ActivityIndicator color={theme.primary} size="large" /></View> : null}
-      {!loading && error && !items.length ? <View style={styles.center}><MaterialCommunityIcons name="message-alert-outline" size={42} color={theme.secondaryText} /><Text style={[styles.emptyTitle, { color: theme.text }]}>Couldn’t load chats</Text><Text style={[styles.emptyText, { color: theme.secondaryText }]}>{error}</Text><TouchableOpacity onPress={() => load()} style={styles.retry}><Text style={styles.retryText}>Try again</Text></TouchableOpacity></View> : null}
-      {!loading && !error && !items.length ? <View style={styles.center}><MaterialCommunityIcons name="message-text-outline" size={48} color={theme.primary} /><Text style={[styles.emptyTitle, { color: theme.text }]}>Start a conversation</Text><Text style={[styles.emptyText, { color: theme.secondaryText }]}>Chat privately with a coworker or create a group.</Text></View> : null}
+      {error && items.length > 0 && (
+        <TouchableOpacity
+          onPress={() => void load(true)}
+          style={{ paddingHorizontal: 24, paddingVertical: 8 }}
+        >
+          <Text style={{ color: theme.secondaryText }}>
+            {error} Tap to retry.
+          </Text>
+        </TouchableOpacity>
+      )}
       <FlatList
-        data={filteredItems}
-        scrollEnabled
-        showsVerticalScrollIndicator
+        data={filtered}
+        keyExtractor={(item) => String(item.conversation_id)}
         initialNumToRender={15}
-        maxToRenderPerBatch={15}
+        maxToRenderPerBatch={12}
         windowSize={9}
-        removeClippedSubviews
-        keyExtractor={item => String(item.conversation_id)}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={theme.primary} />}
-        contentContainerStyle={[styles.list, { paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 12 }]}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 24 },
+        ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => void load(true)}
+            tintColor={theme.primary}
+          />
+        }
         renderItem={({ item }) => {
-          const title = conversationTitle(item, user?.user_id);
-          const member = otherMember(item, user?.user_id);
-          const preview = item.last_message_type === 'image' ? '📷 Photo' : item.last_message_type === 'file' ? '📎 File' : item.last_message || 'No messages yet';
-          return <TouchableOpacity style={[styles.row, { borderBottomColor: theme.border }]} onPress={() => navigation.navigate('ChatConversation', { conversation: item })}>
-            <ChatAvatar name={title} uri={item.type === 'direct' ? member?.user_image : undefined} />
-            <View style={styles.rowBody}><View style={styles.rowTop}><Text numberOfLines={1} style={[styles.name, { color: theme.text }]}>{title}</Text><Text style={[styles.time, { color: item.unread_count ? theme.primary : theme.secondaryText }]}>{chatTime(item.last_message_at || item.updated_at)}</Text></View><View style={styles.rowBottom}><Text numberOfLines={1} style={[styles.preview, { color: theme.secondaryText }, item.unread_count > 0 && { color: theme.text, fontWeight: '700' }]}>{preview}</Text>{item.unread_count > 0 ? <View style={[styles.badge, { backgroundColor: theme.primary }]}><Text style={styles.badgeText}>{item.unread_count > 99 ? '99+' : item.unread_count}</Text></View> : null}</View></View>
-          </TouchableOpacity>;
+          const member = otherMember(item, currentUserId);
+          const name = conversationTitle(item, currentUserId);
+          const sender =
+            item.type === "group" && item.last_sender_id
+              ? item.members
+                  .find(
+                    (person) =>
+                      Number(person.user_id) === Number(item.last_sender_id)
+                  )
+                  ?.name.split(" ")[0]
+              : null;
+          const preview =
+            item.last_message_type === "image"
+              ? "Photo"
+              : item.last_message_type === "file"
+              ? "Shared a document"
+              : item.last_message_type === "poll"
+              ? "Poll"
+              : item.last_message || "No messages yet";
+          return (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`${name}, ${preview}${
+                item.unread_count ? `, ${item.unread_count} unread` : ""
+              }`}
+              onPress={() =>
+                navigation.navigate("ChatConversation", { conversation: item })
+              }
+              style={styles.row}
+            >
+              <View>
+                <ChatAvatar
+                  name={name}
+                  uri={
+                    item.type === "group" ? item.image_url : member?.user_image
+                  }
+                  online={
+                    item.type === "direct" &&
+                    Boolean(member && presence[member.user_id])
+                  }
+                  size={54}
+                />
+                {item.type === "group" && (
+                  <View
+                    style={[styles.groupBadge, { backgroundColor: theme.card }]}
+                  >
+                    <MaterialCommunityIcons
+                      name="account-group"
+                      size={13}
+                      color={theme.primary}
+                    />
+                  </View>
+                )}
+              </View>
+              <View
+                style={[styles.rowBody, { borderBottomColor: theme.border }]}
+              >
+                <View style={styles.rowTop}>
+                  <Text
+                    numberOfLines={1}
+                    style={[styles.name, { color: theme.text }]}
+                  >
+                    {name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.time,
+                      {
+                        color: item.unread_count
+                          ? theme.primary
+                          : theme.secondaryText,
+                      },
+                    ]}
+                  >
+                    {chatTime(item.last_message_at || item.updated_at)}
+                  </Text>
+                </View>
+                <View style={styles.rowBottom}>
+                  <Text
+                    numberOfLines={1}
+                    style={[
+                      styles.preview,
+                      {
+                        color: item.unread_count
+                          ? theme.text
+                          : theme.secondaryText,
+                        fontWeight: item.unread_count ? "500" : "400",
+                      },
+                    ]}
+                  >
+                    {sender ? `${sender}: ` : ""}
+                    {preview}
+                  </Text>
+                  {item.unread_count > 0 && (
+                    <View
+                      style={[styles.badge, { backgroundColor: "#6A00FF" }]}
+                    >
+                      <Text style={styles.badgeText}>
+                        {item.unread_count > 99 ? "99+" : item.unread_count}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
         }}
-        ListEmptyComponent={!loading && !error && items.length > 0 && query.trim() ? <View style={styles.searchEmpty}><MaterialCommunityIcons name="account-search-outline" size={38} color={theme.secondaryText} /><Text style={[styles.searchEmptyTitle, { color: theme.text }]}>No chats found</Text><Text style={[styles.searchEmptyText, { color: theme.secondaryText }]}>Try searching with another name.</Text></View> : null}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            {loading ? (
+              <ActivityIndicator color={theme.primary} />
+            ) : (
+              <>
+                <View
+                  style={[
+                    styles.emptyIcon,
+                    { backgroundColor: `${theme.primary}12` },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={
+                      error ? "message-alert-outline" : "message-text-outline"
+                    }
+                    size={34}
+                    color={theme.primary}
+                  />
+                </View>
+                <Text style={[styles.emptyTitle, { color: theme.text }]}>
+                  {error
+                    ? "Couldn’t load chats"
+                    : query.trim()
+                    ? "No chats found"
+                    : "Start a conversation"}
+                </Text>
+                <Text
+                  style={[styles.emptyText, { color: theme.secondaryText }]}
+                >
+                  {error ||
+                    (query.trim()
+                      ? "Try another person or group name."
+                      : "Message a coworker or bring your team together.")}
+                </Text>
+                {error && (
+                  <TouchableOpacity
+                    onPress={() => void load(true)}
+                    style={styles.clear}
+                  >
+                    <Text style={{ color: theme.primary, fontWeight: "600" }}>
+                      Try again
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
+          </View>
+        }
       />
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityLabel="Start a new chat"
-        onPress={() => navigation.navigate('NewChat')}
-        style={[styles.newButton, { bottom: TAB_BAR_HEIGHT + insets.bottom + 14 }]}
-      >
-        <MaterialCommunityIcons name="message-plus-outline" size={27} color="#FFFFFF" />
-      </TouchableOpacity>
       <BottomTabs
         isDashboard
         activeTabKey="Chat"
         onTabPress={handleFooterPress}
-        onCenterPress={() => appNavigation?.navigate('Dashboard')}
+        onCenterPress={() => appNavigation?.navigate("Dashboard")}
       />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  screen: { flex: 1 }, header: { paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { fontSize: 30, fontWeight: '800' }, subtitle: { marginTop: 3, fontSize: 13 }, newButton: { position: 'absolute', right: 22, width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', backgroundColor: '#7C3AED', elevation: 10, shadowColor: '#4C1D95', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.3, shadowRadius: 10, zIndex: 10 },
-  search: { marginHorizontal: 18, marginBottom: 8, height: 48, borderWidth: 1, borderRadius: 16, paddingHorizontal: 13, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  searchInput: { flex: 1, height: 46, paddingVertical: 0, fontSize: 15 },
-  clearSearch: { width: 32, height: 40, alignItems: 'center', justifyContent: 'center' },
-  searchEmpty: { alignItems: 'center', paddingTop: 70 }, searchEmptyTitle: { marginTop: 12, fontSize: 17, fontWeight: '800' }, searchEmptyText: { marginTop: 5, fontSize: 13 },
-  list: { paddingHorizontal: 18, paddingBottom: 24 }, row: { flexDirection: 'row', gap: 13, alignItems: 'center', paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth }, rowBody: { flex: 1 }, rowTop: { flexDirection: 'row', alignItems: 'center', gap: 8 }, rowBottom: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 8 }, name: { flex: 1, fontSize: 16, fontWeight: '700' }, time: { fontSize: 11 }, preview: { flex: 1, fontSize: 13 }, badge: { minWidth: 21, height: 21, borderRadius: 11, paddingHorizontal: 5, alignItems: 'center', justifyContent: 'center' }, badgeText: { color: '#FFF', fontSize: 10, fontWeight: '800' },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 38 }, emptyTitle: { marginTop: 14, fontSize: 19, fontWeight: '800' }, emptyText: { marginTop: 7, textAlign: 'center', lineHeight: 20 }, retry: { marginTop: 18, backgroundColor: '#7C3AED', borderRadius: 20, paddingHorizontal: 20, paddingVertical: 10 }, retryText: { color: '#FFF', fontWeight: '700' },
+  screen: { flex: 1 },
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  title: { fontSize: 28, fontWeight: "700", letterSpacing: -0.6 },
+  subtitle: { fontSize: 13, marginTop: 4 },
+  newChat: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  search: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    minHeight: 48,
+    borderRadius: 24,
+    paddingLeft: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  input: { flex: 1, paddingVertical: 12, fontSize: 15 },
+  clear: {
+    minWidth: 44,
+    minHeight: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  list: { flexGrow: 1, paddingHorizontal: 20 },
+  row: { flexDirection: "row", alignItems: "center", gap: 14, minHeight: 84 },
+  rowBody: {
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 84,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  rowTop: { flexDirection: "row", alignItems: "center", gap: 8 },
+  rowBottom: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 6,
+  },
+  name: { flex: 1, fontSize: 16, fontWeight: "600" },
+  time: { fontSize: 11 },
+  preview: { flex: 1, fontSize: 14 },
+  badge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: { color: "#FFF", fontSize: 11, fontWeight: "600" },
+  groupBadge: {
+    position: "absolute",
+    right: -2,
+    bottom: 0,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  empty: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 80,
+    alignItems: "center",
+  },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyTitle: { marginTop: 20, fontSize: 20, fontWeight: "600" },
+  emptyText: {
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 21,
+    fontSize: 14,
+  },
 });

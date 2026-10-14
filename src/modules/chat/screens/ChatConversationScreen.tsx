@@ -1,32 +1,56 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+// @refresh reset
+import { getChatUserId, sameChatId } from "../identity";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
   Alert,
+  AppState,
+  BackHandler,
+  Clipboard,
   FlatList,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Linking,
+  Modal,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+  useWindowDimensions,
+} from "react-native";
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import type {
   NativeStackNavigationProp,
   NativeStackScreenProps,
-} from '@react-navigation/native-stack';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { pick, types as documentTypes } from '@react-native-documents/picker';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../common/auth/context/AuthContext';
-import { useAppTheme } from '../../../theme/ThemeContext';
+} from "@react-navigation/native-stack";
+import { launchImageLibrary, type Asset } from "react-native-image-picker";
+import {
+  pick,
+  keepLocalCopy,
+  types as documentTypes,
+} from "@react-native-documents/picker";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../../common/auth/context/AuthContext";
 import {
   createChatPoll,
+  deleteChatMessage,
   fetchChatPresence,
+  fetchConversations,
   fetchMessages,
   markConversationRead,
   sendFileMessage,
@@ -36,244 +60,739 @@ import {
   uploadChatImage,
   updateConversationTheme,
   voteChatPoll,
-} from '../api/chatApi';
-import ChatAvatar from '../components/ChatAvatar';
+  type UploadedChatImage,
+} from "../api/chatApi";
+import ChatAvatar from "../components/ChatAvatar";
+import ChatMessageActionSheet, {
+  type MessageAction,
+} from "../components/ChatMessageActionSheet";
+import ChatMessageBubble from "../components/ChatMessageBubble";
+import CreatePollModal from "../components/CreatePollModal";
+import ChatAttachmentSheet from "../components/ChatAttachmentSheet";
+import ChatSettingsSheet from "../components/ChatSettingsSheet";
+import ChatEmojiPanel from "../components/ChatEmojiPanel";
+import { useChatColors } from "../components/chatUiTokens";
 import {
   chatError,
-  chatImageUrl,
-  chatTime,
   conversationTitle,
   otherMember,
-} from '../utils';
-import { chatSocket } from '../services/chatSocket';
-import type { ChatMessage, ChatStackParamList, ChatThemeKey } from '../types';
-import PollBubble from '../components/PollBubble';
-import CreatePollModal from '../components/CreatePollModal';
-import ChatAttachmentSheet from '../components/ChatAttachmentSheet';
-import ChatSettingsSheet from '../components/ChatSettingsSheet';
-import { getChatTheme } from '../theme/chatThemes';
+  previousGraphemeStart,
+  safeChatAttachmentUrl,
+} from "../utils";
+import {
+  deletedMessage,
+  mergeMessages,
+  mergePollUpdate,
+  messagePreview,
+} from "../messageState";
+import { chatSocket } from "../services/chatSocket";
+import { getChatTheme } from "../theme/chatThemes";
+import type { ChatMessage, ChatStackParamList, ChatThemeKey } from "../types";
 
 type Route = NativeStackScreenProps<
   ChatStackParamList,
-  'ChatConversation'
->['route'];
+  "ChatConversation"
+>["route"];
 type Navigation = NativeStackNavigationProp<ChatStackParamList>;
 const clientId = (id?: number) =>
-  `${id || 'user'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  `${id || "user"}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export default function ChatConversationScreen() {
   const navigation = useNavigation<Navigation>();
   const { params } = useRoute<Route>();
-  const conversation = params.conversation;
-  const { user, accessToken } = useAuth();
-  const { theme, isDark } = useAppTheme();
+  const { user } = useAuth();
+  const currentUserId = getChatUserId(user);
+  const theme = useChatColors();
   const insets = useSafeAreaInsets();
-  const listRef = useRef<FlatList<ChatMessage>>(null);
-  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { width, height } = useWindowDimensions();
+  const [conversation, setConversation] = useState(params.conversation);
+  const id = conversation.conversation_id;
+  const peer = otherMember(conversation, currentUserId);
+  const title = conversationTitle(conversation, currentUserId);
+  const [messageActions, setMessageActions] = useState<MessageAction[] | null>(
+    null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [text, setText] = useState('');
+  const messagesRef = useRef(messages);
+  const tombstones = useRef(new Map<number, string>());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [olderLoading, setOlderLoading] = useState(false);
+  const hasOlder = useRef(true);
+  const historyBusy = useRef(false);
+  const loadedPages = useRef(new Set<number>());
+  const syncing = useRef(false);
+  const focused = useRef(false);
+  const mounted = useRef(true);
+  const listRef = useRef<FlatList<ChatMessage>>(null);
+  const quoteJump = useRef({ index: -1, attempts: 0 });
+  const quoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const inputRef = useRef<TextInput>(null);
+  const [text, setText] = useState("");
+  const textRef = useRef("");
+  const selection = useRef({ start: 0, end: 0 });
+  const [reply, setReply] = useState<ChatMessage | null>(null);
+  const replyRef = useRef(reply);
+  replyRef.current = reply;
   const [sending, setSending] = useState(false);
-  const [typing, setTyping] = useState(false);
+  const sendBusy = useRef(false);
+  const optimisticId = useRef(-1);
   const [online, setOnline] = useState(false);
-  const [lastSeenAt, setLastSeenAt] = useState<string | null>(null);
-  const [pollModal, setPollModal] = useState(false);
-  const [attachmentMenu, setAttachmentMenu] = useState(false);
-  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [lastSeen, setLastSeen] = useState<string | null>(null);
+  const [typers, setTypers] = useState<number[]>([]);
+  const typingExpiry = useRef(new Map<number, ReturnType<typeof setTimeout>>());
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTyping = useRef(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [attachmentOpen, setAttachmentOpen] = useState(false);
+  const [pollOpen, setPollOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [themeKey, setThemeKey] = useState<ChatThemeKey>(
+    conversation.theme_key || "default"
+  );
   const [themeSaving, setThemeSaving] = useState(false);
-  const [chatThemeKey, setChatThemeKey] = useState<ChatThemeKey>(conversation.theme_key || 'default');
-  const title = conversationTitle(conversation, user?.user_id);
-  const peer = otherMember(conversation, user?.user_id);
-
-  const markLatestRead = useCallback(
-    (list: ChatMessage[]) => {
-      const latest = [...list]
-        .reverse()
-        .find(item => Number(item.sender_id) !== Number(user?.user_id));
-      if (latest)
-        markConversationRead(
-          conversation.conversation_id,
-          latest.message_id,
-        ).catch(() => {});
-    },
-    [conversation.conversation_id, user?.user_id],
+  const [themeUnavailable, setThemeUnavailable] = useState<string | null>(null);
+  const themeBusy = useRef(false);
+  const themeRevision = useRef(0);
+  const [media, setMedia] = useState<{ uri: string; asset?: Asset } | null>(
+    null
+  );
+  const photoDraft = useRef<{
+    uri: string;
+    key: string;
+    upload?: UploadedChatImage;
+  } | null>(null);
+  const pollDraft = useRef<{ fingerprint: string; key: string } | null>(null);
+  const selectedTheme = getChatTheme(themeKey);
+  useEffect(() => {
+    if (__DEV__)
+      console.debug("[CHAT DEBUG]", {
+        currentUserId,
+        conversationId: id,
+        identityAvailable: currentUserId !== undefined,
+      });
+  }, [currentUserId, id]);
+  const readThrough = useRef(0);
+  const newestFirst = useMemo(() => [...messages].reverse(), [messages]);
+  const messageMap = useMemo(
+    () => new Map(messages.map((message) => [message.message_id, message])),
+    [messages]
   );
 
   useEffect(() => {
-    let active = true;
-    fetchMessages(conversation.conversation_id)
-      .then(data => {
-        if (active) {
-          setMessages(data);
-          markLatestRead(data);
-        }
-      })
-      .catch(error =>
-        Alert.alert(
-          'Messages unavailable',
-          chatError(error, 'Unable to load messages.'),
-        ),
-      )
-      .finally(() => active && setLoading(false));
-    if (peer?.user_id)
-      fetchChatPresence([peer.user_id])
-        .then(([presence]) => {
-          if (active && presence) {
-            setOnline(presence.online);
-            setLastSeenAt(presence.last_seen_at || null);
-          }
-        })
-        .catch(() => {});
-    if (accessToken) chatSocket.connect(accessToken);
-    const unsubscribe = chatSocket.subscribe(event => {
-      if (event.type === 'connected' && peer?.user_id) {
-        setOnline(
-          (event.data?.online_user_ids || [])
-            .map(Number)
-            .includes(Number(peer.user_id)),
-        );
-        return;
-      }
-      if (
-        Number(event.data?.conversation_id) !==
-        Number(conversation.conversation_id)
-      )
-        return;
-      if (event.type === 'message:new')
-        setMessages(current => {
-          if (current.some(item => item.message_id === event.data.message_id))
-            return current;
-          const next = [...current, event.data];
-          markLatestRead(next);
-          return next;
-        });
-      if (event.type === 'message:read')
-        setMessages(current =>
-          current.map(item =>
-            Number(item.sender_id) === Number(user?.user_id) &&
-            item.message_id <= Number(event.data?.message_id)
-              ? { ...item, is_read: true }
-              : item,
-          ),
-        );
-      if (event.type === 'conversation:theme')
-        setChatThemeKey(event.data.theme_key || 'default');
-      if (event.type === 'poll:updated')
-        setMessages(current =>
-          current.map(item =>
-            item.message_id === Number(event.data?.message_id)
-              ? {
-                  ...item,
-                  poll: {
-                    ...event.data.poll,
-                    options: event.data.poll.options.map((option: any) => ({
-                      ...option,
-                      selected_by_me:
-                        Number(event.data?.voter_id) ===
-                          Number(user?.user_id) &&
-                        event.data.option_ids
-                          .map(Number)
-                          .includes(Number(option.option_id)),
-                    })),
-                  },
-                }
-              : item,
-          ),
-        );
-      if (
-        (event.type === 'typing:start' || event.type === 'typing:stop') &&
-        Number(event.data?.user_id) !== Number(user?.user_id)
-      )
-        setTyping(event.type === 'typing:start');
-      if (
-        event.type === 'presence' &&
-        Number(event.data?.user_id) === Number(peer?.user_id)
-      ) {
-        setOnline(Boolean(event.data.online));
-        if (event.data?.last_seen_at) setLastSeenAt(event.data.last_seen_at);
+    mounted.current = true;
+    const show = Keyboard.addListener("keyboardDidShow", () =>
+      setKeyboardOpen(true)
+    );
+    const appState = AppState.addEventListener("change", (state) => {
+      if (state !== "active") {
+        chatSocket.send("typing:stop", id);
+        if (typingTimer.current) clearTimeout(typingTimer.current);
       }
     });
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
+      setKeyboardOpen(false)
+    );
     return () => {
-      active = false;
-      unsubscribe();
-      if (typingTimer.current) clearTimeout(typingTimer.current);
-      chatSocket.send('typing:stop', conversation.conversation_id);
+      mounted.current = false;
+      if (quoteTimer.current) clearTimeout(quoteTimer.current);
+      appState.remove();
+      show.remove();
+      hide.remove();
     };
-  }, [
-    accessToken,
-    conversation.conversation_id,
-    markLatestRead,
-    peer?.user_id,
-    user?.user_id,
-  ]);
-
-  const onChangeText = (value: string) => {
-    setText(value);
-    chatSocket.send('typing:start', conversation.conversation_id);
-    if (typingTimer.current) clearTimeout(typingTimer.current);
-    typingTimer.current = setTimeout(
-      () => chatSocket.send('typing:stop', conversation.conversation_id),
-      1200,
-    );
-  };
-  const addMessage = (message: ChatMessage) =>
-    setMessages(current =>
-      current.some(item => item.message_id === message.message_id)
-        ? current
-        : [...current, message],
-    );
-  const send = async () => {
-    const body = text.trim();
-    if (!body || sending) return;
-    setText('');
-    setSending(true);
-    chatSocket.send('typing:stop', conversation.conversation_id);
-    try {
-      addMessage(
-        await sendTextMessage(
-          conversation.conversation_id,
-          body,
-          clientId(user?.user_id),
-        ),
+  }, []);
+  const merge = useCallback((incoming: ChatMessage[]) => {
+    if (!mounted.current) return;
+    setMessages((current) => {
+      const next = mergeMessages(
+        current,
+        incoming.map((message) =>
+          tombstones.current.has(Number(message.message_id))
+            ? deletedMessage(
+                message,
+                tombstones.current.get(Number(message.message_id))!
+              )
+            : message
+        )
       );
-    } catch (error) {
-      setText(body);
-      Alert.alert('Message not sent', chatError(error, 'Please try again.'));
-    } finally {
-      setSending(false);
-    }
-  };
-  const pickAndSendImage = async () => {
-    if (sending) return;
-    const result = await launchImageLibrary({
-      mediaType: 'photo',
-      selectionLimit: 1,
-      quality: 0.9,
+      messagesRef.current = next;
+      return next;
     });
-    const asset = result.assets?.[0];
-    if (result.didCancel || !asset?.uri) return;
-    setSending(true);
-    try {
-      const upload = await uploadChatImage({
-        uri: asset.uri,
-        type: asset.type,
-        fileName: asset.fileName,
+  }, []);
+  const markRead = useCallback(
+    (list: ChatMessage[]) => {
+      if (
+        !focused.current ||
+        AppState.currentState === "background" ||
+        AppState.currentState === "inactive"
+      )
+        return;
+      const latest = [...list]
+        .reverse()
+        .find(
+          (item) =>
+            item.message_id > 0 && !sameChatId(item.sender_id, currentUserId)
+        );
+      if (!latest || latest.message_id <= readThrough.current) return;
+      const previous = readThrough.current;
+      readThrough.current = latest.message_id;
+      markConversationRead(id, latest.message_id).catch(() => {
+        if (readThrough.current === latest.message_id)
+          readThrough.current = previous;
       });
-      addMessage(
-        await sendImageMessage(
-          conversation.conversation_id,
-          upload,
-          clientId(user?.user_id),
-        ),
+    },
+    [id, currentUserId]
+  );
+
+  const sync = useCallback(async () => {
+    if (syncing.current || !focused.current) return;
+    syncing.current = true;
+    try {
+      let page = await fetchMessages(id);
+      const all = [...page];
+      // Walk the gap after a long disconnect instead of dropping all but 40 messages.
+      const confirmed = messagesRef.current.filter(
+        (item) => item.message_id > 0
       );
+      const boundary = confirmed.length
+        ? Math.max(...confirmed.map((item) => item.message_id))
+        : null;
+      let before = page.length
+        ? Math.min(...page.map((item) => item.message_id))
+        : 0;
+      while (
+        focused.current &&
+        boundary !== null &&
+        page.length === 40 &&
+        before > boundary
+      ) {
+        page = await fetchMessages(id, before);
+        all.push(...page);
+        const next = page.length
+          ? Math.min(...page.map((item) => item.message_id))
+          : 0;
+        if (!next || next >= before) break;
+        before = next;
+      }
+      if (!focused.current) return;
+      if (!confirmed.length) hasOlder.current = page.length === 40;
+      merge(all);
+      markRead(all.sort((a, b) => a.message_id - b.message_id));
+      setLoadError("");
+      if (peer?.user_id) {
+        const [presence] = await fetchChatPresence([peer.user_id]);
+        if (focused.current && presence) {
+          setOnline(presence.online);
+          setLastSeen(presence.last_seen_at || null);
+        }
+      }
     } catch (error) {
-      Alert.alert('Image not sent', chatError(error, 'Please try again.'));
+      if (focused.current)
+        setLoadError(
+          chatError(error, "Unable to load messages. Pull to try again.")
+        );
     } finally {
-      setSending(false);
+      syncing.current = false;
+      if (mounted.current) setLoading(false);
+    }
+  }, [id, peer?.user_id, merge, markRead]);
+
+  useFocusEffect(
+    useCallback(() => {
+      focused.current = true;
+      void sync();
+      const poll = setInterval(() => {
+        if (AppState.currentState === "active" && !chatSocket.isConnected())
+          void sync();
+      }, 8000);
+      const unsubscribe = chatSocket.subscribe((event) => {
+        if (!focused.current) return;
+        const data = event.data || {};
+        if (event.type === "resync") {
+          void sync();
+          fetchConversations()
+            .then((items) => {
+              const updated = items.find(
+                (item) => Number(item.conversation_id) === Number(id)
+              );
+              if (focused.current && updated) {
+                setConversation(updated);
+                if (!themeBusy.current)
+                  setThemeKey(updated.theme_key || "default");
+              }
+            })
+            .catch(() => {});
+          return;
+        }
+        if (
+          event.type === "presence" &&
+          Number(data.user_id) === Number(peer?.user_id)
+        ) {
+          setOnline(Boolean(data.online));
+          setLastSeen(data.last_seen_at || null);
+          return;
+        }
+        if (
+          event.type === "connected" &&
+          peer?.user_id &&
+          Array.isArray(data.online_user_ids)
+        ) {
+          setOnline(
+            data.online_user_ids.map(Number).includes(Number(peer.user_id))
+          );
+          return;
+        }
+        // The verified poll broadcast omits conversation_id; scope it by loaded message.
+        const loadedPoll = event.type === "poll:updated" && messagesRef.current.some(message => sameChatId(message.message_id, data.message_id));
+        if (!sameChatId(data.conversation_id, id) && !loadedPoll) return;
+        if (event.type === "message:new" && data.message_id) {
+          merge([data]);
+          markRead([data]);
+        }
+        if (event.type === "message:deleted") {
+          const messageId = Number(data.message_id);
+          const date = data.deleted_at || new Date().toISOString();
+          tombstones.current.set(messageId, date);
+          setMessages((current) => {
+            const next = current.map((item) =>
+              item.message_id === messageId ? deletedMessage(item, date) : item
+            );
+            messagesRef.current = next;
+            return next;
+          });
+          if (replyRef.current?.message_id === messageId) setReply(null);
+        }
+        if (
+          event.type === "message:read" &&
+          !sameChatId(data.user_id, currentUserId)
+        ) {
+          setMessages((current) => {
+            const next = current.map((item) =>
+              item.message_id > 0 &&
+              item.message_id <= Number(data.message_id) &&
+              sameChatId(item.sender_id, currentUserId)
+                ? { ...item, is_read: true }
+                : item
+            );
+            messagesRef.current = next;
+            return next;
+          });
+        }
+        if (event.type === "conversation:updated")
+          setConversation((current) => ({ ...current, ...data }));
+        if (event.type === "conversation:theme") {
+          themeRevision.current++;
+          setThemeUnavailable(null);
+          setThemeKey(getChatTheme(data.theme_key).key);
+        }
+        if (event.type === "poll:updated" && data.poll?.options) {
+          setMessages((current) => {
+            const next = current.map((item) =>
+              !item.deleted_at &&
+              item.poll &&
+              (item.message_id === Number(data.message_id) ||
+                Number(item.poll.poll_id) === Number(data.poll.poll_id))
+                ? {
+                    ...item,
+                    poll: mergePollUpdate(
+                      item.poll,
+                      data.poll,
+                      Number(data.voter_id),
+                      currentUserId,
+                      data.option_ids
+                    ),
+                  }
+                : item
+            );
+            messagesRef.current = next;
+            return next;
+          });
+        }
+        if (
+          (event.type === "typing:start" || event.type === "typing:stop") &&
+          !sameChatId(data.user_id, currentUserId)
+        ) {
+          const typer = Number(data.user_id);
+          if (!Number.isFinite(typer)) return;
+          const timer = typingExpiry.current.get(typer);
+          if (timer) clearTimeout(timer);
+          setTypers((current) =>
+            event.type === "typing:stop"
+              ? current.filter((value) => value !== typer)
+              : [...new Set([...current, typer])]
+          );
+          if (event.type === "typing:start")
+            typingExpiry.current.set(
+              typer,
+              setTimeout(
+                () =>
+                  setTypers((current) =>
+                    current.filter((value) => value !== typer)
+                  ),
+                6000
+              )
+            );
+        }
+      });
+      return () => {
+        focused.current = false;
+        clearInterval(poll);
+        unsubscribe();
+        if (typingTimer.current) clearTimeout(typingTimer.current);
+        typingExpiry.current.forEach(clearTimeout);
+        typingExpiry.current.clear();
+        if (mounted.current) setTypers([]);
+        chatSocket.send("typing:stop", id);
+        Keyboard.dismiss();
+      };
+    }, [sync, id, peer?.user_id, currentUserId, merge, markRead])
+  );
+
+  const loadOlder = useCallback(async () => {
+    if (historyBusy.current || !hasOlder.current || loading) return;
+    const confirmed = messagesRef.current.filter((item) => item.message_id > 0);
+    const before = confirmed.length
+      ? Math.min(...confirmed.map((item) => item.message_id))
+      : 0;
+    if (!before || loadedPages.current.has(before)) return;
+    historyBusy.current = true;
+    setOlderLoading(true);
+    try {
+      const page = await fetchMessages(id, before);
+      if (!mounted.current) return;
+      loadedPages.current.add(before);
+      hasOlder.current =
+        page.length === 40 && page.some((item) => item.message_id < before);
+      merge(page);
+    } catch (error) {
+      if (mounted.current)
+        Alert.alert(
+          "History unavailable",
+          chatError(error, "Scroll up to try again.")
+        );
+    } finally {
+      historyBusy.current = false;
+      if (mounted.current) setOlderLoading(false);
+    }
+  }, [id, loading, merge]);
+  const changeText = (value: string) => {
+    textRef.current = value;
+    setText(value);
+    if (value.trim() && Date.now() - lastTyping.current > 900) {
+      chatSocket.send("typing:start", id);
+      lastTyping.current = Date.now();
+    }
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    if (!value.trim()) chatSocket.send("typing:stop", id);
+    else
+      typingTimer.current = setTimeout(
+        () => chatSocket.send("typing:stop", id),
+        1200
+      );
+  };
+  const replaceSelection = (insert: string, backspace = false) => {
+    const current = textRef.current;
+    let start = Math.min(selection.current.start, current.length);
+    const end = Math.min(
+      Math.max(selection.current.end, start),
+      current.length
+    );
+    if (backspace && start === end)
+      start = previousGraphemeStart(current, start);
+    const next = current.slice(0, start) + insert + current.slice(end);
+    if (next.length > 5000) return;
+    const cursor = { start: start + insert.length, end: start + insert.length };
+    selection.current = cursor;
+    changeText(next);
+    // Update native cursor only after text changes; avoid a controlled selection during recycling.
+    requestAnimationFrame(() => {
+      if (mounted.current && focused.current && textRef.current === next) {
+        selection.current = cursor;
+        inputRef.current?.setNativeProps({ selection: cursor });
+      }
+    });
+  };
+  const toggleEmoji = () => {
+    if (emojiOpen) {
+      setEmojiOpen(false);
+      inputRef.current?.focus();
+    } else {
+      inputRef.current?.blur();
+      Keyboard.dismiss();
+      setEmojiOpen(true);
     }
   };
-  const pickAndSendDocument = async () => {
-    if (sending) return;
+  useEffect(() => {
+    if (!emojiOpen) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      setEmojiOpen(false);
+      return true;
+    });
+    return () => sub.remove();
+  }, [emojiOpen]);
+  const scrollLatest = () =>
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  const sendText = useCallback(
+    async (message: ChatMessage) => {
+      if (sendBusy.current || !message.body) return;
+      sendBusy.current = true;
+      setSending(true);
+      merge([{ ...message, local_status: "sending" }]);
+      try {
+        merge([
+          {
+            ...(await sendTextMessage(
+              id,
+              message.body,
+              message.client_message_id!,
+              message.reply_to_message_id || undefined
+            )),
+            client_message_id: message.client_message_id,
+          },
+        ]);
+        chatSocket.requestResync();
+      } catch (error) {
+        // A socket acknowledgement may have arrived even if the HTTP request timed out.
+        if (
+          !messagesRef.current.some(
+            (item) =>
+              item.message_id > 0 &&
+              item.client_message_id === message.client_message_id
+          )
+        )
+          merge([{ ...message, local_status: "failed" }]);
+        if (mounted.current)
+          Alert.alert(
+            "Message not sent",
+            chatError(error, "Tap Retry on the message to try again.")
+          );
+      } finally {
+        sendBusy.current = false;
+        if (mounted.current) setSending(false);
+      }
+    },
+    [id, merge]
+  );
+  const send = () => {
+    const body = textRef.current.trim();
+    if (!body || sendBusy.current) return;
+    if (currentUserId === undefined) {
+      Alert.alert(
+        "Account unavailable",
+        "Your sign-in identity could not be verified. Please sign in again."
+      );
+      return;
+    }
+    const message: ChatMessage = {
+      message_id: optimisticId.current--,
+      conversation_id: id,
+      sender_id: Number(currentUserId),
+      sender_name: user?.name || "You",
+      client_message_id: clientId(currentUserId),
+      message_type: "text",
+      body,
+      created_at: new Date().toISOString(),
+      reply_to_message_id: reply?.message_id || undefined,
+      local_status: "sending",
+    };
+    changeText("");
+    selection.current = { start: 0, end: 0 };
+    setReply(null);
+    void sendText(message);
+    scrollLatest();
+  };
+  const selectReply = useCallback((message: ChatMessage) => {
+    if (message.deleted_at || message.message_id <= 0) return;
+    setReply(message);
+    setEmojiOpen(false);
+    inputRef.current?.focus();
+  }, []);
+  const confirmDelete = useCallback(
+    (message: ChatMessage) => {
+      Alert.alert(
+        "Delete message?",
+        "This message will be deleted for everyone in this chat.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Delete",
+            style: "destructive",
+            onPress: async () => {
+              try {
+                const result = await deleteChatMessage(id, message.message_id);
+                const date = result.deleted_at || new Date().toISOString();
+                tombstones.current.set(message.message_id, date);
+                merge([deletedMessage(message, date)]);
+                if (replyRef.current?.message_id === message.message_id)
+                  setReply(null);
+                chatSocket.requestResync();
+              } catch (error) {
+                if (mounted.current)
+                  Alert.alert(
+                    "Message not deleted",
+                    chatError(error, "Please try again.")
+                  );
+              }
+            },
+          },
+        ]
+      );
+    },
+    [id, merge]
+  );
+  const actions = useCallback(
+    (message: ChatMessage) => {
+      if (message.deleted_at) return;
+      const options: Array<{
+        text: string;
+        onPress: () => void;
+        style?: "destructive";
+      }> = [];
+      if (message.message_id > 0)
+        options.push({ text: "Reply", onPress: () => selectReply(message) });
+      if (message.body)
+        options.push({
+          text: "Copy text",
+          onPress: () => Clipboard.setString(message.body!),
+        });
+      if (
+        message.message_id > 0 &&
+        sameChatId(message.sender_id, currentUserId)
+      )
+        options.push({
+          text: "Delete",
+          style: "destructive",
+          onPress: () => confirmDelete(message),
+        });
+      if (message.local_status === "failed")
+        options.push({
+          text: "Retry",
+          onPress: () => {
+            void sendText(message);
+          },
+        });
+      Keyboard.dismiss();
+      setMessageActions(options);
+    },
+    [currentUserId, selectReply, confirmDelete, sendText]
+  );
+  const openFile = useCallback(async (message: ChatMessage) => {
+    try {
+      const url = safeChatAttachmentUrl(message.attachment_url);
+      if (!url) throw new Error("This attachment has an invalid URL.");
+      await Linking.openURL(url);
+    } catch (error) {
+      if (mounted.current)
+        Alert.alert(
+          "Unable to open document",
+          chatError(error, "No compatible app is available.")
+        );
+    }
+  }, []);
+  const openImage = useCallback((message: ChatMessage) => {
+    const uri = safeChatAttachmentUrl(message.attachment_url);
+    if (uri) {
+      Keyboard.dismiss();
+      setMedia({ uri });
+    }
+  }, []);
+  const jumpQuote = useCallback((message: ChatMessage) => {
+    const index = [...messagesRef.current]
+      .reverse()
+      .findIndex((item) => item.message_id === message.message_id);
+    if (index >= 0) {
+      quoteJump.current = { index, attempts: 0 };
+      listRef.current?.scrollToIndex({
+        index,
+        animated: true,
+        viewPosition: 0.5,
+      });
+    }
+  }, []);
+  const retry = useCallback(
+    (message: ChatMessage) => {
+      void sendText(message);
+    },
+    [sendText]
+  );
+  const vote = useCallback(
+    async (message: ChatMessage, optionId: number) => {
+      if (!message.poll) return;
+      const selected = message.poll.options
+        .filter((option) => option.selected_by_me)
+        .map((option) => option.option_id);
+      const choices = message.poll.allow_multiple
+        ? selected.includes(optionId)
+          ? selected.filter((value) => value !== optionId)
+          : [...selected, optionId]
+        : [optionId];
+      const poll = await voteChatPoll(message.poll.poll_id, choices);
+      const current = messagesRef.current.find(
+        (item) => item.message_id === message.message_id
+      );
+      if (current && !current.deleted_at) merge([{ ...current, poll }]);
+    },
+    [merge]
+  );
+  const pickImage = async () => {
+    if (sendBusy.current) return;
+    sendBusy.current = true;
+    try {
+      const result = await launchImageLibrary({
+        mediaType: "photo",
+        selectionLimit: 1,
+        quality: 0.9,
+      });
+      if (result.didCancel) return;
+      if (result.errorCode)
+        throw new Error(result.errorMessage || "Photo library is unavailable.");
+      const asset = result.assets?.[0];
+      if (mounted.current && asset?.uri) {
+        photoDraft.current = { uri: asset.uri, key: clientId(currentUserId) };
+        setMedia({ uri: asset.uri, asset });
+      }
+    } catch (error) {
+      if (mounted.current)
+        Alert.alert("Photo unavailable", chatError(error, "Please try again."));
+    } finally {
+      sendBusy.current = false;
+    }
+  };
+  const sendImage = async () => {
+    if (!media?.asset?.uri || sendBusy.current) return;
+    sendBusy.current = true;
+    setSending(true);
+    if (!photoDraft.current || photoDraft.current.uri !== media.uri)
+      photoDraft.current = { uri: media.uri, key: clientId(currentUserId) };
+    const draft = photoDraft.current;
+    try {
+      if (!draft.upload)
+        draft.upload = await uploadChatImage({
+          uri: media.asset.uri,
+          type: media.asset.type,
+          fileName: media.asset.fileName,
+        });
+      merge([
+        {
+          ...(await sendImageMessage(id, draft.upload, draft.key)),
+          client_message_id: draft.key,
+        },
+      ]);
+      if (mounted.current) setMedia(null);
+      chatSocket.requestResync();
+      scrollLatest();
+    } catch (error) {
+      if (mounted.current)
+        Alert.alert("Photo not sent", chatError(error, "Please try again."));
+    } finally {
+      sendBusy.current = false;
+      if (mounted.current) setSending(false);
+    }
+  };
+  const pickDocument = async () => {
+    if (sendBusy.current) return;
+    sendBusy.current = true;
     try {
       const [file] = await pick({
         type: [
@@ -289,299 +808,280 @@ export default function ChatConversationScreen() {
         ],
       });
       if (!file) return;
+      const [copy] = await keepLocalCopy({
+        files: [
+          { uri: file.uri, fileName: file.name || `document-${Date.now()}` },
+        ],
+        destination: "cachesDirectory",
+      });
+      if (copy.status !== "success")
+        throw new Error(
+          "The selected file could not be accessed. Download it to your device and try again."
+        );
+      if (!mounted.current) return;
       setSending(true);
       const upload = await uploadChatDocument({
-        uri: file.uri,
+        uri: copy.localUri,
         type: file.type,
         name: file.name,
       });
-      addMessage(
-        await sendFileMessage(
-          conversation.conversation_id,
-          upload,
-          clientId(user?.user_id),
-        ),
-      );
+      merge([await sendFileMessage(id, upload, clientId(currentUserId))]);
+      chatSocket.requestResync();
+      scrollLatest();
     } catch (error: any) {
-      if (error?.code !== 'OPERATION_CANCELED')
-        Alert.alert('Document not sent', chatError(error, 'Please try again.'));
+      if (mounted.current && error?.code !== "OPERATION_CANCELED")
+        Alert.alert("Document not sent", chatError(error, "Please try again."));
     } finally {
-      setSending(false);
+      sendBusy.current = false;
+      if (mounted.current) setSending(false);
     }
   };
-  const showAttachmentMenu = () => setAttachmentMenu(true);
   const createPoll = async (question: string, options: string[]) => {
-    addMessage(
-      await createChatPoll(
-        conversation.conversation_id,
-        question,
-        options,
-        clientId(user?.user_id),
-      ),
-    );
+    const fingerprint = JSON.stringify([question, options]);
+    if (pollDraft.current?.fingerprint !== fingerprint)
+      pollDraft.current = { fingerprint, key: clientId(currentUserId) };
+    const key = pollDraft.current!.key;
+    merge([
+      {
+        ...(await createChatPoll(id, question, options, key)),
+        client_message_id: key,
+      },
+    ]);
+    pollDraft.current = null;
+    chatSocket.requestResync();
+    scrollLatest();
   };
-  const votePoll = async (
-    messageId: number,
-    pollId: number,
-    optionId: number,
-  ) => {
-    const poll = await voteChatPoll(pollId, [optionId]);
-    setMessages(current =>
-      current.map(item =>
-        item.message_id === messageId ? { ...item, poll } : item,
-      ),
-    );
-  };
-  const directStatus = online
-    ? 'online'
-    : lastSeenAt
-    ? `last seen ${new Date(lastSeenAt).toLocaleString([], {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-      })}`
-    : 'last seen recently';
-
-  const selectedTheme = getChatTheme(chatThemeKey);
-  const changeTheme = async (nextTheme: ChatThemeKey) => {
-    if (nextTheme === chatThemeKey || themeSaving) return;
-    const previous = chatThemeKey;
-    setChatThemeKey(nextTheme);
+  const changeTheme = async (next: ChatThemeKey) => {
+    if (themeBusy.current || themeUnavailable || next === themeKey) return;
+    const previous = themeKey;
+    const revision = themeRevision.current;
+    themeBusy.current = true;
     setThemeSaving(true);
+    setThemeKey(next);
     try {
-      await updateConversationTheme(conversation.conversation_id, nextTheme);
+      await updateConversationTheme(id, next);
+      chatSocket.requestResync();
     } catch (error) {
-      setChatThemeKey(previous);
-      Alert.alert('Theme not changed', chatError(error, 'Please try again.'));
+      if (mounted.current) {
+        if (themeRevision.current === revision) setThemeKey(previous);
+        if ((error as any)?.code === "CHAT_THEME_UNAVAILABLE") setThemeUnavailable((error as Error).message);
+        else Alert.alert("Theme not changed", chatError(error, "Please try again."));
+      }
     } finally {
-      setThemeSaving(false);
+      themeBusy.current = false;
+      if (mounted.current) setThemeSaving(false);
     }
   };
+  const status = typers.length
+    ? "Typing…"
+    : conversation.type === "group"
+    ? `${conversation.members.length} members`
+    : online
+    ? "Online"
+    : lastSeen && Number.isFinite(new Date(lastSeen).getTime())
+    ? `Last seen ${new Date(lastSeen).toLocaleString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "numeric",
+        month: "short",
+      })}`
+    : "Offline";
 
   return (
     <KeyboardAvoidingView
-      style={[styles.screen, { backgroundColor: isDark ? selectedTheme.darkBackground : selectedTheme.lightBackground }]}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      style={[
+        styles.screen,
+        {
+          paddingLeft: insets.left,
+          paddingRight: insets.right,
+          backgroundColor: theme.isDark
+            ? selectedTheme.darkBackground
+            : selectedTheme.lightBackground,
+        },
+      ]}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View
         style={[
           styles.header,
           {
-            paddingTop: insets.top + 7,
-            borderBottomColor: theme.border,
+            paddingTop: insets.top + 8,
             backgroundColor: theme.card,
+            borderBottomColor: theme.border,
           },
         ]}
       >
         <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Back to chats"
           onPress={() => navigation.goBack()}
-          style={styles.back}
+          style={styles.icon}
         >
           <MaterialCommunityIcons
-            name="arrow-left"
-            size={25}
-            color={theme.text}
+            name="chevron-left"
+            size={30}
+            color={theme.primary}
           />
         </TouchableOpacity>
         <TouchableOpacity
-          disabled={conversation.type === 'direct' && !peer}
-          onPress={() =>
-            conversation.type === 'group'
-              ? navigation.navigate('GroupInfo', { conversation })
-              : peer && navigation.navigate('MemberProfile', { member: peer })
+          accessibilityRole="button"
+          accessibilityLabel={
+            conversation.type === "group"
+              ? "View group info"
+              : "View member profile"
           }
-          activeOpacity={0.72}
+          disabled={conversation.type === "direct" && !peer}
+          onPress={() =>
+            conversation.type === "group"
+              ? navigation.navigate("GroupInfo", { conversation })
+              : peer && navigation.navigate("MemberProfile", { member: peer })
+          }
           style={styles.headerDetails}
         >
           <ChatAvatar
             name={title}
-            uri={conversation.type === 'direct' ? peer?.user_image : undefined}
+            uri={
+              conversation.type === "group"
+                ? conversation.image_url
+                : peer?.user_image
+            }
             size={42}
-            online={online}
+            online={conversation.type === "direct" && online}
           />
           <View style={styles.headerText}>
             <Text
-              style={[styles.title, { color: theme.text }]}
               numberOfLines={1}
+              style={[styles.title, { color: theme.text }]}
             >
               {title}
             </Text>
-            <View style={styles.statusRow}>
-              {online && !typing && conversation.type === 'direct' ? (
-                <View style={styles.onlineDot} />
-              ) : null}
-              <Text
-                style={[
-                  styles.status,
-                  { color: typing || online ? '#22C55E' : theme.secondaryText },
-                ]}
-                numberOfLines={1}
-              >
-                {typing
-                  ? 'typing…'
-                  : conversation.type === 'group'
-                  ? `${conversation.members.length} members · tap for info`
-                  : directStatus}
-              </Text>
-            </View>
+            <Text
+              numberOfLines={1}
+              style={[
+                styles.status,
+                {
+                  color:
+                    typers.length || (conversation.type === "direct" && online)
+                      ? "#22C55E"
+                      : theme.secondaryText,
+                },
+              ]}
+            >
+              {status}
+            </Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Chat settings" onPress={() => setSettingsVisible(true)} style={styles.settingsButton}>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Chat appearance"
+          onPress={() => {
+            Keyboard.dismiss();
+            setSettingsOpen(true);
+          }}
+          style={styles.icon}
+        >
           <MaterialCommunityIcons
-            name="pencil-outline"
-            size={21}
-            color={theme.primary}
+            name="dots-horizontal"
+            size={25}
+            color={theme.text}
           />
         </TouchableOpacity>
       </View>
-      {loading ? (
+      {loadError && (
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => void sync()}
+          style={[styles.error, { backgroundColor: theme.card }]}
+        >
+          <Text style={{ color: theme.secondaryText }}>
+            {loadError} Tap to retry.
+          </Text>
+        </TouchableOpacity>
+      )}
+      {loading && !messages.length ? (
         <View style={styles.center}>
           <ActivityIndicator color={theme.primary} />
         </View>
       ) : (
         <FlatList
           ref={listRef}
-          data={messages}
-          keyExtractor={item =>
-            String(item.message_id || item.client_message_id)
+          data={newestFirst}
+          inverted
+          keyExtractor={(item) =>
+            item.client_message_id || String(item.message_id)
           }
+          initialNumToRender={20}
+          maxToRenderPerBatch={12}
+          windowSize={9}
           contentContainerStyle={styles.messages}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode={
-            Platform.OS === 'ios' ? 'interactive' : 'on-drag'
+            Platform.OS === "ios" ? "interactive" : "on-drag"
           }
-          onContentSizeChange={() =>
-            listRef.current?.scrollToEnd({ animated: false })
-          }
-          renderItem={({ item, index }) => {
-            const mine = Number(item.sender_id) === Number(user?.user_id);
-            const showName =
-              conversation.type === 'group' &&
-              !mine &&
-              messages[index - 1]?.sender_id !== item.sender_id;
-            const foreground = mine ? '#FFF' : theme.text;
-            return (
-              <View
-                style={[
-                  styles.messageRow,
-                  mine ? styles.mineRow : styles.theirRow,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.bubbleWrap,
-                    mine ? styles.mineWrap : styles.theirWrap,
-                  ]}
-                >
-                  {showName ? (
-                    <Text style={[styles.sender, { color: theme.primary }]}>
-                      {item.sender_name}
-                    </Text>
-                  ) : null}
-                  <View
-                    style={[
-                      styles.bubble,
-                      item.message_type === 'image' && styles.imageBubble,
-                      mine
-                        ? [styles.mine, { backgroundColor: selectedTheme.accent }]
-                        : { backgroundColor: isDark ? selectedTheme.darkOtherBubble : selectedTheme.lightOtherBubble },
-                    ]}
-                  >
-                    {item.deleted_at ? (
-                      <Text style={[styles.messageText, { color: foreground }]}>
-                        This message was deleted
-                      </Text>
-                    ) : item.message_type === 'image' && item.attachment_url ? (
-                      <Image
-                        source={{ uri: chatImageUrl(item.attachment_url) }}
-                        style={styles.chatImage}
-                        resizeMode="cover"
-                      />
-                    ) : item.message_type === 'file' && item.attachment_url ? (
-                      <TouchableOpacity
-                        style={styles.fileRow}
-                        onPress={() => Linking.openURL(item.attachment_url!)}
-                      >
-                        <MaterialCommunityIcons
-                          name="file-document-outline"
-                          size={30}
-                          color={foreground}
-                        />
-                        <View style={styles.fileText}>
-                          <Text
-                            numberOfLines={2}
-                            style={[styles.fileName, { color: foreground }]}
-                          >
-                            {item.attachment_name || 'Document'}
-                          </Text>
-                          <Text
-                            style={[styles.fileType, { color: foreground }]}
-                          >
-                            {item.attachment_mime_type || 'File'}
-                          </Text>
-                        </View>
-                        <MaterialCommunityIcons
-                          name="download"
-                          size={21}
-                          color={foreground}
-                        />
-                      </TouchableOpacity>
-                    ) : item.message_type === 'poll' && item.poll ? (
-                      <PollBubble
-                        poll={item.poll}
-                        mine={mine}
-                        textColor={foreground}
-                        onVote={optionId =>
-                          votePoll(
-                            item.message_id,
-                            item.poll!.poll_id,
-                            optionId,
-                          )
-                        }
-                      />
-                    ) : (
-                      <Text style={[styles.messageText, { color: foreground }]}>
-                        {item.body}
-                      </Text>
-                    )}
-                    <View style={styles.metaRow}>
-                      <Text
-                        style={[
-                          styles.messageTime,
-                          {
-                            color: mine
-                              ? 'rgba(255,255,255,.72)'
-                              : theme.secondaryText,
-                          },
-                        ]}
-                      >
-                        {chatTime(item.created_at)}
-                      </Text>
-                      {mine ? (
-                        <MaterialCommunityIcons
-                          name={item.is_read ? 'check-all' : 'check'}
-                          size={15}
-                          color={
-                            item.is_read ? '#67E8F9' : 'rgba(255,255,255,.72)'
-                          }
-                        />
-                      ) : null}
-                    </View>
-                  </View>
-                </View>
-              </View>
-            );
+          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          onEndReached={() => void loadOlder()}
+          onEndReachedThreshold={0.2}
+          onScrollToIndexFailed={({ index, averageItemLength }) => {
+            listRef.current?.scrollToOffset({
+              offset: index * averageItemLength,
+              animated: false,
+            });
+            if (quoteJump.current.attempts >= 2) return;
+            quoteJump.current.attempts++;
+            if (quoteTimer.current) clearTimeout(quoteTimer.current);
+            quoteTimer.current = setTimeout(() => {
+              if (mounted.current && focused.current)
+                listRef.current?.scrollToIndex({
+                  index,
+                  animated: true,
+                  viewPosition: 0.5,
+                });
+            }, 250);
           }}
+          renderItem={({ item, index }) => (
+            <ChatMessageBubble
+              message={item}
+              quoted={
+                item.reply_to_message_id
+                  ? messageMap.get(item.reply_to_message_id)
+                  : undefined
+              }
+              mine={sameChatId(item.sender_id, currentUserId)}
+              group={conversation.type === "group"}
+              showName={
+                conversation.type === "group" &&
+                !sameChatId(item.sender_id, currentUserId) &&
+                !sameChatId(newestFirst[index + 1]?.sender_id, item.sender_id)
+              }
+              showAvatar={
+                !sameChatId(newestFirst[index - 1]?.sender_id, item.sender_id)
+              }
+              preset={selectedTheme}
+              onReply={selectReply}
+              onActions={actions}
+              onImage={openImage}
+              onFile={openFile}
+              onQuote={jumpQuote}
+              onRetry={retry}
+              onVote={vote}
+            />
+          )}
+          ListFooterComponent={
+            olderLoading ? (
+              <ActivityIndicator
+                style={{ padding: 16 }}
+                color={theme.primary}
+              />
+            ) : null
+          }
           ListEmptyComponent={
             <View style={styles.empty}>
               <MaterialCommunityIcons
-                name="hand-wave-outline"
-                size={32}
+                name="message-text-outline"
+                size={36}
                 color={theme.primary}
               />
-              <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
+              <Text style={{ color: theme.secondaryText, marginTop: 12 }}>
                 Say hello to start the conversation
               </Text>
             </View>
@@ -592,207 +1092,322 @@ export default function ChatConversationScreen() {
         style={[
           styles.composerWrap,
           {
-            paddingBottom: Math.max(insets.bottom, 9),
-            borderTopColor: theme.border,
             backgroundColor: theme.card,
+            paddingBottom:
+              keyboardOpen && !emojiOpen ? 8 : Math.max(insets.bottom, 8),
           },
         ]}
       >
-        <View
-          style={[
-            styles.composer,
-            { backgroundColor: theme.background, borderColor: theme.border },
-          ]}
-        >
+        {reply && (
+          <View
+            style={[
+              styles.reply,
+              {
+                backgroundColor: theme.background,
+                borderLeftColor: theme.primary,
+              },
+            ]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  color: theme.primary,
+                  fontSize: 13,
+                  fontWeight: "600",
+                }}
+              >
+                {reply.sender_name}
+              </Text>
+              <Text
+                numberOfLines={1}
+                style={{
+                  color: theme.secondaryText,
+                  fontSize: 13,
+                  marginTop: 3,
+                }}
+              >
+                {messagePreview(reply)}
+              </Text>
+            </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Cancel reply"
+              onPress={() => setReply(null)}
+              style={styles.icon}
+            >
+              <MaterialCommunityIcons
+                name="close"
+                size={20}
+                color={theme.secondaryText}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={styles.composerRow}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Add attachment or poll"
-            onPress={showAttachmentMenu}
+            accessibilityLabel="Share attachment"
             disabled={sending}
-            style={[styles.attach, { backgroundColor: theme.primary }]}
+            onPress={() => {
+              Keyboard.dismiss();
+              setEmojiOpen(false);
+              setAttachmentOpen(true);
+            }}
+            style={styles.icon}
           >
-            <MaterialCommunityIcons name="paperclip" size={21} color="#FFF" />
+            <MaterialCommunityIcons
+              name="plus"
+              size={26}
+              color={theme.primary}
+            />
           </TouchableOpacity>
-          <TextInput
-            value={text}
-            onChangeText={onChangeText}
-            onFocus={() =>
-              setTimeout(
-                () => listRef.current?.scrollToEnd({ animated: true }),
-                250,
-              )
-            }
-            placeholder="Message"
-            placeholderTextColor={theme.secondaryText}
-            style={[styles.input, { color: theme.text }]}
-            multiline
-            maxLength={5000}
-          />
+          <View
+            style={[
+              styles.inputPill,
+              { backgroundColor: theme.background, borderColor: theme.border },
+            ]}
+          >
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={emojiOpen ? "Show keyboard" : "Show emojis"}
+              onPress={toggleEmoji}
+              style={styles.icon}
+            >
+              <MaterialCommunityIcons
+                name={emojiOpen ? "keyboard-outline" : "emoticon-happy-outline"}
+                size={23}
+                color={theme.secondaryText}
+              />
+            </TouchableOpacity>
+            <TextInput
+              ref={inputRef}
+              value={text}
+              onChangeText={changeText}
+              onSelectionChange={(event) => {
+                selection.current = event.nativeEvent.selection;
+              }}
+              onFocus={() => setEmojiOpen(false)}
+              placeholder="Message"
+              placeholderTextColor={theme.secondaryText}
+              accessibilityLabel="Message"
+              multiline
+              maxLength={5000}
+              style={[styles.input, { color: theme.text }]}
+            />
+          </View>
           <TouchableOpacity
-            onPress={send}
+            accessibilityRole="button"
+            accessibilityLabel="Send message"
+            accessibilityState={{
+              disabled: !text.trim() || sending,
+              busy: sending,
+            }}
             disabled={!text.trim() || sending}
+            onPress={send}
             style={[
               styles.send,
-              { backgroundColor: text.trim() ? theme.primary : theme.border },
+              {
+                backgroundColor:
+                  text.trim() && !sending ? selectedTheme.accent : theme.border,
+              },
             ]}
           >
             {sending ? (
-              <ActivityIndicator size="small" color="#FFF" />
+              <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <MaterialCommunityIcons name="send" size={20} color="#FFF" />
+              <MaterialCommunityIcons
+                name="arrow-up"
+                size={25}
+                color={text.trim() ? "#FFF" : theme.secondaryText}
+              />
             )}
           </TouchableOpacity>
         </View>
+        {emojiOpen && !keyboardOpen && (
+          <ChatEmojiPanel
+            onSelect={(emoji) => replaceSelection(emoji)}
+            onBackspace={() => replaceSelection("", true)}
+          />
+        )}
       </View>
+      <ChatMessageActionSheet
+        actions={messageActions}
+        onClose={() => setMessageActions(null)}
+      />
       <ChatSettingsSheet
-        visible={settingsVisible}
-        value={chatThemeKey}
+        visible={settingsOpen}
+        value={themeKey}
         saving={themeSaving}
-        onClose={() => setSettingsVisible(false)}
+        unavailable={themeUnavailable}
+        onClose={() => setSettingsOpen(false)}
         onChange={changeTheme}
       />
       <ChatAttachmentSheet
-        visible={attachmentMenu}
-        onClose={() => setAttachmentMenu(false)}
-        onImage={() => {
-          setAttachmentMenu(false);
-          void pickAndSendImage();
-        }}
-        onDocument={() => {
-          setAttachmentMenu(false);
-          void pickAndSendDocument();
-        }}
-        onPoll={() => {
-          setAttachmentMenu(false);
-          setPollModal(true);
-        }}
+        visible={attachmentOpen}
+        onClose={() => setAttachmentOpen(false)}
+        onImage={() => void pickImage()}
+        onDocument={() => void pickDocument()}
+        onPoll={() => setPollOpen(true)}
       />
       <CreatePollModal
-        visible={pollModal}
-        onClose={() => setPollModal(false)}
+        visible={pollOpen}
+        onClose={() => {
+          pollDraft.current = null;
+          setPollOpen(false);
+        }}
         onCreate={createPoll}
       />
+      <Modal
+        visible={media !== null}
+        animationType="fade"
+        onRequestClose={() => {
+          if (!sending) setMedia(null);
+        }}
+      >
+        <View
+          style={[
+            styles.viewer,
+            {
+              paddingTop: insets.top,
+              paddingBottom: Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
+          <View style={styles.viewerHeader}>
+            <Text style={styles.viewerTitle}>
+              {media?.asset ? "Send photo" : "Photo"}
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Close photo"
+              disabled={sending}
+              onPress={() => setMedia(null)}
+              style={styles.icon}
+            >
+              <MaterialCommunityIcons name="close" size={25} color="#FFF" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView
+            key={media?.uri}
+            minimumZoomScale={1}
+            maximumZoomScale={3}
+            centerContent
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
+          >
+            <Image
+              source={media ? { uri: media.uri } : undefined}
+              resizeMode="contain"
+              style={{
+                width,
+                height: height - insets.top - insets.bottom - 140,
+              }}
+              onError={() =>
+                Alert.alert(
+                  "Photo unavailable",
+                  "This photo could not be loaded."
+                )
+              }
+            />
+          </ScrollView>
+          {media?.asset && (
+            <TouchableOpacity
+              accessibilityRole="button"
+              disabled={sending}
+              accessibilityLabel="Send photo"
+              onPress={() => void sendImage()}
+              style={[
+                styles.photoSend,
+                { backgroundColor: selectedTheme.accent },
+              ]}
+            >
+              {sending ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text
+                  style={{ color: "#FFF", fontSize: 16, fontWeight: "600" }}
+                >
+                  Send photo
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   screen: { flex: 1 },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingBottom: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
-  back: {
-    width: 40,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
+  icon: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  headerDetails: { flex: 1, flexDirection: 'row', alignItems: 'center' },
-  headerText: { flex: 1, marginLeft: 10 },
-  settingsButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 2,
+  headerDetails: { flex: 1, flexDirection: "row", alignItems: "center" },
+  headerText: { flex: 1, marginLeft: 12 },
+  title: { fontSize: 17, fontWeight: "600" },
+  status: { fontSize: 12, marginTop: 3 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  error: { padding: 12 },
+  messages: { paddingHorizontal: 12, paddingVertical: 16, flexGrow: 1 },
+  empty: { alignItems: "center", padding: 48 },
+  composerWrap: { paddingTop: 8, paddingHorizontal: 8 },
+  composerRow: { flexDirection: "row", alignItems: "flex-end", gap: 4 },
+  inputPill: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    minHeight: 46,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 24,
+    paddingRight: 12,
   },
-  title: { fontSize: 16, fontWeight: '800' },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
-  },
-  onlineDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#22C55E',
-  },
-  status: { flexShrink: 1, fontSize: 11 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  messages: {
-    flexGrow: 1,
-    justifyContent: 'flex-end',
-    paddingHorizontal: 13,
-    paddingVertical: 16,
-  },
-  messageRow: { width: '100%', flexDirection: 'row' },
-  mineRow: { justifyContent: 'flex-end' },
-  theirRow: { justifyContent: 'flex-start' },
-  bubbleWrap: { maxWidth: '84%', marginVertical: 3 },
-  mineWrap: { alignItems: 'flex-end' },
-  theirWrap: { alignItems: 'flex-start' },
-  sender: { fontSize: 11, fontWeight: '700', marginLeft: 9, marginBottom: 2 },
-  bubble: {
-    borderRadius: 18,
-    paddingHorizontal: 13,
-    paddingTop: 9,
-    paddingBottom: 6,
-  },
-  imageBubble: { padding: 4 },
-  chatImage: {
-    width: 220,
-    height: 220,
-    borderRadius: 14,
-    backgroundColor: '#E5E7EB',
-  },
-  fileRow: {
-    width: 245,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 9,
-    padding: 8,
-  },
-  fileText: { flex: 1 },
-  fileName: { fontSize: 13, fontWeight: '800' },
-  fileType: { fontSize: 9, opacity: 0.7, marginTop: 3 },
-  mine: { backgroundColor: '#7C3AED', borderBottomRightRadius: 5 },
-  messageText: { fontSize: 15, lineHeight: 20 },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: 3,
-    paddingHorizontal: 5,
-  },
-  messageTime: { fontSize: 9, marginTop: 3 },
-  empty: { alignItems: 'center', paddingBottom: 120 },
-  emptyText: { marginTop: 10 },
-  composerWrap: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-  },
-  composer: {
-    minHeight: 52,
+  input: {
+    flex: 1,
+    fontSize: 16,
+    paddingTop: 12,
+    paddingBottom: 12,
     maxHeight: 120,
-    borderWidth: 1,
-    borderRadius: 27,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 5,
-    paddingVertical: 5,
+    minHeight: 44,
   },
-  attach: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 4,
-  },
-  input: { flex: 1, maxHeight: 105, paddingVertical: 8, fontSize: 15 },
   send: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 1,
+  },
+  reply: {
+    borderLeftWidth: 3,
+    borderRadius: 12,
+    marginHorizontal: 8,
+    marginBottom: 8,
+    paddingLeft: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  viewer: { flex: 1, backgroundColor: "#0B1018" },
+  viewerHeader: {
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  viewerTitle: { color: "#FFF", fontSize: 17, fontWeight: "600" },
+  photoSend: {
+    marginHorizontal: 24,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

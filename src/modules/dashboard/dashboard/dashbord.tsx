@@ -5,14 +5,12 @@ import {
   ScrollView,
   AppState,
   Platform,
-  Pressable,
   ImageBackground,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
-import HeaderComponent, { type SearchOverlayState } from '../header/HeaderComponent';
-import SearchDropdown from '../header/SearchDropdown';
+import HeaderComponent from '../header/HeaderComponent';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
 import axios from 'axios';
@@ -127,11 +125,8 @@ function Dashbord() {
     const initialGoal = Number((user as any)?.steps?.goal_steps);
     return Number.isFinite(initialGoal) && initialGoal > 0 ? initialGoal : 5000;
   });
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const headerCollapsedRef = useRef(false);
-  const [searchOverlay, setSearchOverlay] = useState<SearchOverlayState | null>(null);
-  const [searchDismissSignal, setSearchDismissSignal] = useState(0);
   const [birthdays, setBirthdays] = useState<BirthdayEmployee[]>(
     () => dashboardHeaderCache?.birthdays ?? [],
   );
@@ -411,11 +406,6 @@ function Dashbord() {
     queryClient.invalidateQueries({ queryKey: STATUS_FEED_QUERY_KEY });
   }, [statusFeedQueryKey]);
 
-  const dismissSearch = useCallback(() => {
-    if (!isSearchOpen) return;
-    setSearchDismissSignal((value) => value + 1);
-  }, [isSearchOpen]);
-
   const handleDashboardScroll = useCallback((offsetY: number) => {
     const nextCollapsed = offsetY > rs(40)
       ? true
@@ -480,10 +470,6 @@ function Dashbord() {
           }
           surface="transparent"
           textColor={headerTextColor}
-          dismissSignal={searchDismissSignal}
-          onSearchActiveChange={setIsSearchOpen}
-          onSearchOverlayChange={setSearchOverlay}
-          onSearchSubmit={() => navigation.navigate('GlobalSearchScreen')}
           onNotificationPress={() => navigation.navigate('Notification')}
           onProfilePress={() => navigation.navigate('Profile', { context: 'dashboard' })}
           showRewardPoints
@@ -547,7 +533,6 @@ function Dashbord() {
     mobileDashboardTextColor,
     navigation,
     rewardPoints,
-    searchDismissSignal,
     statusFeedQuery,
     topSectionGradient,
     user?.user_id,
@@ -568,10 +553,8 @@ function Dashbord() {
         style={styles.scroll}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: rs(16) + TAB_BAR_HEIGHT }]}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={!isSearchOpen}
         onScroll={event => handleDashboardScroll(event.nativeEvent.contentOffset.y)}
         scrollEventThrottle={16}
-        onScrollBeginDrag={dismissSearch}
         keyboardShouldPersistTaps="handled"
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
@@ -583,13 +566,13 @@ function Dashbord() {
               // Rendered fixed above the ScrollView instead — skip here.
               return null;
             case 'birthdays':
-              return hasBirthdays ? <Pressable key={key} onPress={dismissSearch}><MemoBirthdayCarousel birthdays={birthdays} /></Pressable> : null;
+              return hasBirthdays ? <MemoBirthdayCarousel key={key} birthdays={birthdays} /> : null;
             case 'stepProgress':
-              return <Pressable key={key} onPress={dismissSearch}><MemoHomeChart goalSteps={stepGoal} /></Pressable>;
+              return <MemoHomeChart key={key} goalSteps={stepGoal} />;
             case 'investmentInsurance':
-              return <Pressable key={key} onPress={dismissSearch}><MemoInvestmentInsuranceOverview /></Pressable>;
+              return <MemoInvestmentInsuranceOverview key={key} />;
             case 'exploreModules':
-              return <Pressable key={key} onPress={dismissSearch}><MemoServicesModule onModulePress={handleExploreModulePress} /></Pressable>;
+              return <MemoServicesModule key={key} onModulePress={handleExploreModulePress} />;
             case 'moduleBanner':
               return hasMobileDashboardOffers ? (
                 <MemoOffersBanner
@@ -605,32 +588,12 @@ function Dashbord() {
                 <MemoModuleBanner key={key} />
               );
             case 'rewardsOverview':
-              return <Pressable key={key} onPress={dismissSearch}><MemoRewardsOverview /></Pressable>;
+              return <MemoRewardsOverview key={key} />;
             default:
               return null;
           }
         })}
       </ScrollView>
-
-      {isSearchOpen && searchOverlay && (
-        <View style={styles.searchOverlay} pointerEvents="box-none">
-          <Pressable
-            style={[styles.searchDismissLayer, { top: searchOverlay.top }]}
-            onPress={searchOverlay.onClose}
-          />
-          {searchOverlay.visible && (
-            <View style={[styles.searchDropdownOverlay, { top: searchOverlay.top }]}>
-              <SearchDropdown
-                query={searchOverlay.query}
-                results={searchOverlay.results}
-                loading={searchOverlay.loading}
-                isEmpty={searchOverlay.isEmpty}
-                onClose={searchOverlay.onClose}
-              />
-            </View>
-          )}
-        </View>
-      )}
 
       <BottomTabs
         isDashboard
@@ -667,7 +630,7 @@ function Dashbord() {
           />
         </View>
       )}
-      {isFocused && !isSearchOpen && !openingModule && <GamesDrawer />}
+      {isFocused && !openingModule && <GamesDrawer />}
       {/* <FloatingBottomBar/> */}
     </LinearGradient>
   );
@@ -711,25 +674,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingTop: 0,
     paddingBottom: 0,
-  },
-
-  searchOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 250,
-    elevation: 30,
-  },
-  searchDismissLayer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  searchDropdownOverlay: {
-    position: 'absolute',
-    left: 12,
-    right: 12,
-    zIndex: 260,
-    elevation: 32,
   },
 
   moduleLaunchOverlay: {

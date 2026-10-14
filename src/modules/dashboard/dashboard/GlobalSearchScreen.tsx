@@ -186,6 +186,7 @@ function GlobalSearchScreen() {
         userName={headerUserName}
         userImageUri={headerUserImage ?? undefined}
         companyLogoUri={headerCompanyLogo ?? undefined}
+        showSearch
         onSearchSubmit={(q) => setSearch(q)}
       />
 

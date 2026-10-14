@@ -1,8 +1,16 @@
-import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAppTheme } from '../../../theme/ThemeContext';
+import React, { memo, useEffect, useRef } from "react";
+import {
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useChatColors } from "./chatUiTokens";
+import { CHAT_UI } from "./chatUiTokens";
 
 type Props = {
   visible: boolean;
@@ -12,69 +20,157 @@ type Props = {
   onPoll: () => void;
 };
 
-const options = [
+const choices = [
   {
-    key: 'image',
-    title: 'Photos',
-    subtitle: 'Choose from your gallery',
-    icon: 'image-multiple-outline',
-    color: '#7C3AED',
+    key: "image",
+    title: "Photos",
+    subtitle: "Share moments from your gallery",
+    icon: "image-multiple-outline",
+    accent: "#7C3AED",
   },
   {
-    key: 'document',
-    title: 'Document',
-    subtitle: 'Share PDF, Word or other files',
-    icon: 'file-document-outline',
-    color: '#2563EB',
+    key: "document",
+    title: "Documents",
+    subtitle: "PDFs, reports and other files",
+    icon: "file-document-outline",
+    accent: "#2563EB",
   },
   {
-    key: 'poll',
-    title: 'Poll',
-    subtitle: 'Ask a question and collect votes',
-    icon: 'poll',
-    color: '#059669',
+    key: "poll",
+    title: "Poll",
+    subtitle: "Ask everyone a question",
+    icon: "poll",
+    accent: "#059669",
   },
 ] as const;
 
-export default function ChatAttachmentSheet({ visible, onClose, onImage, onDocument, onPoll }: Props) {
-  const { theme } = useAppTheme();
+function ChatAttachmentSheet({
+  visible,
+  onClose,
+  onImage,
+  onDocument,
+  onPoll,
+}: Props) {
+  const theme = useChatColors();
   const insets = useSafeAreaInsets();
   const actions = { image: onImage, document: onDocument, poll: onPoll };
+  const pending = useRef<(() => void) | null>(null);
+  const finish = () => {
+    const action = pending.current;
+    pending.current = null;
+    action?.();
+  };
+  useEffect(() => {
+    if (visible || Platform.OS === "ios" || !pending.current) return;
+    const timer = setTimeout(finish, 350);
+    return () => clearTimeout(timer);
+  }, [visible]);
+  const choose = (key: keyof typeof actions) => {
+    if (pending.current) return;
+    pending.current = actions[key];
+    onClose();
+  };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" statusBarTranslucent onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Close share options" onPress={onClose} style={StyleSheet.absoluteFill} />
-        <View style={[styles.sheet, { backgroundColor: theme.card, paddingBottom: Math.max(insets.bottom, 16) }]}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      statusBarTranslucent
+      onRequestClose={onClose}
+      onDismiss={finish}
+    >
+      <View style={styles.backdrop}>
+        <Pressable
+          accessibilityLabel="Dismiss attachments"
+          accessibilityRole="button"
+          onPress={onClose}
+          style={StyleSheet.absoluteFill}
+        />
+        <View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: theme.card,
+              paddingBottom: Math.max(insets.bottom, 16) + 8,
+            },
+          ]}
+        >
           <View style={[styles.handle, { backgroundColor: theme.border }]} />
-          <View style={styles.headingRow}>
-            <View>
-              <Text style={[styles.title, { color: theme.text }]}>Share in chat</Text>
-              <Text style={[styles.subtitle, { color: theme.secondaryText }]}>Choose what you want to send</Text>
+          <View style={styles.header}>
+            <View style={styles.headerCopy}>
+              <Text style={[styles.eyebrow, { color: theme.primary }]}>
+                ATTACHMENT
+              </Text>
+              <Text style={[styles.title, { color: theme.text }]}>
+                Share in chat
+              </Text>
+              <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
+                Choose what you'd like to send
+              </Text>
             </View>
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} style={[styles.closeButton, { backgroundColor: theme.background }]}>
-              <MaterialCommunityIcons name="close" size={21} color={theme.secondaryText} />
-            </TouchableOpacity>
+            <Pressable
+              onPress={onClose}
+              accessibilityLabel="Close attachments"
+              accessibilityRole="button"
+              hitSlop={6}
+              style={[styles.close, { backgroundColor: theme.background }]}
+            >
+              <MaterialCommunityIcons
+                name="close"
+                color={theme.secondaryText}
+                size={21}
+              />
+            </Pressable>
           </View>
-
-          <View style={styles.options}>
-            {options.map(option => (
-              <TouchableOpacity
-                key={option.key}
+          <View style={styles.list}>
+            {choices.map((choice) => (
+              <Pressable
+                key={choice.key}
+                onPress={() => choose(choice.key)}
                 accessibilityRole="button"
-                accessibilityLabel={`Share ${option.title}`}
-                activeOpacity={0.72}
-                onPress={actions[option.key]}
-                style={[styles.option, { borderColor: theme.border, backgroundColor: theme.background }]}
+                accessibilityLabel={`Attach ${choice.title}`}
+                style={({ pressed }) => [
+                  styles.option,
+                  {
+                    borderColor: theme.border,
+                    backgroundColor: theme.background,
+                    opacity: pressed ? 0.75 : 1,
+                  },
+                ]}
               >
-                <View style={[styles.iconCircle, { backgroundColor: `${option.color}18` }]}>
-                  <MaterialCommunityIcons name={option.icon} size={27} color={option.color} />
+                <View
+                  style={[
+                    styles.iconTile,
+                    { backgroundColor: `${choice.accent}16` },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={choice.icon}
+                    size={25}
+                    color={choice.accent}
+                  />
                 </View>
-                <View style={styles.optionText}>
-                  <Text style={[styles.optionTitle, { color: theme.text }]}>{option.title}</Text>
-                  <Text style={[styles.optionSubtitle, { color: theme.secondaryText }]} numberOfLines={1}>{option.subtitle}</Text>
+                <View style={styles.optionCopy}>
+                  <Text style={[styles.optionTitle, { color: theme.text }]}>
+                    {choice.title}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.optionSubtitle,
+                      { color: theme.secondaryText },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {choice.subtitle}
+                  </Text>
                 </View>
-              </TouchableOpacity>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={22}
+                  color={theme.secondaryText}
+                />
+              </Pressable>
             ))}
           </View>
         </View>
@@ -84,31 +180,64 @@ export default function ChatAttachmentSheet({ visible, onClose, onImage, onDocum
 }
 
 const styles = StyleSheet.create({
-  overlay: {
+  backdrop: {
     flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(15, 23, 42, 0.48)',
+    backgroundColor: CHAT_UI.overlay,
+    justifyContent: "flex-end",
   },
   sheet: {
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
+    borderTopLeftRadius: CHAT_UI.radius.sheet,
+    borderTopRightRadius: CHAT_UI.radius.sheet,
     paddingHorizontal: 20,
     paddingTop: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -5 },
-    shadowOpacity: 0.16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.13,
     shadowRadius: 18,
-    elevation: 18,
   },
-  handle: { alignSelf: 'center', width: 42, height: 5, borderRadius: 3, marginBottom: 18 },
-  headingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
-  title: { fontSize: 21, fontWeight: '800' },
-  subtitle: { marginTop: 4, fontSize: 12 },
-  closeButton: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
-  options: { gap: 10 },
-  option: { minHeight: 72, flexDirection: 'row', alignItems: 'center', borderWidth: StyleSheet.hairlineWidth, borderRadius: 17, paddingHorizontal: 13, paddingVertical: 10 },
-  iconCircle: { width: 50, height: 50, borderRadius: 25, alignItems: 'center', justifyContent: 'center' },
-  optionText: { flex: 1, marginLeft: 13 },
-  optionTitle: { fontSize: 15, fontWeight: '800' },
-  optionSubtitle: { marginTop: 4, fontSize: 11 },
+  handle: {
+    height: 5,
+    width: 40,
+    borderRadius: 3,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
+  headerCopy: { flex: 1 },
+  eyebrow: {
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.4,
+    marginBottom: 4,
+  },
+  title: { fontSize: 22, fontWeight: "800", letterSpacing: -0.5 },
+  subtitle: { fontSize: 12, marginTop: 4 },
+  close: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  list: { gap: 10 },
+  option: {
+    minHeight: 76,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderRadius: 18,
+    padding: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  iconTile: {
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  optionCopy: { flex: 1, marginHorizontal: 12 },
+  optionTitle: { fontSize: 15, fontWeight: "700" },
+  optionSubtitle: { fontSize: 12, marginTop: 3 },
 });
+
+export default memo(ChatAttachmentSheet);

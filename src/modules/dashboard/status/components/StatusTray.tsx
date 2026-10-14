@@ -352,7 +352,7 @@ export default function StatusTray({
         {error && (
           <Pressable onPress={onRetry} style={tray.retry} accessibilityRole="button" accessibilityLabel="Couldn't load updates. Retry">
             <View style={[tray.retryCircle, isDark && tray.retryCircleDark]}>
-              <MaterialCommunityIcons name="refresh" size={rs(22)} color={BRAND.violet} />
+              <MaterialCommunityIcons name="refresh" size={rs(20)} color={BRAND.violet} />
             </View>
             <Text style={[tray.retryText, labelColor ? { color: labelColor } : isDark && tray.textDark]} numberOfLines={1}>Retry</Text>
           </Pressable>
@@ -417,9 +417,12 @@ export default function StatusTray({
 // Carousel items
 // ─────────────────────────────────────────────────────────────────────────────
 
-const RING = rs(58);
-const RING_WIDTH = rs(2.25);
+// Compact Instagram-style row: 50dp ring, 2dp stroke, 2dp gap, 42dp avatar.
+const RING = rs(50);
+const RING_WIDTH = rs(2);
 const RING_GAP = rs(2);
+const ITEM_WIDTH = rs(68);
+const ADD_BADGE = rs(18);
 
 const StoryItem = React.memo(function StoryItem({
   imageUri, label, ring, showAdd, isDark, labelColor, onPress, onAdd, accessibilityLabel,
@@ -473,7 +476,7 @@ const StoryItem = React.memo(function StoryItem({
           accessibilityLabel="Create a new status"
           style={[tray.addBadge, { borderColor: surface }]}
         >
-          <MaterialCommunityIcons name="plus" size={rs(13)} color="#FFFFFF" />
+          <MaterialCommunityIcons name="plus" size={rs(12)} color="#FFFFFF" />
         </Pressable>
       )}
     </View>
@@ -1862,8 +1865,8 @@ const tray = StyleSheet.create({
   textDark: { color: "#F4F4F5" },
   addButton: { flexDirection: "row", alignItems: "center", gap: rs(3), minHeight: rs(32) },
   addText: { color: BRAND.violet, fontSize: rs(14), fontWeight: "600" },
-  row: { paddingHorizontal: rs(12), paddingVertical: rs(2), gap: rs(8) },
-  item: { width: rs(66), alignItems: "center" },
+  row: { paddingHorizontal: rs(10), gap: rs(4) },
+  item: { width: ITEM_WIDTH, alignItems: "center" },
   itemPress: { alignItems: "center" },
   ring: { width: RING, height: RING, borderRadius: RING / 2, overflow: "hidden", alignItems: "center", justifyContent: "center" },
   emptyRing: { borderWidth: 1.5, borderColor: "#DDD5EE", borderStyle: "dashed" },
@@ -1877,11 +1880,11 @@ const tray = StyleSheet.create({
   },
   addBadge: {
     position: "absolute",
-    top: RING - rs(20),
-    left: rs(66) / 2 + RING / 2 - rs(20),
-    width: rs(22),
-    height: rs(22),
-    borderRadius: rs(11),
+    top: RING - ADD_BADGE + rs(1),
+    left: ITEM_WIDTH / 2 + RING / 2 - ADD_BADGE + rs(1),
+    width: ADD_BADGE,
+    height: ADD_BADGE,
+    borderRadius: ADD_BADGE / 2,
     borderWidth: rs(2),
     backgroundColor: BRAND.violet,
     alignItems: "center",
@@ -1889,7 +1892,7 @@ const tray = StyleSheet.create({
   },
   label: {
     marginTop: rs(5),
-    maxWidth: rs(64),
+    maxWidth: ITEM_WIDTH,
     color: "#27272A",
     fontSize: rs(11),
     lineHeight: rs(14),
@@ -1898,8 +1901,8 @@ const tray = StyleSheet.create({
   },
   labelDark: { color: "#E4E4E7" },
   skeletonCircle: { width: RING, height: RING, borderRadius: RING / 2 },
-  skeletonLabel: { width: rs(40), height: rs(8), borderRadius: rs(4), marginTop: rs(8) },
-  retry: { width: rs(66), alignItems: "center" },
+  skeletonLabel: { width: rs(36), height: rs(8), borderRadius: rs(4), marginTop: rs(8) },
+  retry: { width: ITEM_WIDTH, alignItems: "center" },
   retryCircle: { width: RING, height: RING, borderRadius: RING / 2, backgroundColor: "#F1EAFE", alignItems: "center", justifyContent: "center" },
   retryCircleDark: { backgroundColor: "#2A1A4A" },
   retryText: { marginTop: rs(5), color: "#27272A", fontSize: rs(11), lineHeight: rs(14), fontWeight: "500" },

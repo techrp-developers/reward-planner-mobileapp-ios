@@ -21,6 +21,7 @@ import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import { rs } from '../../../utils/responsive';
 
 const ANDROID_STATUS_BAR = StatusBar.currentHeight ?? 24;
+const HEADER_ROW_HEIGHT  = rs(58);
 const IOS_FALLBACK_TOP   = 50;
 
 export type SearchOverlayState = {
@@ -48,6 +49,9 @@ interface HeaderProps {
   // (e.g. the default no-CMS-content fallback background).
   textColor?:             string;
   dismissSignal?:         number;
+  // Shows the expandable search button. Off on the dashboard (search lives in
+  // the bottom tab); GlobalSearchScreen turns it on as its search input.
+  showSearch?:            boolean;
   onNotificationPress?:   () => void;
   onProfilePress?:        () => void;
   onAIToggle?:            (value: boolean) => void;
@@ -71,6 +75,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   surface = 'solid',
   textColor,
   dismissSignal = 0,
+  showSearch = false,
   onNotificationPress,
   onProfilePress,
   onSearchSubmit,
@@ -128,7 +133,13 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     // on the pill's light gray background) whenever a CMS text_color is set.
     searchTextColor:  isDark ? '#F8FAFC' : '#0F172A',
     placeholderColor: isDark ? '#94A3B8' : '#64748B',
+    buttonBorder:     isDark ? 'rgba(255,255,255,0.08)' : 'rgba(148,163,184,0.18)',
   }), [isDark, surface, textColor]);
+
+  // Narrow iPhones (SE, mini) tighten the gaps first so the logo keeps its size.
+  const compactRow = screenWidth < 375;
+  const rowGap = compactRow ? rs(8) : rs(10);
+  const logoWidth = compactRow ? rs(64) : rs(72);
 
   // ── Layout measurement — drives dropdown top position ─────────────────────
 
@@ -169,6 +180,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   }, [searchActive, searchExpansion, reset, onSearchActiveChange]);
 
   useEffect(() => {
+    if (!showSearch) return;
     onSearchDropdownChange?.(showDropdown);
     onSearchOverlayChange?.({
       visible: showDropdown && headerHeight > 0,
@@ -189,6 +201,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     results,
     searchQuery,
     showDropdown,
+    showSearch,
   ]);
 
   useEffect(() => {
@@ -216,9 +229,10 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     inputRange: [0, 1],
     outputRange: [rs(42), Math.max(rs(180), screenWidth - rs(88))],
   });
+  // Must match styles.topRow's height so the collapse animation is exact.
   const headerRowHeight = headerCollapse.interpolate({
     inputRange: [0, 1],
-    outputRange: [rs(60), 0],
+    outputRange: [HEADER_ROW_HEIGHT, 0],
   });
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -229,32 +243,34 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     <View style={styles.wrapper}>
 
       <View
-        style={[styles.headerSurface, { backgroundColor: tk.headerBg, paddingTop: safeTop + 10, paddingBottom: statusContent ? rs(4) : rs(10) }]}
+        style={[styles.headerSurface, { backgroundColor: tk.headerBg, paddingTop: safeTop + rs(4), paddingBottom: statusContent ? rs(12) : rs(8) }]}
         onLayout={handleHeaderLayout}
       >
         <Animated.View style={[styles.collapsibleRow, { height: headerRowHeight, opacity: headerCollapse.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]} pointerEvents={collapsed ? 'none' : 'auto'}>
           {!searchActive ? (
-          <View style={styles.topRow}>
+          <View style={[styles.topRow, { gap: rowGap }]}>
             <View style={styles.greetWrap}>
-              <Text style={[styles.nameText, { color: tk.nameColor }]} numberOfLines={1}>Hi, {firstName}</Text>
+              <Text style={[styles.nameText, { color: tk.nameColor }]} numberOfLines={1} ellipsizeMode="tail">Hi, {firstName}</Text>
             </View>
             {normalizedCompanyLogoUri && !companyLogoFailed ? (
-              <View style={styles.logoPill}>
-                <Image source={{ uri: normalizedCompanyLogoUri }} style={styles.logoImage} resizeMode="contain" onError={() => setCompanyLogoFailed(true)} />
+              <View style={[styles.logoPill, { width: logoWidth }]}>
+                <Image source={{ uri: normalizedCompanyLogoUri }} style={styles.logoImage} resizeMode="contain" onError={() => setCompanyLogoFailed(true)} accessibilityLabel="Company logo" />
               </View>
             ) : (
-              <View style={styles.logoPill}><MaterialCommunityIcons name="domain" size={rs(23)} color="#6A00FF" /></View>
+              <View style={[styles.logoPill, { width: logoWidth }]}><MaterialCommunityIcons name="domain" size={rs(24)} color="#6A00FF" /></View>
             )}
             {onProfilePress && (
-              <TouchableOpacity onPress={onProfilePress} style={[styles.actionButton, { backgroundColor: tk.searchBg }]} accessibilityRole="button" accessibilityLabel="Open profile" activeOpacity={0.75}>
-                <MaterialCommunityIcons name="account-circle-outline" size={rs(24)} color={tk.searchTextColor} />
+              <TouchableOpacity onPress={onProfilePress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Open profile" activeOpacity={0.75}>
+                <MaterialCommunityIcons name="account-circle-outline" size={rs(23)} color={tk.searchTextColor} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={openSearch} style={[styles.actionButton, { backgroundColor: tk.searchBg }]} accessibilityLabel="Search" activeOpacity={0.75}>
-              <MaterialCommunityIcons name="magnify" size={rs(21)} color={tk.searchTextColor} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onNotificationPress} style={[styles.actionButton, { backgroundColor: tk.searchBg }]} accessibilityLabel="Notifications" activeOpacity={0.75}>
-              <MaterialCommunityIcons name="bell-outline" size={rs(21)} color={tk.searchTextColor} />
+            {showSearch && (
+              <TouchableOpacity onPress={openSearch} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Search" activeOpacity={0.75}>
+                <MaterialCommunityIcons name="magnify" size={rs(22)} color={tk.searchTextColor} />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={onNotificationPress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Notifications" activeOpacity={0.75}>
+              <MaterialCommunityIcons name="bell-outline" size={rs(23)} color={tk.searchTextColor} />
             </TouchableOpacity>
           </View>
           ) : (
@@ -299,39 +315,48 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: rs(8),
-    minHeight: rs(44),
+    gap: rs(10),
+    height: HEADER_ROW_HEIGHT,
   },
   greetWrap: {
     flex: 1,
     minWidth: 0,
+    justifyContent: 'center',
   },
   nameText: {
-    fontSize: rs(15),
+    fontSize: rs(20),
     fontWeight: '800',
-    lineHeight: rs(20),
-    letterSpacing: 0,
+    lineHeight: rs(26),
+    letterSpacing: -0.5,
   },
   actionButton: {
-    width: rs(40),
-    height: rs(40),
-    borderRadius: rs(20),
+    width: rs(42),
+    height: rs(42),
+    borderRadius: rs(21),
+    borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
+  // Company logo: wide 72×48 pill so landscape wordmarks (e.g. MPS Global)
+  // render large; the width is set per screen size in render.
   logoPill: {
-    width: rs(44),
-    height: rs(44),
-    borderRadius: rs(12),
+    width: rs(72),
+    height: rs(48),
+    borderRadius: rs(14),
     backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(106, 0, 255, 0.10)',
+    paddingHorizontal: rs(5),
+    paddingVertical: rs(3),
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
     flexShrink: 0,
   },
   logoImage: {
-    width: rs(38),
-    height: rs(38),
+    width: '100%',
+    height: '100%',
   },
   expandedSearchRow: {
     flexDirection: 'row',
