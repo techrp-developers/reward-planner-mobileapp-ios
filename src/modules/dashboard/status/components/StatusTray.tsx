@@ -5,6 +5,7 @@ import {
   Animated,
   AppState,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Linking,
   Modal,
@@ -30,7 +31,7 @@ import type {
   StatusVisibility,
   UserStatus,
 } from "../types";
-import { createStatus, deleteStatus, fetchStatusViewers } from "../api/statusApi";
+import { addStatusComment, createStatus, deleteStatus, fetchStatusViewers } from "../api/statusApi";
 
 type Props = {
   groups: StatusFeedGroup[];
@@ -112,6 +113,10 @@ export default function StatusTray({
     React.useState<StatusVisibility | null>(null);
   const [posting, setPosting] = React.useState(false);
   const [paused, setPaused] = React.useState(false);
+  const [commentText, setCommentText] = React.useState('');
+  const [replyFocused, setReplyFocused] = React.useState(false);
+  const [commentSubmitting, setCommentSubmitting] = React.useState(false);
+  const replyInFlight = React.useRef(false);
   const [deleting, setDeleting] = React.useState(false);
   const [loadingViewers, setLoadingViewers] = React.useState(false);
   const [viewers, setViewers] = React.useState<StatusViewer[] | null>(null);
@@ -136,9 +141,41 @@ export default function StatusTray({
   const ownActive = active?.user.id === currentUserId;
 
   React.useEffect(() => {
+    setCommentText('');
+    setReplyFocused(false);
+    Keyboard.dismiss();
+  }, [activeId]);
+
+  React.useEffect(() => {
     setViewers(null);
     setViewCount(Number(active?.view_count ?? 0));
   }, [activeId, active?.view_count]);
+
+  const submitComment = async () => {
+    const text = commentText.trim();
+    if (!active || ownActive || !text || replyInFlight.current) return;
+    const statusId = active.id;
+    replyInFlight.current = true;
+    setCommentSubmitting(true);
+    try {
+      await addStatusComment(statusId, text);
+      if (activeIdRef.current !== statusId) return;
+      setCommentText('');
+      Keyboard.dismiss();
+      setReplyFocused(false);
+      setPaused(true);
+      Alert.alert('Reply sent', undefined, [{ text: 'OK', onPress: () => {
+        if (activeIdRef.current === statusId) setPaused(false);
+      } }], { cancelable: false });
+    } catch (error: any) {
+      if (activeIdRef.current === statusId) {
+        Alert.alert('Could not send reply', error?.response?.data?.message || error?.message || 'Please try again.');
+      }
+    } finally {
+      replyInFlight.current = false;
+      setCommentSubmitting(false);
+    }
+  };
 
   const showViewers = async () => {
     if (!active || loadingViewers) return;
@@ -193,7 +230,7 @@ export default function StatusTray({
 
   const move = React.useCallback(
     (direction: 1 | -1) => {
-      if (!selected) return;
+      if (!selected || replyInFlight.current) return;
       let group = selected.group;
       let status = selected.status + direction;
       if (status >= ordered[group].statuses.length) {
@@ -228,7 +265,7 @@ export default function StatusTray({
 
   React.useEffect(() => {
     currentAnimation.current?.stop();
-    if (!activeId || paused || deleting || viewers) return;
+    if (!activeId || paused || deleting || viewers || replyFocused || commentText.trim() || commentSubmitting) return;
     const seconds = activeDuration && activeDuration > 0
       ? activeDuration
       : activeType === 'video' ? 15 : 5;
@@ -242,7 +279,7 @@ export default function StatusTray({
       if (finished) moveRef.current(1);
     });
     return () => animation.stop();
-  }, [activeId, activeDuration, activeType, paused, deleting, viewers, progress]);
+  }, [activeId, activeDuration, activeType, paused, deleting, viewers, replyFocused, commentText, commentSubmitting, progress]);
 
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
@@ -613,6 +650,39 @@ export default function StatusTray({
                 />
               ))}
             </View>
+            {!ownActive && (
+              <KeyboardAvoidingView
+                pointerEvents="box-none"
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.replyOverlay}
+              >
+                <View style={[styles.replyBox, { marginBottom: insets.bottom + rs(12) }]}>
+                  <TextInput
+                    accessibilityLabel="Status reply"
+                    value={commentText}
+                    onChangeText={setCommentText}
+                    placeholder="Reply..."
+                    placeholderTextColor="rgba(255,255,255,.65)"
+                    maxLength={1000}
+                    editable={!commentSubmitting}
+                    returnKeyType="send"
+                    onFocus={() => setReplyFocused(true)}
+                    onBlur={() => setReplyFocused(false)}
+                    onSubmitEditing={submitComment}
+                    style={styles.replyInput}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Send status reply"
+                    onPress={submitComment}
+                    disabled={!commentText.trim() || commentSubmitting}
+                    style={[styles.replySend, (!commentText.trim() || commentSubmitting) && styles.replySendDisabled]}
+                  >
+                    {commentSubmitting ? <ActivityIndicator size="small" color="#FFF" /> : <MaterialCommunityIcons name="send" color="#FFF" size={18} />}
+                  </Pressable>
+                </View>
+              </KeyboardAvoidingView>
+            )}
             {viewers && ownActive && (
               <View style={[styles.viewersSheet, { paddingBottom: insets.bottom + rs(16) }]}>
                 <View style={styles.viewersHeading}>
@@ -948,6 +1018,11 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   tapHalf: { flex: 1 },
+  replyOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'flex-end', zIndex: 4 },
+  replyBox: { marginHorizontal: rs(16), flexDirection: 'row', alignItems: 'center', borderRadius: rs(24), borderWidth: 1, borderColor: 'rgba(255,255,255,.5)', backgroundColor: 'rgba(0,0,0,.65)', paddingHorizontal: rs(8) },
+  replyInput: { flex: 1, minHeight: rs(48), paddingHorizontal: rs(12), color: '#FFFFFF', fontSize: rs(15) },
+  replySend: { width: rs(44), height: rs(44), alignItems: 'center', justifyContent: 'center' },
+  replySendDisabled: { opacity: 0.4 },
   video: { alignItems: "center", gap: rs(10), zIndex: 3 },
   videoText: { color: "#FFFFFF", fontSize: rs(17) },
   videoLink: { color: "#FFC83D", fontSize: rs(15) },

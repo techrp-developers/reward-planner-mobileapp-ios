@@ -87,6 +87,21 @@ export const sanitizeStatusDebugData = (value: unknown): unknown => {
   return value;
 };
 
+// React Native stores the underlying connection error on its XHR object.
+// Axios's generic "Network Error" otherwise hides that diagnostic.
+export const statusNetworkDiagnostics = (error: AxiosError) => {
+  const request = error.request as {
+    _hasError?: boolean; _timedOut?: boolean; _response?: unknown;
+  } | undefined;
+  const nativeError = !error.response && request?._hasError && typeof request._response === 'string'
+    ? request._response
+        .replace(/Bearer\s+[^\s"']+/gi, 'Bearer [REDACTED]')
+        .replace(/https?:\/\/[^\s"']+/gi, '[URL]')
+        .slice(0, 500)
+    : undefined;
+  return { code: error.code, timedOut: Boolean(request?._timedOut), nativeError };
+};
+
 export async function fetchMyStatuses(): Promise<UserStatus[]> {
   const response = await api.get<MineResponse>(statusUrl('/mine'), {
     headers: await statusAuthHeaders(),
@@ -132,6 +147,7 @@ export async function fetchStatusFeed(userIds?: number[]): Promise<StatusFeedGro
       console.error('📊 HTTP Status:', requestError.response?.status);
       console.error('📦 Error Response:', sanitizeStatusDebugData(requestError.response?.data));
       console.error('💬 Error Message:', requestError.message);
+      console.error('[STATUS API] Network diagnostics:', statusNetworkDiagnostics(requestError));
     }
     throw error;
   }
@@ -192,6 +208,7 @@ export async function markStatusViewed(statusId: number): Promise<StatusViewResu
       console.error('📊 HTTP Status:', requestError.response?.status);
       console.error('📦 Error Response:', sanitizeStatusDebugData(requestError.response?.data));
       console.error('💬 Error Message:', requestError.message);
+      console.error('[STATUS API] Network diagnostics:', statusNetworkDiagnostics(requestError));
     }
     throw error;
   }
@@ -218,4 +235,17 @@ export async function fetchStatusViewers(statusId: number): Promise<StatusViewer
   }
   const viewers = response.data.data;
   return { viewers, viewCount: Number(response.data.view_count ?? viewers.length) };
+}
+
+export async function addStatusComment(statusId: number, text: string): Promise<void> {
+  const trimmed = text.trim();
+  if (!trimmed) throw new Error('Write a reply before sending.');
+  const response = await api.post<{ success: boolean; message?: string }>(
+    statusUrl(`/${statusId}/comments`),
+    { text: trimmed },
+    { headers: await statusAuthHeaders() },
+  );
+  if (!response.data?.success) {
+    throw new Error(response.data?.message || 'Could not send reply.');
+  }
 }

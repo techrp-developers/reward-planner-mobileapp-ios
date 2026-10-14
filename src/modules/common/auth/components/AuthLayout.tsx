@@ -6,8 +6,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import Logo from "../../../../assets/menu/logo.png";
+import logoword from "../../../../assets/homepage/Reward Planners word Logo.png";
 import { useAppTheme } from "../../../../theme/ThemeContext";
-import BenefitsShowcase from "./BenefitsShowcase";
 import { AuthEntrance, AuthPressable, useAuthReducedMotion } from "./AuthMotion";
 
 function AmbientOrbs() {
@@ -37,6 +37,7 @@ export function AuthLayout({ children, onBack, welcome = false }: {
   const reducedMotion = useAuthReducedMotion();
   const animateWelcome = welcome && fontScale <= 1.3;
   const logoSize = welcome ? (height < 740 ? 76 : 96) : Math.min(width * 0.32, 156);
+  const wordmarkWidth = Math.min(width - 80, 180);
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: isDark ? "#100E18" : "#F6F1FC" }]}>
       {welcome && <AmbientOrbs />}
@@ -56,19 +57,14 @@ export function AuthLayout({ children, onBack, welcome = false }: {
               </View>
             </AuthEntrance>
             <AuthEntrance enabled={animateWelcome} reducedMotion={reducedMotion} delay={70}>
-              <Text maxFontSizeMultiplier={1.6} style={styles.title}>
-                <Text style={{ color: isDark ? "#C79CE2" : "#852BAF" }}>Reward </Text>
-                <Text style={{ color: isDark ? "#FC8BAD" : "#FC3F78" }}>Planners</Text>
-              </Text>
+              <Image source={logoword} style={[styles.wordmark, { width: wordmarkWidth, height: wordmarkWidth * 618 / 2191 }]}
+                resizeMode="contain" accessibilityLabel="Reward Planners" />
             </AuthEntrance>
             <AuthEntrance enabled={animateWelcome} reducedMotion={reducedMotion} delay={140}>
               <Text style={[styles.tagline, { color: theme.secondaryText }]}>{welcome ? "Because You Matter" : "Employee Benefits Platform"}</Text>
             </AuthEntrance>
           </View>
-          {welcome && <AuthEntrance enabled={animateWelcome} reducedMotion={reducedMotion} delay={210}>
-            <View style={styles.showcaseWrap}><BenefitsShowcase /></View>
-          </AuthEntrance>}
-          <AuthEntrance enabled={animateWelcome} reducedMotion={reducedMotion} delay={280}>
+          <AuthEntrance enabled={animateWelcome} reducedMotion={reducedMotion} delay={210}>
             <View style={[styles.card, welcome && styles.welcomeCard, { backgroundColor: theme.background, borderColor: theme.border }]}>
               {children}
             </View>
@@ -93,11 +89,14 @@ export function AuthButton({ title, onPress, busy = false, disabled = false, ani
     <Button onPress={onPress} disabled={isDisabled} activeOpacity={0.85}
       accessibilityRole="button" accessibilityLabel={title}
       accessibilityState={{ disabled: isDisabled, busy }} style={{ opacity: disabled ? 0.5 : 1 }}>
-      <LinearGradient colors={animatePress ? ["#852BAF", "#B73169"] : ["#A654CD", "#DA609E"]}
-        start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.button}>
+      {/* LinearGradient 2.8.x is a legacy (interop) view on Fabric; giving it
+          children crashes on unmount ("Attempt to recycle a mounted view"). */}
+      <View style={styles.button}>
+        <LinearGradient colors={animatePress ? ["#852BAF", "#B73169"] : ["#A654CD", "#DA609E"]}
+          start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
         {busy && <ActivityIndicator color="#FFFFFF" />}
         <Text style={styles.buttonText}>{title}</Text>
-      </LinearGradient>
+      </View>
     </Button>
   );
 }
@@ -118,14 +117,13 @@ const styles = StyleSheet.create({
   back: { alignSelf: "flex-start", minHeight: 48, minWidth: 48, justifyContent: "center", paddingHorizontal: 4 },
   brand: { alignItems: "center", marginBottom: 32 },
   welcomeBrand: { marginBottom: 14 },
-  logoGlow: { marginBottom: 12, shadowColor: "#A654CD", shadowOffset: { width: 0, height: 0 }, shadowRadius: 22 },
-  title: { fontFamily: "Montserrat-SemiBold", fontWeight: "600", fontSize: 24, textAlign: "center" },
+  logoGlow: { shadowColor: "#A654CD", shadowOffset: { width: 0, height: 0 }, shadowRadius: 22 },
+  wordmark: { alignSelf: "center" },
   tagline: { fontSize: 13, lineHeight: 20, letterSpacing: 1.1, marginTop: 7, textAlign: "center" },
-  showcaseWrap: { marginBottom: 16 },
   card: { borderRadius: 28, borderWidth: 1, padding: 24 },
   welcomeCard: { padding: 20, borderRadius: 26 },
   footer: { fontSize: 12, textAlign: "center", marginTop: 28 },
-  button: { minHeight: 54, borderRadius: 15, flexDirection: "row", gap: 10, alignItems: "center", justifyContent: "center" },
+  button: { minHeight: 54, borderRadius: 15, overflow: "hidden", flexDirection: "row", gap: 10, alignItems: "center", justifyContent: "center" },
   buttonText: { flexShrink: 1, color: "#FFFFFF", fontSize: 16, fontWeight: "700", textAlign: "center", paddingHorizontal: 16, paddingVertical: 14 },
   orb: { position: "absolute", width: 360, height: 360 },
   orbTop: { top: -130, left: -120 },

@@ -28,6 +28,9 @@ export type UserStatus = {
   visibility?: StatusVisibility;
   viewed?: boolean;
   view_count?: number;
+  liked?: boolean;
+  like_count?: number;
+  comment_count?: number;
   created_at: string;
   expires_at: string;
 };
@@ -49,4 +52,18 @@ export type StatusMediaInput = {
   uri: string;
   type: string;
   fileName: string;
+};
+
+export type StatusComment = {
+  id: number;
+  status_id?: number;
+  user: StatusUser;
+  text: string;
+  created_at: string;
+};
+
+export type StatusLike = {
+  user: StatusUser;
+  status_id?: number;
+  created_at?: string;
 };

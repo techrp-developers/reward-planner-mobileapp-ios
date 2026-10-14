@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AccessibilityInfo, TouchableOpacity, type TouchableOpacityProps } from "react-native";
+import { AccessibilityInfo, TouchableOpacity, View, type TouchableOpacityProps } from "react-native";
 import Animated, {
   cancelAnimation, Easing, ReduceMotion, useAnimatedStyle, useReducedMotion,
   useSharedValue, withDelay, withTiming,
@@ -21,12 +21,20 @@ export function useAuthReducedMotion() {
   return reducedMotion;
 }
 
-export function AuthEntrance({ children, delay, enabled, reducedMotion }: {
+type AuthEntranceProps = {
   children: React.ReactNode;
   delay: number;
   enabled: boolean;
   reducedMotion: boolean;
-}) {
+};
+
+export function AuthEntrance(props: AuthEntranceProps) {
+  // Login and OTP never animate. Keep their native tree free of animated
+  // wrappers when the auth stack is removed after successful verification.
+  return props.enabled ? <AnimatedAuthEntrance {...props} /> : <View>{props.children}</View>;
+}
+
+function AnimatedAuthEntrance({ children, delay, enabled, reducedMotion }: AuthEntranceProps) {
   const progress = useSharedValue(enabled && !reducedMotion ? 0 : 1);
   useEffect(() => {
     if (!enabled || reducedMotion) {

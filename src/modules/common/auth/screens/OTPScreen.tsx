@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { BackHandler, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { BackHandler, Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import type { AuthStackParamList } from "../navigation/types";
@@ -58,6 +58,8 @@ export default function OTPScreen({ route, navigation }: Props) {
     setError("");
     setNotice("");
     try {
+      inputs.current.forEach(input => input?.blur());
+      Keyboard.dismiss();
       await verifyLoginOtp(identifier, code);
       verified.current = true;
     } catch (failure) {
@@ -140,11 +142,11 @@ export default function OTPScreen({ route, navigation }: Props) {
           accessibilityLabel={`Code digit ${index + 1} of ${OTP_LENGTH}`}
           value={digit} keyboardType="number-pad" inputMode="numeric"
           // Allow a full pasted code in any field; updateOtpDigits distributes it.
-          selectTextOnFocus selection={{ start: 0, end: digit.length }}
+          selectTextOnFocus
           textContentType={Platform.OS === "ios" ? "oneTimeCode" : "none"}
           autoComplete={Platform.OS === "ios" ? "one-time-code" : "off"}
           importantForAutofill={Platform.OS === "android" ? "no" : "auto"}
-          autoCorrect={false} editable={!busy}
+          autoCorrect={false}
           onFocus={() => setFocusedIndex(index)}
           onChangeText={text => onDigitChange(text, index)}
           onKeyPress={({ nativeEvent }) => {

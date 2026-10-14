@@ -22,11 +22,8 @@ import { StepTrackerProvider } from "../modules/step_counter/context/StepTracker
 import MainLayout from "./MainLayout";
 import SplashScreen from "../modules/common/auth/screens/SplashScreen";
 import TermsGateScreen from "../modules/common/auth/screens/TermsGateScreen";
-import WelcomeScreen from "../modules/common/auth/screens/WelcomeScreen";
 import LoginScreen from "../modules/common/auth/screens/LoginScreen";
-import LocationAccessScreen from "../modules/common/auth/screens/LocationAccessScreen";
 import OTPScreen from "../modules/common/auth/screens/OTPScreen";
-import OnboardingScreen from "../modules/common/auth/screens/OnboardingScreen";
 import type { HomeStackParamList } from "../modules/ecommerce/navigation/types";
 import type { AuthStackParamList } from "../modules/common/auth/navigation/types";
 import Dashbord from "../modules/dashboard/dashboard/dashbord";
@@ -372,37 +369,23 @@ export default function RootNavigator() {
   const showRewardModal =
     !showSplash && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
 
-  const navigator = showSplash ? (
-    <RootStack.Navigator screenOptions={defaultScreenOptions}>
-      <RootStack.Screen name="Splash" component={SplashScreen} />
-    </RootStack.Navigator>
-  ) : (
-    <RootStack.Navigator screenOptions={defaultScreenOptions}>
-      {isAuthenticated ? (
-        termsAccepted ? (
-          // ── Normal app — terms already accepted ─────────────────
-          <RootStack.Screen
-            name="App"
-            component={AppNavigator}
-          />
-        ) : (
-          // ── Terms gate — must accept before entering app ─────────
-          // gestureEnabled: false prevents swipe-back.
-          // BackHandler in TermsGateScreen prevents hardware back.
-          <RootStack.Screen
-            name="TermsGate"
-            component={TermsGateScreen}
-            options={{
-              gestureEnabled: false,
-              animation: "fade",
-            }}
-          />
-        )
+  // Auth state changes replace whole stacks. Do not animate or freeze an
+  // outgoing auth screen while Fabric removes its nested views.
+  const navigator = (
+    <RootStack.Navigator
+      screenOptions={{ ...defaultScreenOptions, animation: "none", freezeOnBlur: false }}
+    >
+      {showSplash ? (
+        <RootStack.Screen name="Splash" component={SplashScreen} />
+      ) : !isAuthenticated ? (
+        <RootStack.Screen name="Auth" component={AuthNavigator} />
+      ) : termsAccepted ? (
+        <RootStack.Screen name="App" component={AppNavigator} />
       ) : (
-        // ── Auth flow ─────────────────────────────────────────────
         <RootStack.Screen
-          name="Auth"
-          component={AuthNavigator}
+          name="TermsGate"
+          component={TermsGateScreen}
+          options={{ gestureEnabled: false }}
         />
       )}
     </RootStack.Navigator>

@@ -151,9 +151,11 @@ function TermsGateScreenComponent() {
         colors={isDark ? ["#09090B", "#111113"] : [...T.gradient]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.gradient}
-      >
-        <SafeAreaView style={styles.container}>
+        style={StyleSheet.absoluteFill}
+      />
+      {/* Gradients stay childless: LinearGradient 2.8.x is a legacy interop
+          view on Fabric and its children crash on unmount. */}
+      <SafeAreaView style={styles.container}>
 
           {/* ── HEADER ──────────────────────────────────────────────── */}
           <View style={styles.header}>
@@ -233,16 +235,17 @@ function TermsGateScreenComponent() {
                   onPress={handleAccept}
                   style={(!checked || saving) ? styles.btnDisabledWrapper : undefined}
                 >
-                  <LinearGradient
-                    colors={
-                      checked && !saving
-                        ? [...T.btnGradient]
-                        : [...T.btnDisabled]
-                    }
-                    start={{ x: 1, y: 0 }}
-                    end={{ x: 0, y: 0 }}
-                    style={styles.acceptButton}
-                  >
+                  <View style={styles.acceptButton}>
+                    <LinearGradient
+                      colors={
+                        checked && !saving
+                          ? [...T.btnGradient]
+                          : [...T.btnDisabled]
+                      }
+                      start={{ x: 1, y: 0 }}
+                      end={{ x: 0, y: 0 }}
+                      style={StyleSheet.absoluteFill}
+                    />
                     {saving ? (
                       <ActivityIndicator color="#FFF" size="small" />
                     ) : (
@@ -253,15 +256,14 @@ function TermsGateScreenComponent() {
                         I Understand & Agree
                       </Text>
                     )}
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
               </View>
 
               <View style={styles.bottomSpacer} />
             </ScrollView>
           )}
-        </SafeAreaView>
-      </LinearGradient>
+      </SafeAreaView>
     </View>
   );
 }
@@ -275,7 +277,6 @@ export default TermsGateScreen;
 
 const styles = StyleSheet.create({
   root:      { flex: 1, backgroundColor: "#F5F0FF" },
-  gradient:  { flex: 1 },
   container: { flex: 1 },
 
   // ── Header ───────────────────────────────────────────────────
