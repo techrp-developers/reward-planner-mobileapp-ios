@@ -36,6 +36,8 @@ import { moduleContentQueryKey } from '../../common/cms/useModuleContent';
 import { parseCmsColor, cmsSolidColor } from '../../common/cms/cmsColor';
 import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import CmsBannerGallery from '../../ecommerce/components/home/CmsBannerGallery';
+import { PROMOTIONAL_SLIDE_MS } from '../../ecommerce/components/home/PromotionalBanner';
+import BrandPromotionalBanner from '../../ecommerce/components/home/BrandPromotionalBanner';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
 import LivePollCard from '../polls/components/LivePollCard';
@@ -45,7 +47,7 @@ import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
 
 const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
-  'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'rewardsOverview',
+  'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'brandPromotionalBanner', 'rewardsOverview',
 ];
 
 // Same zone ratios the module home screens use for their CMS banners.
@@ -577,6 +579,8 @@ function Dashbord() {
           <CmsBannerGallery
             banner={mobileDashboardPromotional}
             fallbackRatio={PROMOTIONAL_BANNER_RATIO}
+            slider
+            autoplayMs={PROMOTIONAL_SLIDE_MS}
             onPress={openBannerLink(mobileDashboardPromotional)}
           />
         ) : null}
@@ -607,6 +611,8 @@ function Dashbord() {
               ) : (
                 <MemoModuleBanner key={key} />
               );
+            case 'brandPromotionalBanner':
+              return <BrandPromotionalBanner key={key} module="mobile_dashboard" />;
             case 'rewardsOverview':
               return <MemoRewardsOverview key={key} />;
             default:

@@ -9,27 +9,34 @@ import QuickServices from '../home/QuickServices';
 import BundleService from '../home/BundleService';
 import ExclusiveOffers from '../home/ExclusiveOffers';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import PromotionalBanner from '../../../ecommerce/components/home/PromotionalBanner';
+import CmsOffersBanner from '../../../ecommerce/components/home/CmsOffersBanner';
+import BrandPromotionalBanner from '../../../ecommerce/components/home/BrandPromotionalBanner';
 
 type ServiceSectionKey =
   | 'banner'
   | 'services'
+  | 'cmsOffers'
   | 'slider'
   | 'mostBooked'
   | 'quickServices'
   | 'exclusiveOffers'
-  | 'bundles';
+  | 'bundles'
+  | 'brandBanner';
 
 const SERVICE_SECTIONS: Array<{ key: ServiceSectionKey }> = [
   { key: 'banner' },
   { key: 'services' },
+  { key: 'cmsOffers' },
   { key: 'slider' },
   { key: 'mostBooked' },
+  { key: 'brandBanner' },
   { key: 'quickServices' },
   { key: 'exclusiveOffers' },
   { key: 'bundles' },
 ];
 
-const INITIAL_SERVICE_SECTIONS = new Set<ServiceSectionKey>(['banner', 'services', 'slider']);
+const INITIAL_SERVICE_SECTIONS = new Set<ServiceSectionKey>(['banner', 'services', 'cmsOffers', 'slider']);
 
 const ServiceSection = React.memo(({
   sectionKey,
@@ -43,11 +50,13 @@ const ServiceSection = React.memo(({
   switch (sectionKey) {
     case 'banner': return <Banner />;
     case 'services': return <ServicesHome />;
+    case 'cmsOffers': return <CmsOffersBanner module="service" style={styles.cmsBanner} />;
     case 'slider': return <BannerSliderManual />;
     case 'mostBooked': return <MostBookedServices />;
     case 'quickServices': return <QuickServices />;
     case 'exclusiveOffers': return <ExclusiveOffers />;
     case 'bundles': return <BundleService />;
+    case 'brandBanner': return <BrandPromotionalBanner module="service" style={styles.cmsBanner} />;
     default: return null;
   }
 });
@@ -104,6 +113,12 @@ function HomeScreen() {
         data={SERVICE_SECTIONS}
         renderItem={renderItem}
         keyExtractor={(item) => item.key}
+        ListHeaderComponent={
+          <>
+            <PromotionalBanner module="service" />
+            <View style={styles.headerSpacer} />
+          </>
+        }
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         initialNumToRender={3}
@@ -124,10 +139,15 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#FAFAFC',
-    paddingTop: 15,
+  },
+  headerSpacer: {
+    height: 15,
   },
   listContent: {
     paddingBottom: 32,
+  },
+  cmsBanner: {
+    marginVertical: 8,
   },
   sectionPlaceholder: {
     minHeight: 180,

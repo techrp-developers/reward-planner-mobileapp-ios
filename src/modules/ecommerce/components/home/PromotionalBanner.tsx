@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linking } from 'react-native';
+import { Linking, type StyleProp, type ViewStyle } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../navigation/types';
@@ -9,7 +9,13 @@ import { useModuleContent, moduleContentQueryKey } from '../../../common/cms/use
 import { queryClient } from '../../../../query/queryClient';
 import CmsBannerGallery from './CmsBannerGallery';
 
-function PromotionalBanner({ module = 'product' }: { module?: CmsModuleKey }) {
+// Full-width banner attached under the navbar; slides every few seconds when
+// the CMS entry has several images.
+export const PROMOTIONAL_SLIDE_MS = 4000;
+
+type Props = { module?: CmsModuleKey; inset?: number; style?: StyleProp<ViewStyle> };
+
+function PromotionalBanner({ module = 'product', inset, style }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { moduleContent } = useModuleContent(module);
   const banner = moduleContent?.promotional_banner as CmsOffersBannerEntry | null | undefined;
@@ -18,7 +24,8 @@ function PromotionalBanner({ module = 'product' }: { module?: CmsModuleKey }) {
     if (contentId > 0) navigation.navigate('CampaignProducts', { contentId, title: banner?.title || 'Offers' });
     else if (banner?.redirect_link) Linking.openURL(banner.redirect_link).catch(() => undefined);
   }, [contentId, banner?.title, banner?.redirect_link, navigation]);
-  return <CmsBannerGallery banner={banner} fallbackRatio={2048 / 1008}
+  return <CmsBannerGallery banner={banner} fallbackRatio={2048 / 1008} inset={inset} style={style}
+    slider autoplayMs={PROMOTIONAL_SLIDE_MS}
     onPress={contentId > 0 || banner?.redirect_link ? press : undefined} />;
 }
 export default React.memo(PromotionalBanner);

@@ -23,6 +23,9 @@ import BusBookingStatusPopup, {
   useBusBookingPopup,
 } from "../BusBookingStatusPopup";
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
+import PromotionalBanner from "../../../ecommerce/components/home/PromotionalBanner";
+import CmsOffersBanner from "../../../ecommerce/components/home/CmsOffersBanner";
+import BrandPromotionalBanner from "../../../ecommerce/components/home/BrandPromotionalBanner";
 
 import {
   getBusOrdersApi,
@@ -827,6 +830,8 @@ const handleSearchBuses = async () => {
       ]}
       showsVerticalScrollIndicator={false}
     >
+      {/* Bus Booking is the CMS "dineout" module. */}
+      <PromotionalBanner module="dineout" style={styles.promotionalBanner} />
       <View style={styles.searchCard}>
         <View style={styles.inputStack}>
           <View style={styles.routeSection}>
@@ -1146,6 +1151,8 @@ const handleSearchBuses = async () => {
         </TouchableOpacity>
       )}
 
+      <CmsOffersBanner module="dineout" inset={0} style={styles.cmsBanner} />
+
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Recent Searches</Text>
       </View>
@@ -1218,6 +1225,7 @@ const handleSearchBuses = async () => {
           </ScrollView>
         </>
       ) : null}
+      <BrandPromotionalBanner module="dineout" inset={0} style={styles.cmsBanner} />
       </ScrollView>
 <Modal
   visible={cityModalVisible}
@@ -1508,6 +1516,15 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
+  },
+  cmsBanner: {
+    marginVertical: 8,
+  },
+  // Cancels the content padding so the banner sits edge to edge under the navbar.
+  promotionalBanner: {
+    marginHorizontal: -14,
+    marginTop: -10,
+    marginBottom: 12,
   },
   searchCard: {
     backgroundColor: "#FFFFFF",

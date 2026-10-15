@@ -3,6 +3,9 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import RechargeBill from '../component/home/ReachargeBill';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import PromotionalBanner from '../../ecommerce/components/home/PromotionalBanner';
+import CmsOffersBanner from '../../ecommerce/components/home/CmsOffersBanner';
+import BrandPromotionalBanner from '../../ecommerce/components/home/BrandPromotionalBanner';
 
 function HomePageComponent() {
   const { colors } = useBbpsTheme();
@@ -25,7 +28,10 @@ function HomePageComponent() {
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
+        <PromotionalBanner module="payment" style={styles.promotionalBanner} />
         <RechargeBill />
+        <CmsOffersBanner module="payment" style={styles.cmsBanner} />
+        <BrandPromotionalBanner module="payment" style={styles.cmsBanner} />
       </ScrollView>
     </View>
   );
@@ -37,6 +43,12 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingBottom: 24,
+  },
+  cmsBanner: {
+    marginVertical: 8,
+  },
+  promotionalBanner: {
+    marginBottom: 8,
   },
 });
 

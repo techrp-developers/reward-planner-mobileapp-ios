@@ -7,6 +7,7 @@ export type MainDashboardSectionKey =
   | 'investmentInsurance'
   | 'exploreModules'
   | 'moduleBanner'
+  | 'brandPromotionalBanner'
   | 'rewardsOverview';
 
 export type EcommerceDashboardSectionKey =
@@ -59,6 +60,7 @@ export const DEFAULT_DASHBOARD_LAYOUTS: Record<DashboardLayoutId, DashboardLayou
       section('investmentInsurance', 35),
       section('exploreModules', 40),
       section('moduleBanner', 50),
+      section('brandPromotionalBanner', 55),
       section('rewardsOverview', 60),
     ],
   },
