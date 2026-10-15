@@ -19,7 +19,9 @@ const NO_UPDATE: OtaCheckResult = { updateAvailable: false, mandatory: false };
 /** Download and install only a zip whose SHA-256 matches the release record. */
 export async function checkForOtaUpdate(): Promise<OtaCheckResult> {
   // Debug builds use Metro and must never replace their JS bundle.
-  if (__DEV__ || (Platform.OS !== 'ios' && Platform.OS !== 'android')) return NO_UPDATE;
+  if (__DEV__ || Platform.OS !== 'android') return NO_UPDATE;
+  // iOS OTA installation is disabled pending review of the release mechanism
+  // against App Review Guideline 2.5.2. App Store checks remain enabled.
 
   let downloadPath: string | undefined;
   try {
@@ -55,7 +57,7 @@ export async function checkForOtaUpdate(): Promise<OtaCheckResult> {
       throw new Error('OTA bundle SHA-256 mismatch');
     }
 
-    const extension = Platform.OS === 'ios' ? '.jsbundle' : '.bundle';
+    const extension = '.bundle';
     const installed = await hotUpdate.setupBundlePath(downloadPath, extension, otaVersion);
     if (!installed) throw new Error('OTA bundle installation failed');
     downloadPath = undefined; // The native installer consumes the zip.
@@ -77,5 +79,6 @@ export async function checkForOtaUpdate(): Promise<OtaCheckResult> {
 }
 
 export function applyPendingOtaUpdate(): Promise<void> {
+  if (Platform.OS !== 'android') return Promise.resolve();
   return hotUpdate.resetApp();
 }

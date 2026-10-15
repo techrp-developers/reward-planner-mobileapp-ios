@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { registerFCMToken } from '../dashboard/notification/NotificationAPI';
 import { navigate } from '../../navigation/navigationRef';
 import { notificationEvents } from './notificationEvents';
+import notifee, { EventType } from '@notifee/react-native';
 
 const FCM_TOKEN_KEY = '@rewardsplanners_fcm_token';
 
@@ -119,6 +120,12 @@ function handleNotificationTap(_message: RemoteMessage): void {
 
 // Call this after the user logs in. Returns an unsubscribe function.
 export function setupFCM(): () => void {
+  // Notifee handles iOS notification presses instead of RNFirebase v7+.
+  const unsubscribeNotifee = Platform.OS === 'ios'
+    ? notifee.onForegroundEvent(({ type }) => {
+      if (type === EventType.PRESS) navigate('Notification');
+    })
+    : () => {};
   getAndRegisterToken().then((token) => {
     if (token) {
       console.log('[FCM] Setup complete. Token registered.');
@@ -159,6 +166,7 @@ export function setupFCM(): () => void {
   });
 
   return () => {
+    unsubscribeNotifee();
     unsubscribeTokenRefresh();
     unsubscribeForeground();
     unsubscribeBackgroundTap();
@@ -168,6 +176,11 @@ export function setupFCM(): () => void {
 // Must be called at the top of index.js (outside React) so Firebase can
 // wake the app into a headless JS task when a message arrives in background/quit.
 export function registerBackgroundHandler(): void {
+  if (Platform.OS === 'ios') {
+    notifee.onBackgroundEvent(async ({ type }) => {
+      if (type === EventType.PRESS) navigate('Notification');
+    });
+  }
   setBackgroundMessageHandler(
     getMessaging(),
     async (_message: RemoteMessage) => {

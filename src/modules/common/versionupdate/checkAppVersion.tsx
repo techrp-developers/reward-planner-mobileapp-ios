@@ -30,6 +30,7 @@ const FAILED: AppVersionResult = {
  * Compare version strings. Returns true only if latest is STRICTLY newer.
  */
 const isNewerVersion = (current: string, latest: string): boolean => {
+  if (![current, latest].every(value => /^\d+(\.\d+)*$/.test(value.trim()))) return false;
   const c = current.trim().split('.').map(Number);
   const l = latest.trim().split('.').map(Number);
   const len = Math.max(c.length, l.length);
@@ -96,7 +97,9 @@ export const checkAppVersion = async (): Promise<AppVersionResult> => {
 
     // Only flag update if API says a newer version exists
     // Do NOT show update if current >= latest
-    const updateAvailable = versionNameNewer || versionCodeNewer;
+    const updateAvailable = Platform.OS === 'ios'
+      ? versionNameNewer
+      : versionNameNewer || versionCodeNewer;
 
     console.log('[VersionCheck]', {
       currentVersion,

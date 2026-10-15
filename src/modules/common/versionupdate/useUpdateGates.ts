@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import { setIosUpdateBadge } from './iosUpdateBadge';
 import { checkAppVersion } from './checkAppVersion';
 import { applyPendingOtaUpdate, checkForOtaUpdate } from './checkOtaUpdate';
 
@@ -21,11 +22,16 @@ export function useUpdateGates() {
   const mounted = useRef(true);
   const otaAfterStorePrompt = useRef(false);
 
-  const checkOta = useCallback(async () => {
+  const checkOta = useCallback(async (storeUpdatePending = false) => {
     const otaResult = await checkForOtaUpdate();
-    if (mounted.current && otaResult.updateAvailable && !otaResult.mandatory) {
+    if (!mounted.current) return;
+    const optionalOtaPending = otaResult.updateAvailable && !otaResult.mandatory;
+    if (optionalOtaPending) {
       setOtaPrompt({ visible: true, releaseNotes: otaResult.releaseNotes });
+    } else {
+      setOtaPrompt({ visible: false });
     }
+    await setIosUpdateBadge(storeUpdatePending || optionalOtaPending);
   }, []);
 
   const runChecks = useCallback(async () => {
@@ -34,6 +40,8 @@ export function useUpdateGates() {
     try {
       const nativeResult = await checkAppVersion();
       if (!mounted.current || !nativeResult.success) return;
+      await setIosUpdateBadge(nativeResult.updateAvailable);
+      if (!mounted.current) return;
       if (nativeResult.maintenance || nativeResult.updateAvailable) {
         setStoreUpdate({
           visible: true,
@@ -70,7 +78,7 @@ export function useUpdateGates() {
       setStoreUpdate(HIDDEN_STORE);
       if (otaAfterStorePrompt.current) {
         otaAfterStorePrompt.current = false;
-        void checkOta();
+        void checkOta(true);
       }
     },
     otaPrompt,
