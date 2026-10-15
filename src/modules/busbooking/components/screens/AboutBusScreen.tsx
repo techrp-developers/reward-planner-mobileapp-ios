@@ -49,14 +49,52 @@ export default function AboutBusScreen() {
             <Text style={styles.routeText}>{bus.to}</Text>
           </View>
 
-          <Text style={styles.aboutText}>{bus.about}</Text>
+          {bus.about ? <Text style={styles.aboutText}>{bus.about}</Text> : null}
         </View>
+
+        <AboutList title="Amenities" items={bus.features} />
+        <AboutList title="Boarding Points" items={bus.boardingPoints} />
+        <AboutList title="Dropping Points" items={bus.droppingPoints} />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// Shown only when the provider sent this information for the bus.
+function AboutList({ title, items }: { title: string; items?: string[] }) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
+  return (
+    <View style={[styles.card, styles.listCard]}>
+      <Text style={styles.listTitle}>{title}</Text>
+      {items.map((item, index) => (
+        <Text key={`${item}-${index}`} style={styles.listItem}>
+          {item}
+        </Text>
+      ))}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  listCard: {
+    marginTop: 12,
+  },
+  listTitle: {
+    color: "#3B3740",
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  listItem: {
+    marginTop: 6,
+    color: "#5B5860",
+    fontSize: 13,
+    fontWeight: "500",
+    lineHeight: 19,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: "#FBF8F4",

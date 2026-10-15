@@ -13,6 +13,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import LinearGradient from "react-native-linear-gradient";
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
+import type {
+  BusListingFacetOption,
+  BusListingFacets,
+} from "../../utils/busListingFilters";
 import FilterIcon1 from "../../assets/icons/filtericon1.svg";
 import FilterIcon2 from "../../assets/icons/filtericon2.svg.svg";
 import FilterIcon3 from "../../assets/icons/filtericon3.svg";
@@ -25,9 +29,6 @@ import Amenities1 from "../../assets/icons/amenities1.svg";
 import Amenities2 from "../../assets/icons/amenities2.svg";
 import Amenities3 from "../../assets/icons/amenities3.svg";
 import Amenities4 from "../../assets/icons/amenities4.svg";
-import Busoperatorimg1 from "../../assets/banners/busoperatorimg1.svg";
-import Busoperatorimg2 from "../../assets/banners/busoperatorimg2.svg";
-import Busoperatorimg3 from "../../assets/banners/busoperatorimg3.svg";
 import Luxurybusimg from "../../assets/banners/Luxurybusimg.svg";
 
 type FilterCategoryId =
@@ -38,111 +39,50 @@ type FilterCategoryId =
   | "boarding-points"
   | "dropping-points";
 
-type FilterCategory = {
-  id: FilterCategoryId;
-  label: string;
+type SvgIcon = React.ComponentType<{ width?: number | string; height?: number | string }>;
+
+// Artwork for each option. The options themselves, and how many buses match
+// them, always come from the current search (route.params.facets).
+const OPTION_ICONS: Record<string, SvgIcon> = {
+  volvo: FilterIcon1,
+  ac: FilterIcon2,
+  "non-ac": FilterIcon3,
+  seater: FilterIcon4,
+  sleeper: FilterIcon5,
+  "before-6": TimeIcon1,
+  "6-12": TimeIcon1,
+  "12-6": TimeIcon2,
+  "after-6": TimeIcon3,
 };
 
-type FilterOption = {
-  id: string;
-  label: string;
-  available: string;
-  Icon: React.ComponentType<{ width?: number | string; height?: number | string }>;
+const DEPARTURE_SUBTITLES: Record<string, string> = {
+  "before-6": "Early morning",
+  "6-12": "Morning",
+  "12-6": "Afternoon",
+  "after-6": "Evening/night",
 };
 
-type TimeOption = {
-  id: string;
-  title: string;
-  subtitle: string;
-  count: string;
-  Icon: React.ComponentType<{ width?: number | string; height?: number | string }>;
+const getAmenityIcon = (label: string): SvgIcon | null => {
+  const text = label.toLowerCase();
+
+  if (/wi-?fi/.test(text)) return Amenities1;
+  if (/water|bottle/.test(text)) return Amenities2;
+  if (/charg|usb/.test(text)) return Amenities3;
+  if (/blanket|linen/.test(text)) return Amenities4;
+
+  return null;
 };
 
-type AmenityOption = {
-  id: string;
-  label: string;
-  Icon: React.ComponentType<{ width?: number | string; height?: number | string }>;
-};
+const getInitials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("");
 
-type OperatorOption = {
-  id: string;
-  title: string;
-  buses: string;
-  Image: React.ComponentType<{ width?: number | string; height?: number | string }>;
-};
-
-type PointOption = {
-  id: string;
-  title: string;
-  subtitle: string;
-  count: string;
-};
-
-const filterCategories: FilterCategory[] = [
-  { id: "bus-type", label: "Bus Type" },
-  { id: "departure-time", label: "Departure time" },
-  { id: "amenities", label: "Amenities" },
-  { id: "bus-operator", label: "Bus Operator" },
-  { id: "boarding-points", label: "Boarding Points" },
-  { id: "dropping-points", label: "Dropping Points" },
-];
-
-const busTypeOptions: FilterOption[] = [
-  { id: "volvo", label: "Volvo buses", available: "37 Available", Icon: FilterIcon1 },
-  { id: "ac", label: "AC", available: "30 Available", Icon: FilterIcon2 },
-  { id: "non-ac", label: "NON AC", available: "8 Available", Icon: FilterIcon3 },
-];
-
-const seatTypeOptions: FilterOption[] = [
-  { id: "seater", label: "SEATER", available: "5 Available", Icon: FilterIcon4 },
-  { id: "sleeper", label: "SLEEPER", available: "37 Available", Icon: FilterIcon5 },
-];
-
-const departureOptions: TimeOption[] = [
-  { id: "before-6", title: "Before 6 AM", subtitle: "Early morning", count: "12", Icon: TimeIcon1 },
-  { id: "6-12", title: "6 AM -12\nPM", subtitle: "Morning", count: "24", Icon: TimeIcon1 },
-  { id: "12-6", title: "12 PM - 6\nPM", subtitle: "Afternoon", count: "18", Icon: TimeIcon2 },
-  { id: "after-6", title: "After 6 PM", subtitle: "Evening/night", count: "18", Icon: TimeIcon3 },
-];
-
-const amenitiesOptions: AmenityOption[] = [
-  { id: "wifi", label: "WiFi", Icon: Amenities1 },
-  { id: "water", label: "Water\nBottle", Icon: Amenities2 },
-  { id: "charging", label: "Charging\nPt.", Icon: Amenities3 },
-  { id: "blanket", label: "Blanket", Icon: Amenities4 },
-];
-
-const operatorOptions: OperatorOption[] = [
-  { id: "greenline", title: "Greenline Express", buses: "24 buses available", Image: Busoperatorimg1 },
-  { id: "blue-diamond", title: "Blue Diamond", buses: "12 buses available", Image: Busoperatorimg2 },
-  { id: "royal-heritage", title: "Royal Heritage", buses: "8 buses available", Image: Busoperatorimg3 },
-];
-
-const boardingPopular: PointOption[] = [
-  { id: "boarding-majestic", title: "Majestic", subtitle: "Opposite KSR Railway\nStation", count: "24" },
-  { id: "boarding-indiranagar", title: "Indiranagar", subtitle: "Near CMH Hospital Road", count: "18" },
-  { id: "boarding-electronic", title: "Electronic City", subtitle: "Toll Gate No 1", count: "15" },
-  { id: "boarding-marathahalli", title: "Marathahalli", subtitle: "Near Bridge Service Road", count: "32" },
-  { id: "boarding-hebbal", title: "Hebbal", subtitle: "Below Hebbal Flyover", count: "9" },
-];
-
-const boardingOther: PointOption[] = [
-  { id: "boarding-silk-board", title: "Silk Board", subtitle: "", count: "12" },
-  { id: "boarding-koramangala", title: "Koramangala", subtitle: "", count: "7" },
-];
-
-const droppingPopular: PointOption[] = [
-  { id: "dropping-majestic", title: "Majestic", subtitle: "Opposite KSR Railway\nStation", count: "24" },
-  { id: "dropping-indiranagar", title: "Indiranagar", subtitle: "Near CMH Hospital Road", count: "18" },
-  { id: "dropping-electronic", title: "Electronic City", subtitle: "Toll Gate No 1", count: "15" },
-  { id: "dropping-marathahalli", title: "Marathahalli", subtitle: "Near Bridge Service Road", count: "32" },
-  { id: "dropping-hebbal", title: "Hebbal", subtitle: "Below Hebbal Flyover", count: "9" },
-];
-
-const droppingOther: PointOption[] = [
-  { id: "dropping-silk-board", title: "Silk Board", subtitle: "", count: "12" },
-  { id: "dropping-koramangala", title: "Koramangala", subtitle: "", count: "7" },
-];
+const formatBusCount = (count: number) =>
+  `${count} ${count === 1 ? "bus" : "buses"} available`;
 
 function FilterCheckbox({ selected }: { selected: boolean }) {
   return (
@@ -157,21 +97,21 @@ function FilterOptionRow({
   selected,
   onPress,
 }: {
-  item: FilterOption;
+  item: BusListingFacetOption;
   selected: boolean;
   onPress: () => void;
 }) {
-  const Icon = item.Icon;
+  const Icon = OPTION_ICONS[item.id];
 
   return (
     <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={styles.optionRow}>
       <View style={styles.optionInfoRow}>
         <View style={styles.optionIconWrap}>
-          <Icon width={16} height={16} />
+          {Icon ? <Icon width={16} height={16} /> : null}
         </View>
         <View style={styles.optionTextWrap}>
           <Text style={styles.optionLabel}>{item.label}</Text>
-          <Text style={styles.optionAvailability}>{item.available}</Text>
+          <Text style={styles.optionAvailability}>{item.count} Available</Text>
         </View>
       </View>
       <FilterCheckbox selected={selected} />
@@ -186,7 +126,43 @@ function SectionHeader({ title }: { title: string }) {
 export default function AllFilterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "AllFilterScreen">>();
-  const [selectedCategory, setSelectedCategory] = React.useState<FilterCategoryId>("bus-type");
+  const facets: BusListingFacets = route.params.facets;
+
+  // A category is only listed when this search has something to filter by.
+  const filterCategories = React.useMemo(
+    () =>
+      (
+        [
+          {
+            id: "bus-type",
+            label: "Bus Type",
+            visible: facets.busTypes.length + facets.seatTypes.length > 0,
+          },
+          {
+            id: "departure-time",
+            label: "Departure time",
+            visible: facets.departureTimes.length > 0,
+          },
+          { id: "amenities", label: "Amenities", visible: facets.amenities.length > 0 },
+          { id: "bus-operator", label: "Bus Operator", visible: facets.operators.length > 0 },
+          {
+            id: "boarding-points",
+            label: "Boarding Points",
+            visible: facets.boardingPoints.length > 0,
+          },
+          {
+            id: "dropping-points",
+            label: "Dropping Points",
+            visible: facets.droppingPoints.length > 0,
+          },
+        ] as Array<{ id: FilterCategoryId; label: string; visible: boolean }>
+      ).filter((category) => category.visible),
+    [facets]
+  );
+
+  const [selectedCategory, setSelectedCategory] = React.useState<FilterCategoryId | null>(
+    () => filterCategories[0]?.id ?? null
+  );
   const [selectedOptions, setSelectedOptions] = React.useState<string[]>(
     () => route.params?.selectedOptions || []
   );
@@ -215,23 +191,24 @@ export default function AllFilterScreen() {
     } as any);
   }, [navigation, selectedOptions]);
 
-  const filterPointOptions = React.useCallback((items: PointOption[], query: string) => {
-    const normalizedQuery = query.trim().toLowerCase();
+  const filterByQuery = React.useCallback(
+    (items: BusListingFacetOption[], query: string) => {
+      const normalizedQuery = query.trim().toLowerCase();
 
-    if (!normalizedQuery) {
-      return items;
-    }
+      if (!normalizedQuery) {
+        return items;
+      }
 
-    return items.filter((item) =>
-      `${item.title} ${item.subtitle}`.toLowerCase().includes(normalizedQuery)
-    );
-  }, []);
+      return items.filter((item) => item.label.toLowerCase().includes(normalizedQuery));
+    },
+    []
+  );
 
   const renderDepartureTime = () => (
     <View>
-      {departureOptions.map((item) => {
+      {facets.departureTimes.map((item) => {
         const selected = selectedOptions.includes(item.id);
-        const Icon = item.Icon;
+        const Icon = OPTION_ICONS[item.id];
 
         return (
           <TouchableOpacity
@@ -241,12 +218,12 @@ export default function AllFilterScreen() {
             style={[styles.timeCard, selected ? styles.timeCardSelected : null]}
           >
             <View style={[styles.timeIconCircle, selected ? styles.timeIconCircleSelected : null]}>
-              <Icon width={18} height={18} />
+              {Icon ? <Icon width={18} height={18} /> : null}
             </View>
 
             <View style={styles.timeTextWrap}>
-              <Text style={styles.timeTitle}>{item.title}</Text>
-              <Text style={styles.timeSubtitle}>{item.subtitle}</Text>
+              <Text style={styles.timeTitle}>{item.label}</Text>
+              <Text style={styles.timeSubtitle}>{DEPARTURE_SUBTITLES[item.id]}</Text>
             </View>
 
             <Text style={styles.timeCount}>{item.count}</Text>
@@ -271,9 +248,9 @@ export default function AllFilterScreen() {
       </View>
 
       <View style={styles.amenitiesGrid}>
-        {amenitiesOptions.map((item) => {
+        {facets.amenities.map((item) => {
           const selected = selectedOptions.includes(item.id);
-          const Icon = item.Icon;
+          const Icon = getAmenityIcon(item.label);
 
           return (
             <TouchableOpacity
@@ -286,7 +263,11 @@ export default function AllFilterScreen() {
                 <FilterCheckbox selected={selected} />
               </View>
 
-              <Icon width={38} height={38} />
+              {Icon ? (
+                <Icon width={38} height={38} />
+              ) : (
+                <MaterialCommunityIcons name="check-decagram-outline" size={34} color="#D7192D" />
+              )}
 
               <Text style={styles.amenityLabel}>{item.label}</Text>
             </TouchableOpacity>
@@ -297,14 +278,12 @@ export default function AllFilterScreen() {
   );
 
   const renderOperators = () => {
-    const filteredOperators = operatorOptions.filter((item) =>
-      item.title.toLowerCase().includes(operatorSearch.trim().toLowerCase())
-    );
+    const filteredOperators = filterByQuery(facets.operators, operatorSearch);
 
     return (
       <View>
       <View style={styles.operatorsHeader}>
-        <Text style={styles.operatorsTitle}>Top Bus{"\n"}Operators</Text>
+        <Text style={styles.operatorsTitle}>Bus{"\n"}Operators</Text>
 
         <View style={styles.searchPill}>
           <MaterialCommunityIcons name="magnify" size={16} color="#8A848A" />
@@ -320,7 +299,6 @@ export default function AllFilterScreen() {
 
       {filteredOperators.map((item) => {
         const selected = selectedOptions.includes(item.id);
-        const OperatorImage = item.Image;
 
         return (
           <TouchableOpacity
@@ -329,13 +307,13 @@ export default function AllFilterScreen() {
             onPress={() => handleOptionPress(item.id)}
             style={styles.operatorRow}
           >
-            <View style={styles.operatorLogoCard}>
-              <OperatorImage width="100%" height="100%" />
+            <View style={[styles.operatorLogoCard, styles.operatorInitialsCard]}>
+              <Text style={styles.operatorInitials}>{getInitials(item.label)}</Text>
             </View>
 
             <View style={styles.operatorTextWrap}>
-              <Text style={styles.operatorTitle}>{item.title}</Text>
-              <Text style={styles.operatorSubtitle}>{item.buses}</Text>
+              <Text style={styles.operatorTitle}>{item.label}</Text>
+              <Text style={styles.operatorSubtitle}>{formatBusCount(item.count)}</Text>
             </View>
 
             <FilterCheckbox selected={selected} />
@@ -348,13 +326,11 @@ export default function AllFilterScreen() {
 
   const renderLocationList = (
     placeholder: string,
-    popular: PointOption[],
-    other: PointOption[],
+    points: BusListingFacetOption[],
     searchValue: string,
     onChangeSearch: (value: string) => void
   ) => {
-    const filteredPopular = filterPointOptions(popular, searchValue);
-    const filteredOther = filterPointOptions(other, searchValue);
+    const filteredPoints = filterByQuery(points, searchValue);
 
     return (
       <View>
@@ -369,8 +345,7 @@ export default function AllFilterScreen() {
         />
       </View>
 
-      <Text style={styles.listSectionLabel}>Popular points</Text>
-      {filteredPopular.map((item) => {
+      {filteredPoints.map((item) => {
         const selected = selectedOptions.includes(item.id);
 
         return (
@@ -381,28 +356,9 @@ export default function AllFilterScreen() {
             style={[styles.locationRow, selected ? styles.locationRowSelected : null]}
           >
             <View style={styles.locationTextWrap}>
-              <Text style={styles.locationTitle}>{item.title}</Text>
-              {item.subtitle ? <Text style={styles.locationSubtitle}>{item.subtitle}</Text> : null}
+              <Text style={styles.locationTitle}>{item.label}</Text>
             </View>
 
-            <Text style={styles.locationCount}>{item.count}</Text>
-            <FilterCheckbox selected={selected} />
-          </TouchableOpacity>
-        );
-      })}
-
-      <Text style={[styles.listSectionLabel, styles.otherLocationsLabel]}>Other Locations</Text>
-      {filteredOther.map((item) => {
-        const selected = selectedOptions.includes(item.id);
-
-        return (
-          <TouchableOpacity
-            key={item.id}
-            activeOpacity={0.85}
-            onPress={() => handleOptionPress(item.id)}
-            style={styles.otherLocationRow}
-          >
-            <Text style={styles.otherLocationTitle}>{item.title}</Text>
             <Text style={styles.locationCount}>{item.count}</Text>
             <FilterCheckbox selected={selected} />
           </TouchableOpacity>
@@ -416,8 +372,8 @@ export default function AllFilterScreen() {
     if (selectedCategory === "bus-type") {
       return (
         <View>
-          <SectionHeader title="BUS TYPE" />
-          {busTypeOptions.map((item) => (
+          {facets.busTypes.length > 0 ? <SectionHeader title="BUS TYPE" /> : null}
+          {facets.busTypes.map((item) => (
             <FilterOptionRow
               key={item.id}
               item={item}
@@ -426,8 +382,17 @@ export default function AllFilterScreen() {
             />
           ))}
 
-          <Text style={[styles.sectionTitle, styles.sectionTitleWithGap]}>SEAT TYPE</Text>
-          {seatTypeOptions.map((item) => (
+          {facets.seatTypes.length > 0 ? (
+            <Text
+              style={[
+                styles.sectionTitle,
+                facets.busTypes.length > 0 ? styles.sectionTitleWithGap : null,
+              ]}
+            >
+              SEAT TYPE
+            </Text>
+          ) : null}
+          {facets.seatTypes.map((item) => (
             <FilterOptionRow
               key={item.id}
               item={item}
@@ -454,19 +419,25 @@ export default function AllFilterScreen() {
     if (selectedCategory === "boarding-points") {
       return renderLocationList(
         "Search boarding points...",
-        boardingPopular,
-        boardingOther,
+        facets.boardingPoints,
         boardingSearch,
         setBoardingSearch
       );
     }
 
-    return renderLocationList(
-      "Search dropping points...",
-      droppingPopular,
-      droppingOther,
-      droppingSearch,
-      setDroppingSearch
+    if (selectedCategory === "dropping-points") {
+      return renderLocationList(
+        "Search dropping points...",
+        facets.droppingPoints,
+        droppingSearch,
+        setDroppingSearch
+      );
+    }
+
+    return (
+      <Text style={styles.optionAvailability}>
+        There are no buses to filter for this search.
+      </Text>
     );
   };
 
@@ -872,6 +843,16 @@ const styles = StyleSheet.create({
     borderColor: "#E9E8EE",
     overflow: "hidden",
     backgroundColor: "#FFFFFF",
+  },
+  operatorInitialsCard: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FDECEF",
+  },
+  operatorInitials: {
+    color: "#B81525",
+    fontSize: 16,
+    fontWeight: "800",
   },
   operatorTextWrap: {
     flex: 1,

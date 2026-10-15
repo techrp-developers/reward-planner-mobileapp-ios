@@ -118,7 +118,7 @@ export default function BoardingDroppingSelectionScreen() {
   |--------------------------------------------------------------------------
   */
 
-  const { bus, passengers, selectedSeats, traceId, srdvIndex, resultIndex, isWomenBooking } =
+  const { bus, passengers, selectedSeats, totalFare, traceId, srdvIndex, resultIndex, isWomenBooking } =
     route.params;
 
   /*
@@ -342,6 +342,7 @@ export default function BoardingDroppingSelectionScreen() {
         "PassengerDetailsScreen",
         {
           bus,
+          totalFare,
 
           selectedSeats,
 
@@ -385,6 +386,7 @@ export default function BoardingDroppingSelectionScreen() {
       selectedBoardingPoint,
       selectedDroppingPoint,
       selectedSeats,
+      totalFare,
       traceId,
       srdvIndex,
       resultIndex,

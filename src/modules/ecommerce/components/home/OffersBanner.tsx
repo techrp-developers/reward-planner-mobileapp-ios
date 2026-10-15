@@ -17,6 +17,7 @@ import { queryClient } from '../../../../query/queryClient';
 import { fetchResolvedZones } from '../../../common/cms/cmsContentApi';
 import type { CmsModuleKey, CmsResolvedZones } from '../../../common/cms/cmsContentApi';
 import { useModuleContent, moduleContentQueryKey } from '../../../common/cms/useModuleContent';
+import { cmsSolidColor } from '../../../common/cms/cmsColor';
 
 const AUTOPLAY_MS = 3500;
 const OFFER_ASPECT_RATIO = 4 / 5;
@@ -105,10 +106,8 @@ function OffersBanner({
     return null;
   }
 
-  const showColorFallback =
-    slides.length === 0 &&
-    banner.content_type === 'color' &&
-    Boolean(banner.color_value);
+  const fallbackColor = banner.content_type === 'color' ? cmsSolidColor(banner.color_value) : null;
+  const showColorFallback = slides.length === 0 && Boolean(fallbackColor);
 
   if (!slides.length && !showColorFallback) {
     return null;
@@ -137,7 +136,7 @@ function OffersBanner({
             {
               width: itemWidth,
               aspectRatio,
-              backgroundColor: banner.color_value as string,
+              backgroundColor: fallbackColor as string,
             },
           ]}
         />

@@ -35,7 +35,8 @@ type Gender = "M" | "F" | "O";
 type PassengerForm = {
   sourceProfileId: string;
   title: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   age: string;
   gender: Gender;
   email: string;
@@ -46,12 +47,11 @@ type PassengerForm = {
   whatsappUpdates: boolean;
 };
 
-const getFareValue = (price: string) => Number(price.replace(/[^\d]/g, "")) || 0;
-
 const createPassengerForm = (): PassengerForm => ({
   sourceProfileId: "",
   title: "Mr",
-  fullName: "",
+  firstName: "",
+  lastName: "",
   age: "",
   gender: "M",
   email: "",
@@ -64,6 +64,8 @@ const createPassengerForm = (): PassengerForm => ({
 
 const normalizePhoneNumber = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 const normalizeAge = (value: string) => value.replace(/\D/g, "").slice(0, 3);
+const getFullName = (passenger: PassengerForm) =>
+  `${passenger.firstName.trim()} ${passenger.lastName.trim()}`.trim();
 
 const splitPassengerName = (fullName: string) => {
   const parts = String(fullName)
@@ -116,7 +118,8 @@ const getInitials = (fullName: string) =>
 const mapProfileToForm = (profile: StoredPassengerProfile): PassengerForm => ({
   sourceProfileId: profile.id || "",
   title: profile.title || "Mr",
-  fullName: profile.fullName || "",
+  firstName: profile.firstName ?? splitPassengerName(profile.fullName || "").firstName,
+  lastName: profile.lastName ?? splitPassengerName(profile.fullName || "").lastName,
   age: profile.age || "",
   gender: profile.gender || "M",
   email: profile.email || "",
@@ -153,7 +156,12 @@ const getQuickSelectKey = (
   return "";
 };
 
-const BLOCK_TEST_REF_ID = "35";
+// The provider's Block call takes our own reference for the hold. It must be
+// unique per attempt, so it is generated here rather than fixed.
+const createBlockRefId = () =>
+  `${Date.now()}${Math.floor(Math.random() * 1000)
+    .toString()
+    .padStart(3, "0")}`;
 
 export default function PassengerDetailsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
@@ -162,6 +170,7 @@ export default function PassengerDetailsScreen() {
   const {
     bus,
     selectedSeats,
+    totalFare,
     boardingPoint,
     droppingPoint,
     traceId,
@@ -183,7 +192,6 @@ export default function PassengerDetailsScreen() {
   const [selectedQuickSelectId, setSelectedQuickSelectId] = React.useState("");
   const [deletedQuickSelectIds, setDeletedQuickSelectIds] = React.useState<string[]>([]);
 
-  const totalFare = getFareValue(bus.price) * selectedSeats.length;
   const idProofRequired =
     String(bus?.raw?.IdProofRequired ?? bus?.IdProofRequired ?? "").toLowerCase() === "true";
 
@@ -192,7 +200,9 @@ export default function PassengerDetailsScreen() {
       .map((passenger, index) => ({
         id: passenger.sourceProfileId || `live-passenger-${index}`,
         title: passenger.title,
-        fullName: passenger.fullName.trim(),
+        fullName: getFullName(passenger),
+        firstName: passenger.firstName.trim(),
+        lastName: passenger.lastName.trim(),
         age: passenger.age.trim(),
         gender: passenger.gender,
         email: passenger.email.trim(),
@@ -320,20 +330,19 @@ export default function PassengerDetailsScreen() {
         return false;
       }
 
-      if (!passenger.fullName.trim()) {
+      if (!passenger.firstName.trim()) {
         showPopup({
           title: "Passenger Details",
-          message: `Please enter full name for Passenger ${index + 1}.`,
+          message: `Please enter first name for Passenger ${index + 1}.`,
           variant: "warning",
         });
         return false;
       }
 
-      const nameParts = passenger.fullName.trim().split(/\s+/).filter(Boolean);
-      if (nameParts.length < 2) {
+      if (!passenger.lastName.trim()) {
         showPopup({
           title: "Passenger Details",
-          message: `Please enter first name and last name for Passenger ${index + 1}.`,
+          message: `Please enter last name for Passenger ${index + 1}.`,
           variant: "warning",
         });
         return false;
@@ -421,25 +430,23 @@ export default function PassengerDetailsScreen() {
   const buildBlockPassengers = React.useCallback((): BlockPassenger[] => {
     return selectedSeats.map((seat, index) => {
       const passenger = passengers[index];
-      const { firstName, lastName } = splitPassengerName(passenger?.fullName || "");
 
       return {
         Title: passenger?.title || "Mr",
-        FirstName: firstName,
-        LastName: lastName,
+        FirstName: passenger?.firstName.trim() || "",
+        LastName: passenger?.lastName.trim() || "",
         Gender: mapGenderToProvider(passenger?.gender || "M"),
-        Age: Number(passenger?.age),
+        Age: String(passenger?.age || ""),
         Email: String(passenger?.email || ""),
         PhoneNo: String(passenger?.phone || ""),
-        LeadPassenger: index === 0,
+        LeadPassenger: index === 0 ? "true" : "false",
         IdNumber: String(passenger?.idNumber || ""),
         IdType: String(passenger?.idType || ""),
         Address: String(passenger?.address || ""),
         SeatName: String(seat),
-        Seat: bus.selectedSeatDetails?.find((item: any) => String(item.SeatName) === String(seat)),
       };
     });
-  }, [bus, passengers, selectedSeats]);
+  }, [passengers, selectedSeats]);
 
   const handleContinueToSummary = React.useCallback(async () => {
     if (blockingSeat) {
@@ -487,9 +494,8 @@ export default function PassengerDetailsScreen() {
       resultIndex: String(resultIndex),
       boardingPointId: String(boardingPoint.Id),
       droppingPointId: String(droppingPoint.Id),
-      refId: BLOCK_TEST_REF_ID,
+      refId: createBlockRefId(),
       passengers: blockPassengers,
-      email: blockPassengers[0]?.Email,
       sourceCity,
       destinationCity,
     };
@@ -501,7 +507,7 @@ export default function PassengerDetailsScreen() {
 
       const mappedPassengers = selectedSeats.map((seat, index) => ({
         seat: String(seat),
-        fullName: passengers[index]?.fullName || `Passenger ${index + 1}`,
+        fullName: getFullName(passengers[index]) || `Passenger ${index + 1}`,
         age: passengers[index]?.age || "",
         gender: passengers[index]?.gender || "M",
         email: passengers[index]?.email || "",
@@ -509,9 +515,11 @@ export default function PassengerDetailsScreen() {
       }));
 
       const profilesToSave: StoredPassengerProfile[] = passengers.map((passenger, index) => ({
-        id: passenger.phone.trim() || `${passenger.fullName.trim().toLowerCase()}-${index}`,
+        id: passenger.phone.trim() || `${getFullName(passenger).toLowerCase()}-${index}`,
         title: passenger.title,
-        fullName: passenger.fullName.trim(),
+        fullName: getFullName(passenger),
+        firstName: passenger.firstName.trim(),
+        lastName: passenger.lastName.trim(),
         age: passenger.age.trim(),
         gender: passenger.gender,
         email: passenger.email.trim(),
@@ -674,12 +682,28 @@ export default function PassengerDetailsScreen() {
                   ) : null}
                 </View>
 
-                <Text style={styles.fieldLabel}>*Full Name</Text>
+                <Text style={styles.fieldLabel}>*First Name</Text>
                 <View style={styles.inputWrap}>
                   <TextInput
-                    value={passenger.fullName}
-                    onChangeText={(value) => updatePassenger(index, "fullName", value)}
-                    placeholder="Enter your name here"
+                    value={passenger.firstName}
+                    onChangeText={(value) => updatePassenger(index, "firstName", value)}
+                    placeholder="Enter first name"
+                    autoCapitalize="words"
+                    autoCorrect={false}
+                    placeholderTextColor="#B7B0B8"
+                    style={styles.input}
+                  />
+                  <MaterialCommunityIcons name="account-outline" size={18} color="#A7A0A8" />
+                </View>
+
+                <Text style={styles.fieldLabel}>*Last Name</Text>
+                <View style={styles.inputWrap}>
+                  <TextInput
+                    value={passenger.lastName}
+                    onChangeText={(value) => updatePassenger(index, "lastName", value)}
+                    placeholder="Enter last name"
+                    autoCapitalize="words"
+                    autoCorrect={false}
                     placeholderTextColor="#B7B0B8"
                     style={styles.input}
                   />
@@ -835,7 +859,7 @@ export default function PassengerDetailsScreen() {
           </Text>
 
           <View style={styles.bottomFareWrap}>
-            <Text style={styles.bottomFare}>Rs {totalFare.toLocaleString("en-IN")}</Text>
+            <Text style={styles.bottomFare}>Rs {totalFare.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</Text>
             <View style={styles.addIconBox}>
               <MaterialCommunityIcons name="plus" size={14} color="#6D6A72" />
             </View>

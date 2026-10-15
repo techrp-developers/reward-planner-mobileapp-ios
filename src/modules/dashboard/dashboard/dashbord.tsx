@@ -6,6 +6,7 @@ import {
   AppState,
   Platform,
   ImageBackground,
+  Linking,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
@@ -30,10 +31,11 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchWalletBalance } from '../../ecommerce/api/WalleteAPI';
 import { useDashboardLayout } from '../../common/cms/useDashboardLayout';
 import type { MainDashboardSectionKey } from '../../common/cms/dashboardLayout';
-import { fetchResolvedZones } from '../../common/cms/cmsContentApi';
+import { fetchResolvedZones, type CmsOffersBannerEntry } from '../../common/cms/cmsContentApi';
 import { moduleContentQueryKey } from '../../common/cms/useModuleContent';
+import { parseCmsColor, cmsSolidColor } from '../../common/cms/cmsColor';
 import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
-import OffersBanner from '../../ecommerce/components/home/OffersBanner';
+import CmsBannerGallery from '../../ecommerce/components/home/CmsBannerGallery';
 import InvestmentInsuranceOverview from './InvestmentInsuranceOverview';
 import StatusTray from '../status/components/StatusTray';
 import LivePollCard from '../polls/components/LivePollCard';
@@ -46,13 +48,23 @@ const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
   'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'rewardsOverview',
 ];
 
-// Native dimensions of the promotion artwork: 2048 × 1008.
-// React Native derives the displayed height from the available width.
-const DASHBOARD_OFFER_ASPECT_RATIO = 2048 / 1008;
+// Same zone ratios the module home screens use for their CMS banners.
+const PROMOTIONAL_BANNER_RATIO = 2048 / 1008;
+const OFFERS_BANNER_RATIO = 720 / 900;
 
-// The CMS only stores one solid color per navbar_background entry — turn it
-// into a two-stop gradient client-side (rather than needing a second
-// gradient-end field added to the backend) by blending it toward black.
+const hasCmsBannerContent = (banner: CmsOffersBannerEntry | null | undefined) =>
+  banner?.content_type === 'color'
+    ? Boolean(parseCmsColor(banner.color_value))
+    : Boolean(banner?.image_url) ||
+      Boolean(banner?.images?.some((image) => Number(image.is_active) === 1 && image.image_url));
+
+const openBannerLink = (banner: CmsOffersBannerEntry | null | undefined) =>
+  banner?.redirect_link
+    ? () => { Linking.openURL(banner.redirect_link!).catch(() => undefined); }
+    : undefined;
+
+// A solid navbar_background color is turned into a two-stop gradient
+// client-side by blending it toward black; CMS gradients are used as-is.
 const darkenHexColor = (hex: string, amount: number): string => {
   const normalized = hex.replace('#', '');
   if (normalized.length !== 6) return hex;
@@ -91,7 +103,6 @@ const MemoServicesModule = memo(ServicesModule);
 const MemoModuleBanner = memo(ModuleBanner);
 const MemoRewardsOverview = memo(RewardsOverview);
 const MemoBirthdayCarousel = memo(BirthdayCarousel);
-const MemoOffersBanner = memo(OffersBanner);
 const MemoInvestmentInsuranceOverview = memo(InvestmentInsuranceOverview);
 const MemoLivePollCard = memo(LivePollCard);
 
@@ -183,15 +194,17 @@ function Dashbord() {
     mobileDashboardBackground?.content_type === 'image'
       ? mobileDashboardBackground.image_url
       : null;
-  const mobileDashboardColor =
-    mobileDashboardBackground?.content_type === 'color'
-      ? mobileDashboardBackground.color_value
-      : null;
-  const mobileDashboardTextColor = mobileDashboardBackground?.text_color ?? null;
-  const hasMobileDashboardOffers =
-    mobileDashboardContent?.offers_banner?.content_type === 'image' &&
-    Array.isArray(mobileDashboardContent.offers_banner.images) &&
-    mobileDashboardContent.offers_banner.images.some((image) => image.is_active === 1 && image.image_url);
+  const mobileDashboardColor = useMemo(() => {
+    if (mobileDashboardBackground?.content_type !== 'color') return null;
+    const fill = parseCmsColor(mobileDashboardBackground.color_value);
+    if (!fill || fill.isGradient) return fill;
+    return { ...fill, colors: [fill.colors[0], darkenHexColor(fill.colors[0], 0.28)] };
+  }, [mobileDashboardBackground?.content_type, mobileDashboardBackground?.color_value]);
+  const mobileDashboardTextColor = cmsSolidColor(mobileDashboardBackground?.text_color);
+  const mobileDashboardPromotional =
+    (mobileDashboardContent?.promotional_banner ?? null) as CmsOffersBannerEntry | null;
+  const mobileDashboardOffers = mobileDashboardContent?.offers_banner ?? null;
+  const hasMobileDashboardOffers = hasCmsBannerContent(mobileDashboardOffers);
 
   const loadHeaderInfo = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -484,7 +497,7 @@ function Dashbord() {
           key={key}
           source={{ uri: mobileDashboardImageUrl }}
           resizeMode="contain"
-          style={[styles.topSection, { backgroundColor: mobileDashboardBackground?.color_value || '#241936' }]}
+          style={[styles.topSection, { backgroundColor: cmsSolidColor(mobileDashboardBackground?.color_value) || '#241936' }]}
           imageStyle={styles.topSectionImage}
         >
           <LinearGradient
@@ -503,10 +516,10 @@ function Dashbord() {
       return (
         <LinearGradient
           key={key}
-          colors={[mobileDashboardColor, darkenHexColor(mobileDashboardColor, 0.28)]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.topSection, { backgroundColor: mobileDashboardColor }]}
+          colors={mobileDashboardColor.colors}
+          start={mobileDashboardColor.start}
+          end={mobileDashboardColor.end}
+          style={[styles.topSection, { backgroundColor: mobileDashboardColor.colors[0] }]}
         >
           {headerContent}
         </LinearGradient>
@@ -528,6 +541,7 @@ function Dashbord() {
     handleStatusCreated,
     handleStatusDeleted,
     isDark,
+    mobileDashboardBackground?.color_value,
     mobileDashboardColor,
     mobileDashboardImageUrl,
     mobileDashboardTextColor,
@@ -559,6 +573,13 @@ function Dashbord() {
         removeClippedSubviews={Platform.OS === 'android'}
         bounces
       >
+        {hasCmsBannerContent(mobileDashboardPromotional) ? (
+          <CmsBannerGallery
+            banner={mobileDashboardPromotional}
+            fallbackRatio={PROMOTIONAL_BANNER_RATIO}
+            onPress={openBannerLink(mobileDashboardPromotional)}
+          />
+        ) : null}
         <MemoLivePollCard />
         {dashboardLayout.sections.map(({ key }) => {
           switch (key as MainDashboardSectionKey) {
@@ -575,14 +596,13 @@ function Dashbord() {
               return <MemoServicesModule key={key} onModulePress={handleExploreModulePress} />;
             case 'moduleBanner':
               return hasMobileDashboardOffers ? (
-                <MemoOffersBanner
+                <CmsBannerGallery
                   key={key}
-                  module="mobile_dashboard"
-                  moduleContent={mobileDashboardContent}
-                  aspectRatio={DASHBOARD_OFFER_ASPECT_RATIO}
-                  resizeMode="contain"
-                  fullWidth
-                  wrapperStyle={styles.dashboardOffers}
+                  banner={mobileDashboardOffers}
+                  fallbackRatio={OFFERS_BANNER_RATIO}
+                  inset={12}
+                  visibleItems={2.5}
+                  onPress={openBannerLink(mobileDashboardOffers)}
                 />
               ) : (
                 <MemoModuleBanner key={key} />
@@ -668,12 +688,6 @@ const styles = StyleSheet.create({
   topSectionImage: {
     borderBottomLeftRadius: rs(30),
     borderBottomRightRadius: rs(30),
-  },
-
-  dashboardOffers: {
-    paddingHorizontal: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
   },
 
   moduleLaunchOverlay: {

@@ -29,7 +29,6 @@ import {
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import LinearGradient from "react-native-linear-gradient";
-import RazorpayCheckout from "react-native-razorpay";
 import BusBookingStatusPopup, {
   useBusBookingPopup,
 } from "../BusBookingStatusPopup";
@@ -38,11 +37,15 @@ import type {
   BusBookingStackParamList,
 } from "../../navigation/BusBookingStack";
 import {
-  bookBusTicketApi,
-  verifyBusPaymentApi,
   createBusPaymentOrderApi,
 } from "../../services/busBookingApi";
-import { fetchWalletBalance } from "../../../ecommerce/api/WalleteAPI";
+import type {
+  CreateBusPaymentOrderResponse,
+} from "../../services/busBookingApi";
+import {
+  getBusCheckoutErrorResult,
+  runBusCheckout,
+} from "../../utils/busCheckout";
 
 import Selectedseat1 from "../../assets/icons/selectedseat1.svg";
 import Selectedseat2 from "../../assets/icons/selectedseat2.svg";
@@ -279,19 +282,6 @@ export default function BusSummaryScreen() {
   const slideWidth =
     width - 16;
   const [
-    useRewardCoins,
-    setUseRewardCoins,
-  ] = React.useState(false);
-  const [
-    walletBalance,
-    setWalletBalance,
-  ] = React.useState(0);
-  const [
-    loadingWalletBalance,
-    setLoadingWalletBalance,
-  ] = React.useState(true);
-
-  const [
     creatingPaymentOrder,
     setCreatingPaymentOrder,
   ] =
@@ -306,55 +296,6 @@ export default function BusSummaryScreen() {
     React.useState(
       false
     );
-
-  const redeemableCoins =
-    Math.max(
-      0,
-      walletBalance
-    );
-
-  React.useEffect(() => {
-    let mounted = true;
-
-    const loadWalletBalance = async () => {
-      try {
-        setLoadingWalletBalance(true);
-        const response = await fetchWalletBalance();
-
-        if (!mounted) {
-          return;
-        }
-
-        setWalletBalance(
-          Number(
-            response?.data?.balance || 0
-          )
-        );
-      } catch (error) {
-        console.log(
-          "[BusBooking][Summary] Wallet balance load failed",
-          error
-        );
-
-        if (!mounted) {
-          return;
-        }
-
-        setWalletBalance(0);
-      } finally {
-        if (mounted) {
-          setLoadingWalletBalance(false);
-        }
-      }
-    };
-
-    loadWalletBalance();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
 
   /*
   |--------------------------------------------------------------------------
@@ -453,7 +394,7 @@ export default function BusSummaryScreen() {
   const orderRef =
     String(
       blockResponse
-        ?.order_ref || blockResponse?.orderRef ||
+        ?.orderRef ||
       ""
     ).trim();
 
@@ -463,27 +404,6 @@ export default function BusSummaryScreen() {
         ?.localOrderId ||
       0
     );
-
-  const traceId =
-    String(
-      blockResponse
-        ?.traceId ||
-      ""
-    ).trim();
-
-  const srdvIndex =
-    String(
-      blockResponse
-        ?.srdvIndex ||
-      ""
-    ).trim();
-
-  const resultIndex =
-    String(
-      blockResponse
-        ?.resultIndex ||
-      ""
-    ).trim();
 
 
   /*
@@ -545,7 +465,8 @@ export default function BusSummaryScreen() {
   |--------------------------------------------------------------------------
   */
 
-  const baseFare =
+  // Only a fallback for the total if the block response carries no amount.
+  const listingFare =
     getFareValue(
       bus?.price
     ) *
@@ -577,57 +498,55 @@ const totalAmount =
 
     ? backendPayableAmount
 
-    : baseFare;
+    : listingFare;
 
 
 /*
 |--------------------------------------------------------------------------
-| Remove Fake Charges For Payment
+| Fare Breakdown
+|--------------------------------------------------------------------------
+|
+| Taken from the seat prices the provider returned when it blocked the
+| seats. When it sends no breakdown, only the total is shown.
+|
 |--------------------------------------------------------------------------
 */
 
-const taxes =
-  0;
-
-
-const rewardDiscount =
-  0;
-
-const rewardEarned =
-  Math.max(
-    0,
-    Math.round(
-      totalAmount * 0.03
-    )
+const providerBaseFare =
+  (Array.isArray(blockResponse?.passengers)
+    ? blockResponse.passengers
+    : []
+  ).reduce(
+    (sum: number, passenger: any) =>
+      sum +
+      Number(
+        passenger?.Seat?.Price?.BasePrice ??
+        passenger?.Seat?.Price?.BaseFare ??
+        0
+      ),
+    0
   );
+
+const hasFareBreakdown =
+  providerBaseFare > 0 &&
+  providerBaseFare <= totalAmount;
+
+const baseFare =
+  hasFareBreakdown
+    ? providerBaseFare
+    : totalAmount;
+
+const taxes =
+  hasFareBreakdown
+    ? Number((totalAmount - providerBaseFare).toFixed(2))
+    : 0;
 
   const openRazorpayCheckout =
     React.useCallback(
       async (
-        order: {
-          data?: {
-            key?: string;
-            orderId?: string;
-            amount?: number;
-            currency?: string;
-          };
-        }
+        order:
+          CreateBusPaymentOrderResponse
       ) => {
-
-        if (
-          !order?.data?.key ||
-          !order?.data?.orderId ||
-          !Number.isFinite(
-            Number(
-              order?.data?.amount
-            )
-          )
-        ) {
-
-          throw new Error(
-            "Razorpay order details are missing."
-          );
-        }
 
         const firstPassenger =
           Array.isArray(
@@ -637,99 +556,37 @@ const rewardEarned =
             ? passengers[0]
             : null;
 
-        const options = {
-          key:
-            order.data.key,
-          amount:
-            Number(
-              order.data.amount
-            ),
-          currency:
-            order.data.currency ||
-            "INR",
-          order_id:
-            order.data.orderId,
-          name:
-            "Rewards Planners",
-          description:
-            `Bus Ticket ${sourceCity} to ${destinationCity}`,
-          prefill: {
-            name:
-              firstPassenger?.fullName ||
-              "Rewards Planners User",
-            contact:
-              firstPassenger?.phone ||
-              "",
-            email:
-              firstPassenger?.email ||
-              "",
-          },
-          theme: {
-            color:
-              "#D31637",
-          },
-        };
-
-        console.log(
-          "[BusBooking][Summary] RAZORPAY OPTIONS",
-          {
-            order_id:
-              options.order_id,
-            amount:
-              options.amount,
-            key:
-              options.key,
-          }
-        );
-
         setProcessingPayment(
           true
         );
 
         try {
-          const paymentResult =
-            await RazorpayCheckout.open(
-              options
-            );
-
-          await verifyBusPaymentApi({
-            razorpay_order_id: paymentResult.razorpay_order_id,
-            razorpay_payment_id: paymentResult.razorpay_payment_id,
-            razorpay_signature: paymentResult.razorpay_signature,
-          });
-          const bookingResponse = await bookBusTicketApi({ order_ref: orderRef });
-
-          console.log(
-            "[BusBooking][Summary] BOOK SUCCESS",
-            bookingResponse
-          );
-
-          showPopup({
-            title: "Booking Confirmed",
-            message: bookingResponse?.ticketNo
-              ? `Ticket No: ${bookingResponse.ticketNo}`
-              : "Bus ticket booked successfully.",
-            variant: "success",
-            onClose: () => navigation.navigate("BookingHomeScreen"),
-          });
-        } catch (error: any) {
-          console.log(
-            "[BusBooking][Summary] RAZORPAY ERROR",
-            error
-          );
-
-          const message =
-            error?.description ||
-            error?.message ||
-            error?.error?.description ||
-            "Payment was cancelled or failed.";
+          // Razorpay -> verify-payment -> book. Every outcome, including a
+          // cancelled checkout, comes back as a popup to show.
+          const result =
+            await runBusCheckout({
+              order,
+              orderRef,
+              description:
+                `Bus Ticket ${sourceCity} to ${destinationCity}`,
+              prefill: {
+                name:
+                  firstPassenger?.fullName ||
+                  "Rewards Planners User",
+                contact:
+                  firstPassenger?.phone ||
+                  "",
+                email:
+                  firstPassenger?.email ||
+                  "",
+              },
+            });
 
           showPopup({
-            title: String(message).toLowerCase().includes("cancel")
-              ? "Payment Cancelled"
-              : "Payment Failed",
-            message: String(message),
-            variant: String(message).toLowerCase().includes("cancel") ? "warning" : "error",
+            ...result.popup,
+            onClose: result.leaveCheckout
+              ? () => navigation.popToTop()
+              : undefined,
           });
         } finally {
           setProcessingPayment(
@@ -738,14 +595,12 @@ const rewardEarned =
         }
       },
       [
-        orderRef,
         destinationCity,
         navigation,
+        orderRef,
         passengers,
-        resultIndex,
+        showPopup,
         sourceCity,
-        srdvIndex,
-        traceId,
       ]
     );
 
@@ -834,14 +689,6 @@ const rewardEarned =
           "======================================"
         );
 
-const orderRef =
-  String(
-    blockResponse
-      ?.order_ref || blockResponse?.orderRef ||
-    ""
-  );
-
-
 if (
   !orderRef
 ) {
@@ -897,12 +744,18 @@ if (
             error
           );
 
+          // An expired seat hold (HTTP 410) cannot be paid for any more, so
+          // that case sends the user back to pick seats again.
+          const result =
+            getBusCheckoutErrorResult(
+              error
+            );
+
           showPopup({
-            title: String(error?.message || "").toLowerCase().includes("token")
-              ? "Session Expired"
-              : "Payment Error",
-            message: error?.message || "Unable to start bus payment.",
-            variant: "error",
+            ...result.popup,
+            onClose: result.leaveCheckout
+              ? () => navigation.popToTop()
+              : undefined,
           });
         } finally {
 
@@ -918,11 +771,12 @@ if (
         finalBoardingPoint,
         finalDroppingPoint,
         localOrderId,
+        navigation,
         openRazorpayCheckout,
         orderRef,
-        passengers,
         processingPayment,
         selectedSeats,
+        showPopup,
         totalAmount,
       ]
     );
@@ -1498,153 +1352,6 @@ if (
 
         {/*
         |--------------------------------------------------------------------------
-        | Rewards Card
-        |--------------------------------------------------------------------------
-        */}
-
-        <View
-          style={
-            styles.pointsCard
-          }
-        >
-
-          <View
-            style={
-              styles.pointsCardHeader
-            }
-          >
-
-            <View
-              style={[
-                styles.pointsIcon,
-                useRewardCoins &&
-                redeemableCoins > 0
-                  ? styles.pointsIconActive
-                  : styles.pointsIconDisabled,
-              ]}
-            >
-
-              <MaterialCommunityIcons
-                name="star-four-points"
-                size={18}
-                color={
-                  useRewardCoins &&
-                  redeemableCoins > 0
-                    ? "#D31637"
-                    : "#8E8A90"
-                }
-              />
-
-            </View>
-
-
-            <View
-              style={
-                styles.pointsCardTextWrap
-              }
-            >
-
-              <Text
-                style={
-                  styles.pointsCardTitle
-                }
-              >
-                Redeem Rewards Planner Points
-              </Text>
-
-
-              <Text
-                style={
-                  styles.pointsCardSubtext
-                }
-              >
-                {loadingWalletBalance
-                  ? "Loading your available RP coins..."
-                  : redeemableCoins > 0
-                    ? `You currently have ${redeemableCoins.toLocaleString("en-IN")} RP coins in your wallet for redemption.`
-                    : "No RP coins are available in this wallet right now."}
-              </Text>
-
-            </View>
-
-
-            <TouchableOpacity
-              activeOpacity={0.88}
-              disabled={redeemableCoins <= 0}
-              onPress={() =>
-                setUseRewardCoins(
-                  current =>
-                    !current
-                )
-              }
-              style={[
-                styles.pointsToggleTrack,
-                useRewardCoins &&
-                redeemableCoins > 0
-                  ? styles.pointsToggleTrackActive
-                  : null,
-                redeemableCoins <= 0
-                  ? styles.pointsToggleTrackDisabled
-                  : null,
-              ]}
-            >
-
-              <View
-                style={[
-                  styles.pointsToggleThumb,
-                  useRewardCoins &&
-                  redeemableCoins > 0
-                    ? styles.pointsToggleThumbActive
-                    : null,
-                ]}
-              />
-
-            </TouchableOpacity>
-
-          </View>
-
-
-          <View
-            style={
-              styles.pointsCardFooter
-            }
-          >
-
-            <Text
-              style={
-                styles.pointsBalanceText
-              }
-            >
-              {loadingWalletBalance
-                ? "Current Balance: Loading..."
-                : `Current Balance: ${walletBalance.toLocaleString("en-IN")} Coins`}
-
-            </Text>
-
-
-            <Text
-              style={[
-                styles.pointsAppliedText,
-                useRewardCoins &&
-                redeemableCoins > 0
-                  ? styles.pointsAppliedTextActive
-                  : null,
-              ]}
-            >
-              {redeemableCoins <= 0
-                ? "Unavailable"
-                : useRewardCoins
-                  ? "Redeem enabled"
-                  : "Disabled"}
-            </Text>
-
-          </View>
-
-        </View>
-
-
-        {/*
-        |--------------------------------------------------------------------------
         | Fare Summary
         |--------------------------------------------------------------------------
         */}
@@ -1715,6 +1422,7 @@ if (
           |--------------------------------------------------------------------------
           */}
 
+          {taxes > 0 ? (
           <View
             style={
               styles.fareRow
@@ -1744,68 +1452,7 @@ if (
             </Text>
 
           </View>
-
-
-          {/*
-          |--------------------------------------------------------------------------
-          | Reward Discount
-          |--------------------------------------------------------------------------
-          */}
-
-          <View
-            style={
-              styles.fareRow
-            }
-          >
-
-            <View
-              style={
-                styles.discountRow
-              }
-            >
-
-              <Text
-                style={
-                  styles.fareLabel
-                }
-              >
-                Reward Discount
-              </Text>
-
-
-              <View
-                style={
-                  styles.rpBadge
-                }
-              >
-
-                <Text
-                  style={
-                    styles.rpBadgeText
-                  }
-                >
-                  RP COINS
-                </Text>
-
-              </View>
-
-            </View>
-
-
-            <Text
-              style={
-                styles.discountValue
-              }
-            >
-
-              -₹
-              {rewardDiscount.toLocaleString(
-                "en-IN"
-              )}
-
-            </Text>
-
-          </View>
+          ) : null}
 
 
           <View
@@ -1854,30 +1501,6 @@ if (
             </View>
 
 
-            <View
-              style={
-                styles.earnedWrap
-              }
-            >
-
-              <Text
-                style={
-                  styles.earnedLabel
-                }
-              >
-                EARNED
-              </Text>
-
-
-              <Text
-                style={
-                  styles.earnedValue
-                }
-              >
-                +{rewardEarned.toLocaleString("en-IN")} RP coins
-              </Text>
-
-            </View>
 
           </View>
 
@@ -1952,7 +1575,7 @@ if (
                   }
                 >
                   {processingPayment
-                    ? "Opening Payment..."
+                    ? "Processing Payment..."
                     : "Creating Payment..."}
                 </Text>
               </>

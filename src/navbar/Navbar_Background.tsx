@@ -5,6 +5,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { NavbarBannerMap } from "./api/NavbarContentApi";
 import { TopTab } from "./navbarConstants";
 
@@ -69,10 +70,18 @@ export default function Navbar_Background({
     const imageUrl = banner?.imageUrl;
     const showImage = Boolean(imageUrl && !failedImages[imageUrl]);
     const bgColor = isDark ? defaultBgColor : banner?.bgColor ?? defaultBgColor;
+    const gradient = !isDark && banner?.bgFill?.isGradient ? banner.bgFill : null;
 
     return (
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
-        {bgColor !== "transparent" ? (
+        {gradient ? (
+          <LinearGradient
+            colors={gradient.colors}
+            start={gradient.start}
+            end={gradient.end}
+            style={StyleSheet.absoluteFill}
+          />
+        ) : bgColor !== "transparent" ? (
           <View style={[StyleSheet.absoluteFill, { backgroundColor: bgColor }]} />
         ) : null}
         {showImage ? (

@@ -3,6 +3,7 @@ import { Image, View, Text, ScrollView, TouchableOpacity, StyleSheet, useWindowD
 import LinearGradient from 'react-native-linear-gradient';
 import type { CmsOffersBannerEntry } from '../../../common/cms/cmsContentApi';
 import { normalizeLocalCmsImageUrl } from '../../../../config/apiConfig';
+import { parseCmsColor, cmsSolidColor } from '../../../common/cms/cmsColor';
 
 // Reuse metadata across slides, remounts and device rotations.
 const ratios = new Map<string, number>();
@@ -79,20 +80,15 @@ export default function CmsBannerGallery({ banner, fallbackRatio, inset = 0, vis
   );
   let body: React.ReactNode;
   if (banner.content_type === 'color') {
-    let gradient: { colors: string[]; direction?: string } | null = null;
-    try { const value = JSON.parse(banner.color_value || ''); if (Array.isArray(value.colors) && value.colors.length >= 2) gradient = value; } catch { /* Plain colors are valid. */ }
-    const directions: Record<string, [{ x: number; y: number }, { x: number; y: number }]> = {
-      'left-right': [{x:0,y:0},{x:1,y:0}], 'right-left': [{x:1,y:0},{x:0,y:0}],
-      'top-bottom': [{x:0,y:0},{x:0,y:1}], 'bottom-top': [{x:0,y:1},{x:0,y:0}],
-      'top-left-bottom-right': [{x:0,y:0},{x:1,y:1}], 'bottom-left-top-right': [{x:0,y:1},{x:1,y:0}],
-    };
-    const points = directions[gradient?.direction || 'left-right'] || directions['left-right'];
-    const label = <><Text style={{ color: banner.text_color || '#FFFFFF', fontWeight: '700' }}>{banner.title}</Text>
-      {!!banner.cta_text && <Text style={{ color: banner.text_color || '#FFFFFF' }}>{banner.cta_text}</Text>}</>;
+    const fill = parseCmsColor(banner.color_value);
+    const gradient = fill?.isGradient ? fill : null;
+    const textColor = cmsSolidColor(banner.text_color) || '#FFFFFF';
+    const label = <><Text style={{ color: textColor, fontWeight: '700' }}>{banner.title}</Text>
+      {!!banner.cta_text && <Text style={{ color: textColor }}>{banner.cta_text}</Text>}</>;
     const box = { width, aspectRatio: fallbackRatio, padding: 20, justifyContent: 'center' as const };
     body = <TouchableOpacity disabled={!onPress} onPress={onPress}>{gradient
-      ? <LinearGradient colors={gradient.colors} start={points[0]} end={points[1]} style={box}>{label}</LinearGradient>
-      : <View style={[box, { backgroundColor: banner.color_value || '#852BAF' }]}>{label}</View>}</TouchableOpacity>;
+      ? <LinearGradient colors={gradient.colors} start={gradient.start} end={gradient.end} style={box}>{label}</LinearGradient>
+      : <View style={[box, { backgroundColor: fill?.colors[0] || '#852BAF' }]}>{label}</View>}</TouchableOpacity>;
   } else {
     if (!images.length) return null;
     if (mode === 'single') body = tile(images[0], width);

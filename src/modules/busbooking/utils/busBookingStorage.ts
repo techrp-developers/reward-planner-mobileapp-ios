@@ -4,6 +4,8 @@ export type StoredPassengerProfile = {
   id: string;
   title: string;
   fullName: string;
+  firstName?: string;
+  lastName?: string;
   age: string;
   gender: "M" | "F" | "O";
   email: string;
@@ -59,6 +61,8 @@ const normalizePassengerProfile = (
       `${normalizedName}-${email || "profile"}`,
     title: String(profile.title || "Mr"),
     fullName,
+    firstName: profile.firstName?.trim(),
+    lastName: profile.lastName?.trim(),
     age: String(profile.age || ""),
     gender: profile.gender || "M",
     email,

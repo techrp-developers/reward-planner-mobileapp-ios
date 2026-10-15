@@ -1,4 +1,5 @@
 import React from "react";
+import { getVerifiedAvailableSeats, formatAvailableSeats as toSeatLabel } from "../../utils/busSeatAvailability";
 
 import {
   ActivityIndicator,
@@ -24,9 +25,13 @@ import type { BusBookingStackParamList } from "../../navigation/BusBookingStack"
 import { getSeatLayoutApi,
 } from "../../services/busBookingApi";
 import {
+  buildBusListingFacets,
   matchesQuickFilter,
   matchesBusListingFilters,
-  createEmptyBusListingFilters,
+  parseSelectedBusFilters,
+  sortBusListing,
+  type BusListingBus,
+  type BusSortId,
 } from "../../utils/busListingFilters";
 
 type ListingRouteProp = RouteProp<
@@ -40,23 +45,7 @@ type FilterChip = {
   opensScreen?: boolean;
 };
 
-export type BusCard = {
-  id: string;
-  operator: string;
-  subtitle: string;
-  departure: string;
-  arrival: string;
-  from: string;
-  to: string;
-  duration: string;
-  price: string;
-  seatsLeft: string;
-  rating: string;
-  features: string[];
-  about: string;
-  topRated?: boolean;
-  raw?: any;
-};
+export type BusCard = BusListingBus;
 
 const pickFirstDefined = (source: Record<string, any>, keys: string[]) => {
   for (const key of keys) {
@@ -99,22 +88,37 @@ const toPriceLabel = (value: unknown) => {
   return `Rs ${amount.toLocaleString("en-IN")}`;
 };
 
-const toSeatLabel = (value: unknown) => {
-  const seats = Number(String(value ?? "").replace(/[^\d]/g, ""));
-  if (!Number.isFinite(seats) || seats <= 0) {
-    return "SEATS AVAILABLE";
-  }
 
-  return `${seats} SEATS LEFT`;
-};
-
+// Empty when the provider sends no rating: the card then shows no rating
+// rather than an invented one.
 const toRatingLabel = (value: unknown) => {
   const rating = Number(String(value ?? "").replace(/[^\d.]/g, ""));
   if (!Number.isFinite(rating) || rating <= 0) {
-    return "4.0";
+    return "";
   }
 
   return rating.toFixed(1);
+};
+
+// Names of the boarding / dropping points the provider lists for a bus.
+const toPointNames = (value: unknown) => {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((point) =>
+      String(
+        pickFirstDefined(point || {}, [
+          "CityPointName",
+          "Name",
+          "name",
+          "CityPointLocation",
+          "Location",
+        ]) ?? ""
+      ).trim()
+    )
+    .filter(Boolean);
 };
 
 const buildDurationLabel = (
@@ -148,23 +152,26 @@ const buildDurationLabel = (
   return `${Math.floor(diff / 60)}h ${diff % 60}m`;
 };
 
-const normalizeFeatures = (value: unknown) => {
+// Only what the provider reports for this bus; nothing is assumed.
+const normalizeFeatures = (bus: any) => {
+  const value = pickFirstDefined(bus, ["features", "amenities", "Amenities"]);
+  let features: string[] = [];
+
   if (Array.isArray(value)) {
-    return value
-      .map((item) => String(item).trim().toUpperCase())
-      .filter(Boolean)
-      .slice(0, 3);
+    features = value.map((item) => String(item).trim().toUpperCase());
+  } else if (typeof value === "string" && value.trim()) {
+    features = value.split(/[|,]/).map((item) => item.trim().toUpperCase());
   }
 
-  if (typeof value === "string" && value.trim()) {
-    return value
-      .split(/[|,]/)
-      .map((item) => item.trim().toUpperCase())
-      .filter(Boolean)
-      .slice(0, 3);
+  if (bus?.LiveTrackingAvailable === true || bus?.LiveTrackingAvailable === "true") {
+    features.push("LIVE TRACKING");
   }
 
-  return ["LIVE TRACKING", "SAFE TRAVEL"];
+  if (bus?.MTicketEnabled === true || bus?.MTicketEnabled === "true") {
+    features.push("M-TICKET");
+  }
+
+  return [...new Set(features.filter(Boolean))];
 };
 
 const normalizeBusCard = (
@@ -275,13 +282,18 @@ const price = toPriceLabel(
     pickFirstDefined(bus, ["rating", "ratings", "Rating", "Ratings"])
   );
 
-  const features = normalizeFeatures(
-    pickFirstDefined(bus, ["features", "amenities", "Amenities"])
+  const features = normalizeFeatures(bus);
+
+  const boardingPoints = toPointNames(
+    pickFirstDefined(bus, ["BoardingPoints", "boardingPoints"])
+  );
+
+  const droppingPoints = toPointNames(
+    pickFirstDefined(bus, ["DroppingPoints", "droppingPoints"])
   );
 
   const about = String(
-    pickFirstDefined(bus, ["about", "description", "Description"]) ??
-      `About Bus: ${operator} - ${subtitle}.`
+    pickFirstDefined(bus, ["about", "description", "Description"]) ?? ""
   );
 
   const id = String(
@@ -310,15 +322,11 @@ const price = toPriceLabel(
     rating,
     features,
     about,
+    boardingPoints,
+    droppingPoints,
     topRated: Number(rating) >= 4.5,
     raw: bus,
   };
-
-  console.log("[BusBooking][Listing] Normalized bus", {
-    index,
-    rawBus: bus,
-    normalizedCard,
-  });
 
   return normalizedCard;
 };
@@ -330,100 +338,11 @@ const filterChips: FilterChip[] = [
   { id: "seater", label: "Seater" },
 ];
 
-const busCards: BusCard[] = [
-  {
-    id: "1",
-    operator: "Bharat Express",
-    subtitle: "Volvo AC Sleeper (2+1)",
-    departure: "22:00",
-    arrival: "06:45",
-    from: "Mumbai, Borivali",
-    to: "Pune, Swargate",
-    duration: "8h 45m",
-    price: "Rs 1,250",
-    seatsLeft: "2 SEATS LEFT",
-    rating: "4.5",
-    features: ["BEST PRICE GUARANTEED", "FREE WIFI", "LIVE TRACKING"],
-    about: "About Bus: Clean sleeper coach with smooth ride and punctual service.",
-    topRated: true,
-  },
-  {
-    id: "2",
-    operator: "Bharat Express",
-    subtitle: "Volvo AC Sleeper (2+1)",
-    departure: "22:00",
-    arrival: "06:45",
-    from: "Mumbai, Borivali",
-    to: "Pune, Swargate",
-    duration: "8h 45m",
-    price: "Rs 1,250",
-    seatsLeft: "2 SEATS LEFT",
-    rating: "4.5",
-    features: ["CHARGING POINT", "BLANKET", "WATER BOTTLE"],
-    about: "About Bus: Comfortable AC bus with neat seats and reliable night travel.",
-  },
-  {
-    id: "3",
-    operator: "Bharat Express",
-    subtitle: "Volvo AC Sleeper (2+1)",
-    departure: "22:00",
-    arrival: "06:45",
-    from: "Mumbai, Borivali",
-    to: "Pune, Swargate",
-    duration: "8h 45m",
-    price: "Rs 1,250",
-    seatsLeft: "2 SEATS LEFT",
-    rating: "4.5",
-    features: ["LIVE TRACKING", "USB CHARGER", "EMERGENCY SUPPORT"],
-    about: "About Bus: Trusted operator bus with good seating and easy boarding.",
-  },
-  {
-    id: "4",
-    operator: "Orange Tours",
-    subtitle: "Volvo Multi Axle Seater (2+2)",
-    departure: "21:30",
-    arrival: "05:50",
-    from: "Mumbai, Andheri",
-    to: "Pune, Wakad",
-    duration: "8h 20m",
-    price: "Rs 440",
-    seatsLeft: "12 SEATS LEFT",
-    rating: "4.3",
-    features: ["FREE WIFI", "READING LIGHT", "FRESH LINEN"],
-    about: "About Bus: Spacious seater bus suited for budget-friendly city travel.",
-  },
-  {
-    id: "5",
-    operator: "Sharma Travels",
-    subtitle: "AC Seater 2+2",
-    departure: "23:15",
-    arrival: "06:55",
-    from: "Mumbai, Dadar",
-    to: "Pune, Shivaji Nagar",
-    duration: "7h 40m",
-    price: "Rs 440",
-    seatsLeft: "10 SEATS LEFT",
-    rating: "4.6",
-    features: ["BEST PRICE GUARANTEED", "FEMALE FRIENDLY", "LIVE TRACKING"],
-    about: "About Bus: Popular seater option with safe and comfortable seating.",
-    topRated: true,
-  },
-  {
-    id: "6",
-    operator: "IntrCity SmartBus",
-    subtitle: "Bharat Benz AC Sleeper",
-    departure: "20:45",
-    arrival: "05:15",
-    from: "Mumbai, Sion",
-    to: "Pune, Hinjewadi",
-    duration: "8h 30m",
-    price: "Rs 1,099",
-    seatsLeft: "3 SEATS LEFT",
-    rating: "4.4",
-    features: ["SANITIZED BUS", "CHARGING POINT", "FREE WIFI"],
-    about: "About Bus: Premium sleeper bus with well-maintained interior and comfort.",
-  },
-];
+const SORT_LABELS: Record<BusSortId, string> = {
+  departure: "Departure",
+  price: "Price",
+  rating: "Rating",
+};
 
 export default function BusListingScreen() {
   const navigation =
@@ -471,25 +390,44 @@ console.log(
     setSeatLayoutLoadingBusId,
   ] = React.useState<string | null>(null);
 
-  const listingBuses = React.useMemo(() => {
-    let filtered: BusCard[] = [];
+  const [sortId, setSortId] = React.useState<BusSortId>("departure");
+  const [layoutCounts, setLayoutCounts] = React.useState<Record<string, number>>({});
 
-    if (Array.isArray(buses) && buses.length > 0) {
-      filtered = buses.map((bus, index) =>
-        normalizeBusCard(bus, index, sourceCity, destinationCity)
-      );
-      console.log("[BusBooking][Listing] Normalized API buses", {
-        count: filtered.length,
-        sourceCity,
-        destinationCity,
-        journeyDate,
-      });
-    } else if (Array.isArray(buses) && buses.length === 0) {
-      filtered = [];
-    } else {
-      // Never present demo inventory as bookable inventory in production.
-      filtered = [];
-    }
+  // Every bus the search returned, before any filter is applied.
+  const allBuses = React.useMemo<BusCard[]>(
+    () =>
+      Array.isArray(buses)
+        ? buses.map((bus, index) =>
+            normalizeBusCard(bus, index, sourceCity, destinationCity)
+          )
+        : [],
+    [buses, destinationCity, sourceCity]
+  );
+
+  // Filter options and their counts come from this search's buses.
+  const facets = React.useMemo(
+    () => buildBusListingFacets(allBuses),
+    [allBuses]
+  );
+
+  // Rating is only offered as a sort when the provider sent ratings.
+  const sortOptions = React.useMemo<BusSortId[]>(
+    () =>
+      allBuses.some((bus) => bus.rating)
+        ? ["departure", "price", "rating"]
+        : ["departure", "price"],
+    [allBuses]
+  );
+
+  const handleCycleSort = React.useCallback(() => {
+    setSortId((current) => {
+      const index = sortOptions.indexOf(current);
+      return sortOptions[(index + 1) % sortOptions.length];
+    });
+  }, [sortOptions]);
+
+  const listingBuses = React.useMemo(() => {
+    let filtered: BusCard[] = allBuses;
 
     // 1. Apply quick filter chips (AC, Sleeper, Seater)
     if (selectedFilter && selectedFilter !== "all") {
@@ -498,54 +436,13 @@ console.log(
 
     // 2. Apply detailed filters from AllFilterScreen
     if (selectedFiltersList.length > 0) {
-      const activeFilters = createEmptyBusListingFilters();
-
-      selectedFiltersList.forEach((id) => {
-        if (["volvo", "ac", "non-ac"].includes(id)) {
-          activeFilters.busTypes.push(id);
-        } else if (["seater", "sleeper"].includes(id)) {
-          activeFilters.seatTypes.push(id);
-        } else if (["before-6", "6-12", "12-6", "after-6"].includes(id)) {
-          activeFilters.departureTimeRanges.push(id);
-        } else if (["wifi", "water", "charging", "blanket"].includes(id)) {
-          activeFilters.amenities.push(id);
-        } else if (["greenline", "blue-diamond", "royal-heritage"].includes(id)) {
-          const operatorMap: Record<string, string> = {
-            greenline: "Greenline Express",
-            "blue-diamond": "Blue Diamond",
-            "royal-heritage": "Royal Heritage",
-          };
-          activeFilters.operators.push(operatorMap[id] || id);
-        } else if (id.startsWith("boarding-")) {
-          const boardingMap: Record<string, string> = {
-            "boarding-majestic": "Majestic",
-            "boarding-indiranagar": "Indiranagar",
-            "boarding-electronic": "Electronic City",
-            "boarding-marathahalli": "Marathahalli",
-            "boarding-hebbal": "Hebbal",
-            "boarding-silk-board": "Silk Board",
-            "boarding-koramangala": "Koramangala",
-          };
-          activeFilters.boardingPoints.push(boardingMap[id] || id);
-        } else if (id.startsWith("dropping-")) {
-          const droppingMap: Record<string, string> = {
-            "dropping-majestic": "Majestic",
-            "dropping-indiranagar": "Indiranagar",
-            "dropping-electronic": "Electronic City",
-            "dropping-marathahalli": "Marathahalli",
-            "dropping-hebbal": "Hebbal",
-            "dropping-silk-board": "Silk Board",
-            "dropping-koramangala": "Koramangala",
-          };
-          activeFilters.droppingPoints.push(droppingMap[id] || id);
-        }
-      });
+      const activeFilters = parseSelectedBusFilters(selectedFiltersList);
 
       filtered = filtered.filter((bus) => matchesBusListingFilters(bus, activeFilters));
     }
 
-    return filtered;
-  }, [buses, destinationCity, journeyDate, sourceCity, selectedFilter, selectedFiltersList]);
+    return sortBusListing(filtered, sortId);
+  }, [allBuses, selectedFilter, selectedFiltersList, sortId]);
 
   const routeTitle = `${sourceCity} -> ${destinationCity}`;
 
@@ -567,12 +464,14 @@ console.log(
       if (item.id === "all") {
         navigation.navigate("AllFilterScreen", {
           selectedOptions: selectedFiltersList,
+          facets,
         });
       } else {
-        setSelectedFilter(item.id);
+        // Tapping the active chip again clears it.
+        setSelectedFilter((current) => (current === item.id ? "all" : item.id));
       }
     },
-    [navigation, selectedFiltersList]
+    [facets, navigation, selectedFiltersList]
   );
 
 const handleOpenSeatSelection =
@@ -757,12 +656,21 @@ const handleOpenSeatSelection =
         |--------------------------------------------------------------------------
         */
 
+        const availableSeats = getVerifiedAvailableSeats(response.seats);
+        if (availableSeats === null) {
+          throw new Error("Seat availability could not be verified. Please try View Seats again.");
+        }
+        setLayoutCounts(current => ({
+          ...current,
+          [`${traceId}:${bus.id}`]: availableSeats,
+        }));
+
         navigation.navigate(
           "SeatSelectionScreen",
           {
-            bus,
+            bus: { ...bus, seatsLeft: toSeatLabel(availableSeats) },
             seatLayout:
-              response,
+              { ...response, availableSeats },
             isWomenBooking,
           }
         );
@@ -835,9 +743,11 @@ const handleOpenSeatSelection =
       >
         <View style={styles.resultsRow}>
           <Text style={styles.resultsText}>{listingBuses.length} Buses found</Text>
-          <TouchableOpacity activeOpacity={0.85}>
-            <Text style={styles.sortText}>Sort by: Rating</Text>
-          </TouchableOpacity>
+          {allBuses.length > 1 ? (
+            <TouchableOpacity activeOpacity={0.85} onPress={handleCycleSort}>
+              <Text style={styles.sortText}>Sort by: {SORT_LABELS[sortId]}</Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
 
         <ScrollView
@@ -912,26 +822,28 @@ const handleOpenSeatSelection =
                       <Text style={styles.subtitleText}>{item.subtitle}</Text>
                     </View>
 
-                    <View
-                      style={[
-                        styles.ratingPill,
-                        isHighlighted ? styles.ratingPillHighlighted : null,
-                      ]}
-                    >
-                      <MaterialCommunityIcons
-                        name="star"
-                        size={14}
-                        color={isHighlighted ? "#FFC94A" : "#FFFFFF"}
-                      />
-                      <Text
+                    {item.rating ? (
+                      <View
                         style={[
-                          styles.ratingText,
-                          isHighlighted ? styles.ratingTextHighlighted : null,
+                          styles.ratingPill,
+                          isHighlighted ? styles.ratingPillHighlighted : null,
                         ]}
                       >
-                        {item.rating}
-                      </Text>
-                    </View>
+                        <MaterialCommunityIcons
+                          name="star"
+                          size={14}
+                          color={isHighlighted ? "#FFC94A" : "#FFFFFF"}
+                        />
+                        <Text
+                          style={[
+                            styles.ratingText,
+                            isHighlighted ? styles.ratingTextHighlighted : null,
+                          ]}
+                        >
+                          {item.rating}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
 
                   <View style={styles.timingRow}>
@@ -968,7 +880,9 @@ const handleOpenSeatSelection =
                   <View style={styles.cardBottomRow}>
                     <View>
                       <Text style={styles.priceText}>{item.price}</Text>
-                      <Text style={styles.seatsText}>{item.seatsLeft}</Text>
+                      <Text style={styles.seatsText}>{layoutCounts[`${traceId}:${item.id}`] !== undefined
+                        ? toSeatLabel(layoutCounts[`${traceId}:${item.id}`])
+                        : item.seatsLeft}</Text>
                     </View>
 
   <TouchableOpacity
