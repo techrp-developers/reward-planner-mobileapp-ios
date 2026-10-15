@@ -27,6 +27,20 @@
 			remoteGlobalIDString = 4428D877D99E354F61E3BA37B831F2FF;
 			remoteInfo = "Pods-RewardsPlanners";
 		};
+		D02664333080EED0008DE56B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 08D1FFC2980C1ED72AE9A4C44A0544C3;
+			remoteInfo = "react-native-document-picker";
+		};
+		D02664353080EED0008DE56B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = B058F035CFD84ECBF8414E4EAE5834FC;
+			remoteInfo = "react-native-video";
+		};
 		D030488B305D55E900B8D6AF /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */;
@@ -1099,6 +1113,7 @@
 				D030488E305D55E900B8D6AF /* ReactNativeBlobUtilPrivacyInfo.bundle */,
 				D0304890305D55E900B8D6AF /* libreact-native-cameraroll.a */,
 				D0304892305D55E900B8D6AF /* RNCameraRollPrivacyInfo.bundle */,
+				D02664343080EED0008DE56B /* libreact-native-document-picker.a */,
 				D06F5D082FE50BA900E6406A /* libreact-native-geolocation.a */,
 				D06F5D0A2FE50BA900E6406A /* libreact-native-image-picker.a */,
 				D06F5D0C2FE50BA900E6406A /* RNImagePickerPrivacyInfo.bundle */,
@@ -1107,6 +1122,7 @@
 				D0304894305D55E900B8D6AF /* libreact-native-ota-hot-update.a */,
 				D06F5D102FE50BA900E6406A /* libreact-native-razorpay.a */,
 				D06F5D122FE50BA900E6406A /* libreact-native-safe-area-context.a */,
+				D02664363080EED0008DE56B /* libreact-native-video.a */,
 				D0304896305D55E900B8D6AF /* libreact-native-view-shot.a */,
 				D0304898305D55E900B8D6AF /* RNViewShotPrivacyInfo.bundle */,
 				D06F5D142FE50BA900E6406A /* libReact-NativeModulesApple.a */,
@@ -1230,6 +1246,20 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		D02664343080EED0008DE56B /* libreact-native-document-picker.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libreact-native-document-picker.a";
+			remoteRef = D02664333080EED0008DE56B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		D02664363080EED0008DE56B /* libreact-native-video.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libreact-native-video.a";
+			remoteRef = D02664353080EED0008DE56B /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		D030488C305D55E900B8D6AF /* libreact-native-blob-util.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -2251,7 +2281,7 @@
 				CODE_SIGN_ENTITLEMENTS = RewardsPlanners/RewardsPlanners.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = RewardsPlanners/Info.Debug.plist;
@@ -2262,7 +2292,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.1;
+				MARKETING_VERSION = 6.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -2290,7 +2320,7 @@
 				CODE_SIGN_ENTITLEMENTS = RewardsPlanners/RewardsPlanners.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -2303,7 +2333,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.1;
+				MARKETING_VERSION = 6.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
