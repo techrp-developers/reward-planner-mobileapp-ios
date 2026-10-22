@@ -55,6 +55,11 @@ function ChatMessageBubble({
   const theme = useChatColors();
   const { width } = useWindowDimensions();
   const [ratio, setRatio] = React.useState(1);
+  const [imageState, setImageState] = React.useState<"loading" | "ready" | "failed">("loading");
+  const imageUrl =
+    item.message_type === "image" ? safeChatAttachmentUrl(item.attachment_url) : undefined;
+  // Photos render as bare rounded media cards, not inside the coloured bubble.
+  const media = !item.deleted_at && Boolean(imageUrl);
   const slide = useRef(new Animated.Value(0)).current;
   useEffect(() => () => slide.stopAnimation(), [slide]);
   const replyRef = useRef(onReply);
@@ -87,8 +92,9 @@ function ChatMessageBubble({
   // Bubble-specific colours, checked for >=4.5:1 contrast (small text) on
   // every preset: white on the accent bubble, slate on the pastel/dark
   // incoming bubbles. Not the global secondaryText, which is too light on them.
-  const foreground = mine ? "#FFFFFF" : theme.text;
-  const muted = mine ? "rgba(255,255,255,0.88)" : theme.isDark ? "#CBD5E1" : "#475569";
+  const onAccent = mine && !media;
+  const foreground = onAccent ? "#FFFFFF" : theme.text;
+  const muted = onAccent ? "rgba(255,255,255,0.88)" : theme.isDark ? "#CBD5E1" : "#475569";
   const mediaWidth = Math.min(width * 0.64, 268);
   return (
     <View
@@ -126,7 +132,9 @@ function ChatMessageBubble({
           accessibilityHint="Long press for message actions; swipe to reply"
           style={[
             styles.bubble,
-            mine
+            media
+              ? styles.mediaBubble
+              : mine
               ? { backgroundColor: preset.accent, borderBottomRightRadius: 5 }
               : {
                   backgroundColor: theme.isDark
@@ -145,9 +153,11 @@ function ChatMessageBubble({
               style={[
                 styles.quote,
                 {
-                  borderLeftColor: mine ? "#FFFFFF" : preset.accent,
-                  backgroundColor: mine
+                  borderLeftColor: onAccent ? "#FFFFFF" : preset.accent,
+                  backgroundColor: onAccent
                     ? "rgba(255,255,255,.13)"
+                    : media
+                    ? theme.isDark ? "rgba(255,255,255,.08)" : "rgba(15,23,42,.06)"
                     : `${preset.accent}0D`,
                 },
               ]}
@@ -169,27 +179,47 @@ function ChatMessageBubble({
             <Text style={[styles.body, { color: muted, fontStyle: "italic" }]}>
               This message was deleted
             </Text>
-          ) : item.message_type === "image" &&
-            safeChatAttachmentUrl(item.attachment_url) ? (
+          ) : media ? (
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="View shared photo"
+              activeOpacity={0.85}
+              disabled={imageState === "failed"}
               onPress={() => onImage(item)}
               onLongPress={() => onActions(item)}
-            >
-              <Image
-                source={{ uri: safeChatAttachmentUrl(item.attachment_url) }}
-                onLoad={(event) => {
-                  const { width: w, height: h } = event.nativeEvent.source;
-                  if (w && h) setRatio(w / h);
-                }}
-                resizeMode="contain"
-                style={{
+              style={[
+                styles.mediaCard,
+                {
                   width: mediaWidth,
-                  height: Math.min(mediaWidth / ratio, 340),
-                  borderRadius: 12,
-                }}
-              />
+                  height: Math.max(120, Math.min(mediaWidth / ratio, 340)),
+                  backgroundColor: theme.isDark ? "#1F2937" : "#E5E7EB",
+                },
+              ]}
+            >
+              {imageState !== "failed" && (
+                <Image
+                  source={{ uri: imageUrl }}
+                  onLoad={(event) => {
+                    const { width: w, height: h } = event.nativeEvent.source;
+                    if (w && h) setRatio(w / h);
+                    setImageState("ready");
+                  }}
+                  onError={() => setImageState("failed")}
+                  resizeMode="cover"
+                  style={StyleSheet.absoluteFill}
+                />
+              )}
+              {imageState === "loading" && (
+                <ActivityIndicator style={StyleSheet.absoluteFill} color={muted} />
+              )}
+              {imageState === "failed" && (
+                <View style={styles.mediaFailed}>
+                  <MaterialCommunityIcons name="image-broken-variant" size={28} color={muted} />
+                  <Text style={{ color: muted, fontSize: 12, marginTop: 6 }}>
+                    Photo unavailable
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
           ) : item.message_type === "file" ? (
             <TouchableOpacity
@@ -251,14 +281,14 @@ function ChatMessageBubble({
                 (item.message_type === "image" ? "Photo unavailable" : "")}
             </Text>
           )}
-          <View style={styles.meta}>
-            <Text style={{ color: muted, fontSize: 11 }}>
+          <View style={[styles.meta, media && styles.mediaMeta]}>
+            <Text style={{ color: media ? "#FFFFFF" : muted, fontSize: 11 }}>
               {messageTime(item.created_at)}
             </Text>
             {mine &&
               !item.deleted_at &&
               (item.local_status === "sending" ? (
-                <ActivityIndicator size="small" color={muted} />
+                <ActivityIndicator size="small" color={media ? "#FFFFFF" : muted} />
               ) : item.local_status === "failed" ? (
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -277,7 +307,7 @@ function ChatMessageBubble({
                 <MaterialCommunityIcons
                   name={item.is_read ? "check-all" : "check"}
                   size={16}
-                  color={item.is_read ? READ_RECEIPT : muted}
+                  color={item.is_read ? READ_RECEIPT : media ? "#FFFFFF" : muted}
                 />
               ))}
           </View>
@@ -297,6 +327,21 @@ const styles = StyleSheet.create({
     paddingBottom: 7,
   },
   body: { fontSize: 16, lineHeight: 22 },
+  mediaBubble: { backgroundColor: "transparent", padding: 0, borderRadius: 14 },
+  mediaCard: { borderRadius: 14, overflow: "hidden" },
+  mediaFailed: { flex: 1, alignItems: "center", justifyContent: "center" },
+  // Timestamp and receipt sit on a dark scrim over the photo, so they stay
+  // readable without a coloured frame.
+  mediaMeta: {
+    position: "absolute",
+    right: 8,
+    bottom: 8,
+    marginTop: 0,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
   meta: {
     flexDirection: "row",
     justifyContent: "flex-end",

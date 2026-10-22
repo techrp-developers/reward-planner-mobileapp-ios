@@ -97,6 +97,8 @@ const getActiveRouteChain = (state?: RouteStateLike): string[] => {
   return [...currentName, ...getParamsRouteChain(focused?.params)];
 };
 
+const isTodoListRoute = (routeName?: string) => routeName === "Notes" || routeName === "TodoList";
+
 const shouldShowNavbar = (routeChain: string[]): boolean => {
   if (routeChain.length === 0) return true;
 
@@ -111,7 +113,7 @@ const shouldShowNavbar = (routeChain: string[]): boolean => {
   const leafRoute = routeChain[routeChain.length - 1];
 
   if (moduleRoute === "ProductModule") {
-    return ["ProductModule", "HomeTab", "Home", "Notes"].includes(leafRoute);
+    return ["ProductModule", "HomeTab", "Home", "Notes", "TodoList"].includes(leafRoute);
   }
 
   if (moduleRoute === "ServicesModule") {
@@ -224,7 +226,7 @@ function MainLayout() {
     if (leafRoute === "OrderHistory") return "History";
     if (leafRoute === "Profile") return "Profile";
     if (leafRoute === "Search" || leafRoute === "SearchScreen" || leafRoute === "ServiceSearch") return "Search";
-    if (leafRoute === "TodoList") return "Notes";
+    if (isTodoListRoute(leafRoute)) return "Notes";
     return "Home";
   }, [routeChain]);
 

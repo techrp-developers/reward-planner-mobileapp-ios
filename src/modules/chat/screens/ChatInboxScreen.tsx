@@ -1,5 +1,5 @@
 // @refresh reset
-import { getChatUserId, sameChatId } from "../identity";
+import { getChatUserId, normalizeChatId, sameChatId } from "../identity";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -23,6 +23,7 @@ import { useChatColors } from "../components/chatUiTokens";
 import { chatError, chatTime, conversationTitle, otherMember, conversationMatchesQuery } from "../utils";
 import type { ChatConversation, ChatStackParamList } from "../types";
 import { chatSocket } from "../services/chatSocket";
+import { chatUnreadRevision, reportChatUnreadSnapshot } from "../hooks/useChatUnreadCount";
 import BottomTabs, {
   TAB_BAR_HEIGHT,
   type TabKey,
@@ -46,6 +47,7 @@ export default function ChatInboxScreen() {
   const generation = useRef(0);
   const fetching = useRef(false);
   const pendingLoad = useRef(false);
+  const presenceEpoch = useRef(0);
   const latestLoad = useRef<(refresh?: boolean) => Promise<void>>(async () => {});
   const appNavigation = navigation.getParent<any>();
   const handleFooterPress = (tab: TabKey) => {
@@ -57,10 +59,12 @@ export default function ChatInboxScreen() {
       fetching.current = true;
       const request = ++generation.current;
       if (refresh) setRefreshing(true);
+      const unreadRevision = chatUnreadRevision();
       try {
         const conversations = await fetchConversations();
         if (!active.current || generation.current !== request) return;
         setItems(conversations);
+        reportChatUnreadSnapshot(currentUserId, conversations, unreadRevision);
         setError("");
         const ids = [
           ...new Set(
@@ -70,14 +74,13 @@ export default function ChatInboxScreen() {
               .filter((value): value is number => Boolean(value))
           ),
         ];
-        const states = await fetchChatPresence(ids).catch(() => []);
-        if (active.current && generation.current === request)
-          setPresence((current) => ({
-            ...current,
-            ...Object.fromEntries(
-              states.map((state) => [state.user_id, state.online])
-            ),
-          }));
+        const epoch = presenceEpoch.current;
+        const states = await fetchChatPresence(ids).catch(() => null);
+        // Do not overwrite a newer socket presence event with a stale request.
+        if (states && active.current && generation.current === request && epoch === presenceEpoch.current)
+          setPresence(Object.fromEntries(
+            ids.map(id => [id, Boolean(states.find(state => sameChatId(state.user_id, id))?.online)])
+          ));
       } catch (failure) {
         if (active.current && generation.current === request)
           setError(chatError(failure, "Unable to load conversations."));
@@ -99,28 +102,25 @@ export default function ChatInboxScreen() {
   useFocusEffect(
     useCallback(() => {
       active.current = true;
-      void load();
-      const poll = setInterval(() => {
-        if (AppState.currentState === "active" && !chatSocket.isConnected())
-          void load();
-      }, 10000);
       const unsubscribe = chatSocket.subscribe((event) => {
         if (event.type === "presence") {
-          setPresence((current) => ({
-            ...current,
-            [Number(event.data?.user_id)]: Boolean(event.data?.online),
-          }));
+          const id = normalizeChatId(event.data?.user_id);
+          if (id === undefined) return;
+          presenceEpoch.current++;
+          setPresence((current) => ({ ...current, [id]: Boolean(event.data?.online) }));
           return;
         }
         if (
           event.type === "connected" &&
           Array.isArray(event.data?.online_user_ids)
-        )
-          setPresence(
-            Object.fromEntries(
-              event.data.online_user_ids.map((id: number) => [id, true])
-            )
-          );
+        ) {
+          presenceEpoch.current++;
+          setPresence(Object.fromEntries(
+            event.data.online_user_ids.map(normalizeChatId)
+              .filter((id: number | undefined): id is number => id !== undefined)
+              .map((id: number) => [id, true])
+          ));
+        }
         if (
           event.type === "conversation:theme" ||
           event.type === "conversation:updated"
@@ -145,11 +145,28 @@ export default function ChatInboxScreen() {
         )
           void load();
       });
+      chatSocket.ensureConnected();
+      void load();
+      const onAppState = AppState.addEventListener("change", (state) => {
+        if (state === "active") {
+          chatSocket.ensureConnected();
+          void load();
+        }
+      });
+      // REST reconciliation is intentionally independent of readyState: a
+      // connected WebSocket can still miss fan-out because of a server fault.
+      const poll = setInterval(() => {
+        if (AppState.currentState !== "background" && AppState.currentState !== "inactive") {
+          chatSocket.ensureConnected();
+          void load();
+        }
+      }, 20000);
       return () => {
         active.current = false;
         generation.current++;
         pendingLoad.current = false;
         clearInterval(poll);
+        onAppState.remove();
         unsubscribe();
       };
     }, [load])

@@ -82,6 +82,7 @@ export type ChatStackParamList = {
 
 export type ChatSocketEvent = {
   type:
+    | "connection:state"
     | "connected"
     | "conversation:available"
     | "conversation:theme"

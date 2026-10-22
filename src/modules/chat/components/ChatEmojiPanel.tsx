@@ -1,199 +1,110 @@
-import React, { memo, useState } from "react";
-import {
-  FlatList,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useChatColors } from "./chatUiTokens";
+import React, { useState } from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useAppTheme } from '../../../theme/ThemeContext';
+
+type Props = {
+  onSelect: (emoji: string) => void;
+  onBackspace: () => void;
+};
 
 const categories = [
   {
-    name: "Faces",
-    icon: "emoticon-happy-outline",
-    emojis: [
-      "😀",
-      "😃",
-      "😄",
-      "😁",
-      "😆",
-      "😅",
-      "😂",
-      "🙂",
-      "🙃",
-      "😉",
-      "😊",
-      "😍",
-      "🥰",
-      "😘",
-      "😎",
-      "🤔",
-      "😮",
-      "😢",
-      "😭",
-      "😤",
-      "🥳",
-      "🤗",
-      "🫡",
-      "😴",
-    ],
+    key: 'smileys',
+    icon: 'emoticon-outline',
+    emojis: '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 🙃 😉 😌 😍 🥰 😘 😗 😙 😚 😋 😛 😝 😜 🤪 🤨 🧐 🤓 😎 🥳 😏 😒 😞 😔 😟 😕 🙁 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤯 😳 🥵 🥶 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 🤥 😶 😐 😑 😬 🙄 😯 😦 😧 😮 😲 🥱 😴 🤤 😪 😵 🤐 🥴 🤢 🤮 🤧 😷 🤒 🤕 🤑 🤠 😈 👻 💀 🤖 💩',
   },
   {
-    name: "Gestures",
-    icon: "hand-wave-outline",
-    emojis: [
-      "👋",
-      "🤚",
-      "✋",
-      "👌",
-      "✌️",
-      "🤞",
-      "🤟",
-      "🤙",
-      "👍",
-      "👎",
-      "👏",
-      "🙌",
-      "👐",
-      "🤝",
-      "🙏",
-      "💪",
-      "❤️",
-      "🧡",
-      "💛",
-      "💚",
-      "💙",
-      "💜",
-      "✨",
-      "🔥",
-    ],
+    key: 'gestures',
+    icon: 'hand-wave-outline',
+    emojis: '👋 🤚 🖐️ ✋ 🖖 👌 🤌 🤏 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ 👍 👎 ✊ 👊 🤛 🤜 👏 🙌 👐 🤲 🤝 🙏 ✍️ 💪 🫶 👀 🧠 🙋 🙆 🙅 🤷 🤦 🙇 💁',
   },
   {
-    name: "Work",
-    icon: "briefcase-outline",
-    emojis: [
-      "💼",
-      "📅",
-      "📆",
-      "📝",
-      "📌",
-      "📎",
-      "📁",
-      "📊",
-      "📈",
-      "💻",
-      "📱",
-      "✉️",
-      "🔔",
-      "⏰",
-      "✅",
-      "❌",
-      "❓",
-      "💡",
-      "🎯",
-      "🏆",
-      "🎉",
-      "🚀",
-      "☕",
-      "🍕",
-    ],
+    key: 'hearts',
+    icon: 'heart-outline',
+    emojis: '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❣️ 💕 💞 💓 💗 💖 💘 💝 💯 ✨ ⭐ 🌟 🔥 💥 🎉 🎊 🎈 🎁 🏆 🥇 ✅ ❌ ⚠️ ❓ ❗ 💡 📌 🔔',
   },
-] as const;
-function ChatEmojiPanel({
-  onSelect,
-  onBackspace,
-}: {
-  onSelect: (emoji: string) => void;
-  onBackspace: () => void;
-}) {
-  const theme = useChatColors();
-  const { height } = useWindowDimensions();
-  const [category, setCategory] = useState(0);
+  {
+    key: 'nature',
+    icon: 'paw',
+    emojis: '🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🐔 🐧 🐦 🦄 🐝 🦋 🐢 🐍 🐙 🐬 🐳 🌸 🌹 🌻 🌼 🌷 🌱 🌴 🍀 🍁 🌈 ☀️ 🌙 ⚡ ❄️ 🌊',
+  },
+  {
+    key: 'food',
+    icon: 'food-apple-outline',
+    emojis: '🍎 🍊 🍋 🍌 🍉 🍇 🍓 🍒 🥭 🍍 🥥 🥑 🌽 🥕 🍞 🧀 🍳 🍔 🍟 🍕 🌭 🥪 🌮 🍜 🍝 🍣 🍱 🍛 🍚 🍰 🎂 🍩 🍪 🍫 🍿 ☕ 🍵 🥤 🧃 🍺 🥂',
+  },
+  {
+    key: 'activity',
+    icon: 'soccer',
+    emojis: '⚽ 🏀 🏈 ⚾ 🎾 🏐 🏏 🏸 🏓 🥊 🏋️ 🚴 🏃 🧘 🎮 🎯 🎲 🎵 🎶 🎤 🎧 🎬 📷 💻 📱 ⌚ 📚 ✏️ 💼 📅 💰 💳 🚗 🚌 ✈️ 🚀 🏠 🏖️ 🗺️',
+  },
+].map(category => ({ ...category, emojis: category.emojis.split(' ') }));
+
+const COLUMNS = 8;
+
+export default function ChatEmojiPanel({ onSelect, onBackspace }: Props) {
+  const { theme } = useAppTheme();
+  const [active, setActive] = useState(categories[0].key);
+  const emojis = categories.find(category => category.key === active)!.emojis;
+
   return (
-    <View
-      style={[
-        styles.panel,
-        {
-          backgroundColor: theme.card,
-          height: Math.min(260, Math.max(120, height * 0.38)),
-        },
-      ]}
-    >
-      <View style={styles.toolbar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {categories.map((item, index) => (
-            <TouchableOpacity
-              key={item.name}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: category === index }}
-              accessibilityLabel={item.name}
-              onPress={() => setCategory(index)}
-              style={[
-                styles.category,
-                category === index && { backgroundColor: `${theme.primary}18` },
-              ]}
-            >
-              <MaterialCommunityIcons
-                name={item.icon}
-                size={22}
-                color={category === index ? theme.primary : theme.secondaryText}
-              />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Delete previous character"
-          onPress={onBackspace}
-          style={styles.category}
-        >
-          <MaterialCommunityIcons
-            name="backspace-outline"
-            size={22}
-            color={theme.secondaryText}
-          />
-        </TouchableOpacity>
-      </View>
+    <View style={[styles.panel, { borderTopColor: theme.border }]}>
       <FlatList
-        key={category}
-        data={[...categories[category].emojis]}
-        numColumns={6}
-        keyExtractor={(item) => item}
+        key={active}
+        data={emojis}
+        numColumns={COLUMNS}
+        keyExtractor={(item, index) => `${item}-${index}`}
         keyboardShouldPersistTaps="always"
         renderItem={({ item }) => (
           <TouchableOpacity
-            accessibilityLabel={item}
             accessibilityRole="button"
+            accessibilityLabel={`Insert ${item}`}
             onPress={() => onSelect(item)}
-            style={styles.emoji}
+            style={styles.cell}
           >
-            <Text style={styles.glyph}>{item}</Text>
+            <Text style={styles.emoji}>{item}</Text>
           </TouchableOpacity>
         )}
       />
+      <View style={[styles.tabs, { borderTopColor: theme.border }]}>
+        {categories.map(category => (
+          <TouchableOpacity
+            key={category.key}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: active === category.key }}
+            onPress={() => setActive(category.key)}
+            style={[styles.tab, active === category.key && { backgroundColor: `${theme.primary}1A` }]}
+          >
+            <MaterialCommunityIcons
+              name={category.icon}
+              size={21}
+              color={active === category.key ? theme.primary : theme.secondaryText}
+            />
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Delete"
+          onPress={onBackspace}
+          style={styles.tab}
+        >
+          <MaterialCommunityIcons name="backspace-outline" size={21} color={theme.secondaryText} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  panel: { height: 260, marginTop: 8 },
-  toolbar: { flexDirection: "row", marginBottom: 4 },
-  category: {
-    width: 48,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
+  panel: { height: 290, borderTopWidth: StyleSheet.hairlineWidth, marginTop: 8 },
+  cell: { flex: 1 / COLUMNS, aspectRatio: 1, alignItems: 'center', justifyContent: 'center' },
+  emoji: { fontSize: 26 },
+  tabs: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 6,
   },
-  emoji: {
-    flex: 1,
-    minHeight: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  glyph: { fontSize: 27 },
+  tab: { width: 38, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
 });
-export default memo(ChatEmojiPanel);

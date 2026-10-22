@@ -7,6 +7,8 @@ import HeaderComponent from '../src/modules/dashboard/header/HeaderComponent';
 jest.mock('@react-navigation/native', () => ({ useIsFocused: () => true }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ bottom: 24 }) }));
 jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
+let mockUnread = 0;
+jest.mock('../src/modules/chat/hooks/useChatUnreadCount', () => ({ useChatUnreadCount: () => mockUnread }));
 jest.mock('../src/theme/ThemeContext', () => ({
   useAppTheme: () => ({ isDark: false, theme: { background: '#fff' } }),
 }));
@@ -46,6 +48,23 @@ it('opens Chat from the dashboard footer and keeps Todo List and Home', async ()
   expect(renderer.root.findAllByType(TouchableOpacity)
     .find(button => button.props.accessibilityLabel === 'Chat')!
     .props.accessibilityState.selected).toBe(false);
+});
+
+it('shows the unread badge on the dashboard Chat icon only when there are unread messages', async () => {
+  const badgeTexts = () => renderer.root.findAllByType(Text).map(text => text.props.children)
+    .filter(value => typeof value === 'string' && /^\d+\+?$/.test(value));
+  mockUnread = 0;
+  await act(async () => { renderer = create(<BottomTabs isDashboard activeTabKey="Notes" />); });
+  expect(badgeTexts()).toEqual([]);
+  mockUnread = 7;
+  await act(async () => renderer.update(<BottomTabs isDashboard activeTabKey="Home" />));
+  expect(badgeTexts()).toEqual(['7']);
+  expect(renderer.root.findAllByType(TouchableOpacity)
+    .some(button => button.props.accessibilityLabel === 'Chat, 7 unread messages')).toBe(true);
+  mockUnread = 120;
+  await act(async () => renderer.update(<BottomTabs isDashboard activeTabKey="Notes" />));
+  expect(badgeTexts()).toEqual(['99+']);
+  mockUnread = 0;
 });
 
 it('keeps Chat out of the shopping footer', async () => {

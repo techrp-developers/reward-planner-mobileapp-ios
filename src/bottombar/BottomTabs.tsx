@@ -12,6 +12,8 @@ import HistoryIcon from "../assets/menu/History.svg";
 import { useAppTheme } from "../theme/ThemeContext";
 import RewardIcon from "../assets/homepage/RewardPlannersLogo.png";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useChatUnreadCount } from "../modules/chat/hooks/useChatUnreadCount";
+import { unreadBadgeLabel } from "../modules/chat/unreadCount";
 
 // Keep the floating bar close to the system safe area without adding a large
 // second gap above it.
@@ -158,7 +160,7 @@ const TabItem = React.memo(({
     <TouchableOpacity
       activeOpacity={0.8}
       accessibilityRole="button"
-      accessibilityLabel={label}
+      accessibilityLabel={badgeCount && badgeCount > 0 ? `${label}, ${badgeCount} ${label === "Chat" ? "unread messages" : "items"}` : label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       style={styles.item}
@@ -170,7 +172,7 @@ const TabItem = React.memo(({
         </Animated.View>
         {(badgeCount ?? 0) > 0 && (
           <View style={[styles.badge, { borderColor: badgeBorderColor }]}>
-            <Text style={styles.badgeText}>{badgeCount}</Text>
+            <Text style={styles.badgeText}>{unreadBadgeLabel(badgeCount ?? 0)}</Text>
           </View>
         )}
       </View>
@@ -251,6 +253,8 @@ function BottomTabs({
 }: Props) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
+  // Only the Dashboard/Inbox bar listens for unread chat counts.
+  const chatUnreadCount = useChatUnreadCount(isDashboard && isFocused);
   const { isDark, theme } = useAppTheme();
   const bottomInset = Math.max(insets.bottom, 0);
 
@@ -379,6 +383,7 @@ function BottomTabs({
             activeIconColor={tabTheme.activeIcon}
             activeLabelColor={activeLabelColor}
             inactiveColor={inactiveColor}
+            badgeCount={tab.key === "Chat" ? chatUnreadCount : undefined}
             badgeBorderColor={barBackgroundColor}
           />
         ))}
@@ -396,7 +401,7 @@ function BottomTabs({
             activeIconColor={tabTheme.activeIcon}
             activeLabelColor={activeLabelColor}
             inactiveColor={inactiveColor}
-            badgeCount={tab.key === "Cart" ? cartCount : undefined}
+            badgeCount={tab.key === "Chat" ? chatUnreadCount : tab.key === "Cart" ? cartCount : undefined}
             badgeBorderColor={barBackgroundColor}
           />
         ))}

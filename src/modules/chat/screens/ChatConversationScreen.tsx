@@ -86,6 +86,7 @@ import {
   messagePreview,
 } from "../messageState";
 import { chatSocket } from "../services/chatSocket";
+import { notifyChatReadConfirmed } from "../chatUnreadEvents";
 import { getChatTheme } from "../theme/chatThemes";
 import type { ChatMessage, ChatStackParamList, ChatThemeKey } from "../types";
 
@@ -122,9 +123,15 @@ export default function ChatConversationScreen() {
   const historyBusy = useRef(false);
   const loadedPages = useRef(new Set<number>());
   const syncing = useRef(false);
+  const lastSyncAt = useRef(0);
+  const needsSync = useRef(false);
   const focused = useRef(false);
   const mounted = useRef(true);
   const listRef = useRef<FlatList<ChatMessage>>(null);
+  // Offset 0 is the newest message in the inverted list.
+  const atLatest = useRef(true);
+  const newestKey = useRef<string | null>(null);
+  const [unseen, setUnseen] = useState(0);
   const quoteJump = useRef({ index: -1, attempts: 0 });
   const quoteTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<TextInput>(null);
@@ -138,6 +145,9 @@ export default function ChatConversationScreen() {
   const sendBusy = useRef(false);
   const optimisticId = useRef(-1);
   const [online, setOnline] = useState(false);
+  const [presenceKnown, setPresenceKnown] = useState(false);
+  const presenceRevision = useRef(0);
+  const [socketConnected, setSocketConnected] = useState(chatSocket.isConnected());
   const [lastSeen, setLastSeen] = useState<string | null>(null);
   const [typers, setTypers] = useState<number[]>([]);
   const typingExpiry = useRef(new Map<number, ReturnType<typeof setTimeout>>());
@@ -237,16 +247,38 @@ export default function ChatConversationScreen() {
       if (!latest || latest.message_id <= readThrough.current) return;
       const previous = readThrough.current;
       readThrough.current = latest.message_id;
-      markConversationRead(id, latest.message_id).catch(() => {
-        if (readThrough.current === latest.message_id)
-          readThrough.current = previous;
-      });
+      markConversationRead(id, latest.message_id)
+        .then(() => notifyChatReadConfirmed(Number(id)))
+        .catch(() => {
+          if (readThrough.current === latest.message_id)
+            readThrough.current = previous;
+        });
     },
     [id, currentUserId]
   );
 
+  // Presence must NOT depend on message fetch success, otherwise a message
+  // endpoint error wrongly makes an online user appear offline.
+  const refreshPresence = useCallback(async () => {
+    if (!peer?.user_id || !focused.current) return;
+    const version = presenceRevision.current;
+    try {
+      const result = await fetchChatPresence([peer.user_id]);
+      if (!focused.current || !mounted.current || version !== presenceRevision.current) return;
+      const state = result.find(item => sameChatId(item.user_id, peer.user_id));
+      if (state) {
+        setOnline(Boolean(state.online));
+        setPresenceKnown(true);
+        setLastSeen(state.last_seen_at || null);
+      }
+    } catch {
+      // Retain last known state during temporary REST errors.
+    }
+  }, [peer?.user_id]);
+
   const sync = useCallback(async () => {
-    if (syncing.current || !focused.current) return;
+    if (!focused.current) return;
+    if (syncing.current) { needsSync.current = true; return; }
     syncing.current = true;
     try {
       let page = await fetchMessages(id);
@@ -279,14 +311,8 @@ export default function ChatConversationScreen() {
       if (!confirmed.length) hasOlder.current = page.length === 40;
       merge(all);
       markRead(all.sort((a, b) => a.message_id - b.message_id));
+      lastSyncAt.current = Date.now();
       setLoadError("");
-      if (peer?.user_id) {
-        const [presence] = await fetchChatPresence([peer.user_id]);
-        if (focused.current && presence) {
-          setOnline(presence.online);
-          setLastSeen(presence.last_seen_at || null);
-        }
-      }
     } catch (error) {
       if (focused.current)
         setLoadError(
@@ -295,41 +321,66 @@ export default function ChatConversationScreen() {
     } finally {
       syncing.current = false;
       if (mounted.current) setLoading(false);
+      if (focused.current && needsSync.current) {
+        needsSync.current = false;
+        void sync();
+      }
     }
-  }, [id, peer?.user_id, merge, markRead]);
+  }, [id, merge, markRead]);
+
+  const refreshConversation = useCallback(async (isActive: () => boolean) => {
+    const revision = themeRevision.current;
+    const savingTheme = themeBusy.current;
+    try {
+      const items = await fetchConversations();
+      const updated = items.find((item) => sameChatId(item.conversation_id, id));
+      if (!isActive() || !updated) return;
+      setConversation(updated);
+      if (!savingTheme && !themeBusy.current && themeRevision.current === revision)
+        setThemeKey(getChatTheme(updated.theme_key).key);
+    } catch {
+      // Keep the last known settings when the refresh is unavailable.
+    }
+  }, [id]);
 
   useFocusEffect(
     useCallback(() => {
       focused.current = true;
-      void sync();
-      const poll = setInterval(() => {
-        if (AppState.currentState === "active" && !chatSocket.isConnected())
-          void sync();
-      }, 8000);
+      let active = true;
+      const refreshSettings = () => refreshConversation(() => active);
+      // Subscribe first so the socket's onopen/resync event isn't missed.
       const unsubscribe = chatSocket.subscribe((event) => {
         if (!focused.current) return;
-        const data = event.data || {};
+        const envelope = (event.data || {}) as Record<string, any>;
+        // Support both {type, data: message} and {type, data: {message}}.
+        const data = event.type === "message:new" && envelope.message &&
+          typeof envelope.message === "object"
+          ? { ...envelope.message,
+              conversation_id: envelope.message.conversation_id ?? envelope.conversation_id }
+          : envelope;
+        if (String(event.type) === "connection:state") {
+          const ready = envelope.status === "connected";
+          setSocketConnected(ready);
+          if (!ready) {
+            typingExpiry.current.forEach(clearTimeout);
+            typingExpiry.current.clear();
+            setTypers([]);
+          }
+          return;
+        }
         if (event.type === "resync") {
           void sync();
-          fetchConversations()
-            .then((items) => {
-              const updated = items.find(
-                (item) => Number(item.conversation_id) === Number(id)
-              );
-              if (focused.current && updated) {
-                setConversation(updated);
-                if (!themeBusy.current)
-                  setThemeKey(updated.theme_key || "default");
-              }
-            })
-            .catch(() => {});
+          void refreshPresence();
+          void refreshSettings();
           return;
         }
         if (
           event.type === "presence" &&
-          Number(data.user_id) === Number(peer?.user_id)
+          sameChatId(data.user_id, peer?.user_id)
         ) {
+          presenceRevision.current++;
           setOnline(Boolean(data.online));
+          setPresenceKnown(true);
           setLastSeen(data.last_seen_at || null);
           return;
         }
@@ -338,17 +389,24 @@ export default function ChatConversationScreen() {
           peer?.user_id &&
           Array.isArray(data.online_user_ids)
         ) {
+          presenceRevision.current++;
           setOnline(
             data.online_user_ids.map(Number).includes(Number(peer.user_id))
           );
+          setPresenceKnown(true);
           return;
         }
         // The verified poll broadcast omits conversation_id; scope it by loaded message.
         const loadedPoll = event.type === "poll:updated" && messagesRef.current.some(message => sameChatId(message.message_id, data.message_id));
         if (!sameChatId(data.conversation_id, id) && !loadedPoll) return;
-        if (event.type === "message:new" && data.message_id) {
-          merge([data]);
-          markRead([data]);
+        if (event.type === "message:new") {
+          if (data.message_id && data.sender_id) {
+            merge([data as ChatMessage]);
+            markRead([data as ChatMessage]);
+          } else {
+            // A partial event should trigger REST recovery, not a malformed bubble.
+            void sync();
+          }
         }
         if (event.type === "message:deleted") {
           const messageId = Number(data.message_id);
@@ -435,9 +493,41 @@ export default function ChatConversationScreen() {
             );
         }
       });
+      // Existing sessions may have connected before this screen was mounted.
+      // Calling ensureConnected is idempotent for the shared singleton.
+      chatSocket.ensureConnected();
+      void sync();
+      void refreshPresence();
+      void refreshSettings();
+      const appState = AppState.addEventListener("change", (state) => {
+        if (state === "active") {
+          chatSocket.ensureConnected();
+          void sync();
+          void refreshPresence();
+          void refreshSettings();
+        }
+      });
+      // Safety-net reconciliation even when the TCP connection looks OPEN but
+      // server fan-out missed an event. WebSocket still handles instant updates.
+      // Live sockets only need an occasional check; a dropped one keeps the 12s cadence.
+      const poll = setInterval(() => {
+        if (AppState.currentState !== "background" && AppState.currentState !== "inactive") {
+          chatSocket.ensureConnected();
+          if (!chatSocket.isConnected() || Date.now() - lastSyncAt.current >= 30000)
+            void sync();
+        }
+      }, 12000);
+      const presencePoll = setInterval(() => {
+        if (AppState.currentState !== "background" && AppState.currentState !== "inactive")
+          void refreshPresence();
+      }, 15000);
       return () => {
+        active = false;
         focused.current = false;
+        needsSync.current = false;
+        appState.remove();
         clearInterval(poll);
+        clearInterval(presencePoll);
         unsubscribe();
         if (typingTimer.current) clearTimeout(typingTimer.current);
         typingExpiry.current.forEach(clearTimeout);
@@ -446,7 +536,7 @@ export default function ChatConversationScreen() {
         chatSocket.send("typing:stop", id);
         Keyboard.dismiss();
       };
-    }, [sync, id, peer?.user_id, currentUserId, merge, markRead])
+    }, [sync, refreshPresence, refreshConversation, id, peer?.user_id, currentUserId, merge, markRead])
   );
 
   const loadOlder = useCallback(async () => {
@@ -479,17 +569,19 @@ export default function ChatConversationScreen() {
   const changeText = (value: string) => {
     textRef.current = value;
     setText(value);
-    if (value.trim() && Date.now() - lastTyping.current > 900) {
-      chatSocket.send("typing:start", id);
-      lastTyping.current = Date.now();
+    if (value.trim() && Date.now() - lastTyping.current > 2500) {
+      if (chatSocket.send("typing:start", id)) lastTyping.current = Date.now();
     }
     if (typingTimer.current) clearTimeout(typingTimer.current);
-    if (!value.trim()) chatSocket.send("typing:stop", id);
-    else
-      typingTimer.current = setTimeout(
-        () => chatSocket.send("typing:stop", id),
-        1200
-      );
+    if (!value.trim()) {
+      chatSocket.send("typing:stop", id);
+      lastTyping.current = 0;
+    } else {
+      typingTimer.current = setTimeout(() => {
+        chatSocket.send("typing:stop", id);
+        lastTyping.current = 0;
+      }, 2000);
+    }
   };
   const replaceSelection = (insert: string, backspace = false) => {
     const current = textRef.current;
@@ -531,8 +623,29 @@ export default function ChatConversationScreen() {
     });
     return () => sub.remove();
   }, [emojiOpen]);
-  const scrollLatest = () =>
+  const scrollLatest = useCallback(() => {
+    atLatest.current = true;
+    setUnseen(0);
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+  // Keep the newest message visible above the composer, or count it as unseen
+  // while the user is reading history.
+  useEffect(() => {
+    const newest = newestFirst[0];
+    const key = newest
+      ? newest.client_message_id || String(newest.message_id)
+      : null;
+    const previous = newestKey.current;
+    newestKey.current = key;
+    if (loading || !newest || previous === null || key === previous) return;
+    if (atLatest.current || sameChatId(newest.sender_id, currentUserId)) {
+      requestAnimationFrame(() => {
+        if (mounted.current) scrollLatest();
+      });
+    } else {
+      setUnseen((count) => count + 1);
+    }
+  }, [newestFirst, loading, currentUserId, scrollLatest]);
   const sendText = useCallback(
     async (message: ChatMessage) => {
       if (sendBusy.current || !message.body) return;
@@ -551,7 +664,6 @@ export default function ChatConversationScreen() {
             client_message_id: message.client_message_id,
           },
         ]);
-        chatSocket.requestResync();
       } catch (error) {
         // A socket acknowledgement may have arrived even if the HTTP request timed out.
         if (
@@ -626,7 +738,6 @@ export default function ChatConversationScreen() {
                 merge([deletedMessage(message, date)]);
                 if (replyRef.current?.message_id === message.message_id)
                   setReply(null);
-                chatSocket.requestResync();
               } catch (error) {
                 if (mounted.current)
                   Alert.alert(
@@ -780,7 +891,6 @@ export default function ChatConversationScreen() {
         },
       ]);
       if (mounted.current) setMedia(null);
-      chatSocket.requestResync();
       scrollLatest();
     } catch (error) {
       if (mounted.current)
@@ -826,7 +936,6 @@ export default function ChatConversationScreen() {
         name: file.name,
       });
       merge([await sendFileMessage(id, upload, clientId(currentUserId))]);
-      chatSocket.requestResync();
       scrollLatest();
     } catch (error: any) {
       if (mounted.current && error?.code !== "OPERATION_CANCELED")
@@ -848,19 +957,17 @@ export default function ChatConversationScreen() {
       },
     ]);
     pollDraft.current = null;
-    chatSocket.requestResync();
     scrollLatest();
   };
   const changeTheme = async (next: ChatThemeKey) => {
     if (themeBusy.current || themeUnavailable || next === themeKey) return;
     const previous = themeKey;
-    const revision = themeRevision.current;
+    const revision = ++themeRevision.current;
     themeBusy.current = true;
     setThemeSaving(true);
     setThemeKey(next);
     try {
       await updateConversationTheme(id, next);
-      chatSocket.requestResync();
     } catch (error) {
       if (mounted.current) {
         if (themeRevision.current === revision) setThemeKey(previous);
@@ -876,6 +983,8 @@ export default function ChatConversationScreen() {
     ? "Typing…"
     : conversation.type === "group"
     ? `${conversation.members.length} members`
+    : !presenceKnown
+    ? socketConnected ? "Checking status…" : "Connecting…"
     : online
     ? "Online"
     : lastSeen && Number.isFinite(new Date(lastSeen).getTime())
@@ -998,6 +1107,7 @@ export default function ChatConversationScreen() {
           </Text>
         </TouchableOpacity>
       )}
+      <View style={styles.listArea}>
       {loading && !messages.length ? (
         <View style={styles.center}>
           <ActivityIndicator color={theme.primary} />
@@ -1018,7 +1128,15 @@ export default function ChatConversationScreen() {
           keyboardDismissMode={
             Platform.OS === "ios" ? "interactive" : "on-drag"
           }
-          maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 80,
+          }}
+          scrollEventThrottle={32}
+          onScroll={({ nativeEvent }) => {
+            atLatest.current = nativeEvent.contentOffset.y < 80;
+            if (atLatest.current && unseen) setUnseen(0);
+          }}
           onEndReached={() => void loadOlder()}
           onEndReachedThreshold={0.2}
           onScrollToIndexFailed={({ index, averageItemLength }) => {
@@ -1088,6 +1206,20 @@ export default function ChatConversationScreen() {
           }
         />
       )}
+      {unseen > 0 && (
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel={`Show ${unseen} new ${unseen === 1 ? "message" : "messages"}`}
+          onPress={scrollLatest}
+          style={[styles.newMessages, { backgroundColor: selectedTheme.accent }]}
+        >
+          <MaterialCommunityIcons name="arrow-down" size={16} color="#FFF" />
+          <Text style={styles.newMessagesText}>
+            {unseen === 1 ? "1 new message" : `${unseen} new messages`}
+          </Text>
+        </TouchableOpacity>
+      )}
+      </View>
       <View
         style={[
           styles.composerWrap,
@@ -1358,6 +1490,24 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   error: { padding: 12 },
   messages: { paddingHorizontal: 12, paddingVertical: 16, flexGrow: 1 },
+  listArea: { flex: 1 },
+  newMessages: {
+    position: "absolute",
+    bottom: 12,
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  newMessagesText: { color: "#FFF", fontSize: 13, fontWeight: "600" },
   empty: { alignItems: "center", padding: 48 },
   composerWrap: { paddingTop: 8, paddingHorizontal: 8 },
   composerRow: { flexDirection: "row", alignItems: "flex-end", gap: 4 },

@@ -19,11 +19,17 @@ let renderer: ReactTestRenderer;
 beforeEach(() => { jest.spyOn(console, 'error').mockImplementation(() => {}); mockBottomInset = 34; });
 afterEach(async () => { if (renderer) await act(async () => renderer.unmount()); jest.restoreAllMocks(); });
 
-it.each(['Home', 'SearchScreen', 'Profile'])('preserves browsing navigation on %s', leaf => {
+it.each(['Home', 'SearchScreen', 'Profile', 'TodoList', 'Notes'])('preserves browsing navigation on %s', leaf => {
   expect(shouldShowBottomTabs('Product', ['Home', 'ProductModule', leaf])).toBe(true);
 });
 it.each(['ProductDescription', 'ProductDetails', 'Cart', 'OrderStepUI', 'Checkout', 'AddressSelect'])('removes navigation chrome on %s', leaf => {
   expect(shouldShowBottomTabs('Product', ['Home', 'ProductModule', leaf])).toBe(false);
+});
+it.each(['Health', 'SuperTopUp', 'PersonalAccident'])('hides the bottom bar over the %s insurance flow', leaf => {
+  expect(shouldShowBottomTabs('Services', ['Home', 'ServicesModule', leaf])).toBe(false);
+});
+it('keeps the bottom bar on the Services home', () => {
+  expect(shouldShowBottomTabs('Services', ['Home', 'ServicesModule', 'Home'])).toBe(true);
 });
 
 it('reserves measured footer height plus safe area and spacing after rotation', async () => {

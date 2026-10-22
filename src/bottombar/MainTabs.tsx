@@ -31,7 +31,7 @@ function CustomTabBar({ navigation, state, isAuthenticated }: CustomTabBarProps)
     if (focusedRouteName === 'Profile') return 'Profile';
     if (focusedRouteName === 'Cart') return 'Cart';
     if (focusedRouteName === 'SearchScreen') return 'Search';
-    if (focusedRouteName === 'TodoList') return 'Notes';
+    if (focusedRouteName === 'TodoList' || focusedRouteName === 'Notes') return 'Notes';
     return 'Home';
   }, [focusedRouteName]);
 

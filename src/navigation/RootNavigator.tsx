@@ -1,3 +1,4 @@
+import { useChatSocketSession } from "../modules/chat/hooks/useChatSocketSession";
 import { useEffect, useRef } from "react";
 import type { NavigatorScreenParams } from "@react-navigation/native";
 import type { ChatStackParamList } from "../modules/chat/types";
@@ -99,6 +100,7 @@ function AuthNavigator() {
 // ─── App Navigator ────────────────────────────────────────────────────────────
 
 function AppNavigator() {
+  useChatSocketSession();
   return (
     <StepTrackerProvider>
       <AppStack.Navigator

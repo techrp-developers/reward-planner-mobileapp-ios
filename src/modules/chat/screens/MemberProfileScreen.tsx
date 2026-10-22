@@ -1,7 +1,8 @@
 // @refresh reset
 import { getChatUserId, sameChatId } from "../identity";
-import React from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AppState,
   ScrollView,
   StyleSheet,
   Text,
@@ -18,6 +19,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../common/auth/context/AuthContext";
 import { useChatColors } from "../components/chatUiTokens";
 import ChatAvatar from "../components/ChatAvatar";
+import { fetchChatPresence } from "../api/chatApi";
+import { chatSocket } from "../services/chatSocket";
 import type { ChatStackParamList } from "../types";
 
 type Route = NativeStackScreenProps<
@@ -35,6 +38,58 @@ export default function MemberProfileScreen() {
   const theme = useChatColors();
   const insets = useSafeAreaInsets();
   const isMe = sameChatId(member.user_id, currentUserId);
+  const [online, setOnline] = useState(false);
+  const [presenceKnown, setPresenceKnown] = useState(false);
+  const [lastSeen, setLastSeen] = useState<string | null>(null);
+  const presenceVersion = useRef(0);
+  const active = useRef(false);
+
+  const refreshPresence = useCallback(async () => {
+    if (isMe) return;
+    const version = presenceVersion.current;
+    try {
+      const [state] = await fetchChatPresence([member.user_id]);
+      if (!active.current || version !== presenceVersion.current || !state ||
+          !sameChatId(state.user_id, member.user_id)) return;
+      setOnline(Boolean(state.online));
+      setPresenceKnown(true);
+      setLastSeen(state.last_seen_at || null);
+    } catch { /* Keep last known status */ }
+  }, [member.user_id, isMe]);
+
+  useEffect(() => {
+    active.current = true;
+    const unsub = chatSocket.subscribe((event) => {
+      if (isMe) return;
+      if (event.type === "presence" && sameChatId(event.data?.user_id, member.user_id)) {
+        presenceVersion.current++;
+        setOnline(Boolean(event.data?.online));
+        setPresenceKnown(true);
+        setLastSeen(event.data?.last_seen_at || null);
+      }
+      if (event.type === "connected" && Array.isArray(event.data?.online_user_ids)) {
+        presenceVersion.current++;
+        setOnline(event.data.online_user_ids.some((id: number) => sameChatId(id, member.user_id)));
+        setPresenceKnown(true);
+      }
+      if (event.type === "resync") void refreshPresence();
+    });
+    chatSocket.ensureConnected();
+    void refreshPresence();
+    const appState = AppState.addEventListener("change", (state) => {
+      if (state === "active") { chatSocket.ensureConnected(); void refreshPresence(); }
+    });
+    const poll = setInterval(() => {
+      if (AppState.currentState !== "background" && AppState.currentState !== "inactive") void refreshPresence();
+    }, 15000);
+    return () => { active.current = false; unsub(); appState.remove(); clearInterval(poll); };
+  }, [member.user_id, isMe, refreshPresence]);
+
+  const status = isMe ? "Your profile" : !presenceKnown ? "Checking status…"
+    : online ? "Online"
+    : lastSeen && Number.isFinite(new Date(lastSeen).getTime())
+      ? `Last seen ${new Date(lastSeen).toLocaleString([], { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}`
+      : "Offline";
 
   const details = [
     {
@@ -91,7 +146,7 @@ export default function MemberProfileScreen() {
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
         <View style={styles.summary}>
-          <ChatAvatar name={member.name} uri={member.user_image} size={104} />
+          <ChatAvatar name={member.name} uri={member.user_image} size={104} online={!isMe && online} />
           <Text style={[styles.name, { color: theme.text }]}>
             {member.name}
             {isMe ? " (You)" : ""}
@@ -99,6 +154,9 @@ export default function MemberProfileScreen() {
           <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
             {[member.job_role, member.department].filter(Boolean).join(" · ") ||
               "Coworker"}
+          </Text>
+          <Text style={[styles.subtitle, { color: online && !isMe ? "#22C55E" : theme.secondaryText }]}>
+            {status}
           </Text>
           {member.role === "admin" ? (
             <View style={[styles.adminBadge, { borderColor: theme.primary }]}>
