@@ -313,5 +313,30 @@
   },
   "r2": {
     "searchProductsOrServices": "Search products or services"
+  },
+  "notificationSettings": {
+    "title": "Notification settings",
+    "loadFailed": "Could not load your notification settings.",
+    "retry": "Tap to retry.",
+    "notSavedTitle": "Not saved",
+    "notSavedBody": "Please check your connection and try again.",
+    "statusTitle": "Notifications on this device",
+    "statusOn": "Enabled",
+    "statusOff": "Notifications are off for Reward Planners.",
+    "statusNotAsked": "Not enabled yet.",
+    "enable": "Enable Notifications",
+    "openSettings": "Open Notification Settings",
+    "languageTitle": "Notification language",
+    "languageHint": "Notifications arrive in this language when a translation is available, otherwise in English.",
+    "offers": "Offers and promotions",
+    "offersHint": "Deals, cart reminders and product updates.",
+    "engagement": "Activity and engagement",
+    "engagementHint": "RP Move nudges, quizzes and colleague birthdays.",
+    "quietHours": "Quiet hours ({{start}}–{{end}})",
+    "quietHoursHint": "Hold promotional notifications overnight.",
+    "footnote": "Order, payment, account and reminder notifications are always sent.",
+    "permissionTitle": "Stay Updated with Reward Planners!",
+    "permissionBody": "Get timely updates about your rewards, orders, bookings and important messages.",
+    "permissionNote": "Offers and promotions stay off unless you turn them on in Notification settings."
   }
 }

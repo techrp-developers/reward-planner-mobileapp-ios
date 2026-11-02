@@ -539,8 +539,15 @@ const ProfileScreen: React.FC = () => {
                             sub={getLanguageOption(language).nativeName}
                             isDark={isDark}
                             theme={theme}
-                            last
                             onPress={() => rootNavigation.navigate('App', { screen: 'LanguageSettings' } as any)}
+                        />
+                        <AccountRow
+                            icon="bell-outline"
+                            label={t('dashboard:notificationSettings.title')}
+                            isDark={isDark}
+                            theme={theme}
+                            last
+                            onPress={() => rootNavigation.navigate('App', { screen: 'NotificationSettings' } as any)}
                         />
                     </View>
 

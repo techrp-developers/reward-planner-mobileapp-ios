@@ -2,6 +2,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { getChatUserId } from "../modules/chat/identity";
+import { updateNotificationPreferences } from "../modules/dashboard/notification/notificationPreferencesAPI";
 import { applyLanguage } from "./index";
 import { DEFAULT_LANGUAGE, type AppLanguage } from "./languages";
 import { loadUserLanguage, saveUserLanguage } from "./languageStorage";
@@ -67,6 +68,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       pendingSave.current = saved.catch(() => undefined);
       try {
         await Promise.all([applied, saved]);
+        // Push text follows the app language. Sends the language only, so it
+        // can never change marketing or engagement consent.
+        updateNotificationPreferences({ language }).catch(() => {});
       } catch (error) {
         if (owner.current === id && revision.current === requestRevision) {
           // An earlier queued save may have succeeded. Restore what is durable.

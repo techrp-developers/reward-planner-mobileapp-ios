@@ -11,6 +11,7 @@ import { AuthProvider } from './src/modules/common/auth/context/AuthContext';
 import { LanguageProvider } from './src/i18n/LanguageContext';
 import { AppThemeProvider } from './src/theme/ThemeContext';
 import { flushPendingNavigation, navigationRef } from './src/navigation/navigationRef';
+import { flushPendingNotification } from './src/modules/notifications/notificationRouting';
 import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
 import { CmsAppShellProvider } from './src/modules/common/cms/CmsAppShellContext';
 import { useFestivalIcon } from './src/hooks/useFestivalIcon';
@@ -80,6 +81,13 @@ const eb = StyleSheet.create({
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
+// A push tap can arrive before navigation, login or terms are ready; onReady and
+// onStateChange replay it once the "App" stack is mounted.
+function handleNavigationReady() {
+  flushPendingNavigation();
+  flushPendingNotification();
+}
+
 export default function App() {
   useFestivalIcon();
   console.log('[Startup] App() rendering');
@@ -96,7 +104,8 @@ export default function App() {
                     <NavigationContainer
                       linking={linking}
                       ref={navigationRef}
-                      onReady={flushPendingNavigation}
+                      onReady={handleNavigationReady}
+                      onStateChange={flushPendingNotification}
                     >
                       <AlertContainer />
                       <NetworkGuard>

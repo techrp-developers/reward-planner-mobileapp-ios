@@ -13,6 +13,7 @@ import DeviceInfo from "react-native-device-info";
 import api, { API_BASE_URL, setSessionHandlers } from "../api/axios";
 import { clearAuthToken, persistAuthToken } from "../api/AuthAPI";
 import { fetchTermsStatus } from "../../../ecommerce/api/TermsConditionAPI";
+import { cleanupFCMOnLogout, getLogoutFCMToken } from "../../../notifications/FCMService";
 import { isTokenExpiringSoon } from "../utils/jwtUtils";
 import { secureSetItem, secureGetItem, secureDeleteItem } from "../utils/secureSessionStorage";
 
@@ -138,6 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await Promise.all([
       clearAuthToken(),
       secureDeleteItem(REFRESH_TOKEN_KEY),
+      cleanupFCMOnLogout(),
     ]);
   }, [updateAccessToken]);
 
@@ -379,8 +381,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const refreshToken = await secureGetItem(REFRESH_TOKEN_KEY);
 
+      const fcmToken = await getLogoutFCMToken();
+
       await api.post("/v1/auth/logout", {
         refreshToken: refreshToken || undefined,
+        fcm_token: fcmToken,
       });
     } catch {
       // logout local session even if API fails

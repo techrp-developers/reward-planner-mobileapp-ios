@@ -1,13 +1,21 @@
 type Listener = () => void;
 
-const listeners = new Set<Listener>();
+const badgeListeners = new Set<Listener>();
+const receivedListeners = new Set<Listener>();
 
 export const notificationEvents = {
   onBadgeRefresh(cb: Listener): () => void {
-    listeners.add(cb);
-    return () => listeners.delete(cb);
+    badgeListeners.add(cb);
+    return () => badgeListeners.delete(cb);
   },
   emitBadgeRefresh(): void {
-    listeners.forEach((cb) => cb());
+    badgeListeners.forEach((cb) => cb());
+  },
+  onNotificationReceived(cb: Listener): () => void {
+    receivedListeners.add(cb);
+    return () => receivedListeners.delete(cb);
+  },
+  emitNotificationReceived(): void {
+    receivedListeners.forEach((cb) => cb());
   },
 };

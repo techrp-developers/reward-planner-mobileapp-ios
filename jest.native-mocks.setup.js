@@ -19,3 +19,31 @@ jest.mock('@react-native-community/netinfo', () =>
 jest.mock('react-native-permissions', () =>
   require('react-native-permissions/mock'),
 );
+jest.mock('@notifee/react-native', () => ({
+  __esModule: true,
+  default: {
+    onForegroundEvent: jest.fn(() => jest.fn()),
+    onBackgroundEvent: jest.fn(),
+    getInitialNotification: jest.fn(async () => null),
+    getNotificationSettings: jest.fn(async () => ({ ios: { badge: 1 } })),
+    getBadgeCount: jest.fn(async () => 0),
+    setBadgeCount: jest.fn(async () => undefined),
+    cancelDisplayedNotifications: jest.fn(async () => undefined),
+  },
+  EventType: { PRESS: 1, DELIVERED: 3 },
+  IOSNotificationSetting: { NOT_SUPPORTED: -1, DISABLED: 0, ENABLED: 1 },
+}));
+jest.mock('@react-native-firebase/app', () => ({
+  getApp: jest.fn(() => ({ options: { projectId: 'reward-planners-2324d' } })),
+}));
+jest.mock('@react-native-firebase/messaging', () => ({
+  getMessaging: jest.fn(() => ({})),
+  getToken: jest.fn(async () => 'fcm-token-value-1234'),
+  deleteToken: jest.fn(async () => undefined),
+  getAPNSToken: jest.fn(async () => 'apns'),
+  onTokenRefresh: jest.fn(() => jest.fn()),
+  onMessage: jest.fn(() => jest.fn()),
+  onNotificationOpenedApp: jest.fn(() => jest.fn()),
+  getInitialNotification: jest.fn(async () => null),
+  setBackgroundMessageHandler: jest.fn(),
+}));

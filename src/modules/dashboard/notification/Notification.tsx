@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -23,8 +23,14 @@ import {
   getMyNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
+  NOTIFICATION_PAGE_SIZE,
   type NotificationItem,
 } from "./NotificationAPI";
+import { notificationEvents } from "../../notifications/notificationEvents";
+import {
+  openNotificationRoute,
+  reportNotificationOpened,
+} from "../../notifications/notificationRouting";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../i18n";
 import { formatRelativeTime } from "../../../i18n/format";
@@ -96,6 +102,11 @@ function Notification() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
   const [badgeCount, setBadgeCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const hasMoreRef = useRef(false);
+  const loadingMoreRef = useRef(false);
+  const loadInFlightRef = useRef(false);
+  const reloadQueuedRef = useRef(false);
   const themed = useMemo(
     () =>
       StyleSheet.create({
@@ -120,6 +131,13 @@ function Notification() {
   );
 
   const loadNotifications = useCallback(async (refresh = false) => {
+    // Focus and a foreground push can land together. One request serves both,
+    // and a push mid-request refetches once so its new row is not missed.
+    if (loadInFlightRef.current) {
+      if (refresh) reloadQueuedRef.current = true;
+      return;
+    }
+    loadInFlightRef.current = true;
     if (refresh) setRefreshing(true);
     else setLoading(true);
     setError("");
@@ -132,16 +150,23 @@ function Notification() {
       const fetched = notificationsRes.success ? notificationsRes.data : [];
 
       setNotifications(fetched);
+      hasMoreRef.current = fetched.length >= NOTIFICATION_PAGE_SIZE;
       setBadgeCount(
         badgeRes.success ? badgeRes.count : fetched.filter(isUnread).length
       );
     } catch (err: any) {
+      reloadQueuedRef.current = false;
       setError(err?.message || i18n.t("dashboard:notifications.loadFailed"));
       setNotifications([]);
       setBadgeCount(0);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      loadInFlightRef.current = false;
+      if (reloadQueuedRef.current) {
+        reloadQueuedRef.current = false;
+        loadNotifications(true);
+      }
     }
   }, []);
 
@@ -150,6 +175,33 @@ function Notification() {
       loadNotifications();
     }, [loadNotifications])
   );
+
+  useEffect(
+    () => notificationEvents.onNotificationReceived(() => loadNotifications(true)),
+    [loadNotifications],
+  );
+
+  const loadMore = async () => {
+    const lastId = notifications[notifications.length - 1]?.notification_id;
+    if (!lastId || !hasMoreRef.current || loadingMoreRef.current) return;
+
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+    try {
+      const res = await getMyNotifications(lastId);
+      const page = res.success ? res.data : [];
+      hasMoreRef.current = page.length >= NOTIFICATION_PAGE_SIZE;
+      setNotifications(prev => {
+        const seen = new Set(prev.map(item => item.notification_id));
+        return [...prev, ...page.filter(item => !seen.has(item.notification_id))];
+      });
+    } catch {
+      // The next scroll to the end tries this page again.
+    } finally {
+      loadingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  };
 
   const handleNotificationPress = (item: NotificationItem) => {
     const actionUrl = String(item.action_url || "").trim();
@@ -164,8 +216,18 @@ function Notification() {
         )
       );
       setBadgeCount(prev => Math.max(0, prev - 1));
-      markNotificationAsRead(item.notification_id).catch(() => loadNotifications(true));
+      markNotificationAsRead(item.notification_id)
+        .then(() => notificationEvents.emitBadgeRefresh())
+        .catch(() => loadNotifications(true));
     }
+
+    const openedTarget = openNotificationRoute(item.metadata?.target_route);
+    reportNotificationOpened(
+      item.notification_id,
+      "inbox",
+      openedTarget || actionUrl ? "opened_target" : "fallback",
+    );
+    if (openedTarget) return;
 
     if (actionUrl === "/wallet") {
       navigation.navigate("WalletHistory");
@@ -212,6 +274,7 @@ function Notification() {
 
     try {
       await markAllNotificationsAsRead();
+      notificationEvents.emitBadgeRefresh();
     } catch {
       setNotifications(previousNotifications);
       setBadgeCount(previousBadgeCount);
@@ -241,6 +304,7 @@ function Notification() {
 
             try {
               await deleteNotification(item.notification_id);
+              notificationEvents.emitBadgeRefresh();
             } catch {
               setNotifications(previousNotifications);
               setBadgeCount(previousBadgeCount);
@@ -345,6 +409,11 @@ function Notification() {
           renderItem={renderNotification}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={
+            loadingMore ? <ActivityIndicator style={styles.pageLoader} color="#6D5AE6" /> : null
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -593,6 +662,9 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#6D5AE6",
     marginTop: 4,
+  },
+  pageLoader: {
+    marginVertical: 12,
   },
   emptyWrap: {
     alignItems: "center",

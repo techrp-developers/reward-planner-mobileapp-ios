@@ -2,10 +2,14 @@ import storage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import notifee, { IOSNotificationSetting } from '@notifee/react-native';
 
-// App icon badges currently have no unread-count writer in this app. Preserve
-// pre-existing remote badges: only clear a badge this service created from zero.
+// The unread count (notificationBadge.ts) is the main badge writer. Only clear
+// a badge this service created from zero.
 let queue: Promise<void> = Promise.resolve();
 const OWNER_KEY = '@rewardsplanners_update_badge_owned';
+
+export async function isIosUpdateBadgeOwned(): Promise<boolean> {
+  return await storage.getItem(OWNER_KEY) === '1';
+}
 
 export function setIosUpdateBadge(updatePending: boolean): Promise<void> {
   if (Platform.OS !== 'ios') return Promise.resolve();

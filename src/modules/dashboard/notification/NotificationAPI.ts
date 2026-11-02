@@ -1,7 +1,11 @@
 import axios from "axios";
+import { Platform } from "react-native";
 
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
+import { api } from "../../common/auth/api/axios";
 import { BASE_API_URL } from "../../services/api/api";
+
+export const NOTIFICATION_PAGE_SIZE = 20;
 
 export type NotificationItem = {
   notification_id: number;
@@ -31,12 +35,16 @@ export type NotificationBadgeResponse = {
   message?: string;
 };
 
-export const getMyNotifications = async (): Promise<NotificationResponse> => {
+export const getMyNotifications = async (beforeId?: number): Promise<NotificationResponse> => {
   try {
     const headers = await getAuthHeaders();
 
     const res = await axios.get(`${BASE_API_URL}/notification/my-notification`, {
       headers,
+      params: {
+        limit: NOTIFICATION_PAGE_SIZE,
+        ...(beforeId ? { before_id: beforeId } : {}),
+      },
     });
 
     return {
@@ -49,7 +57,8 @@ export const getMyNotifications = async (): Promise<NotificationResponse> => {
       await clearAuthToken();
     }
 
-    console.error("Get Notifications Error:", error?.response || error);
+    // Status and message only: the full response carries the Authorization header.
+    console.error("Get Notifications Error:", error?.response?.status, error?.response?.data?.message || error?.message);
     throw error?.response?.data || error;
   }
 };
@@ -72,7 +81,7 @@ export const getNotificationBadge = async (): Promise<NotificationBadgeResponse>
       await clearAuthToken();
     }
 
-    console.error("Get Notification Badge Error:", error?.response || error);
+    console.error("Get Notification Badge Error:", error?.response?.status, error?.response?.data?.message || error?.message);
     throw error?.response?.data || error;
   }
 };
@@ -119,22 +128,47 @@ export const markAllNotificationsAsRead = async () => {
   }
 };
 
-// Associate the current Firebase installation token with the signed-in user.
-// Let failures propagate so FCMService does not cache a token that the backend
-// never received; it can then retry on the next setup/token refresh.
-export const registerFCMToken = async (fcmToken: string): Promise<void> => {
-  try {
-    const headers = await getAuthHeaders();
+export type NotificationAppState = "foreground" | "background" | "terminated" | "inbox";
 
-    await axios.put(
-      `${BASE_API_URL}/auth/update-fcm-token`,
-      { fcm_token: fcmToken },
-      { headers },
-    );
-  } catch (error: any) {
-    console.warn('[FCM] registerFCMToken error:', error?.response || error);
-    throw error?.response?.data || error;
-  }
+export type NotificationOpenedReport = {
+  app_state: NotificationAppState;
+  outcome: "opened_target" | "fallback" | "login_required";
+  destination_type?: string;
+};
+
+// Fire and forget: callers must not delay navigation on this.
+export const recordNotificationOpened = async (
+  notificationId: number,
+  report: NotificationOpenedReport,
+) => {
+  const res = await api.post(`/v1/notification/${notificationId}/opened`, report);
+  return res.data;
+};
+
+export type FCMRegistrationResponse = {
+  success: boolean;
+  message?: string;
+  firebase_project_id: string | null;
+};
+
+// Associate this device's FCM token with the signed-in user. Failures propagate
+// so FCMService keeps the token unregistered and retries it. Never log the
+// response or request here: both carry the token.
+export const registerFCMToken = async (
+  fcmToken: string,
+  firebaseProjectId: string | undefined,
+): Promise<FCMRegistrationResponse> => {
+  const res = await api.post("/v1/auth/update-fcm-token", {
+    fcm_token: fcmToken,
+    device_platform: Platform.OS,
+    ...(firebaseProjectId ? { firebase_project_id: firebaseProjectId } : {}),
+  });
+  if (!res.data?.success) throw new Error("FCM registration was not accepted");
+  return {
+    success: true,
+    message: res.data?.message,
+    firebase_project_id: res.data?.firebase_project_id ?? null,
+  };
 };
 
 export const deleteNotification = async (notificationId: number) => {

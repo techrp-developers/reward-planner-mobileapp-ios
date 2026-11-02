@@ -3,21 +3,21 @@ import { Platform } from 'react-native';
 export type ApiEnvironment = 'local' | 'live';
 
 // Change only this value to switch every app API call.
-export const API_ENVIRONMENT: ApiEnvironment = 'live';
+export const API_ENVIRONMENT: ApiEnvironment = 'local';
 
 const isLocalEnvironment = (environment: ApiEnvironment) => environment === 'local';
 const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT) &&
   (Platform.OS !== 'ios' || __DEV__);
 
 // For a physical iPhone, replace localhost with your Mac's LAN IP.
-export const IOS_LOCAL_SERVER_URL = 'http://localhost:5000';
+export const IOS_LOCAL_SERVER_URL = 'http://192.168.1.247:5057';
 
 const LOCAL_SERVER_URL = Platform.select({
   // Physical Android device connected over USB. Run:
-  // adb reverse tcp:5000 tcp:5000
-  android: 'http://localhost:5000',
+  // adb reverse tcp:5057 tcp:5057
+  android: 'http://localhost:5057',
   ios: IOS_LOCAL_SERVER_URL,
-  default: 'http://localhost:5000',
+  default: 'http://localhost:5057',
 }) as string;
 
 const LIVE_SERVER_URL = 'https://rewardplanners.com';

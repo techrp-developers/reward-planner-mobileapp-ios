@@ -1,20 +1,19 @@
 import { useChatSocketSession } from "../modules/chat/hooks/useChatSocketSession";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { NavigatorScreenParams } from "@react-navigation/native";
 import type { ChatStackParamList } from "../modules/chat/types";
-import { Alert, Platform } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { RESULTS } from "react-native-permissions";
 
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { useAppLanguage } from "../i18n/LanguageContext";
-import i18n from "../i18n";
 import LanguageSelectScreen from "../modules/common/language/LanguageSelectScreen";
 import {
+  markPushPermissionOffered,
+  requestPushPermission,
   setupFCM,
-  getNotificationPermissionStatus,
-  openNotificationSettings,
+  shouldOfferPushPermission,
 } from "../modules/notifications/FCMService";
+import NotificationPermissionSheet from "../modules/notifications/NotificationPermissionSheet";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
 import { OtaUpdatePrompt } from "../modules/common/versionupdate/OtaUpdatePrompt";
 import { useUpdateGates } from "../modules/common/versionupdate/useUpdateGates";
@@ -55,6 +54,7 @@ export type AppStackParamList = {
   GlobalSearchScreen: undefined;
   TrackOrders: undefined;
   Notification: undefined;
+  NotificationSettings: undefined;
   ServiceSearch: undefined;
   WalletHistory: undefined;
   HelpForm: { context?: 'dashboard' | 'ecommerce' | 'services' | 'bbps' | 'step_counter' } | undefined;
@@ -301,6 +301,12 @@ function AppNavigator() {
           }
         />
         <AppStack.Screen
+          name="NotificationSettings"
+          getComponent={() =>
+            require("../modules/dashboard/notification/NotificationSettings").default
+          }
+        />
+        <AppStack.Screen
           name="Notification"
           getComponent={() =>
             require("../modules/dashboard/notification/Notification").default
@@ -337,30 +343,11 @@ export default function RootNavigator() {
   const { status: languageStatus } = useAppLanguage();
   const { storeUpdate, onStoreUpdateLater, otaPrompt, onOtaUpdate, onOtaLater } = useUpdateGates();
   const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
-  const deniedAlertShownRef = useRef(false);
+  const [showPushPermission, setShowPushPermission] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fcmUnsubscribeRef.current = setupFCM();
-
-      if (Platform.OS === 'ios' && !deniedAlertShownRef.current) {
-        getNotificationPermissionStatus().then((status) => {
-          if (status === RESULTS.BLOCKED) {
-            deniedAlertShownRef.current = true;
-            Alert.alert(
-              i18n.t('common:notifications.disabledTitle'),
-              i18n.t('common:notifications.disabledMessage'),
-              [
-                { text: i18n.t('common:actions.notNow'), style: 'cancel' },
-                {
-                  text: i18n.t('common:actions.openSettings'),
-                  onPress: openNotificationSettings,
-                },
-              ],
-            );
-          }
-        });
-      }
     } else {
       fcmUnsubscribeRef.current?.();
       fcmUnsubscribeRef.current = null;
@@ -384,6 +371,22 @@ export default function RootNavigator() {
   // stack on top of those gates.
   const showRewardModal =
     !showSplash && !needsLanguage && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
+
+  // Ask once, on the app itself, and never over another prompt. A user who said
+  // no can change their mind from Notification settings.
+  const canOfferPushPermission =
+    !showSplash && !needsLanguage && isAuthenticated && termsAccepted === true &&
+    !showRewardModal && !storeUpdate.visible && !otaPrompt.visible;
+  useEffect(() => {
+    if (!canOfferPushPermission) return;
+    let active = true;
+    shouldOfferPushPermission().then((offer) => {
+      if (active && offer) setShowPushPermission(true);
+    }).catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [canOfferPushPermission]);
 
   // Auth state changes replace whole stacks. Do not animate or freeze an
   // outgoing auth screen while Fabric removes its nested views.
@@ -433,6 +436,17 @@ export default function RootNavigator() {
         visible={showRewardModal}
         points={firstLoginReward ?? 0}
         onClose={markFirstLoginRewardShown}
+      />
+      <NotificationPermissionSheet
+        visible={showPushPermission}
+        onEnable={() => {
+          setShowPushPermission(false);
+          requestPushPermission().catch(() => {});
+        }}
+        onNotNow={() => {
+          setShowPushPermission(false);
+          markPushPermissionOffered().catch(() => {});
+        }}
       />
     </>
   );

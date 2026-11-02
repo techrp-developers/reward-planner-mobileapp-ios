@@ -68,7 +68,7 @@ it('clears the local session on logout even if the endpoint fails', async () => 
   (secureGetItem as jest.Mock).mockResolvedValue('refresh');
   (api.post as jest.Mock).mockRejectedValue(new Error('Offline'));
   await act(async () => { await auth.logout(); });
-  expect(api.post).toHaveBeenCalledWith('/v1/auth/logout', { refreshToken: 'refresh' });
+  expect(api.post).toHaveBeenCalledWith('/v1/auth/logout', { refreshToken: 'refresh', fcm_token: expect.any(String) });
   expect(clearAuthToken).toHaveBeenCalled();
   expect(secureDeleteItem).toHaveBeenCalledWith('@rewardsplanners_refresh_token');
   expect(auth.isAuthenticated).toBe(false);
