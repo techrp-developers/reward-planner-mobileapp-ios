@@ -1,3 +1,4 @@
+import { Linking } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import { navigationRef } from '../../navigation/navigationRef';
 import {
@@ -59,6 +60,15 @@ export function parseNotificationRoute(raw: unknown): Route | null {
   } catch {
     return null;
   }
+}
+
+// The only sites a notification may open outside the app.
+const APPROVED_EXTERNAL_HOSTS = new Set(['rewardplanners.com', 'www.rewardplanners.com']);
+
+export function parseExternalUrl(raw: unknown): string | null {
+  if (typeof raw !== 'string') return null;
+  const match = raw.trim().match(/^https:\/\/([^/?#:@\\]+)(?:[/?#]|$)/i);
+  return match && APPROVED_EXTERNAL_HOSTS.has(match[1].toLowerCase()) ? raw.trim() : null;
 }
 
 function toNestedAction({ path, params }: Route) {
@@ -133,16 +143,21 @@ export function openFromNotification(
   }
   if (isDuplicateTap(data.notification_id || messageId)) return;
 
+  const externalUrl = data.destination_type === 'external' ? parseExternalUrl(data.action_url) : null;
   const target = parseNotificationRoute(data.target_route);
   const route = target ?? parseNotificationRoute(data.fallback_route) ?? INBOX;
-  navigationRef.dispatch(toNestedAction(route));
+  if (externalUrl) {
+    Linking.openURL(externalUrl).catch(() => navigationRef.dispatch(toNestedAction(route)));
+  } else {
+    navigationRef.dispatch(toNestedAction(route));
+  }
 
   // Analytics and read state never delay navigation. The backend answers 404
   // for a notification the signed-in employee does not own.
   reportNotificationOpened(
     data.notification_id,
     appState,
-    target ? 'opened_target' : 'fallback',
+    target || externalUrl ? 'opened_target' : 'fallback',
     data.destination_type,
   );
   if (/^\d+$/.test(data.notification_id ?? '')) {

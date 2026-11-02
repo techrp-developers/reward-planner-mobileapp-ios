@@ -72,6 +72,14 @@ target 'RewardsPlanners' do
   )
 end
 
+# Attaches notification images. Uses the Firebase helper only: do not also add
+# the Notifee extension helper.
+target 'NotificationService' do
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'FirebaseMessaging', :modular_headers => true
+end
+
 post_install do |installer|
   react_native_post_install(
     installer,

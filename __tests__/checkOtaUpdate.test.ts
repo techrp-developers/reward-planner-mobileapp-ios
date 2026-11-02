@@ -30,7 +30,7 @@ const release = {
 
 beforeEach(() => {
   (global as any).__DEV__ = false;
-  Platform.OS = 'ios';
+  Platform.OS = 'android';
   jest.clearAllMocks();
   (api.get as jest.Mock).mockResolvedValue({ data: release });
   (hotUpdate.getCurrentVersion as jest.Mock).mockResolvedValue(0);
@@ -48,11 +48,11 @@ test('rejects a zip whose SHA-256 does not match before native installation', as
   expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalled();
 });
 
-test('installs a verified optional zip with the iOS bundle extension', async () => {
+test('installs a verified optional zip with the Android bundle extension', async () => {
   (ReactNativeBlobUtil.fs.hash as jest.Mock).mockResolvedValue(checksum);
 
   expect(await checkForOtaUpdate()).toMatchObject({ updateAvailable: true, otaVersion: 1 });
-  expect(hotUpdate.setupBundlePath).toHaveBeenCalledWith(expect.stringMatching(/\.zip$/), '.jsbundle', 1);
+  expect(hotUpdate.setupBundlePath).toHaveBeenCalledWith(expect.stringMatching(/\.zip$/), '.bundle', 1);
   expect(hotUpdate.resetApp).not.toHaveBeenCalled();
 });
 
@@ -65,7 +65,7 @@ test('allows rollback to an older enabled release after hash verification', asyn
   (ReactNativeBlobUtil.fs.hash as jest.Mock).mockResolvedValue(checksum);
 
   expect(await checkForOtaUpdate()).toMatchObject({ updateAvailable: true, otaVersion: 4 });
-  expect(hotUpdate.setupBundlePath).toHaveBeenCalledWith(expect.any(String), '.jsbundle', 4);
+  expect(hotUpdate.setupBundlePath).toHaveBeenCalledWith(expect.any(String), '.bundle', 4);
 });
 
 test('restarts only after a mandatory zip is verified and installed', async () => {
@@ -78,4 +78,12 @@ test('restarts only after a mandatory zip is verified and installed', async () =
   expect(await checkForOtaUpdate()).toMatchObject({ updateAvailable: true, mandatory: true });
   expect(hotUpdate.setupBundlePath).toHaveBeenCalled();
   expect(hotUpdate.resetApp).toHaveBeenCalledTimes(1);
+});
+
+test('never downloads or installs on iOS, where OTA is disabled pending App Review', async () => {
+  Platform.OS = 'ios';
+
+  expect(await checkForOtaUpdate()).toEqual({ updateAvailable: false, mandatory: false });
+  expect(api.get).not.toHaveBeenCalled();
+  expect(hotUpdate.setupBundlePath).not.toHaveBeenCalled();
 });

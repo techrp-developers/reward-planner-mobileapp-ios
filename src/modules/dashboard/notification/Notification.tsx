@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -101,6 +102,7 @@ function Notification() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const [badgeCount, setBadgeCount] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const hasMoreRef = useRef(false);
@@ -124,6 +126,7 @@ function Notification() {
         softButton: { backgroundColor: isDark ? "#27233A" : "#F2EDFF" },
         disabledButton: { backgroundColor: isDark ? "#202024" : "#ECE8F4" },
         emptyIcon: { backgroundColor: isDark ? "#27233A" : "#F1ECFF" },
+        imagePlaceholder: { backgroundColor: isDark ? "#27272A" : "#E4E4E7" },
         actionText: { color: isDark ? "#FFFFFF" : "#6D5AE6" },
         disabledText: { color: isDark ? "#71717A" : "#A19AAD" },
       }),
@@ -202,6 +205,10 @@ function Notification() {
       setLoadingMore(false);
     }
   };
+
+  const handleImageError = useCallback((notificationId: number) => {
+    setFailedImages(prev => new Set(prev).add(notificationId));
+  }, []);
 
   const handleNotificationPress = (item: NotificationItem) => {
     const actionUrl = String(item.action_url || "").trim();
@@ -322,6 +329,10 @@ function Notification() {
     const metaBackground = isDark ? `${meta.color}20` : meta.bg;
     const metaBorder = isDark ? `${meta.color}55` : meta.border;
 
+    const imageUri = failedImages.has(item.notification_id)
+      ? null
+      : notificationImageUri(item.metadata?.image_url);
+
     return (
       <TouchableOpacity
         activeOpacity={0.85}
@@ -364,6 +375,16 @@ function Notification() {
           <Text style={[styles.message, themed.mutedText]} numberOfLines={2}>
             {item.message}
           </Text>
+          {imageUri ? (
+            <Image
+              testID="notification-image"
+              source={{ uri: imageUri }}
+              style={[styles.notificationImage, themed.imagePlaceholder]}
+              resizeMode="cover"
+              accessibilityIgnoresInvertColors
+              onError={() => handleImageError(item.notification_id)}
+            />
+          ) : null}
         </View>
 
         <View style={styles.cardAction}>
@@ -496,7 +517,20 @@ function Notification() {
 
 export default Notification;
 
+// Images come from the backend's asset host only; anything else stays text.
+function notificationImageUri(value: unknown): string | null {
+  return typeof value === "string" && /^https:\/\/cdn\.rewardplanners\.com\/[^\s]+$/i.test(value)
+    ? value
+    : null;
+}
+
 const styles = StyleSheet.create({
+  notificationImage: {
+    width: "100%",
+    aspectRatio: 2,
+    borderRadius: 10,
+    marginTop: 8,
+  },
   safe: {
     flex: 1,
     backgroundColor: "#F5F3FA",

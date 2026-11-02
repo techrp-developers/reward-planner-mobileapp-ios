@@ -1,3 +1,4 @@
+import { Linking } from 'react-native';
 import { AppState, Platform } from 'react-native';
 import fs from 'fs';
 import path from 'path';
@@ -38,6 +39,7 @@ import {
   clearPendingNotification,
   flushPendingNotification,
   openFromNotification,
+  parseExternalUrl,
   openNotificationRoute,
   parseNotificationRoute,
 } from '../src/modules/notifications/notificationRouting';
@@ -333,6 +335,83 @@ describe('tap routing', () => {
       app_state: 'background', outcome: 'opened_target', destination_type: 'product',
     });
     expect(markNotificationAsRead).toHaveBeenCalledWith(11);
+  });
+
+  it('holds a tap until login, then opens the target once', async () => {
+    mountApp(false);
+    const data = { notification_id: '31', target_route: productRoute, destination_type: 'product' };
+    openFromNotification(data, 'terminated');
+    flushPendingNotification();
+    expect(nav.dispatch).not.toHaveBeenCalled();
+    expect(markNotificationAsRead).not.toHaveBeenCalled();
+
+    mountApp(true);
+    flushPendingNotification();
+    flushPendingNotification();
+    await flush();
+    expect(nav.dispatch).toHaveBeenCalledTimes(1);
+    expect(nav.dispatch.mock.calls[0][0].payload).toMatchObject({ params: { screen: 'ProductDetails', params: { productId: 42 } } });
+    expect(markNotificationAsRead).toHaveBeenCalledWith(31);
+  });
+
+  it('drops a held tap on logout so the next account never opens it', () => {
+    mountApp(false);
+    openFromNotification({ notification_id: '32', target_route: productRoute }, 'terminated');
+    clearPendingNotification();
+    mountApp(true);
+    flushPendingNotification();
+    expect(nav.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('sends a service notification to its details screen', () => {
+    openFromNotification({
+      notification_id: '21',
+      target_route: JSON.stringify({ path: ['App', 'Home', 'ServicesModule', 'ServiceDescription'], params: { serviceId: 9 } }),
+    }, 'terminated');
+    expect(nav.dispatch.mock.calls[0][0].payload).toMatchObject({
+      name: 'App',
+      params: { screen: 'Home', params: { screen: 'ServicesModule', params: { screen: 'ServiceDescription', params: { serviceId: 9 } } } },
+    });
+  });
+
+  it('opens the inbox for an unknown or privileged destination', async () => {
+    openFromNotification({ notification_id: '22', target_route: JSON.stringify({ path: ['App', 'AdminPanel'] }) }, 'background');
+    await flush();
+    expect(nav.dispatch.mock.calls[0][0].payload).toMatchObject({ name: 'App', params: { screen: 'Notification' } });
+    expect(recordNotificationOpened).toHaveBeenCalledWith(22, expect.objectContaining({ outcome: 'fallback' }));
+  });
+
+  it('handles a press reported twice once', () => {
+    const data = { notification_id: '23', target_route: productRoute };
+    openFromNotification(data, 'background');
+    openFromNotification(data, 'background');
+    expect(nav.dispatch).toHaveBeenCalledTimes(1);
+    expect(markNotificationAsRead).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens only approved https sites, and only for an external destination', () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
+    openFromNotification({ notification_id: '24', destination_type: 'external', action_url: 'https://www.rewardplanners.com/offers' }, 'background');
+    expect(open).toHaveBeenCalledWith('https://www.rewardplanners.com/offers');
+    expect(nav.dispatch).not.toHaveBeenCalled();
+
+    open.mockClear();
+    openFromNotification({ notification_id: '25', action_url: 'https://www.rewardplanners.com/offers' }, 'background');
+    expect(open).not.toHaveBeenCalled();
+    expect(nav.dispatch).toHaveBeenCalledTimes(1);
+    open.mockRestore();
+  });
+
+  it.each([
+    'http://rewardplanners.com/a',
+    'https://rewardplanners.com.evil.example/a',
+    'https://rewardplanners.com@evil.example/a',
+    'https://rewardplanners.com:8443/a',
+    'rp://admin',
+    'javascript:alert(1)',
+    12,
+  ])('refuses the external url %s', (url) => {
+    expect(parseExternalUrl(url)).toBeNull();
   });
 
   it('maps the backend chat path onto this app navigator', () => {

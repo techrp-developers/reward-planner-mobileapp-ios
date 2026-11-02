@@ -33,7 +33,8 @@ it.each([360, 375, 390, 412])('preserves full slide proportions and changes caro
   mockWidth = width;
   await act(async () => { renderer = create(<CmsBannerGallery banner={banner(width, 'carousel')} fallbackRatio={2} />); });
   const images = renderer!.root.findAllByType(Image);
-  expect(images).toHaveLength(2);
+  // Carousels loop on a strip of three copies of the two slides.
+  expect(images).toHaveLength(6);
   expect(images.every(image => image.props.resizeMode === 'contain')).toBe(true);
   const tiles = renderer!.root.findAllByType(TouchableOpacity);
   expect(tiles[0].props.style).toMatchObject({ width, aspectRatio: 2048 / 1008 });

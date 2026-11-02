@@ -10,6 +10,15 @@ jest.mock('react-native-reanimated', () => ({
 jest.mock('react-native-device-info', () =>
   require('react-native-device-info/jest/react-native-device-info-mock'),
 );
+jest.mock('react-native-blob-util', () => ({
+  fs: { dirs: { CacheDir: '/tmp', DocumentDir: '/tmp' }, hash: jest.fn(), unlink: jest.fn() },
+  config: jest.fn(),
+}));
+jest.mock('react-native-ota-hot-update', () => ({
+  getCurrentVersion: jest.fn(async () => 0),
+  setupBundlePath: jest.fn(async () => true),
+  resetApp: jest.fn(),
+}));
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );

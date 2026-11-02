@@ -10,11 +10,15 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		25C22D03FB3409364BCDBE10 /* libPods-RewardsPlanners.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8BAB61ED41B9FAA6928AC979 /* libPods-RewardsPlanners.a */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7C7AC6EDFCD9022C348F46B5 /* libPods-NotificationService.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A1109487D4C31816021C4F29 /* libPods-NotificationService.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		9CFAEB345C4AEFEBB71F478A /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74851B6D1DFA0E2F00B11BC1 /* Foundation.framework */; };
 		A11CE00130E1000100ABCDEF /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11CE00230E1000100ABCDEF /* HealthKitManager.swift */; };
 		A11CE00330E1000100ABCDEF /* HealthKitManagerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = A11CE00430E1000100ABCDEF /* HealthKitManagerBridge.m */; };
+		A50636AF6C0628B1B23B7A1C /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FB6E4BC171F7495C83A6469 /* NotificationService.swift */; };
 		D0448B4C30230320009614DA /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D0448B4B30230320009614DA /* GoogleService-Info.plist */; };
 		D9391CF4F9EA7A37C2E19E30 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		F346E7094DC71F40C0A06493 /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = E3BFF13ECA184536E288DE48 /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F351CA120000000000000001 /* AppIconSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F351CA110000000000000001 /* AppIconSwitcher.swift */; };
 		F351CA120000000000000002 /* AppIconSwitcher.m in Sources */ = {isa = PBXBuildFile; fileRef = F351CA110000000000000002 /* AppIconSwitcher.m */; };
 /* End PBXBuildFile section */
@@ -26,6 +30,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 4428D877D99E354F61E3BA37B831F2FF;
 			remoteInfo = "Pods-RewardsPlanners";
+		};
+		C3C21A253388B43F3FA3B25F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E3D134E3570CFB8ADB939763;
+			remoteInfo = NotificationService;
 		};
 		D02664333080EED0008DE56B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -911,6 +922,20 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		FFBC76254624AF14DFA10824 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				F346E7094DC71F40C0A06493 /* NotificationService.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		0F8E4485DBABEEE2C8C6F185 /* Pods-RewardsPlanners.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.debug.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Reward Planners.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Reward Planners.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -920,18 +945,24 @@
 		243139C8D77842F39BF43D8F /* AntDesign.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = AntDesign.ttf; path = "../node_modules/react-native-vector-icons/Fonts/AntDesign.ttf"; sourceTree = "<group>"; };
 		28E616389B6248FC884775F5 /* FontAwesome6_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Regular.ttf"; sourceTree = "<group>"; };
 		2EA97FA06AC84B039A6E5728 /* FontAwesome6_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"; sourceTree = "<group>"; };
+		5FB6E4BC171F7495C83A6469 /* NotificationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		61A3ACA09BD34338CC721DEA /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		739961AF622C4F229DE2F45C /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
+		74851B6D1DFA0E2F00B11BC1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = RewardsPlanners/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = RewardsPlanners/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		8BAB61ED41B9FAA6928AC979 /* libPods-RewardsPlanners.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-RewardsPlanners.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		90CE755B2952413FA7DC7C83 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
 		917B2A984D8148A7950ED3EE /* FontAwesome.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome.ttf"; sourceTree = "<group>"; };
 		9B9657EAEBDBB991961E275B /* Pods-RewardsPlanners.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RewardsPlanners.release.xcconfig"; path = "Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners.release.xcconfig"; sourceTree = "<group>"; };
+		A1109487D4C31816021C4F29 /* libPods-NotificationService.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NotificationService.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A11CE00230E1000100ABCDEF /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = HealthKitManager.swift; path = RewardsPlanners/HealthKitManager.swift; sourceTree = "<group>"; };
 		A11CE00430E1000100ABCDEF /* HealthKitManagerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = HealthKitManagerBridge.m; path = RewardsPlanners/HealthKitManagerBridge.m; sourceTree = "<group>"; };
 		A3045F036F9B4D72A6E730E9 /* FontAwesome5_Solid.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Solid.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf"; sourceTree = "<group>"; };
+		AE5644E588EE160A8FE8B398 /* Pods-NotificationService.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.release.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.release.xcconfig"; sourceTree = "<group>"; };
 		B05A745BB42243A2A5FA8685 /* Ionicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Ionicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Ionicons.ttf"; sourceTree = "<group>"; };
 		B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Pods.xcodeproj; path = Pods/Pods.xcodeproj; sourceTree = SOURCE_ROOT; };
+		BE9BE857D141DBFE43233842 /* Pods-NotificationService.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NotificationService.debug.xcconfig"; path = "Target Support Files/Pods-NotificationService/Pods-NotificationService.debug.xcconfig"; sourceTree = "<group>"; };
 		C2F6DC49D62F44A6AE1F7EF8 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		C9CBE94AA7B6453D845D6F3D /* FontAwesome6_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome6_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome6_Brands.ttf"; sourceTree = "<group>"; };
 		D01544B859A04D19A6A614CA /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
@@ -940,6 +971,7 @@
 		D358F10F25184128B572DAFE /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
 		D3DBB6D3FFB84F2BBB8C93D5 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		E21B7910E8CD400A98645EDD /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
+		E3BFF13ECA184536E288DE48 /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		E71865909FA740ECA95D9FEA /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F1F72CC16E5B45DF98B13418 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
@@ -951,6 +983,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		07CA7382F60C4688F6558C6A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9CFAEB345C4AEFEBB71F478A /* Foundation.framework in Frameworks */,
+				7C7AC6EDFCD9022C348F46B5 /* libPods-NotificationService.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -985,8 +1026,18 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				8BAB61ED41B9FAA6928AC979 /* libPods-RewardsPlanners.a */,
+				7F7C5ADAF15DF60BC50BB28F /* iOS */,
+				A1109487D4C31816021C4F29 /* libPods-NotificationService.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7F7C5ADAF15DF60BC50BB28F /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				74851B6D1DFA0E2F00B11BC1 /* Foundation.framework */,
+			);
+			name = iOS;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -1005,6 +1056,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				A9F26BDB316348C6B1F4FCE0 /* Resources */,
+				F71044540B07650750F04F61 /* NotificationService */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -1015,6 +1067,7 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* Reward Planners.app */,
+				E3BFF13ECA184536E288DE48 /* NotificationService.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1051,6 +1104,8 @@
 				B34DEAED4439490F82FD61C0 /* Pods.xcodeproj */,
 				0F8E4485DBABEEE2C8C6F185 /* Pods-RewardsPlanners.debug.xcconfig */,
 				9B9657EAEBDBB991961E275B /* Pods-RewardsPlanners.release.xcconfig */,
+				AE5644E588EE160A8FE8B398 /* Pods-NotificationService.release.xcconfig */,
+				BE9BE857D141DBFE43233842 /* Pods-NotificationService.debug.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -1188,6 +1243,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		F71044540B07650750F04F61 /* NotificationService */ = {
+			isa = PBXGroup;
+			children = (
+				5FB6E4BC171F7495C83A6469 /* NotificationService.swift */,
+				61A3ACA09BD34338CC721DEA /* Info.plist */,
+			);
+			name = NotificationService;
+			path = NotificationService;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -1199,6 +1264,7 @@
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
+				FFBC76254624AF14DFA10824 /* Embed App Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				D4307FE77E818DEA5BADE208 /* [CP] Embed Pods Frameworks */,
 				1B141040200A6DE3CE996219 /* [CP] Copy Pods Resources */,
@@ -1209,11 +1275,31 @@
 			);
 			dependencies = (
 				1611F71F70E94CFCBD883359 /* PBXTargetDependency */,
+				7904DB355C04965CC3F48DF7 /* PBXTargetDependency */,
 			);
 			name = RewardsPlanners;
 			productName = RewardsPlanners;
 			productReference = 13B07F961A680F5B00A75B9A /* Reward Planners.app */;
 			productType = "com.apple.product-type.application";
+		};
+		E3D134E3570CFB8ADB939763 /* NotificationService */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7777945357BC349C7BABBAB2 /* Build configuration list for PBXNativeTarget "NotificationService" */;
+			buildPhases = (
+				21CDD919E38DD10D91C0B491 /* [CP] Check Pods Manifest.lock */,
+				A560F6ED76B724137416D945 /* Sources */,
+				07CA7382F60C4688F6558C6A /* Frameworks */,
+				BEB37B6057A57B0902A333A2 /* Resources */,
+				F1C8026FC201A82EF62E28F8 /* [CP] Copy Pods Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NotificationService;
+			productName = NotificationService;
+			productReference = E3BFF13ECA184536E288DE48 /* NotificationService.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -1249,6 +1335,7 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* RewardsPlanners */,
+				E3D134E3570CFB8ADB939763 /* NotificationService */,
 			);
 		};
 /* End PBXProject section */
@@ -2150,6 +2237,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		BEB37B6057A57B0902A333A2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
@@ -2199,6 +2293,28 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		21CDD919E38DD10D91C0B491 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-NotificationService-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
 		4247546CEABB30977ECA621C /* Copy verified vendor dSYMs */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -2233,6 +2349,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RewardsPlanners/Pods-RewardsPlanners-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F1C8026FC201A82EF62E28F8 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NotificationService/Pods-NotificationService-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NotificationService/Pods-NotificationService-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NotificationService/Pods-NotificationService-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FCC17C83ADA5630D279C1152 /* [CP] Check Pods Manifest.lock */ = {
@@ -2272,6 +2405,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A560F6ED76B724137416D945 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A50636AF6C0628B1B23B7A1C /* NotificationService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2279,6 +2420,12 @@
 			isa = PBXTargetDependency;
 			name = "Pods-RewardsPlanners";
 			targetProxy = 4F1F1E812DA44A36BA59A583 /* PBXContainerItemProxy */;
+		};
+		7904DB355C04965CC3F48DF7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = NotificationService;
+			target = E3D134E3570CFB8ADB939763 /* NotificationService */;
+			targetProxy = C3C21A253388B43F3FA3B25F /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -2361,6 +2508,33 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
+		};
+		2636A947F2C0FB19593952D2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = BE9BE857D141DBFE43233842 /* Pods-NotificationService.debug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NotificationService/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 6.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mpstech.rewardsplanners.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 		83CBBA201A601CBA00E9B192 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -2510,6 +2684,34 @@
 			};
 			name = Release;
 		};
+		980D8EA7452F263D78FFA1C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AE5644E588EE160A8FE8B398 /* Pods-NotificationService.release.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = NotificationService/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 6.2;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mpstech.rewardsplanners.NotificationService;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2518,6 +2720,15 @@
 			buildConfigurations = (
 				13B07F941A680F5B00A75B9A /* Debug */,
 				13B07F951A680F5B00A75B9A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7777945357BC349C7BABBAB2 /* Build configuration list for PBXNativeTarget "NotificationService" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				980D8EA7452F263D78FFA1C0 /* Release */,
+				2636A947F2C0FB19593952D2 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

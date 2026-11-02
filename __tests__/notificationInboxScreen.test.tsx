@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity } from 'react-native';
+import { Image, Text, TouchableOpacity } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
 jest.mock('../src/theme/ThemeContext', () => ({
@@ -30,7 +30,7 @@ jest.mock('../src/modules/dashboard/notification/NotificationAPI', () => ({
 }));
 
 import Notification from '../src/modules/dashboard/notification/Notification';
-import { getMyNotifications, getNotificationBadge } from '../src/modules/dashboard/notification/NotificationAPI';
+import { getMyNotifications, getNotificationBadge, markNotificationAsRead } from '../src/modules/dashboard/notification/NotificationAPI';
 import { notificationEvents } from '../src/modules/notifications/notificationEvents';
 
 const fetchInbox = getMyNotifications as jest.Mock;
@@ -101,5 +101,39 @@ it('shows the backend failure with Retry, and Retry recovers', async () => {
   const retry = tree.root.findAllByType(TouchableOpacity).at(-1)!;
   await act(async () => retry.props.onPress());
   expect(fetchInbox).toHaveBeenCalledTimes(2);
+  expect(visibleText(tree)).toContain('Inbox row');
+});
+
+const imageUrl = 'https://cdn.rewardplanners.com/public/notifications/2026/10/a.jpg';
+const images = (tree: ReactTestRenderer) => tree.root.findAllByType(Image);
+
+it('shows the stored image on the row, and the row opens the same destination', async () => {
+  const target_route = { path: ['App', 'ProductDetails'], params: { productId: 42 } };
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl, target_route } }] });
+  const tree = await renderScreen();
+  expect(images(tree)[0].props.source).toEqual({ uri: imageUrl });
+
+  (markNotificationAsRead as jest.Mock).mockResolvedValue({ success: true });
+  const { openNotificationRoute } = require('../src/modules/notifications/notificationRouting');
+  const row = tree.root.findAllByType(TouchableOpacity).find((node) => node.props.onLongPress)!;
+  await act(async () => row.props.onPress());
+  expect(openNotificationRoute).toHaveBeenCalledWith(target_route);
+});
+
+it.each([undefined, null, '', 'http://cdn.rewardplanners.com/a.jpg', 'https://example.com/a.jpg', 'http://192.168.1.247:5057/a.jpg'])(
+  'keeps a text row for the image value %s',
+  async (image_url) => {
+    fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url } }] });
+    const tree = await renderScreen();
+    expect(images(tree)).toHaveLength(0);
+    expect(visibleText(tree)).toContain('Inbox row');
+  },
+);
+
+it('falls back to text when the image fails to load', async () => {
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl } }] });
+  const tree = await renderScreen();
+  await act(async () => images(tree)[0].props.onError());
+  expect(images(tree)).toHaveLength(0);
   expect(visibleText(tree)).toContain('Inbox row');
 });
