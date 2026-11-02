@@ -33,8 +33,6 @@ export type BusBookingStackParamList = {
 
   journeyDate: string;
 
-  journeyTime: string;
-
   isWomenBooking?: boolean;
 
   selectedFilters?: string[];
@@ -67,8 +65,6 @@ PassengerDetailsScreen: {
 
   traceId?: string;
 
-  srdvIndex?: string;
-
   resultIndex?: string;
 
   isWomenBooking?: boolean;
@@ -82,8 +78,6 @@ BoardingDroppingSelectionScreen: {
   passengers?: any[];
 
   traceId?: string;
-
-  srdvIndex?: string;
 
   resultIndex?: string;
 

@@ -25,12 +25,15 @@ export type StoredRecentSearch = {
   toCityName: string;
   toStateName: string;
   journeyDate: string;
-  journeyTime: string;
+  // Searches are by date only; kept so older saved searches still load.
+  journeyTime?: string;
   updatedAt: string;
 };
 
 const PASSENGER_PROFILES_KEY = "@busbooking/passenger-profiles";
-const RECENT_SEARCHES_KEY = "@busbooking/recent-searches";
+// v2: city codes moved from city_codes.cico_id to bus_cities.CityId, so
+// searches saved under the old key could point at a different city.
+const RECENT_SEARCHES_KEY = "@busbooking/recent-searches-v2";
 const MAX_PASSENGER_PROFILES = 8;
 const MAX_RECENT_SEARCHES = 6;
 

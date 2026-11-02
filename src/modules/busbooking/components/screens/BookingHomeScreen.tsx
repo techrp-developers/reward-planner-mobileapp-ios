@@ -23,9 +23,6 @@ import BusBookingStatusPopup, {
   useBusBookingPopup,
 } from "../BusBookingStatusPopup";
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
-import PromotionalBanner from "../../../ecommerce/components/home/PromotionalBanner";
-import CmsOffersBanner from "../../../ecommerce/components/home/CmsOffersBanner";
-import BrandPromotionalBanner from "../../../ecommerce/components/home/BrandPromotionalBanner";
 
 import {
   getBusOrdersApi,
@@ -41,14 +38,13 @@ import {
   formatBusAmount,
   formatBusTime,
   getBusJourneyDayLabel,
+  parseBusDateTime,
 } from "../../utils/busOrderFormat";
 import {
   loadRecentSearches,
   saveRecentSearch,
   type StoredRecentSearch,
 } from "../../utils/busBookingStorage";
-import i18n from "../../../../i18n";
-import { useTranslation } from "react-i18next";
 
 type DateChip = {
   id: string;
@@ -164,8 +160,6 @@ const formatJourneyDateLabel = (journeyDate: string) => {
 };
 
 export default function BookingHomeScreen() {
-  // Re-render on language change; some labels below use i18n.t directly.
-  useTranslation();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -420,8 +414,8 @@ const handleCitySearch = async (
     });
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.citySearch"),
-      message: error.message || i18n.t("busBooking:r2.unableToSearchCities"),
+      title: "City Search",
+      message: error.message || "Unable to search cities",
       variant: "error",
     });
 
@@ -440,8 +434,8 @@ const handleSelectCity = (city: City) => {
   ) {
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.selectCity"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectACityNot"),
+      title: "Select City",
+      message: "Please select a city, not a local area.",
       variant: "warning",
     });
 
@@ -500,18 +494,21 @@ const handleSearchBuses = async () => {
   const now = new Date();
   const todayId = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-  let computedJourneyTime = "00:00";
-  if (selectedDateId === todayId) {
-    const hours = String(now.getHours()).padStart(2, "0");
-    const minutes = String(now.getMinutes()).padStart(2, "0");
-    computedJourneyTime = `${hours}:${minutes}`;
-  }
+  // Search is by date only, so for today drop buses that have already left.
+  const isUpcomingBus = (bus: any) => {
+    if (selectedDateId !== todayId) {
+      return true;
+    }
+
+    // Hermes cannot parse "YYYY-MM-DD HH:mm:ss", so use the shared parser.
+    const departure = parseBusDateTime(bus?.DepartureTime);
+    return !departure || departure >= now;
+  };
 
   console.log("[BusBooking][Home] Search button pressed", {
     fromCity,
     toCity,
     selectedDateId,
-    journeyTime: computedJourneyTime,
   });
 
   /*
@@ -523,8 +520,8 @@ const handleSearchBuses = async () => {
   if (!fromCity) {
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.selectSource"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectFromCity"),
+      title: "Select Source",
+      message: "Please select From city.",
       variant: "warning",
     });
 
@@ -535,8 +532,8 @@ const handleSearchBuses = async () => {
   if (!toCity) {
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.selectDestination"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectToCity"),
+      title: "Select Destination",
+      message: "Please select To city.",
       variant: "warning",
     });
 
@@ -550,8 +547,8 @@ const handleSearchBuses = async () => {
   ) {
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.invalidRoute"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.fromAndToCityCannot"),
+      title: "Invalid Route",
+      message: "From and To city cannot be same.",
       variant: "warning",
     });
 
@@ -562,20 +559,8 @@ const handleSearchBuses = async () => {
   if (!selectedDateId) {
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.selectDate"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectJourneyDate"),
-      variant: "warning",
-    });
-
-    return;
-  }
-
-
-  if (!computedJourneyTime) {
-
-    showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.selectTime"),
-      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectJourneyTime"),
+      title: "Select Date",
+      message: "Please select journey date.",
       variant: "warning",
     });
 
@@ -596,7 +581,6 @@ const handleSearchBuses = async () => {
   console.log("From code:", fromCity?.id);
   console.log("To code:", toCity?.id);
   console.log("Journey Date:", selectedDateId);
-  console.log("Journey Time:", computedJourneyTime);
   console.log("==================================");
   try {
 
@@ -619,9 +603,6 @@ const handleSearchBuses = async () => {
 
       journeyDate:
         selectedDateId,
-
-      journeyTime:
-        computedJourneyTime,
     };
 
 
@@ -651,7 +632,6 @@ const handleSearchBuses = async () => {
       toCityName: toCity.city_name,
       toStateName: toCity.state_name || "",
       journeyDate: selectedDateId,
-      journeyTime: computedJourneyTime,
       updatedAt: new Date().toISOString(),
     };
 
@@ -671,10 +651,11 @@ const handleSearchBuses = async () => {
     |--------------------------------------------------------------------------
     */
 
-    if (
-      !response.buses ||
-      response.buses.length === 0
-    ) {
+    const upcomingBuses = Array.isArray(response.buses)
+      ? response.buses.filter(isUpcomingBus)
+      : [];
+
+    if (upcomingBuses.length === 0) {
       console.log("[BusBooking][Home] No buses found", {
         payload,
         response,
@@ -685,8 +666,10 @@ const handleSearchBuses = async () => {
         {
           buses: [],
           emptyStateMessage:
-            response.message ||
-            "Buses not found for this route.",
+            response.buses?.length
+              ? "All buses for today have already departed."
+              : response.message ||
+                "Buses not found for this route.",
           traceId:
             response.traceId,
           sourceCity:
@@ -699,8 +682,6 @@ const handleSearchBuses = async () => {
             String(toCity.id),
           journeyDate:
             selectedDateId,
-          journeyTime:
-            computedJourneyTime,
           isWomenBooking:
             isWomenBooking,
         }
@@ -721,7 +702,7 @@ const handleSearchBuses = async () => {
       {
 
         buses:
-          response.buses,
+          upcomingBuses,
 
         traceId:
           response.traceId,
@@ -741,21 +722,17 @@ const handleSearchBuses = async () => {
         journeyDate:
           selectedDateId,
 
-        journeyTime:
-          computedJourneyTime,
-
         isWomenBooking:
           isWomenBooking,
       }
     );
 
     console.log("[BusBooking][Home] Navigate to listing", {
-      busCount: response.buses.length,
+      busCount: upcomingBuses.length,
       traceId: response.traceId,
       sourceCity: fromCity.city_name,
       destinationCity: toCity.city_name,
       journeyDate: selectedDateId,
-      journeyTime: computedJourneyTime,
     });
 
 
@@ -777,8 +754,9 @@ const handleSearchBuses = async () => {
     );
 
     if (
-      normalizedErrorMessage.includes("no data found for this route") ||
-      normalizedErrorMessage.includes("no buses found")
+      // The provider words this differently across versions, e.g.
+      // "No data found for this route." or "No bus found for this route."
+      /no (data|bus|buses) found/.test(normalizedErrorMessage)
     ) {
       navigation.navigate(
         "BusListingScreen",
@@ -799,8 +777,6 @@ const handleSearchBuses = async () => {
             String(toCity?.id || ""),
           journeyDate:
             selectedDateId,
-          journeyTime:
-            computedJourneyTime,
           isWomenBooking:
             isWomenBooking,
         }
@@ -811,8 +787,8 @@ const handleSearchBuses = async () => {
 
 
     showPopup({
-      title: i18n.t("busBooking:bookingHomeScreen.msg.searchFailed"),
-      message: errorMessage || i18n.t("busBooking:r2.unableToSearchBuses"),
+      title: "Search Failed",
+      message: errorMessage || "Unable to search buses.",
       variant: "error",
     });
 
@@ -834,8 +810,6 @@ const handleSearchBuses = async () => {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Bus Booking is the CMS "dineout" module. */}
-      <PromotionalBanner module="dineout" style={styles.promotionalBanner} />
       <View style={styles.searchCard}>
         <View style={styles.inputStack}>
           <View style={styles.routeSection}>
@@ -856,7 +830,7 @@ const handleSearchBuses = async () => {
   <View style={styles.routeTextWrap}>
 
     <Text style={styles.routeLabel}>
-      {i18n.t("busBooking:bookingHomeScreen.from")}
+      From
     </Text>
 
     <Text
@@ -870,7 +844,7 @@ const handleSearchBuses = async () => {
       {
         fromCity
           ? fromCity.city_name
-          : i18n.t("busBooking:r2.selectSourceCity")
+          : "Select source city"
       }
     </Text>
 
@@ -930,7 +904,7 @@ const handleSearchBuses = async () => {
   <View style={styles.routeTextWrap}>
 
     <Text style={styles.routeLabel}>
-      {i18n.t("busBooking:bookingHomeScreen.to")}
+      To
     </Text>
 
     <Text
@@ -944,7 +918,7 @@ const handleSearchBuses = async () => {
       {
         toCity
           ? toCity.city_name
-          : i18n.t("busBooking:r2.selectDestinationCity")
+          : "Select destination city"
       }
     </Text>
 
@@ -971,9 +945,9 @@ const handleSearchBuses = async () => {
               color="#444444"
             />
             <View style={styles.dateJourneyTextWrap}>
-              <Text style={styles.dateJourneyLabel}>{i18n.t("busBooking:bookingHomeScreen.dateOfJourney")}</Text>
+              <Text style={styles.dateJourneyLabel}>Date of Journey</Text>
               <Text style={styles.dateJourneyValue}>{journeyDateText}</Text>
-              <Text style={styles.dateJourneyHint}>{i18n.t("busBooking:bookingHomeScreen.tapToChooseTravelDate")}</Text>
+              <Text style={styles.dateJourneyHint}>Tap to choose travel date</Text>
             </View>
           </View>
 
@@ -981,10 +955,10 @@ const handleSearchBuses = async () => {
             <View style={styles.dateBadge}>
               <Text style={styles.dateBadgeText}>
                 {selectedDateId === todayChip?.id
-                  ? i18n.t("busBooking:r2.today")
+                  ? "Today"
                   : selectedDateId === tomorrowChip?.id
-                    ? i18n.t("busBooking:r2.tomorrow")
-                    : selectedChip?.fullLabel?.split(",").slice(1).join(",").trim() || i18n.t("busBooking:r2.upcoming")}
+                    ? "Tomorrow"
+                    : selectedChip?.fullLabel?.split(",").slice(1).join(",").trim() || "Upcoming"}
               </Text>
             </View>
             <MaterialCommunityIcons
@@ -1005,7 +979,7 @@ const handleSearchBuses = async () => {
             color="#CE1538"
           />
           <View style={styles.womenBookingText}>
-            <Text style={styles.womenBookingTitle}>{i18n.t("busBooking:bookingHomeScreen.bookingForWomen")}</Text>
+            <Text style={styles.womenBookingTitle}>Booking for Women</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -1063,7 +1037,7 @@ const handleSearchBuses = async () => {
       {
         searchingBuses
           ? "Searching..."
-          : i18n.t("busBooking:r2.searchBuses")
+          : "Search buses"
       }
 
     </Text>
@@ -1074,13 +1048,13 @@ const handleSearchBuses = async () => {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {nextJourney ? i18n.t("busBooking:r2.yourNextJourney") : i18n.t("busBooking:r2.myBookings")}
+          {nextJourney ? "Your Next Journey" : "My Bookings"}
         </Text>
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => navigation.navigate("BusOrdersScreen")}
         >
-          <Text style={styles.viewAllText}>{i18n.t("busBooking:bookingHomeScreen.viewAll")}</Text>
+          <Text style={styles.viewAllText}>View All</Text>
         </TouchableOpacity>
       </View>
 
@@ -1104,7 +1078,7 @@ const handleSearchBuses = async () => {
               <Text style={styles.departureTime}>
                 {formatBusTime(nextJourney.departureTime)}
               </Text>
-              <Text style={styles.departureLabel}>{i18n.t("busBooking:bookingHomeScreen.departure")}</Text>
+              <Text style={styles.departureLabel}>DEPARTURE</Text>
             </View>
           </View>
 
@@ -1127,7 +1101,7 @@ const handleSearchBuses = async () => {
                   : `Ref: ${nextJourney.orderRef}`}
               </Text>
             </View>
-            <Text style={styles.viewDetailsText}>{i18n.t("busBooking:bookingHomeScreen.viewDetails")}</Text>
+            <Text style={styles.viewDetailsText}>VIEW DETAILS</Text>
           </View>
         </TouchableOpacity>
       ) : (
@@ -1144,21 +1118,19 @@ const handleSearchBuses = async () => {
             />
           </View>
           <View style={styles.historyTextWrap}>
-            <Text style={styles.historyRoute}>{i18n.t("busBooking:bookingHomeScreen.viewYourBusBookings")}</Text>
+            <Text style={styles.historyRoute}>View your bus bookings</Text>
             <Text style={styles.historyMeta}>
               {loadingBookings
-                ? i18n.t("busBooking:r2.checkingForUpcomingTrips")
-                : i18n.t("busBooking:r2.noUpcomingTripsRightNow")}
+                ? "Checking for upcoming trips..."
+                : "No upcoming trips right now"}
             </Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={22} color="#374151" />
         </TouchableOpacity>
       )}
 
-      <CmsOffersBanner module="dineout" inset={0} style={styles.cmsBanner} />
-
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>{i18n.t("busBooking:bookingHomeScreen.recentSearches")}</Text>
+        <Text style={styles.sectionTitle}>Recent Searches</Text>
       </View>
 
       <View style={styles.historyList}>
@@ -1187,7 +1159,7 @@ const handleSearchBuses = async () => {
           <View style={styles.historyEmptyCard}>
             <MaterialCommunityIcons name="clock-outline" size={18} color="#C8102E" />
             <Text style={styles.historyEmptyText}>
-              {i18n.t("busBooking:bookingHomeScreen.yourRecentBusSearchesWill")}
+              Your recent bus searches will appear here after you search a route.
             </Text>
           </View>
         )}
@@ -1196,7 +1168,7 @@ const handleSearchBuses = async () => {
       {popularRoutes.length > 0 ? (
         <>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{i18n.t("busBooking:bookingHomeScreen.popularRoutes")}</Text>
+            <Text style={styles.sectionTitle}>Popular Routes</Text>
           </View>
 
           <ScrollView
@@ -1215,7 +1187,7 @@ const handleSearchBuses = async () => {
                 <Text style={styles.popularRouteCity} numberOfLines={1}>
                   {item.sourceCity}
                 </Text>
-                <Text style={styles.popularRouteTo}>{i18n.t("busBooking:bookingHomeScreen.to2")}</Text>
+                <Text style={styles.popularRouteTo}>to</Text>
                 <Text style={styles.popularRouteCity} numberOfLines={1}>
                   {item.destinationCity}
                 </Text>
@@ -1229,7 +1201,6 @@ const handleSearchBuses = async () => {
           </ScrollView>
         </>
       ) : null}
-      <BrandPromotionalBanner module="dineout" inset={0} style={styles.cmsBanner} />
       </ScrollView>
 <Modal
   visible={cityModalVisible}
@@ -1252,8 +1223,8 @@ const handleSearchBuses = async () => {
         <Text style={styles.modalTitle}>
           {
             cityPickerType === "from"
-              ? i18n.t("busBooking:r2.selectFromCity")
-              : i18n.t("busBooking:r2.selectToCity")
+              ? "Select From City"
+              : "Select To City"
           }
         </Text>
 
@@ -1288,7 +1259,7 @@ const handleSearchBuses = async () => {
           onChangeText={
             handleCitySearch
           }
-          placeholder={i18n.t("busBooking:bookingHomeScreen.searchCity")}
+          placeholder="Search city"
           placeholderTextColor="#9CA3AF"
           style={styles.citySearchInput}
           autoFocus
@@ -1372,7 +1343,7 @@ const handleSearchBuses = async () => {
                   styles.cityEmptyText
                 }
               >
-                {i18n.t("busBooking:bookingHomeScreen.noCitiesFound")}
+                No cities found.
               </Text>
             )
             : null
@@ -1400,7 +1371,7 @@ const handleSearchBuses = async () => {
       <View style={styles.modalHeader}>
 
         <Text style={styles.modalTitle}>
-          {i18n.t("busBooking:bookingHomeScreen.selectDate")}
+          Select Date
         </Text>
 
         <TouchableOpacity
@@ -1430,7 +1401,7 @@ const handleSearchBuses = async () => {
             }
           }}
         >
-          <Text style={styles.calendarTodayButtonText}>{i18n.t("busBooking:bookingHomeScreen.today")}</Text>
+          <Text style={styles.calendarTodayButtonText}>Today</Text>
         </TouchableOpacity>
       </View>
 
@@ -1520,15 +1491,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
-  },
-  cmsBanner: {
-    marginVertical: 8,
-  },
-  // Cancels the content padding so the banner sits edge to edge under the navbar.
-  promotionalBanner: {
-    marginHorizontal: -14,
-    marginTop: -10,
-    marginBottom: 12,
   },
   searchCard: {
     backgroundColor: "#FFFFFF",

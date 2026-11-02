@@ -50,8 +50,6 @@ import {
 import Selectedseat1 from "../../assets/icons/selectedseat1.svg";
 import Selectedseat2 from "../../assets/icons/selectedseat2.svg";
 import BusImage1 from "../../assets/banners/busimage1.svg";
-import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
 
 
 /*
@@ -217,7 +215,6 @@ const getPointAddress = (
 */
 
 export default function BusSummaryScreen() {
-  const { t: tx } = useTranslation();
   const {
     popup,
     showPopup,
@@ -587,6 +584,7 @@ const taxes =
 
           showPopup({
             ...result.popup,
+            buttonText: result.leaveCheckout ? 'Go to Home' : result.popup.buttonText,
             onClose: result.leaveCheckout
               ? () => navigation.popToTop()
               : undefined,
@@ -641,8 +639,8 @@ const taxes =
 
 
           showPopup({
-            title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
-            message: i18n.t("busBooking:busSummaryScreen.msg.seatBlockInformationIsMissing"),
+            title: "Booking Error",
+            message: "Seat block information is missing. Please select the bus and seat again.",
             variant: "error",
           });
 
@@ -697,8 +695,8 @@ if (
 ) {
 
   showPopup({
-    title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
-    message: i18n.t("busBooking:busSummaryScreen.msg.localBusBookingReferenceIs"),
+    title: "Booking Error",
+    message: "Local bus booking reference is missing. Please select the seat again.",
     variant: "error",
   });
 
@@ -710,8 +708,8 @@ if (
         ) {
 
           showPopup({
-            title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
-            message: i18n.t("busBooking:busSummaryScreen.msg.localBusBookingOrderIs"),
+            title: "Booking Error",
+            message: "Local bus booking order is missing. Please select the seat again.",
             variant: "error",
           });
 
@@ -756,6 +754,7 @@ if (
 
           showPopup({
             ...result.popup,
+            buttonText: result.leaveCheckout ? 'Go to Home' : result.popup.buttonText,
             onClose: result.leaveCheckout
               ? () => navigation.popToTop()
               : undefined,
@@ -1020,7 +1019,7 @@ if (
                     styles.pointLabel
                   }
                 >
-                  {tx("busBooking:busSummaryScreen.boardingPoint")}
+                  Boarding point
                 </Text>
 
 
@@ -1075,7 +1074,7 @@ if (
                     styles.pointLabel
                   }
                 >
-                  {tx("busBooking:busSummaryScreen.droppingPoint")}
+                  Dropping point
                 </Text>
 
 
@@ -1136,7 +1135,7 @@ if (
               styles.sectionTitle
             }
           >
-            {tx("busBooking:busSummaryScreen.selectedSeats")}
+            Selected Seats
           </Text>
 
 
@@ -1241,7 +1240,7 @@ if (
               styles.sectionTitle
             }
           >
-            {tx("busBooking:busSummaryScreen.passengerList")}
+            Passenger List
           </Text>
 
 
@@ -1370,7 +1369,7 @@ if (
               styles.fareCardTitle
             }
           >
-            {tx("busBooking:busSummaryScreen.fareSummary")}
+            Fare Summary
           </Text>
 
 
@@ -1396,8 +1395,8 @@ if (
               {selectedSeats.length}{" "}
               {selectedSeats.length ===
               1
-                ? i18n.t("busBooking:r2.seat")
-                : i18n.t("busBooking:r2.seats")}
+                ? "Seat"
+                : "Seats"}
               )
 
             </Text>
@@ -1437,7 +1436,7 @@ if (
                 styles.fareLabel
               }
             >
-              {tx("busBooking:busSummaryScreen.taxesFees")}
+              Taxes & Fees
             </Text>
 
 
@@ -1484,7 +1483,7 @@ if (
                   styles.totalLabel
                 }
               >
-                {tx("busBooking:busSummaryScreen.totalAmount")}
+                TOTAL AMOUNT
               </Text>
 
 
@@ -1579,7 +1578,7 @@ if (
                 >
                   {processingPayment
                     ? "Processing Payment..."
-                    : i18n.t("busBooking:r2.creatingPayment")}
+                    : "Creating Payment..."}
                 </Text>
               </>
 
@@ -1591,7 +1590,7 @@ if (
                     styles.payButtonText
                   }
                 >
-                  {tx("busBooking:busSummaryScreen.proceedToPayment")}
+                  Proceed to Payment
                 </Text>
 
 

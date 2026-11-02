@@ -17,8 +17,6 @@ import type { BusBookingStackParamList } from '../../navigation/BusBookingStack'
 import { getBoardingDroppingPointsApi } from '../../services/busBookingApi';
 
 import type { BoardingDroppingPoint } from '../../services/busBookingApi';
-import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
 
 type ActiveTab = 'boarding' | 'dropping';
 
@@ -106,7 +104,6 @@ const mapPointToUi = (
 };
 
 export default function BoardingDroppingSelectionScreen() {
-  const { t: tx } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
 
@@ -121,7 +118,7 @@ export default function BoardingDroppingSelectionScreen() {
   |--------------------------------------------------------------------------
   */
 
-  const { bus, passengers, selectedSeats, totalFare, traceId, srdvIndex, resultIndex, isWomenBooking } =
+  const { bus, passengers, selectedSeats, totalFare, traceId, resultIndex, isWomenBooking } =
     route.params;
 
   /*
@@ -178,7 +175,7 @@ export default function BoardingDroppingSelectionScreen() {
     let isMounted = true;
 
     const loadPoints = async () => {
-      if (!traceId || !srdvIndex || !resultIndex) {
+      if (!traceId || !resultIndex) {
         setPointsError('Missing boarding point identifiers');
         setLoadingPoints(false);
         return;
@@ -190,8 +187,6 @@ export default function BoardingDroppingSelectionScreen() {
 
       const payload = {
         traceId: String(traceId),
-
-        srdvIndex: String(srdvIndex),
 
         resultIndex: String(resultIndex),
       };
@@ -269,7 +264,7 @@ export default function BoardingDroppingSelectionScreen() {
         );
 
         setPointsError(
-          error?.message || i18n.t("busBooking:r2.unableToLoadBoardingAndDropping"),
+          error?.message || 'Unable to load boarding and dropping points',
         );
       } finally {
         if (isMounted) {
@@ -283,7 +278,7 @@ export default function BoardingDroppingSelectionScreen() {
     return () => {
       isMounted = false;
     };
-  }, [destinationCity, resultIndex, sourceCity, srdvIndex, traceId]);
+  }, [destinationCity, resultIndex, sourceCity, traceId]);
   /*
 |--------------------------------------------------------------------------
 | Selected / Active Points
@@ -334,8 +329,6 @@ export default function BoardingDroppingSelectionScreen() {
 
           traceId,
 
-          srdvIndex,
-
           resultIndex,
         }
       );
@@ -371,9 +364,6 @@ export default function BoardingDroppingSelectionScreen() {
           traceId:
             String(traceId),
 
-          srdvIndex:
-            String(srdvIndex),
-
           resultIndex:
             String(resultIndex),
 
@@ -391,7 +381,6 @@ export default function BoardingDroppingSelectionScreen() {
       selectedSeats,
       totalFare,
       traceId,
-      srdvIndex,
       resultIndex,
       isWomenBooking,
     ]
@@ -409,7 +398,7 @@ export default function BoardingDroppingSelectionScreen() {
 
         <View style={styles.headerTextWrap}>
           <Text style={styles.headerTitle}>
-            {tx("busBooking:boardingDroppingSelectionScreen.selectBoardingDroppingPoints")}
+            Select boarding & dropping points
           </Text>
           <Text style={styles.headerSubtitle}>
             {bus.from.split(',')[0]} → {bus.to.split(',')[0]}
@@ -429,7 +418,7 @@ export default function BoardingDroppingSelectionScreen() {
               activeTab === 'boarding' ? styles.tabTitleActive : null,
             ]}
           >
-            {tx("busBooking:boardingDroppingSelectionScreen.boardingPoints")}
+            Boarding points
           </Text>
           <Text style={styles.tabSubtitle}>{sourceCity}</Text>
         </TouchableOpacity>
@@ -445,7 +434,7 @@ export default function BoardingDroppingSelectionScreen() {
               activeTab === 'dropping' ? styles.tabTitleActive : null,
             ]}
           >
-            {tx("busBooking:boardingDroppingSelectionScreen.droppingPoints")}
+            Dropping points
           </Text>
           <Text style={styles.tabSubtitle}>{destinationCity}</Text>
         </TouchableOpacity>
@@ -463,7 +452,7 @@ export default function BoardingDroppingSelectionScreen() {
           <ActivityIndicator size="large" color="#D93746" />
 
           <Text style={styles.loadingText}>
-            {tx("busBooking:boardingDroppingSelectionScreen.loadingBoardingAndDroppingPoints")}
+            Loading boarding and dropping points...
           </Text>
         </View>
       ) : pointsError ? (
@@ -492,8 +481,8 @@ export default function BoardingDroppingSelectionScreen() {
               />
               <Text style={styles.sectionHeader}>
                 {activeTab === 'boarding'
-                  ? i18n.t("busBooking:r2.yourSelectedBoardingPoint")
-                  : i18n.t("busBooking:r2.yourSelectedDroppingPoint")}
+                  ? 'Your selected boarding point'
+                  : 'Your selected dropping point'}
               </Text>
               <View style={styles.selectedDivider} />
               <PointRow item={selectedPoint} isSelected onPress={() => {}} />
@@ -554,7 +543,7 @@ export default function BoardingDroppingSelectionScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.continueButton}
           >
-            <Text style={styles.continueButtonText}>{tx("busBooking:boardingDroppingSelectionScreen.continue")}</Text>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

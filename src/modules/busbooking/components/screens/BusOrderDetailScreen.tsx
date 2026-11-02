@@ -22,10 +22,14 @@ import BusBookingStatusPopup, {
 } from "../BusBookingStatusPopup";
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
 import {
-  cancelBusSeatApi,
+  BusBookingApiError,
+  cancelBusSeatsApi,
+  getBusCancellationStatusApi,
   getBusOrderDetailApi,
+  syncBusBookingDetailsApi,
   type BusOrderDetail,
   type BusOrderPassenger,
+  type BusProviderCancellation,
 } from "../../services/busBookingApi";
 import {
   BUS_STATUS_COLORS,
@@ -35,11 +39,46 @@ import {
   getBusOrderStatus,
   parseBusDateTime,
 } from "../../utils/busOrderFormat";
-import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
-import { translateSourceText } from "../../../../i18n/sourceText";
 
 const MAX_REMARKS_LENGTH = 500;
+const CANCEL_STATUS_POLL_ATTEMPTS = 6;
+const CANCEL_STATUS_POLL_INTERVAL_MS = 5_000;
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+const formatSeatList = (seats: string[]) =>
+  seats.length === 1 ? `seat ${seats[0]}` : `seats ${seats.join(", ")}`;
+
+const getCancellationOutcomePopup = (
+  seats: string[],
+  cancellation: BusProviderCancellation | null
+) => {
+  const status = String(cancellation?.Status || "").toUpperCase();
+  const refundStatus = String(cancellation?.RefundStatus || "").toUpperCase();
+  const refundAmount = Number(cancellation?.RefundAmount || 0);
+
+  if (status === "FAILED") {
+    return {
+      title: "Cancellation Failed",
+      message:
+        String(cancellation?.ErrorMessage || "").trim() ||
+        `The operator could not cancel ${formatSeatList(seats)}. Your ticket is still valid.`,
+      variant: "error" as const,
+    };
+  }
+
+  return {
+    title: "Seats Cancelled",
+    message:
+      refundStatus === "REFUNDED" && refundAmount > 0
+        ? `Cancelled ${formatSeatList(seats)}. ${formatBusAmount(refundAmount)} will be refunded to your original payment method.`
+        : refundStatus === "REJECTED"
+          ? `Cancelled ${formatSeatList(seats)}. The operator did not approve a refund for this cancellation.`
+          : `Cancelled ${formatSeatList(seats)}. No refund is due under the operator's cancellation policy.`,
+    variant: "success" as const,
+  };
+};
 
 const getPolicyText = (policy: any) =>
   String(policy?.PolicyString || policy?.policyString || "").trim();
@@ -63,7 +102,6 @@ const getSeatCancellationLabel = (passenger: BusOrderPassenger) => {
 };
 
 export default function BusOrderDetailScreen() {
-  const { t: tx } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route =
@@ -75,79 +113,223 @@ export default function BusOrderDetailScreen() {
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [cancelSeat, setCancelSeat] = React.useState<string | null>(null);
+  const [cancelSeats, setCancelSeats] = React.useState<string[] | null>(null);
+  const [cancelNotice, setCancelNotice] = React.useState<string | null>(null);
   const [remarks, setRemarks] = React.useState("");
   const [cancelling, setCancelling] = React.useState(false);
-
-  const loadOrder = React.useCallback(async () => {
-    try {
-      setOrder(await getBusOrderDetailApi(orderRef));
-      setError(null);
-    } catch (loadError: any) {
-      setError(loadError?.message || i18n.t("busBooking:r2.unableToLoadThisBusBooking"));
-    }
-  }, [orderRef]);
+  const mountedRef = React.useRef(true);
 
   React.useEffect(() => {
-    let active = true;
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
-    loadOrder().finally(() => {
-      if (active) {
+  // syncProvider asks the backend to pull the operator's latest cancellation
+  // and refund states first, which is only needed while one is in progress.
+  const loadOrder = React.useCallback(
+    async (syncProvider = false) => {
+      try {
+        let detail = await getBusOrderDetailApi(orderRef);
+
+        const hasPendingCancellation = detail.passengers.some(
+          (passenger) => passenger.cancellationStatus === "processing"
+        );
+
+        if (syncProvider && hasPendingCancellation) {
+          try {
+            await syncBusBookingDetailsApi(orderRef);
+            detail = await getBusOrderDetailApi(orderRef);
+          } catch {
+            // The booking itself loaded; the operator status refreshes next time.
+          }
+        }
+
+        if (mountedRef.current) {
+          setOrder(detail);
+          setError(null);
+        }
+      } catch (loadError: any) {
+        if (mountedRef.current) {
+          setError(loadError?.message || "Unable to load this bus booking");
+        }
+      }
+    },
+    [orderRef]
+  );
+
+  React.useEffect(() => {
+    loadOrder(true).finally(() => {
+      if (mountedRef.current) {
         setLoading(false);
       }
     });
-
-    return () => {
-      active = false;
-    };
   }, [loadOrder]);
 
   const handleRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    await loadOrder();
+    await loadOrder(true);
     setRefreshing(false);
   }, [loadOrder]);
 
+  // Seats that can still go into a new cancellation request.
+  const cancellableSeatNames = React.useMemo(
+    () =>
+      (order?.passengers || [])
+        .filter(
+          (passenger) =>
+            passenger.cancellationStatus !== "succeeded" &&
+            passenger.cancellationStatus !== "processing"
+        )
+        .map((passenger) => passenger.seatName),
+    [order]
+  );
+
+  const hasCancellationInProgress = React.useMemo(
+    () =>
+      (order?.passengers || []).some(
+        (passenger) => passenger.cancellationStatus === "processing"
+      ),
+    [order]
+  );
+
+  // The backend needs every remaining seat for these requests, including one
+  // already being cancelled, and then refuses that seat as a duplicate.
+  const showWaitForCancellation = React.useCallback(() => {
+    showPopup({
+      title: "Cancellation In Progress",
+      message:
+        "Another seat on this booking is still being cancelled. Please try again once the operator confirms it.",
+      variant: "info",
+    });
+  }, [showPopup]);
+
+  const openCancelModal = React.useCallback(
+    (passenger: BusOrderPassenger) => {
+      // The backend only cancels the lead passenger together with every
+      // remaining seat.
+      if (passenger.leadPassenger && hasCancellationInProgress) {
+        showWaitForCancellation();
+        return;
+      }
+
+      if (passenger.leadPassenger && cancellableSeatNames.length > 1) {
+        setCancelSeats(cancellableSeatNames);
+        setCancelNotice(
+          "Cancelling the lead passenger cancels every remaining seat on this booking."
+        );
+        return;
+      }
+
+      setCancelSeats([passenger.seatName]);
+      setCancelNotice(null);
+    },
+    [cancellableSeatNames, hasCancellationInProgress, showWaitForCancellation]
+  );
+
   const closeCancelModal = React.useCallback(() => {
     if (!cancelling) {
-      setCancelSeat(null);
+      setCancelSeats(null);
+      setCancelNotice(null);
       setRemarks("");
     }
   }, [cancelling]);
 
+  const trackCancellation = React.useCallback(
+    async (seats: string[], cancelId: string) => {
+      for (let attempt = 1; attempt <= CANCEL_STATUS_POLL_ATTEMPTS; attempt += 1) {
+        await sleep(CANCEL_STATUS_POLL_INTERVAL_MS);
+        if (!mountedRef.current) {
+          return;
+        }
+
+        try {
+          const result = await getBusCancellationStatusApi(orderRef, cancelId);
+          if (result.terminal) {
+            await loadOrder();
+            if (mountedRef.current) {
+              showPopup(getCancellationOutcomePopup(seats, result.cancellation));
+            }
+            return;
+          }
+        } catch {
+          // Keep polling; pull-to-refresh also syncs the status.
+        }
+      }
+
+      // Still in process at the operator; the booking shows it as in progress.
+      await loadOrder();
+    },
+    [loadOrder, orderRef, showPopup]
+  );
+
   const handleConfirmCancel = React.useCallback(async () => {
-    const seatName = cancelSeat;
+    const seats = cancelSeats;
     const reason = remarks.trim();
 
-    if (!seatName || !reason || cancelling) {
+    if (!seats?.length || !reason || cancelling) {
       return;
     }
 
     setCancelling(true);
 
     try {
-      const result = await cancelBusSeatApi({
+      const result = await cancelBusSeatsApi({
         order_ref: orderRef,
-        seatName,
+        seatNames: seats,
         remarks: reason,
       });
 
-      setCancelSeat(null);
+      setCancelSeats(null);
+      setCancelNotice(null);
       setRemarks("");
 
-      showPopup({
-        title: result.completed ? i18n.t("busBooking:cancel.seatCancelled") : i18n.t("busBooking:cancel.inProgress"),
-        message: result.completed
-          ? result.refundAmount > 0
-            ? i18n.t("busBooking:cancel.refundBody", { seat: seatName, amount: formatBusAmount(result.refundAmount) })
-            : i18n.t("busBooking:cancel.noRefundBody", { seat: seatName })
-          : i18n.t("busBooking:cancel.confirmingBody", { seat: seatName }),
-        variant: result.completed ? "success" : "info",
-      });
+      if (result.completed) {
+        showPopup({
+          title: "Seats Cancelled",
+          message: "The requested seats are already cancelled.",
+          variant: "success",
+        });
+      } else {
+        showPopup({
+          title: "Cancellation Requested",
+          message: result.trackable
+            ? `We have asked the operator to cancel ${formatSeatList(seats)}. Any refund under the cancellation policy starts once they confirm.`
+            : `Our team is confirming the cancellation of ${formatSeatList(seats)} with the operator. Check this booking again shortly.`,
+          variant: "info",
+        });
+
+        if (result.trackable && result.cancelId) {
+          trackCancellation(seats, result.cancelId);
+        }
+      }
     } catch (cancelError: any) {
+      // The operator only allows these seats to be cancelled together, so
+      // let the user confirm the full set.
+      if (
+        cancelError instanceof BusBookingApiError &&
+        cancelError.remainingSeatNames?.length
+      ) {
+        if (
+          cancelError.remainingSeatNames.some(
+            (seat) => !cancellableSeatNames.includes(seat)
+          )
+        ) {
+          setCancelSeats(null);
+          setCancelNotice(null);
+          showWaitForCancellation();
+          return;
+        }
+
+        setCancelSeats(cancelError.remainingSeatNames);
+        setCancelNotice(cancelError.message);
+        return;
+      }
+
       showPopup({
-        title: i18n.t("busBooking:busOrderDetailScreen.msg.cancellationFailed"),
-        message: cancelError?.message || i18n.t("busBooking:cancel.failedBody"),
+        title: "Cancellation Failed",
+        message: cancelError?.message || "Unable to cancel bus seats",
         variant: "error",
       });
     } finally {
@@ -155,7 +337,17 @@ export default function BusOrderDetailScreen() {
       // Whatever happened, show the booking as the backend now has it.
       loadOrder();
     }
-  }, [cancelSeat, cancelling, loadOrder, orderRef, remarks, showPopup]);
+  }, [
+    cancelSeats,
+    cancellableSeatNames,
+    cancelling,
+    loadOrder,
+    orderRef,
+    remarks,
+    showPopup,
+    showWaitForCancellation,
+    trackCancellation,
+  ]);
 
   const status = order
     ? getBusOrderStatus(order.status, order.paymentStatus)
@@ -182,7 +374,7 @@ export default function BusOrderDetailScreen() {
         >
           <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{tx("busBooking:busOrderDetailScreen.bookingDetails")}</Text>
+        <Text style={styles.headerTitle}>Booking Details</Text>
       </View>
 
       {loading ? (
@@ -192,14 +384,14 @@ export default function BusOrderDetailScreen() {
       ) : !order ? (
         <View style={styles.centerState}>
           <MaterialCommunityIcons name="alert-circle-outline" size={34} color="#C81E3A" />
-          <Text style={styles.stateTitle}>{tx("busBooking:busOrderDetailScreen.couldNotLoadBooking")}</Text>
+          <Text style={styles.stateTitle}>Could not load booking</Text>
           <Text style={styles.stateMessage}>{error}</Text>
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.retryButton}
             onPress={handleRefresh}
           >
-            <Text style={styles.retryButtonText}>{tx("busBooking:busOrderDetailScreen.tryAgain")}</Text>
+            <Text style={styles.retryButtonText}>Try again</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -231,7 +423,7 @@ export default function BusOrderDetailScreen() {
                   ]}
                 >
                   <Text style={[styles.statusText, { color: statusColors.text }]}>
-                    {translateSourceText("busBooking", status.label)}
+                    {status.label}
                   </Text>
                 </View>
               ) : null}
@@ -272,20 +464,20 @@ export default function BusOrderDetailScreen() {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.ticket")}</Text>
-            <DetailRow label={tx("busBooking:busOrderDetailScreen.bookingRef")} value={order.orderRef} />
+            <Text style={styles.cardTitle}>Ticket</Text>
+            <DetailRow label="Booking Ref" value={order.orderRef} />
             {order.ticketNo ? (
-              <DetailRow label={tx("busBooking:busOrderDetailScreen.ticketNo")} value={order.ticketNo} />
+              <DetailRow label="Ticket No" value={order.ticketNo} />
             ) : null}
             {order.travelOperatorPNR ? (
-              <DetailRow label={tx("busBooking:busOrderDetailScreen.operatorPnr")} value={order.travelOperatorPNR} />
+              <DetailRow label="Operator PNR" value={order.travelOperatorPNR} />
             ) : null}
-            <DetailRow label={tx("busBooking:busOrderDetailScreen.amountPaid")} value={formatBusAmount(order.amountPaid)} />
-            <DetailRow label={tx("busBooking:busOrderDetailScreen.bookedOn")} value={formatBusDate(order.bookedAt)} />
+            <DetailRow label="Amount Paid" value={formatBusAmount(order.amountPaid)} />
+            <DetailRow label="Booked On" value={formatBusDate(order.bookedAt)} />
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.passengers")}</Text>
+            <Text style={styles.cardTitle}>Passengers</Text>
 
             {order.passengers.map((passenger) => {
               const cancellationLabel = getSeatCancellationLabel(passenger);
@@ -300,7 +492,7 @@ export default function BusOrderDetailScreen() {
                 <View key={passenger.seatName} style={styles.passengerRow}>
                   <View style={styles.passengerTextWrap}>
                     <Text style={styles.passengerName}>
-                      {passenger.name || i18n.t("busBooking:r2.passenger")}
+                      {passenger.name || "Passenger"}
                     </Text>
                     <Text style={styles.passengerMeta}>
                       Seat {passenger.seatName}
@@ -315,9 +507,9 @@ export default function BusOrderDetailScreen() {
                     <TouchableOpacity
                       activeOpacity={0.85}
                       style={styles.cancelSeatButton}
-                      onPress={() => setCancelSeat(passenger.seatName)}
+                      onPress={() => openCancelModal(passenger)}
                     >
-                      <Text style={styles.cancelSeatButtonText}>{tx("busBooking:busOrderDetailScreen.cancelSeat")}</Text>
+                      <Text style={styles.cancelSeatButtonText}>Cancel seat</Text>
                     </TouchableOpacity>
                   ) : null}
                 </View>
@@ -327,14 +519,14 @@ export default function BusOrderDetailScreen() {
 
           {order.refunds.length > 0 ? (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.refunds")}</Text>
+              <Text style={styles.cardTitle}>Refunds</Text>
               {order.refunds.map((refund, index) => (
                 <DetailRow
                   key={`${refund.reason}-${index}`}
                   label={
                     refund.reason === "booking_failed"
-                      ? i18n.t("busBooking:r2.bookingNotCompleted")
-                      : i18n.t("busBooking:r2.seatCancellation")
+                      ? "Booking not completed"
+                      : "Seat cancellation"
                   }
                   value={`${formatBusAmount(refund.amount)} - ${
                     refund.status === "processed" ? "Refunded" : "In progress"
@@ -346,7 +538,7 @@ export default function BusOrderDetailScreen() {
 
           {policyLines.length > 0 ? (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.cancellationPolicy")}</Text>
+              <Text style={styles.cardTitle}>Cancellation Policy</Text>
               {policyLines.map((line, index) => (
                 <Text key={`${line}-${index}`} style={styles.policyText}>
                   {line}
@@ -358,7 +550,7 @@ export default function BusOrderDetailScreen() {
       )}
 
       <Modal
-        visible={cancelSeat !== null}
+        visible={cancelSeats !== null}
         transparent
         animationType="fade"
         onRequestClose={closeCancelModal}
@@ -368,7 +560,12 @@ export default function BusOrderDetailScreen() {
           style={styles.modalOverlay}
         >
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Cancel seat {cancelSeat}?</Text>
+            <Text style={styles.modalTitle}>
+              Cancel {formatSeatList(cancelSeats || [])}?
+            </Text>
+            {cancelNotice ? (
+              <Text style={styles.modalNotice}>{cancelNotice}</Text>
+            ) : null}
             <Text style={styles.modalMessage}>
               The refund depends on the operator's cancellation policy and goes
               back to your original payment method.
@@ -377,7 +574,7 @@ export default function BusOrderDetailScreen() {
             <TextInput
               value={remarks}
               onChangeText={setRemarks}
-              placeholder={tx("busBooking:busOrderDetailScreen.reasonForCancellation")}
+              placeholder="Reason for cancellation"
               placeholderTextColor="#B0AAB3"
               maxLength={MAX_REMARKS_LENGTH}
               multiline
@@ -392,7 +589,7 @@ export default function BusOrderDetailScreen() {
                 style={styles.modalSecondaryButton}
                 onPress={closeCancelModal}
               >
-                <Text style={styles.modalSecondaryText}>{tx("busBooking:busOrderDetailScreen.keepSeat")}</Text>
+                <Text style={styles.modalSecondaryText}>Keep seat</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -407,7 +604,9 @@ export default function BusOrderDetailScreen() {
                 {cancelling ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.modalPrimaryText}>{tx("busBooking:busOrderDetailScreen.cancelSeat")}</Text>
+                  <Text style={styles.modalPrimaryText}>
+                    {cancelSeats && cancelSeats.length > 1 ? "Cancel seats" : "Cancel seat"}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -663,6 +862,13 @@ const styles = StyleSheet.create({
     color: "#25222A",
     fontSize: 18,
     fontWeight: "800",
+  },
+  modalNotice: {
+    marginTop: 8,
+    color: "#C81E3A",
+    fontSize: 13,
+    fontWeight: "600",
+    lineHeight: 20,
   },
   modalMessage: {
     marginTop: 8,

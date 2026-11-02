@@ -15,7 +15,6 @@ import type {
 import type {
   BusBookingPopupConfig,
 } from "../components/BusBookingStatusPopup";
-import i18n from "../../../i18n";
 
 type CheckoutPopup = Omit<BusBookingPopupConfig, "visible" | "onClose">;
 
@@ -52,14 +51,14 @@ const isCheckoutCancelled = (error: any) =>
 const outcomeToResult = (outcome: BusBookingOutcome): BusCheckoutResult => {
   if (outcome.status === "confirmed") {
     const details = [
-      outcome.ticketNo ? i18n.t('busBooking:checkout.ticketNo', { value: outcome.ticketNo }) : null,
-      outcome.travelOperatorPNR ? i18n.t('busBooking:checkout.pnr', { value: outcome.travelOperatorPNR }) : null,
-      i18n.t('busBooking:checkout.bookingRef', { value: outcome.orderRef }),
+      outcome.ticketNo ? `Ticket No: ${outcome.ticketNo}` : null,
+      outcome.travelOperatorPNR ? `PNR: ${outcome.travelOperatorPNR}` : null,
+      `Booking Ref: ${outcome.orderRef}`,
     ].filter(Boolean);
 
     return {
       popup: {
-        title: i18n.t("busBooking:checkout.confirmedTitle"),
+        title: "Booking Confirmed",
         message: details.join("\n"),
         variant: "success",
       },
@@ -70,8 +69,8 @@ const outcomeToResult = (outcome: BusBookingOutcome): BusCheckoutResult => {
   if (outcome.status === "failed") {
     return {
       popup: {
-        title: i18n.t("busBooking:checkout.failedTitle"),
-        message: `${outcome.message}\n\n${i18n.t("busBooking:checkout.bookingRef", { value: outcome.orderRef })}`,
+        title: "Booking Failed",
+        message: `${outcome.message}\n\nBooking Ref: ${outcome.orderRef}`,
         variant: "error",
       },
       leaveCheckout: true,
@@ -80,8 +79,8 @@ const outcomeToResult = (outcome: BusBookingOutcome): BusCheckoutResult => {
 
   return {
     popup: {
-      title: i18n.t("busBooking:checkout.inProgressTitle"),
-      message: `${outcome.message}\n\n${i18n.t("busBooking:checkout.bookingRef", { value: outcome.orderRef })}`,
+      title: "Booking In Progress",
+      message: `${outcome.message}\n\nBooking Ref: ${outcome.orderRef}`,
       variant: "info",
     },
     leaveCheckout: true,
@@ -97,10 +96,10 @@ export const getBusCheckoutErrorResult = (
   if (apiError?.code === BUS_SEAT_HOLD_EXPIRED_CODE || apiError?.status === 410) {
     return {
       popup: {
-        title: i18n.t("busBooking:checkout.holdExpiredTitle"),
+        title: "Seat Hold Expired",
         message:
           apiError.message ||
-          i18n.t("busBooking:checkout.holdExpiredBody"),
+          "Your seat hold has expired. Please select your seats again.",
         variant: "warning",
       },
       leaveCheckout: true,
@@ -110,7 +109,7 @@ export const getBusCheckoutErrorResult = (
   if (apiError?.status === 401) {
     return {
       popup: {
-        title: i18n.t("busBooking:checkout.sessionExpiredTitle"),
+        title: "Session Expired",
         message: apiError.message,
         variant: "error",
       },
@@ -120,8 +119,8 @@ export const getBusCheckoutErrorResult = (
 
   return {
     popup: {
-      title: i18n.t("busBooking:checkout.paymentErrorTitle"),
-      message: String(error?.message || i18n.t("busBooking:checkout.paymentStartFailed")),
+      title: "Payment Error",
+      message: String(error?.message || "Unable to start bus payment."),
       variant: "error",
     },
     leaveCheckout: false,
@@ -177,7 +176,7 @@ export const runBusCheckout = async ({
       popup: {
         title: cancelled ? "Payment Cancelled" : "Payment Failed",
         message: cancelled
-          ? i18n.t("busBooking:r2.youCancelledThePaymentYourSeats")
+          ? "You cancelled the payment. Your seats stay on hold for a few minutes if you want to try again."
           : String(
               error?.description ||
               error?.error?.description ||
@@ -206,7 +205,7 @@ export const runBusCheckout = async ({
         title:
           error instanceof BusBookingApiError && error.status === 401
             ? "Session Expired"
-            : i18n.t("busBooking:r2.bookingNotCompleted"),
+            : "Booking Not Completed",
         message: `${String(
           error?.message || "We could not complete your booking."
         )}\n\nIf any amount was debited, please contact support with Booking Ref: ${orderRef}`,
