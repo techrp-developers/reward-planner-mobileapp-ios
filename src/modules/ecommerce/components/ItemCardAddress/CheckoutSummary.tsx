@@ -9,6 +9,7 @@ import type { HomeStackParamList } from '../../navigation/types'
 import StickyBottomCTA from '../../../../bottombar/StickyBottomCTA'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>
 
@@ -49,10 +50,10 @@ export default function CheckoutSummary({
               <Text style={[styles.addressTitle, { color: theme.text }]}>
                 {address
                   ? `Delivering to ${address.contact_name || 'User'}`
-                  : 'Delivery address'}
+                  : i18n.t("products:r2.deliveryAddress")}
               </Text>
               <Text style={[styles.addressSub, { color: theme.secondaryText }]}>
-                {address ? `${address.address1}, ${address.city}` : 'No address selected'}
+                {address ? `${address.address1}, ${address.city}` : i18n.t("products:r2.noAddressSelected")}
               </Text>
             </View>
           </View>
@@ -70,7 +71,7 @@ export default function CheckoutSummary({
 
           <TouchableOpacity disabled={loading} onPress={onProceedToBuy}>
             <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
-              <Text style={styles.buttonText}>{loading ? 'Please wait...' : 'Proceed To Buy'}</Text>
+              <Text style={styles.buttonText}>{loading ? i18n.t("products:r2.pleaseWait") : 'Proceed To Buy'}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

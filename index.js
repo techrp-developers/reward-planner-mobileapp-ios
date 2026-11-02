@@ -3,6 +3,8 @@
  */
 
 import { AppRegistry, LogBox } from 'react-native';
+// Initialise translations once, before any screen renders.
+import './src/i18n';
 import App from './App';
 import { name as appName } from './app.json';
 import { registerBackgroundHandler } from './src/modules/notifications/FCMService';

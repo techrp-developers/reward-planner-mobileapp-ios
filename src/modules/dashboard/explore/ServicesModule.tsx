@@ -22,6 +22,7 @@ import ProductIcon from '../../../assets/sampleImages/Product.svg';
 import ServiceIcon from '../../../assets/sampleImages/Service.svg';
 import PaymentIcon from '../../../assets/sampleImages/Payment.svg';
 import DineOutIcon from '../../../assets/sampleImages/DineOut.svg';
+import { useTranslation } from "react-i18next";
 
 export type ExploreServiceTab = 'Product' | 'Services' | 'Payments' | 'DineOut';
 type TopTab = ExploreServiceTab;
@@ -125,6 +126,7 @@ const ServiceCard = React.memo(
 ServiceCard.displayName = 'ServiceCard';
 
 function ServicesModule({ onModulePress }: ServicesModuleProps) {
+  const { t: tr } = useTranslation();
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
@@ -206,13 +208,13 @@ function ServicesModule({ onModulePress }: ServicesModuleProps) {
     <View style={[styles.wrapper, t.wrapper]}>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, t.headerTitle]}>
-          Explore Services
+          {tr("dashboard:explore.title")}
         </Text>
         <TouchableOpacity
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           onPress={handleViewAll}
         >
-          <Text style={styles.viewAll}>View all</Text>
+          <Text style={styles.viewAll}>{tr("common:actions.viewAll")}</Text>
         </TouchableOpacity>
       </View>
 

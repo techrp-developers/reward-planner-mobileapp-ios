@@ -1,0 +1,229 @@
+{
+  "billsCard": {
+    "yourBills": "तुमची बिले",
+    "viewMore": "अधिक पहा"
+  },
+  "reachargeBill": {
+    "everythingDue": "सर्व देय बिले,",
+    "allInOnePlace": "एकाच ठिकाणी.",
+    "quickPay": "क्विक पे",
+    "allBillPayments": "सर्व बिल पेमेंट",
+    "chooseACategoryToContinue": "पुढे जाण्यासाठी कॅटेगरी निवडा",
+    "noServiceFound": "कोणतीही सेवा सापडली नाही",
+    "tryADifferentCategoryOr": "दुसरी कॅटेगरी किंवा सेवेचे नाव वापरून पहा.",
+    "paymentBenefits": "पेमेंटचे फायदे",
+    "earnRpPoints": "RP पॉइंट्स मिळवा",
+    "rpPointsAreCreditedAfter": "प्रत्येक यशस्वी व्यवहारानंतर RP पॉइंट्स जमा केले जातात.",
+    "noExtraCharges": "कोणतेही अतिरिक्त शुल्क नाही",
+    "payOnlyTheBillAmount": "कोणत्याही अतिरिक्त शुल्काशिवाय फक्त बिलाची रक्कम भरा.",
+    "others": "इतर",
+    "rechargesBillPaymentHistory": "रिचार्ज आणि बिल पेमेंटचा इतिहास",
+    "helpAndSupport": "मदत आणि सहाय्य"
+  },
+  "bBPSOrderFilterSheet": {
+    "filter": "फिल्टर",
+    "sortBy": "क्रमाने लावा",
+    "sortByTime": "वेळेनुसार क्रम",
+    "apply": "लागू करा"
+  },
+  "orderHistory": {
+    "myOrders": "माझ्या ऑर्डर",
+    "searchTransactions": "व्यवहार शोधा",
+    "couldNotLoadTransactions": "व्यवहार लोड करता आले नाहीत",
+    "retry": "पुन्हा प्रयत्न करा",
+    "noTransactionFound": "कोणताही व्यवहार सापडला नाही"
+  },
+  "rechargeSuccessCard": {
+    "dthRechargeSuccessful": "DTH रिचार्ज यशस्वी",
+    "paid": "भरले",
+    "payAnotherBill": "दुसरे बिल भरा",
+    "share": "शेअर करा"
+  },
+  "recommendedServices": {
+    "recommendedServices": "सुचवलेल्या सेवा"
+  },
+  "reachargeHomeScreen": {
+    "recharge": "रिचार्ज",
+    "selectCircle": "सर्कल निवडा",
+    "searchCircle": "सर्कल शोधा...",
+    "noCirclesFound": "कोणतेही सर्कल सापडले नाही",
+    "rechargeOrPayMobileBill": "रिचार्ज करा किंवा मोबाइल बिल भरा",
+    "enterMobileNumber": "मोबाइल नंबर लिहा",
+    "enter10DigitNumber": "10 अंकी नंबर लिहा",
+    "circleHelpsFindTheRight": "सर्कलमुळे तुमच्या नंबरसाठी योग्य प्लॅन मिळतात",
+    "viewPlansRecharge": "प्लॅन पहा आणि रिचार्ज करा",
+    "myNumber": "माझा नंबर",
+    "myRechargesBill": "माझे रिचार्ज आणि बिले",
+    "contacts": "संपर्क",
+    "viewAll": "सर्व पहा"
+  },
+  "rechargeSection": {
+    "selectCircle": "सर्कल निवडा",
+    "pleaseSelectACircleFirst": "कृपया आधी सर्कल निवडा.",
+    "circle": "सर्कल",
+    "change": "बदला",
+    "selectACircleFirstTo": "जुळणारे रिचार्ज प्लॅन पाहण्यासाठी आधी सर्कल निवडा",
+    "searchAPlanEG": "प्लॅन शोधा, उदा. 299 किंवा 28 दिवस",
+    "selectACircleToView": "प्लॅन पाहण्यासाठी सर्कल निवडा",
+    "loadingPlans": "प्लॅन लोड होत आहेत...",
+    "noRechargePlansFound": "कोणताही रिचार्ज प्लॅन सापडला नाही",
+    "data": "डेटा",
+    "validity": "वैधता",
+    "searchCircle": "सर्कल शोधा...",
+    "noCirclesFound": "कोणतेही सर्कल सापडले नाही"
+  },
+  "bBPSHead": {
+    "change": "बदला",
+    "help": "मदत"
+  },
+  "rechargeModal": {
+    "serviceTemporarilyUnavailable": "सेवा तात्पुरती उपलब्ध नाही",
+    "okayGotIt": "ठीक आहे, समजले"
+  },
+  "rewardProductCard": {
+    "rewards": "रिवॉर्ड"
+  },
+  "search": {
+    "typeAtLeast2Characters": "बिल पेमेंट शोधण्यासाठी किमान 2 अक्षरे टाइप करा",
+    "unableToLoadBillPayment": "सध्या बिल पेमेंट सेवा लोड करता आल्या नाहीत."
+  },
+  "billDetailsScreen": {
+    "detailsMissing": "तपशील सापडला नाही",
+    "noBillerFieldsAreAvailable": "बिलरची माहिती उपलब्ध नाही. कृपया पुन्हा प्रयत्न करा.",
+    "error": "त्रुटी",
+    "enterDetails": "तपशील भरा",
+    "addNickname": "टोपणनाव जोडा",
+    "continue": "पुढे जा"
+  },
+  "billerSelectScreen": {
+    "chooseYourServiceProvider": "तुमचा सेवा पुरवठादार निवडा",
+    "retry": "पुन्हा प्रयत्न करा",
+    "searchOperators": "ऑपरेटर शोधा",
+    "noBillersFound": "कोणतेही बिलर सापडले नाहीत",
+    "trySearchingWithADifferent": "दुसऱ्या बिलरचे नाव किंवा राज्य वापरून शोधा"
+  },
+  "orderSuccessful": {
+    "n247HelpSupport": "24/7 मदत आणि सहाय्य"
+  },
+  "paymentConfirmationScreen": {
+    "missingBill": "बिल सापडले नाही",
+    "billFetchIdIsMissing": "बिलाचा आयडी सापडला नाही. कृपया बिल पुन्हा मिळवा.",
+    "paymentFailed": "पेमेंट अयशस्वी",
+    "paymentOrderDetailsAreMissing": "पेमेंट ऑर्डरचा तपशील सापडला नाही.",
+    "error": "त्रुटी",
+    "operator": "ऑपरेटर",
+    "category": "कॅटेगरी",
+    "billSummary": "बिल सारांश",
+    "billNumber": "बिल क्रमांक",
+    "billDate": "बिलाची तारीख",
+    "dueDate": "देय तारीख",
+    "consumerNo": "ग्राहक क्र.",
+    "amountPayable": "देय रक्कम",
+    "n100SecurePayment": "100% सुरक्षित पेमेंट",
+    "poweredByRazorpay": "Razorpay द्वारे समर्थित",
+    "processingPayment": "पेमेंट प्रक्रियेत आहे..."
+  },
+  "productScreen": {
+    "rewards": "रिवॉर्ड"
+  },
+  "rechargeConfirmationScreen": {
+    "missingDetails": "तपशील अपूर्ण आहे",
+    "rechargeDetailsAreIncomplete": "रिचार्जचा तपशील अपूर्ण आहे.",
+    "error": "त्रुटी",
+    "planDetails": "प्लॅन तपशील",
+    "planPrice": "प्लॅनची किंमत",
+    "validity": "वैधता",
+    "data": "डेटा",
+    "details": "तपशील",
+    "orderCreationFailed": "ऑर्डर तयार करता आली नाही",
+    "retry": "पुन्हा प्रयत्न करा",
+    "copyErrorDetails": "त्रुटीचा तपशील कॉपी करा",
+    "proceedToRecharge": "रिचार्जसाठी पुढे जा"
+  },
+  "transactionStatusScreen": {
+    "paymentStatus": "पेमेंट स्टेटस",
+    "goToHome": "होमवर जा"
+  },
+  "src": {
+    "processingPayment": "पेमेंट प्रक्रियेत आहे",
+    "paymentSuccessful": "पेमेंट यशस्वी",
+    "paymentFailed": "पेमेंट अयशस्वी",
+    "paymentRefunded": "पेमेंट परत केले",
+    "reconciliationRequired": "जुळवणी आवश्यक आहे",
+    "capturedRetrying": "पेमेंट मिळाले, पुन्हा प्रयत्न सुरू आहे",
+    "refundInProgress": "परतावा प्रक्रियेत",
+    "successful": "यशस्वी",
+    "failed": "अयशस्वी",
+    "refunded": "परत केले",
+    "retrying": "पुन्हा प्रयत्न सुरू",
+    "processing": "प्रक्रियेत",
+    "pending": "प्रलंबित",
+    "last30": "मागील 30 दिवस",
+    "last3m": "मागील 3 महिने",
+    "last6m": "मागील 6 महिने",
+    "currentYear": "चालू वर्ष",
+    "mobilePrepaid": "मोबाइल प्रीपेड",
+    "mobilePostpaid": "मोबाइल पोस्टपेड",
+    "electricity": "वीज",
+    "creditCardPayment": "क्रेडिट कार्ड पेमेंट",
+    "fastagRecharge": "FASTag रिचार्ज",
+    "recommendedPacks": "सुचवलेले पॅक",
+    "payNow": "आता पैसे भरा",
+    "yourRegisteredNumber": "तुमचा नोंदणीकृत नंबर",
+    "myNumber": "माझा नंबर",
+    "availableOperators": "उपलब्ध ऑपरेटर",
+    "unknown": "अज्ञात"
+  },
+  "msg": {
+    "loadingCircles": "सर्कल लोड होत आहेत…",
+    "chooseCircle": "तुमचे टेलिकॉम सर्कल निवडा",
+    "circlesFailed": "सर्कल लोड करता आले नाहीत.",
+    "plansFailed": "रिचार्ज प्लॅन लोड करता आले नाहीत.",
+    "rechargeWithPlan": "₹{{amount}} प्लॅनने रिचार्ज करा",
+    "billers": "बिलर",
+    "categoryMissing": "कॅटेगरी आयडी दिलेला नाही",
+    "billersFailed": "बिलर लोड करता आले नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "payCategory": "{{category}} भरा",
+    "biller": "बिलर",
+    "electricityBill": "वीज बिल",
+    "billFetchFailed": "बिलाचा तपशील मिळवता आला नाही",
+    "billFetchFailed2": "बिलाचा तपशील मिळवता आला नाही.",
+    "enterField": "{{field}} लिहा",
+    "rechargeOrderFailed": "रिचार्ज ऑर्डर तयार करता आली नाही.",
+    "orderDetailsMissing": "प्रतिसादात पेमेंट ऑर्डरचा तपशील (key/orderId) नाही.",
+    "verifyFailed": "पेमेंटची पडताळणी झाली नाही.",
+    "rechargeOrderFailed2": "रिचार्ज ऑर्डर तयार करता आली नाही.",
+    "errorDetailsTitle": "रिचार्ज ऑर्डर त्रुटीचा तपशील",
+    "noDescription": "कोणतेही वर्णन उपलब्ध नाही",
+    "operatorPayment": "{{operator}} पेमेंट",
+    "operatorLogo": "{{operator}} लोगो",
+    "operator": "ऑपरेटर",
+    "billPayment": "बिल पेमेंट",
+    "billOrderFailed": "बिल पेमेंट ऑर्डर तयार करता आली नाही.",
+    "billOrderFailed2": "बिल पेमेंट ऑर्डर तयार करता आली नाही.",
+    "operatorBillPayment": "{{operator}} बिल पेमेंट",
+    "paymentsAndBills": "पेमेंट आणि बिले",
+    "searchPlaceholder": "\"वीज, DTH, FASTag…\" शोधा",
+    "product": "प्रॉडक्ट",
+    "rechargeSuccessful": "रिचार्ज यशस्वी",
+    "dthRechargeSuccessful": "ग्राहक {{customer}} चा DTH रिचार्ज यशस्वी झाला.",
+    "recharge": "रिचार्ज"
+  },
+  "api": {
+    "timeout": "विनंतीची वेळ संपली. कृपया तुमचे कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.",
+    "network": "नेटवर्क त्रुटी. कृपया तुमचे इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.",
+    "sessionExpired": "सत्र संपले. कृपया पुन्हा लॉग इन करा.",
+    "rejected": "ही विनंती अवैध असल्याने नाकारली गेली.",
+    "invalid": "अवैध विनंती.",
+    "server": "सर्व्हर त्रुटी. कृपया नंतर प्रयत्न करा.",
+    "generic": "काहीतरी चुकले.",
+    "orderFailed": "रिचार्ज/बिल ऑर्डर तयार करता आली नाही.",
+    "processing": "व्यवहार प्रक्रियेत आहे.",
+    "retrying": "सर्व्हरशी जोडण्यात अडचण येत आहे, पुन्हा प्रयत्न सुरू आहे..."
+  },
+  "r2": {
+    "invalidInput": "चुकीची माहिती",
+    "enterField": "कृपया {{field}} लिहा.",
+    "enterValidField": "कृपया योग्य {{field}} लिहा."
+  }
+}

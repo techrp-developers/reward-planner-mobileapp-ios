@@ -17,6 +17,7 @@ import {
   PROMO_CARD_GAP,
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
+import { useTranslation } from "react-i18next";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const BEST_SELLER_QUERY_KEY = ["ecommerce", "promotion", "best-seller"] as const;
@@ -54,6 +55,7 @@ export const prefetchBestSellerSection = async () => {
 };
 
 function BestSeller() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const pulse = useState(() => new Animated.Value(0))[0];
   const { isDark, theme } = useAppTheme();
@@ -103,10 +105,10 @@ function BestSeller() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: theme.text }]}>Best Sellers</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>{tx("products:bestSeller.bestSellers")}</Text>
 
         <TouchableOpacity style={styles.viewAllBtn} activeOpacity={0.7} onPress={handleViewAll}>
-          <Text style={[styles.viewAllText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
+          <Text style={[styles.viewAllText, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:bestSeller.viewAll")}</Text>
           <MaterialIcons name="keyboard-arrow-right" size={20} color={isDark ? "#FFFFFF" : "#111827"} />
         </TouchableOpacity>
       </View>

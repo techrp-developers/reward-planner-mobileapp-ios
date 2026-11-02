@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   percentage: number;
@@ -38,6 +39,7 @@ export default function RadialProgressCard({
   errorMessage = "",
   onRetry,
 }: Props) {
+  const { t: tx } = useTranslation();
   const clampedPercent = Math.max(0, Math.min(Number(percentage) || 0, 100));
   const strokeDashoffset = useMemo(
     () => CIRCUMFERENCE - (clampedPercent / 100) * CIRCUMFERENCE,
@@ -87,7 +89,7 @@ export default function RadialProgressCard({
       {errorMessage ? (
         <TouchableOpacity activeOpacity={0.8} onPress={onRetry}>
           <Text style={styles.errorText} numberOfLines={1}>
-            Retry
+            {tx("products:radialProgressCard.retry")}
           </Text>
         </TouchableOpacity>
       ) : (

@@ -2,6 +2,7 @@
 import axios from "axios";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import { API_BASE_URL } from "../../../config/apiConfig";
+import i18n from "../../../i18n";
 
 export type CancellationReason = {
   id: number;
@@ -299,7 +300,7 @@ export const requestItemCancellation = async (
     console.error("Cancel Item Error:", error);
     return {
       success: false,
-      message: error?.response?.data?.message || "Unable to submit cancellation request",
+      message: error?.response?.data?.message || i18n.t("products:r2.unableToSubmitCancellationRequest"),
     };
   }
 };
@@ -454,7 +455,7 @@ export const fetchOrderInvoice = async (
       return {
         success: false,
         status,
-        message: "Invoice is not available for this order yet.",
+        message: i18n.t("products:invoice.notYet"),
       };
     }
 
@@ -462,7 +463,7 @@ export const fetchOrderInvoice = async (
       return {
         success: false,
         status,
-        message: "Invoice could not be generated right now. Please try again later.",
+        message: i18n.t("products:invoice.genFailed"),
       };
     }
 
@@ -470,7 +471,7 @@ export const fetchOrderInvoice = async (
     return {
       success: false,
       status,
-      message: "Could not fetch invoice PDF",
+      message: i18n.t("products:invoice.fetchFailed"),
     };
   }
 };

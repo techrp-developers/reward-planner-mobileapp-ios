@@ -10,8 +10,11 @@ import Bus_Booking from "../../../assets/sampleImages/Bus_Booking.svg";
 import Expence_Tracking from "../../../assets/sampleImages/Expence_Tracking.svg";
 import Community from "../../../assets/sampleImages/Community.svg";
 import OrderHeading from "../constants/heading/OrderHeading";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 export default function Explore() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { width } = useWindowDimensions();
 
@@ -79,7 +82,7 @@ export default function Explore() {
   return (
     <View style={styles.container}>
       <OrderHeading
-        title="Explore"
+        title={tx("products:explore.explore")}
         onBackPress={() => navigation.goBack()}
       />
 
@@ -104,7 +107,7 @@ export default function Explore() {
             >
               <item.Icon width={36} height={36} />
 
-              <Text style={styles.label}>{item.title}</Text>
+              <Text style={styles.label}>{translateSourceText("products", item.title)}</Text>
             </TouchableOpacity>
           );
         })}

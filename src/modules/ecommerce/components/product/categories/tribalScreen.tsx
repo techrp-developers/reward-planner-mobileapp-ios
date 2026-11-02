@@ -14,10 +14,12 @@ import type { HomeStackParamList } from '../../../navigation/types';
 import Tribal from './tribal';
 import QuickPill from '../../../constants/product_cart/QuickPill';
 import Product_Card from '../product_section/Categories_Product';
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 function TribalScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
 
   return (
@@ -31,7 +33,7 @@ function TribalScreen() {
           <MaterialIcons name="arrow-back-ios" size={20} color="#000" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Tribal</Text>
+        <Text style={styles.headerTitle}>{tx("products:tribalScreen.tribal")}</Text>
 
         <TouchableOpacity style={styles.iconBtn}>
           <MaterialIcons name="favorite-border" size={22} color="#000" />
@@ -49,10 +51,10 @@ function TribalScreen() {
               <MaterialIcons name="tune" size={18} color="#000" />
             </TouchableOpacity>
 
-            <QuickPill label="4+ Stars ⭐" />
-            <QuickPill label="Best Offers" />
-            <QuickPill label="New Arrivals" />
-            <QuickPill label="Under ₹999" />
+            <QuickPill label={tx("products:tribalScreen.n4Stars")} />
+            <QuickPill label={tx("products:tribalScreen.bestOffers")} />
+            <QuickPill label={tx("products:tribalScreen.newArrivals")} />
+            <QuickPill label={tx("products:tribalScreen.under999")} />
           </View>
 
           <View style={styles.productsSection}>

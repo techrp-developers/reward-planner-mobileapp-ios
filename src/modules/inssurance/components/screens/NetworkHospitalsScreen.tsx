@@ -15,8 +15,11 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const NetworkHospitalsScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
 
@@ -24,13 +27,13 @@ const NetworkHospitalsScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const specialties = [
-    { id: 'All', label: 'All Specialties' },
-    { id: 'Cardiology', label: 'Cardiology' },
-    { id: 'Orthopedics', label: 'Orthopedics' },
-    { id: 'Pediatrics', label: 'Pediatrics' },
-    { id: 'Oncology', label: 'Oncology' },
-    { id: 'Neurology', label: 'Neurology' },
-    { id: 'Surgery', label: 'General Surgery' },
+    { id: 'All', label: 'insurance:specialties.all' },
+    { id: 'Cardiology', label: 'insurance:specialties.cardiology' },
+    { id: 'Orthopedics', label: 'insurance:specialties.orthopedics' },
+    { id: 'Pediatrics', label: 'insurance:specialties.pediatrics' },
+    { id: 'Oncology', label: 'insurance:specialties.oncology' },
+    { id: 'Neurology', label: 'insurance:specialties.neurology' },
+    { id: 'Surgery', label: 'insurance:specialties.surgery' },
   ];
 
   const hospitalsList = [
@@ -41,7 +44,7 @@ const NetworkHospitalsScreen: React.FC = () => {
       distance: '1.2 km away',
       rating: '4.8',
       reviews: '1.2k reviews',
-      cashlessType: '100% Cashless Available',
+      cashlessType: 'insurance:hospitals.fullCashless',
       phone: '+918025024444',
       mapUrl: 'https://maps.google.com/?q=Manipal+Hospital+Old+Airport+Road+Bengaluru',
     },
@@ -52,7 +55,7 @@ const NetworkHospitalsScreen: React.FC = () => {
       distance: '4.5 km away',
       rating: '4.7',
       reviews: '950 reviews',
-      cashlessType: 'Cashless Treatment',
+      cashlessType: 'insurance:hospitals.cashlessTreatment',
       phone: '+918049694969',
       mapUrl: 'https://maps.google.com/?q=Sakra+World+Hospital+Bengaluru',
     },
@@ -63,7 +66,7 @@ const NetworkHospitalsScreen: React.FC = () => {
       distance: '6.2 km away',
       rating: '4.6',
       reviews: '800 reviews',
-      cashlessType: 'Cashless Treatment',
+      cashlessType: 'insurance:hospitals.cashlessTreatment',
       phone: '+918039898960',
       mapUrl: 'https://maps.google.com/?q=Columbia+Asia+Hospital+Yeshwanthpur+Bengaluru',
     },
@@ -74,7 +77,7 @@ const NetworkHospitalsScreen: React.FC = () => {
       distance: '8.1 km away',
       rating: '4.8',
       reviews: '1.5k reviews',
-      cashlessType: '100% Cashless Available',
+      cashlessType: 'insurance:hospitals.fullCashless',
       phone: '+918066222222',
       mapUrl: 'https://maps.google.com/?q=Fortis+Hospital+Bannerghatta+Road+Bengaluru',
     },
@@ -82,24 +85,24 @@ const NetworkHospitalsScreen: React.FC = () => {
 
   const handleDirections = (mapUrl: string) => {
     Linking.openURL(mapUrl).catch(() => {
-      Alert.alert('Error', 'Unable to open maps application.');
+      Alert.alert(i18n.t("insurance:networkHospitalsScreen.error"), i18n.t("insurance:networkHospitalsScreen.unableToOpenMapsApplication"));
     });
   };
 
   const handleCall = (phone: string) => {
     Linking.openURL(`tel:${phone}`).catch(() => {
-      Alert.alert('Error', 'Calling is not supported on this device.');
+      Alert.alert(i18n.t("insurance:networkHospitalsScreen.error"), i18n.t("insurance:networkHospitalsScreen.callingIsNotSupportedOn"));
     });
   };
 
   const handleBookAdmission = (hospitalName: string) => {
     Alert.alert(
-      'Admission Intimation',
-      `Would you like to start a cashless pre-authorization request at ${hospitalName}?`,
+      i18n.t('insurance:hospitals.admissionTitle'),
+      i18n.t('insurance:hospitals.admissionBody', { hospital: hospitalName }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: i18n.t("insurance:networkHospitalsScreen.cancel"), style: 'cancel' },
         { 
-          text: 'Proceed', 
+          text: i18n.t('insurance:hospitals.proceed'), 
           onPress: () => navigation.navigate('StartClaimScreen') 
         },
       ]
@@ -126,7 +129,7 @@ const NetworkHospitalsScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Network Hospitals</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:networkHospitalsScreen.networkHospitals")}</Text>
         </View>
 
         <TouchableOpacity style={[styles.backBtn, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]} activeOpacity={0.7}>
@@ -143,7 +146,7 @@ const NetworkHospitalsScreen: React.FC = () => {
             <View style={[styles.searchBox, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
               <MaterialCommunityIcons name="magnify" size={18} color={isDark ? '#71717A' : '#94A3B8'} style={{ marginRight: 6 }} />
               <TextInput 
-                placeholder="Search hospital, specialty or doctor" 
+                placeholder={tx("insurance:networkHospitalsScreen.searchHospitalSpecialtyOrDoctor")} 
                 placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -189,7 +192,7 @@ const NetworkHospitalsScreen: React.FC = () => {
                       }
                     ]}
                   >
-                    {spec.label}
+                    {tx(spec.label)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -202,10 +205,10 @@ const NetworkHospitalsScreen: React.FC = () => {
           <MaterialCommunityIcons name="shield-check" size={18} color="#10B981" />
           <View style={{ flex: 1, marginLeft: 6 }}>
             <Text style={[styles.infoBannerTitle, { color: isDark ? '#FFFFFF' : '#003950' }]}>
-              6,200+ Network Hospitals
+              {tx("insurance:networkHospitalsScreen.n6200NetworkHospitals")}
             </Text>
             <Text style={[styles.infoBannerText, { color: isDark ? '#A1A1AA' : '#003950' }]}>
-              Enjoy 100% cashless claims at all network partner hospitals.
+              {tx("insurance:networkHospitalsScreen.enjoy100CashlessClaimsAt")}
             </Text>
           </View>
         </View>
@@ -246,7 +249,7 @@ const NetworkHospitalsScreen: React.FC = () => {
 
                 <View style={[styles.cashlessBadge, { backgroundColor: '#ECFDF5' }]}>
                   <MaterialCommunityIcons name="shield-check" size={10} color="#10B981" style={{ marginRight: 2 }} />
-                  <Text style={styles.cashlessText}>{hospital.cashlessType}</Text>
+                  <Text style={styles.cashlessText}>{tx(hospital.cashlessType)}</Text>
                 </View>
               </View>
 
@@ -258,7 +261,7 @@ const NetworkHospitalsScreen: React.FC = () => {
                   onPress={() => handleDirections(hospital.mapUrl)}
                 >
                   <MaterialCommunityIcons name="directions" size={14} color={isDark ? '#A1A1AA' : '#475569'} style={{ marginRight: 4 }} />
-                  <Text style={[styles.actionSubBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Directions</Text>
+                  <Text style={[styles.actionSubBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:networkHospitalsScreen.directions")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -267,7 +270,7 @@ const NetworkHospitalsScreen: React.FC = () => {
                   onPress={() => handleCall(hospital.phone)}
                 >
                   <MaterialCommunityIcons name="phone" size={14} color={isDark ? '#A1A1AA' : '#475569'} style={{ marginRight: 4 }} />
-                  <Text style={[styles.actionSubBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Call</Text>
+                  <Text style={[styles.actionSubBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:networkHospitalsScreen.call")}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -275,7 +278,7 @@ const NetworkHospitalsScreen: React.FC = () => {
                   activeOpacity={0.8}
                   onPress={() => handleBookAdmission(hospital.name)}
                 >
-                  <Text style={styles.bookBtnText}>Book Admission</Text>
+                  <Text style={styles.bookBtnText}>{tx("insurance:networkHospitalsScreen.bookAdmission")}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -289,27 +292,27 @@ const NetworkHospitalsScreen: React.FC = () => {
       <View style={[styles.tabBar, { backgroundColor: isDark ? '#18181B' : '#FFFFFF', borderTopColor: isDark ? '#27272A' : '#E4E4E7' }]}>
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('HealthDashboard')}>
           <MaterialCommunityIcons name="home-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:networkHospitalsScreen.home")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('HealthClaimsScreen')}>
           <MaterialCommunityIcons name="file-document-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Claims</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:networkHospitalsScreen.claims")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6}>
           <MaterialCommunityIcons name="hospital-building" size={24} color="#005b7f" />
-          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>Hospitals</Text>
+          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:networkHospitalsScreen.hospitals")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6}>
           <MaterialCommunityIcons name="headphones" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Support</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:networkHospitalsScreen.support")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('Profile')}>
           <MaterialCommunityIcons name="account-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:networkHospitalsScreen.profile")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

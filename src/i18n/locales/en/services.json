@@ -1,0 +1,924 @@
+{
+  "step2": {
+    "familyMember": "Family Member",
+    "howOldAreThey": "How old are they?",
+    "ageHelpsUsFindThe": "Age helps us find the most accurate plans for your family.",
+    "next": "Next"
+  },
+  "step3": {
+    "city": "City",
+    "selectYourLocation": "Select your location",
+    "loginRequired": "Login Required",
+    "pleaseLogInToGet": "Please log in to get insurance quotes",
+    "ok": "OK",
+    "validation": "Validation",
+    "pleaseFillAllRequiredFields": "Please fill all required fields",
+    "authenticationRequired": "Authentication Required",
+    "pleaseLogInToContinue": "Please log in to continue",
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1 and restart.",
+    "noQuotesCouldBeFetched": "No quotes could be fetched. Please try again.",
+    "verifyingAuthentication": "Verifying authentication...",
+    "personalDetails": "Personal Details",
+    "thisInformationHelpsUsPersonalize": "This information helps us personalize your insurance quotes.",
+    "firstName": "First Name",
+    "john": "John",
+    "lastName": "Last Name",
+    "doe": "Doe",
+    "mobileNumber": "Mobile Number",
+    "pincode": "Pincode",
+    "zone": "Zone",
+    "enterCity": "Enter City",
+    "typeYourCity": "Type your city",
+    "requiredCoverAmount": "Required Cover Amount",
+    "termsConditions": "Terms & Conditions"
+  },
+  "step1": {
+    "insureYourFamily": "Insure your family",
+    "selectEveryoneYouWantTo": "Select everyone you want to protect",
+    "reviewCoverage": "Review Coverage",
+    "continue": "Continue"
+  },
+  "health": {
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1.",
+    "healthInsurance": "Health Insurance",
+    "simpleHealthCoverForYou": "Simple health cover for you and your family"
+  },
+  "quotesResult": {
+    "coverAmount": "Cover Amount",
+    "deductible": "Deductible",
+    "premiumYear": "Premium/Year",
+    "enquireNow": "Enquire Now",
+    "fetching22LiveQuotes": "Fetching 22+ Live Quotes...",
+    "noPlansFoundForThis": "No plans found for this criteria.",
+    "adjustDetails": "Adjust Details"
+  },
+  "step3SuperTopUp": {
+    "ok": "OK",
+    "validation": "Validation",
+    "pleaseFillAllRequiredFields": "Please fill all required fields",
+    "authenticationRequired": "Authentication Required",
+    "pleaseLogInToContinue": "Please log in to continue",
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1 and restart.",
+    "noQuotesCouldBeFetched": "No quotes could be fetched. Please try again.",
+    "verifyingAuthentication": "Verifying authentication...",
+    "personalDetails": "Personal Details",
+    "thisInformationHelpsUsPersonalize": "This information helps us personalize your insurance quotes.",
+    "firstName": "First Name",
+    "john": "John",
+    "lastName": "Last Name",
+    "doe": "Doe",
+    "mobileNumber": "Mobile Number",
+    "pincode": "Pincode",
+    "city": "City",
+    "searchOrSelectCity": "Search or select city",
+    "requiredCoverAmount": "Required Cover Amount",
+    "termsConditions": "Terms & Conditions"
+  },
+  "pA": {
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1.",
+    "personalAccidentInsurance": "Personal Accident Insurance",
+    "protectYourIncomeFromAccidental": "Protect your income from accidental risk"
+  },
+  "superTop": {
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1.",
+    "superTopUpInsurance": "Super Top-Up Insurance",
+    "extraCoverageWithAffordablePremiums": "Extra coverage with affordable premiums"
+  },
+  "step3PA": {
+    "ok": "OK",
+    "validation": "Validation",
+    "pleaseFillAllRequiredFields": "Please fill all required fields",
+    "pleaseSelectAValidNature": "Please select a valid nature of work",
+    "authenticationRequired": "Authentication Required",
+    "pleaseLogInToContinue": "Please log in to continue",
+    "error": "Error",
+    "sessionExpiredPleaseGoBack": "Session expired. Please go back to Step 1 and restart.",
+    "noQuotesCouldBeFetched": "No quotes could be fetched. Please try again.",
+    "verifyingAuthentication": "Verifying authentication...",
+    "additionalDetails": "Additional Details",
+    "helpUsClassifyRiskAnd": "Help us classify risk and fetch Personal Accident quotes.",
+    "occupationOfInsured": "Occupation of Insured *",
+    "annualIncomeRange": "Annual Income Range *",
+    "natureOfWorkDesignation": "Nature of Work / Designation *",
+    "coverAmount": "Cover Amount *",
+    "termsConditions": "Terms & Conditions",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "step1PA": {
+    "selectYourGender": "Select your gender",
+    "personalAccidentCoversSelfOnly": "Personal Accident covers self only",
+    "thisPolicyIsIssuedFor": "This policy is issued for the insured individual only.",
+    "self": "Self",
+    "continue": "Continue"
+  },
+  "step2PA": {
+    "loginRequired": "Login Required",
+    "pleaseLogInToGet": "Please log in to get insurance quotes",
+    "ok": "OK",
+    "verifyingAuthentication": "Verifying authentication...",
+    "personalDetails": "Personal Details",
+    "thisInformationHelpsUsPersonalize": "This information helps us personalize your insurance quotes.",
+    "firstName": "First Name *",
+    "enterFirstName": "Enter first name",
+    "lastName": "Last Name *",
+    "enterLastName": "Enter last name",
+    "dateOfBirth": "Date of Birth *",
+    "ddMmYyyy": "DD/MM/YYYY",
+    "enterAValidDateDd": "Enter a valid date (DD/MM/YYYY)",
+    "mobileNumber": "Mobile Number *",
+    "enterMobileNumber": "Enter mobile number",
+    "pincode": "Pincode *",
+    "enterPincode": "Enter pincode",
+    "zone": "Zone",
+    "city": "City *",
+    "searchOrSelectCity": "Search or select city",
+    "continue": "Continue"
+  },
+  "insurance": {
+    "gender": {
+      "Male": "Male",
+      "Female": "Female"
+    },
+    "member": {
+      "self": "Self",
+      "spouse": "Spouse",
+      "son": "Son",
+      "daughter": "Daughter",
+      "father": "Father",
+      "mother": "Mother"
+    },
+    "memberN": "{{member}} {{n}}",
+    "ageYears_one": "{{count}} year",
+    "ageYears_other": "{{count}} years",
+    "selectAge": "Select Age",
+    "proceedFailed": "Failed to proceed. Please try again.",
+    "quotesFetched": "Quotes Fetched!",
+    "superQuotesFetched": "Super Top-Up Quotes!",
+    "paQuotesFetched": "PA Quotes Fetched!",
+    "foundPlans_one": "Found {{count}} customized plan for you",
+    "foundPlans_other": "Found {{count}} customized plans for you",
+    "foundPlansHeader_one": "Found {{count}} customized plan",
+    "foundPlansHeader_other": "Found {{count}} customized plans",
+    "foundFamilyQuotes_one": "Found {{count}} quote for your family!",
+    "foundFamilyQuotes_other": "Found {{count}} quotes for your family!",
+    "success": "Success",
+    "other": "Other",
+    "selectCity": "Select City",
+    "autoFilled": "Auto-filled",
+    "selectCover": "Select Cover Amount",
+    "selectCoverage": "Select coverage",
+    "searching": "Searching...",
+    "getQuotes": "Get Free Quotes",
+    "processFailed": "Unable to process your request. Please try again.",
+    "selectOccupation": "Select Occupation",
+    "selectIncome": "Select Income Range",
+    "selectWork": "Select Nature of Work / Designation",
+    "mappedCategory": "Mapped to Category {{category}}",
+    "healthPlan": "Health Plan",
+    "paPlan": "Personal Accident Plan",
+    "enquiryConfirmed": "Enquiry Confirmed",
+    "enquirySubmitted": "Enquiry Submitted Successfully",
+    "planSelected": "{{company}} - {{plan}} selected at premium {{premium}}"
+  },
+  "amount": {
+    "lakh_one": "{{count}} Lakh",
+    "lakh_other": "{{count}} Lakh",
+    "crore_one": "{{count}} Crore",
+    "crore_other": "{{count}} Crores",
+    "lakhRange": "₹{{from}} Lakh – ₹{{to}} Lakh"
+  },
+  "options": {
+    "salaried": "Salaried",
+    "selfEmployedBusiness": "Self Employed/Business",
+    "incomeFromOtherSources": "Income from other sources",
+    "41LakhAndAbove": "₹41 Lakh and Above",
+    "doctors": "Doctors",
+    "lawyers": "Lawyers",
+    "accountants": "Accountants",
+    "architectsConsultingEngineers": "Architects/Consulting engineers",
+    "teachers": "Teachers",
+    "bankers": "Bankers",
+    "clericalAdministrativeFunctions": "Clerical/administrative functions",
+    "bfsiProfessional": "BFSI professional",
+    "businessmanNotWorkingOnFactory": "Businessman not working on factory floors",
+    "homemaker": "Homemaker",
+    "student": "Student",
+    "buildersContractors": "Builders/Contractors",
+    "engineersOnSite": "Engineers on site",
+    "veterinaryDoctors": "Veterinary Doctors",
+    "mechanics": "Mechanics",
+    "manualLabourersNotWorkingIn": "Manual labourers not working in mines, explosive industry, electrical intallations and such hazardous industries",
+    "businessWorkingOnFactoryFloors": "Business working on factory floors",
+    "workingInMinesExplosives": "Working in mines/explosives",
+    "electricalInstallations": "Electrical installations",
+    "racer": "Racer",
+    "circusArtistOrEngagedIn": "Circus artist or engaged in such other occupation",
+    "engagedFullTimePartTime": "Engaged full time/ part time in any adventurous activities",
+    "professionalSportsperson": "Professional sportsperson",
+    "professionalAdventurerTrekkerMountaineer": "Professional adventurer/trekker/mountaineer",
+    "defenseServices": "Defense services",
+    "drivers": "Drivers"
+  },
+  "cartCard": {
+    "documentsNeededToProceed": "Documents Needed to Proceed",
+    "bundleSavings": "Save ₹{{amount}} more when bundled"
+  },
+  "documentUpload": {
+    "required": "Required",
+    "uploadFailedTapToRetry": "Upload failed — tap to retry",
+    "imageVideoPdfOfficeMax": "Image · Video · PDF · Office · max 10 MB",
+    "pickerError": "Picker Error",
+    "selectionFailed": "Selection Failed",
+    "couldNotReadTheSelected": "Could not read the selected file. Please try again.",
+    "fileTooLarge": "File Too Large",
+    "maximumAllowedSizeIs10": "Maximum allowed size is 10 MB. Please choose a smaller file.",
+    "couldNotSelectThisDocument": "Could not select this document. Please try again.",
+    "nothingToSubmit": "Nothing to Submit",
+    "pleaseSelectAtLeastOne": "Please select at least one document to upload.",
+    "submissionFailed": "Submission Failed",
+    "documentsRequired": "Documents Required",
+    "loadingDocuments": "Loading documents…",
+    "tryAgain": "Try Again",
+    "requiredDocuments": "Required Documents",
+    "optionalDocuments": "Optional Documents",
+    "closeFileOptions": "Close file options",
+    "uploadDocument": "Upload document",
+    "photoOrVideo": "Photo or video",
+    "jpgPngWebpHeicMp4": "JPG, PNG, WebP, HEIC, MP4, MOV or WebM",
+    "browseDocuments": "Browse documents",
+    "pdfWordExcelPowerpointCsv": "PDF, Word, Excel, PowerPoint, CSV or text",
+    "secureUploadMaximumFileSize": "Secure upload · Maximum file size 10 MB"
+  },
+  "bundleEnquiryForm": {
+    "missingInfo": "Missing Info",
+    "pleaseFillAllRequiredFields": "Please fill all required fields.",
+    "invalidEmail": "Invalid Email",
+    "pleaseEnterAValidEmail": "Please enter a valid email address.",
+    "error": "Error",
+    "nameEmailAndMobileAre": "Name, Email and Mobile are required",
+    "unableToIdentifyBundleDetails": "Unable to identify bundle details for this enquiry. Please try again.",
+    "success": "Success",
+    "optional": "(optional)",
+    "enquireNow": "Enquire Now",
+    "fillOutTheFormBelow": "Fill out the form below and our team will get in touch with you shortly.",
+    "noFormFieldsAvailablePlease": "No form fields available. Please try again.",
+    "submit": "Submit"
+  },
+  "dynamicEnquiryForm": {
+    "submit": "Submit"
+  },
+  "limitedOffer": {
+    "limitedTimeOffers": "Limited Time Offers",
+    "grabThemBeforeTheyRe": "Grab them before they're gone"
+  },
+  "serviceCart": {
+    "upto48Off": "Upto 48% Off",
+    "upto48OffOnRenewal": "Upto 48% Off on renewal",
+    "applyBeforeTheOfferEnds": "Apply before the offer ends",
+    "todayOnly": "Today Only",
+    "addToCart": "Add To Cart"
+  },
+  "serviceHeader": {
+    "searchServices": "Search services..."
+  },
+  "serviceInterestForm": {
+    "enterYourNameHere": "Enter your name here",
+    "enterYourMobileNumberHere": "Enter your Mobile Number here",
+    "enterYourEmailIdHere": "Enter your Email ID here",
+    "additionalNotesOptional": "Additional Notes (optional)",
+    "enterAnySpecificQuestionsOr": "Enter any specific questions or requirements you'd like to share",
+    "submit": "Submit"
+  },
+  "youMayNeedServicesCarousel": {
+    "youMayAlsoNeed": "You may also need",
+    "handyAddOnsForThis": "Handy add-ons for this service"
+  },
+  "needHelpBanner": {
+    "needHelpWithGovernmentDocuments": "Need help with Government Documents?",
+    "notSureWhichDocumentYou": "Not sure which document you need? Our team will guide you step by step.",
+    "talkToUs": "Talk To Us"
+  },
+  "bundleService": {
+    "getFullPack": "Get Full Pack",
+    "bundleServices": "Bundle Services"
+  },
+  "mostBookedServices": {
+    "mostBookedServices": "Most Booked Services",
+    "trustedByThousandsOfCustomers": "Trusted by thousands of customers",
+    "trending": "Trending"
+  },
+  "quickServices": {
+    "quickPicks": "Quick Picks",
+    "viewAll": "View All"
+  },
+  "articleDetails": {
+    "articleNotFound": "Article not found."
+  },
+  "calculatorCard": {
+    "tool": "Tool",
+    "calculateNow": "Calculate Now"
+  },
+  "calculators": {
+    "sipCalculator": "SIP Calculator",
+    "estimateFutureValueOfYour": "Estimate future value of your monthly SIP",
+    "estimatedMaturityValue": "Estimated Maturity Value",
+    "parameters": "Parameters",
+    "adjustToSeeProjections": "Adjust to see projections",
+    "monthlyInvestment": "Monthly Investment",
+    "expectedAnnualReturn": "Expected Annual Return",
+    "investmentDuration": "Investment Duration",
+    "breakdown": "Breakdown",
+    "goalSipCalculator": "Goal SIP Calculator",
+    "monthlyInvestmentNeededToReach": "Monthly investment needed to reach your goal",
+    "monthlySipRequired": "Monthly SIP Required",
+    "goalDetails": "Goal Details",
+    "targetGoalAmount": "Target Goal Amount",
+    "timeToAchieveGoal": "Time to Achieve Goal",
+    "summary": "Summary",
+    "smartGoalCalculator": "Smart Goal Calculator",
+    "planGoalsConsideringExistingInvestments": "Plan goals considering existing investments",
+    "additionalMonthlySipNeeded": "Additional Monthly SIP Needed",
+    "yourGoal": "Your Goal",
+    "goalAmount": "Goal Amount",
+    "currentSavingsInvestments": "Current Savings / Investments",
+    "timeHorizon": "Time Horizon",
+    "analysis": "Analysis",
+    "inflationCalculator": "Inflation Calculator",
+    "impactOfInflationOnYour": "Impact of inflation on your expenses",
+    "futureValueOfExpenses": "Future Value of Expenses",
+    "currentMonthlyExpense": "Current Monthly Expense",
+    "expectedInflationRate": "Expected Inflation Rate",
+    "timePeriod": "Time Period",
+    "impactAnalysis": "Impact Analysis",
+    "costOfDelay": "Cost of Delay",
+    "impactOfDelayingYourInvestments": "Impact of delaying your investments",
+    "wealthLostDueToDelay": "Wealth Lost Due to Delay",
+    "delayPeriod": "Delay Period",
+    "comparison": "Comparison",
+    "lumpsumCalculator": "Lumpsum Calculator",
+    "calculateReturnsOnOneTime": "Calculate returns on one-time investment",
+    "investmentDetails": "Investment Details",
+    "oneTimeInvestmentAmount": "One-Time Investment Amount",
+    "retirementPlanning": "Retirement Planning",
+    "estimateYourRetirementCorpus": "Estimate your retirement corpus",
+    "yourDetails": "Your Details",
+    "currentAge": "Current Age",
+    "retirementAge": "Retirement Age",
+    "lifeExpectancy": "Life Expectancy",
+    "monthlyExpensesToday": "Monthly Expenses (Today)",
+    "returnAssumptions": "Return Assumptions",
+    "expectedReturnPreRetirement": "Expected Return (Pre-Retirement)",
+    "returnPostRetirement": "Return (Post-Retirement)",
+    "inflationRate": "Inflation Rate",
+    "retirementPlan": "Retirement Plan",
+    "stepUpSipCalculator": "Step-Up SIP Calculator",
+    "futureValueWithAnnualSip": "Future value with annual SIP increase",
+    "maturityWithStepUp": "Maturity with Step-Up",
+    "initialMonthlySip": "Initial Monthly SIP",
+    "annualStepUpPercentage": "Annual Step-Up Percentage",
+    "stepUpAdvantage": "Step-Up Advantage",
+    "swpCalculator": "SWP Calculator",
+    "systematicWithdrawalPlanProjections": "Systematic Withdrawal Plan projections",
+    "remainingBalance": "Remaining Balance",
+    "totalInvestment": "Total Investment",
+    "monthlyWithdrawal": "Monthly Withdrawal",
+    "withdrawalDuration": "Withdrawal Duration",
+    "withdrawalPlan": "Withdrawal Plan"
+  },
+  "commonQuestionsScreen": {
+    "articles": "articles",
+    "viewAll": "View All",
+    "commonlyAskedQuestions": "Commonly Asked Questions",
+    "yourGuideToInvestingSmarter": "Your guide to investing smarter",
+    "browseByTopic": "Browse by Topic"
+  },
+  "fAQListingScreen": {
+    "readArticle": "Read Article",
+    "commonlyAskedQuestions": "Commonly Asked Questions",
+    "articles": "articles"
+  },
+  "fAQSection": {
+    "quickClarity": "QUICK CLARITY",
+    "commonlyAskedQuestions": "Commonly Asked Questions"
+  },
+  "mFBeginners": {
+    "mutualFunds": "MUTUAL FUNDS",
+    "forBeginners": "For Beginners",
+    "readMore": "Read More",
+    "startYourMutualFundJourney": "Start Your Mutual Fund Journey",
+    "viewAll": "View All"
+  },
+  "mFInformedInvestors": {
+    "informedInvesting": "INFORMED INVESTING",
+    "readMore": "Read More",
+    "forTheInformedInvestor": "For the Informed Investor",
+    "viewAll": "View All"
+  },
+  "mFInvestorsDetail": {
+    "viewAll": "View All",
+    "noContentAvailable": "No content available."
+  },
+  "mFScreen": {
+    "smartWealthTools": "SMART WEALTH TOOLS",
+    "calculateReturnsLearnTheBasics": "Calculate returns, learn the basics, and track your financial future.",
+    "calculators": "Calculators",
+    "faq": "FAQ",
+    "guides": "Guides",
+    "mf": "MF",
+    "learning": "Learning",
+    "mfCalculators": "MF Calculators",
+    "mutualFunds": "Mutual Funds",
+    "calculatorsLearnGrow": "Calculators · Learn · Grow",
+    "tools": "Tools"
+  },
+  "mFSectionArticles": {
+    "readMore": "Read More",
+    "noArticlesFound": "No articles found."
+  },
+  "uIComponents": {
+    "returns": "Returns"
+  },
+  "myOrder": {
+    "service": "Service",
+    "viewOrder": "View Order",
+    "filterOrders": "Filter Orders",
+    "reset": "Reset",
+    "orderTime": "Order Time",
+    "orderStatus": "Order Status",
+    "applyFilters": "Apply Filters",
+    "searchYourOrdersHere": "Search your orders here",
+    "filters": "Filters",
+    "coinsEarnedTillDate": "Coins Earned Till Date:",
+    "totalSavingsTillDate": "Total Savings Till Date:",
+    "tryAgain": "Try Again",
+    "noOrdersFound": "No orders found",
+    "myOrders": "My Orders",
+    "help": "Help",
+    "noMoreOrders": "No More Orders"
+  },
+  "serviceBundleCard": {
+    "bundleTotal": "Bundle Total"
+  },
+  "serviceCancellationDetails": {
+    "invoiceUnavailable": "Invoice unavailable",
+    "orderDetails": "Order Details",
+    "loadingCancellationDetails": "Loading cancellation details...",
+    "tryAgain": "Try Again",
+    "reorder": "Reorder",
+    "yourCancellationRequestWasRejected": "Your cancellation request was rejected. This service will continue as scheduled.",
+    "refundToCard": "Refund to Card",
+    "rewardCoinsReversed": "Reward Coins Reversed",
+    "topPicksForYou": "Top Picks for You",
+    "popularServicesCustomersChooseNext": "Popular services customers choose next",
+    "help": "Help",
+    "saveACopyOfYour": "Save a copy of your order",
+    "downloadInvoice": "Download Invoice"
+  },
+  "serviceCancellationRequest": {
+    "reasonRequired": "Reason required",
+    "pleaseSelectACancellationReason": "Please select a cancellation reason.",
+    "requestFailed": "Request failed",
+    "orderCancellationRequested": "Order Cancellation Requested",
+    "weVeReceivedYourRequest": "We've received your request and our team will review it shortly.",
+    "viewCancellationDetails": "View Cancellation Details",
+    "keepShopping": "Keep Shopping",
+    "viewAllOrders": "View All Orders",
+    "requestCancellation": "Request Cancellation",
+    "reasonForCancellation": "Reason For Cancellation",
+    "loadingReasons": "Loading reasons...",
+    "noCancellationReasonsAreAvailable": "No cancellation reasons are available right now.",
+    "retry": "Retry",
+    "enterAnySpecificQuestionsOr": "Enter any specific questions or requirements you'd like to share",
+    "submitRequest": "Submit Request"
+  },
+  "serviceDocumentsCard": {
+    "documents": "Documents",
+    "required": "Required",
+    "uploaded": "Uploaded",
+    "pending": "Pending"
+  },
+  "serviceFeedback": {
+    "ratingRequired": "Rating required",
+    "pleaseRateYourOverallService": "Please rate your overall service experience.",
+    "thankYou": "Thank you!",
+    "yourFeedbackHasBeenSubmitted": "Your feedback has been submitted successfully.",
+    "submissionFailed": "Submission failed",
+    "serviceFeedback": "Service Feedback",
+    "howWasYourExperienceWith": "How was your experience with this service?",
+    "howEasyWasItTo": "How easy was it to complete this service on our app?",
+    "howWasYourExperienceWith2": "How was your experience with our Service Expert?",
+    "wasYourServiceCompletedWithin": "Was your service completed within the expected time?",
+    "didYouFeelConfidentThat": "Did you feel confident that your service was handled correctly?",
+    "wouldYouUseThisService": "Would you use this service again?",
+    "anythingYouDLikeUs": "Anything you’d like us to improve?",
+    "typeHere": "Type here",
+    "submit": "Submit"
+  },
+  "serviceFeedbackCard": {
+    "feedback": "Feedback",
+    "rateThisService": "Rate this service"
+  },
+  "serviceOrderDetail": {
+    "invoiceUnavailable": "Invoice unavailable",
+    "paymentConfirmed": "Payment confirmed",
+    "yourPaymentIsAlreadyComplete": "Your payment is already complete. Document upload is now available.",
+    "paymentProcessing": "Payment processing",
+    "yourPaymentIsStillBeing": "Your payment is still being confirmed. Please refresh this order shortly.",
+    "paymentSuccessful": "Payment successful",
+    "youCanNowUploadThe": "You can now upload the required documents.",
+    "paymentUnsuccessful": "Payment unsuccessful",
+    "loadingOrderDetails": "Loading order details…",
+    "tryAgain": "Try Again",
+    "trackEachServiceBelowFor": "Track each service below for its individual document and completion timeline.",
+    "serviceOrder": "SERVICE ORDER",
+    "services": "Services",
+    "bundles": "Bundles",
+    "paymentSummary": "Payment Summary",
+    "topPicksForYou": "Top Picks for You",
+    "popularServicesCustomersChooseNext": "Popular services customers choose next",
+    "orderDetails": "Order Details",
+    "help": "Help",
+    "documents": "Documents",
+    "complete": "Complete",
+    "upload": "Upload",
+    "payNow": "Pay now",
+    "saveACopyOfYour": "Save a copy of your order",
+    "downloadInvoice": "Download Invoice"
+  },
+  "serviceOrderItemCard": {
+    "serviceProgress": "Service progress"
+  },
+  "enquireForm": {
+    "success": "Success",
+    "yourEnquiryHasBeenSubmitted": "Your enquiry has been submitted successfully!",
+    "enquireNow": "Enquire Now",
+    "pleaseFillOutTheForm": "Please fill out the form below and our team will get in touch with you shortly.",
+    "enterYourNameHere": "Enter your name here",
+    "enterYourMobileNumberHere": "Enter your mobile number here",
+    "enterYourEmailIdHere": "Enter your email id here",
+    "enterCityHere": "Enter city here",
+    "enterPincodeHere": "Enter pincode here",
+    "additionalNotesOptional": "Additional Notes (optional)",
+    "enterAnySpecificQuestionsOr": "Enter any specific questions or requirements you’d like to share",
+    "submit": "Submit"
+  },
+  "packFooterCTA": {
+    "enquireNow": "Enquire Now"
+  },
+  "priceTypeToggle": {
+    "bundlePrice": "Bundle Price",
+    "individualPrice": "Individual Price"
+  },
+  "cartScreen": {
+    "error": "Error",
+    "bundleDataMissing": "Bundle data missing",
+    "unableToContinue": "Unable to continue",
+    "serviceInformationIsIncomplete": "Service information is incomplete.",
+    "couponsAndOffers": "Coupons and Offers",
+    "cart": "Cart",
+    "yourServiceCartIsEmpty": "Your service cart is empty. Browse services to get started.",
+    "retry": "Retry"
+  },
+  "governmentDocumentScreen": {
+    "unableToOpenThisCategory": "Unable to open this category.",
+    "noServicesFoundInThis": "No services found in this category."
+  },
+  "packScreen": {
+    "error": "Error",
+    "bundleIdMissing": "Bundle ID missing",
+    "selectItems": "Select items",
+    "pleaseSelectAtLeastOne": "Please select at least one service",
+    "unableToAddBundle": "Unable to add bundle",
+    "bundleIdIsMissingFor": "Bundle ID is missing for this package.",
+    "selectionRequired": "Selection required",
+    "pleaseSelectAtLeastOne2": "Please select at least one service.",
+    "addToCartFailed": "Add To Cart Failed"
+  },
+  "profile": {
+    "cancel": "Cancel",
+    "deleteFailed": "Delete failed",
+    "couldNotDeleteTheAccount": "Could not delete the account. Please try again.",
+    "en": "EN",
+    "myOrders": "My Orders",
+    "wallet": "Wallet",
+    "rewards": "Rewards",
+    "yourOrders": "Your Orders",
+    "yourNotes": "Your Notes",
+    "addressBook": "Address Book",
+    "settings": "Settings",
+    "languages": "Languages",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions",
+    "deleteAccount": "Delete Account",
+    "logout": "Logout",
+    "darkMode": "Dark Mode"
+  },
+  "serviceCheckoutScreen": {
+    "loginRequired": "Login Required",
+    "pleaseLoginToContinueCheckout": "Please login to continue checkout.",
+    "cancel": "Cancel",
+    "addAddress": "Add Address",
+    "checkoutFailed": "Checkout failed",
+    "orderError": "Order Error",
+    "failedToCreateOrderPlease": "Failed to create order. Please try again.",
+    "checkout": "Checkout",
+    "pleaseAddADeliveryAddress": "Please add a delivery address to continue",
+    "documentsRequired": "Documents Required",
+    "couponsAndOffers": "Coupons and Offers"
+  },
+  "serviceDescription": {
+    "unableToProceed": "Unable to proceed",
+    "serviceOrVariantDetailsAre": "Service or variant details are missing.",
+    "buyNowFailed": "Buy Now Failed",
+    "unableToAddItem": "Unable to add item",
+    "addToCartFailed": "Add To Cart Failed",
+    "missingInfo": "Missing Info",
+    "pleaseFillInAllRequired": "Please fill in all required fields.",
+    "submissionFailed": "Submission Failed",
+    "requiredDocuments": "Required Documents",
+    "required": "Required",
+    "interestedInThisService": "Interested in this Service?",
+    "fillInTheDetailsBelow": "Fill in the details below and our team will reach out to you shortly."
+  },
+  "serviceSearchScreen": {
+    "recentSearches": "Recent searches",
+    "clearAll": "Clear all",
+    "typeAtLeast2Characters": "Type at least 2 characters to search services"
+  },
+  "submittedSuccessful": {
+    "areYouLovingYourExperience": "Are you loving your experience with our app so far?",
+    "giveUsARating": "Give us a rating"
+  },
+  "orders": {
+    "status": {
+      "pending": "Pending",
+      "paymentPending": "Payment Pending",
+      "paymentDone": "Payment Done",
+      "docsPending": "Docs Pending",
+      "docsUploaded": "Docs Uploaded",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "delivered": "Delivered",
+      "all": "All"
+    },
+    "summary": {
+      "placed": "Order Placed",
+      "cancelled": "Order Cancelled",
+      "completed": "Order Completed",
+      "inProgress": "Order In Progress",
+      "confirmed": "Order Confirmed",
+      "delivered": "Order Delivered",
+      "servicesConfirmed": "{{done}} of {{total}} Services Confirmed",
+      "servicesCompleted": "{{done}} of {{total}} Services Completed"
+    },
+    "time": {
+      "all": "All time",
+      "days30": "Last 30 days",
+      "months3": "Last 3 months",
+      "months6": "Last 6 months"
+    },
+    "servicesCount": "Services ({{count}})",
+    "bundlesCount": "Bundles ({{count}})",
+    "invoiceNotFound": "Unable to find invoice for this order.",
+    "serviceOrderN": "Service order {{id}}",
+    "cancellationRequested": "Cancellation Requested"
+  },
+  "feedback": {
+    "fast": "Faster than expected",
+    "onTime": "On time",
+    "delayed": "Delayed",
+    "yesCompletely": "Yes, completely",
+    "mostly": "Mostly",
+    "notReally": "Not really",
+    "definitely": "Definitely",
+    "maybe": "Maybe",
+    "unlikely": "Unlikely"
+  },
+  "calcResults": {
+    "amountInvested": "Amount Invested",
+    "corpusRequired": "Corpus Required",
+    "currentMonthlyExpense": "Current Monthly Expense",
+    "estimatedReturns": "Estimated Returns",
+    "existingSavingsGrowth": "Existing Savings Growth",
+    "extraWealthGained": "Extra Wealth Gained",
+    "goalAmount": "Goal Amount",
+    "inflationImpact": "Inflation Impact",
+    "maturityStepUp": "Maturity (Step-Up)",
+    "maturityValue": "Maturity Value",
+    "monthlyExpenseAtRetirement": "Monthly Expense at Retirement",
+    "monthlySipNeeded": "Monthly SIP Needed",
+    "monthlySipRequired": "Monthly SIP Required",
+    "remainingToFund": "Remaining to Fund",
+    "retirementDuration": "Retirement Duration",
+    "returnsStepUp": "Returns (Step-Up)",
+    "targetAmount": "Target Amount",
+    "totalAmountInvested": "Total Amount Invested",
+    "totalInvestedStepUp": "Total Invested (Step-Up)",
+    "totalInvested": "Total Invested",
+    "totalValue": "Total Value",
+    "totalWithdrawn": "Total Withdrawn",
+    "wealthGained": "Wealth Gained",
+    "wealthLost": "Wealth Lost",
+    "withoutDelay": "Without Delay",
+    "withoutStepUp": "Without Step-Up",
+    "yearsToRetirement": "Years to Retirement",
+    "expenseAfterYears": "Expense After {{years}} Years",
+    "withMonthDelay": "With {{months}} Month Delay",
+    "balanceAfterYears": "Balance After {{years}} Years"
+  },
+  "calcList": {
+    "sip": {
+      "title": "SIP Calculator",
+      "subtitle": "Estimate the future value of your monthly SIP investment."
+    },
+    "goal": {
+      "title": "Goal SIP Calculator",
+      "subtitle": "Find out the monthly SIP needed to reach your goal."
+    },
+    "smart": {
+      "title": "Smart Goal Calculator",
+      "subtitle": "Plan goals by calculating SIP or lumpsum needed with existing investments."
+    },
+    "inflation": {
+      "title": "Inflation Calculator",
+      "subtitle": "Calculate the impact of inflation on your expenses and goals."
+    },
+    "delay": {
+      "title": "Cost of Delay Calculator",
+      "subtitle": "Check the real cost of delaying your investment start date."
+    },
+    "lumpsum": {
+      "title": "Lumpsum Calculator",
+      "subtitle": "Calculate your potential returns on a one-time investment."
+    },
+    "retirement": {
+      "title": "Retirement Calculator",
+      "subtitle": "Estimate your corpus and the monthly SIP needed to retire comfortably."
+    },
+    "stepUp": {
+      "title": "Step-Up SIP Calculator",
+      "subtitle": "Calculate returns when you increase your SIP periodically."
+    },
+    "swp": {
+      "title": "SWP Calculator",
+      "subtitle": "Calculate remaining value after regular withdrawals with interest."
+    }
+  },
+  "mf": {
+    "article": "Article"
+  },
+  "fallback": {
+    "features": {
+      "singleForm": "Single Form Submission",
+      "checklist": "Document Checklist Built-in",
+      "slot": "Appointment Slot Assistance"
+    },
+    "faq": {
+      "q1": "What services do we provide?",
+      "a1": "New application, correction, reprint, and renewal of government documents.",
+      "q2": "How much time will my service take?",
+      "a2": "Timelines depend on the service type and government processing. We'll show an estimated timeline before you pay.",
+      "q3": "Do I need to visit the office?",
+      "a3": "Some services are fully online, while others need biometrics or verification visits. We'll tell you upfront."
+    },
+    "stats": {
+      "partners": "Trusted Partners",
+      "customers": "Customers Served",
+      "expertise": "of Expertise",
+      "years": "5+ Years",
+      "insurancePartners": "Trusted Insurance Partners",
+      "insuranceSold": "Insurance Sold",
+      "serviceExpertise": "of Service Expertise"
+    },
+    "whyMatters": "Why this service matters",
+    "fastProcess": "Fast & transparent process",
+    "experiencedTeam": "Experienced documentation team",
+    "dataSafety": "100% Data Safety",
+    "dataSafetyText": "Your personal information is protected and used only for your service request.",
+    "dataSafetyTextShort": "Your personal info is protected and used only for your service request."
+  },
+  "enquiry": {
+    "confirmed": "Enquiry Confirmed",
+    "submitted": "Enquiry Submitted Successfully",
+    "reviewShortly": "Our team will review the details and get back to you shortly.",
+    "contactShortly": "Our team will contact you shortly.",
+    "selectField": "Select {{field}}",
+    "enterField": "Enter {{field}}",
+    "enterFieldHere": "Enter {{field}} here",
+    "fields": {
+      "fullName": "Full Name",
+      "mobile": "Mobile Number",
+      "email": "Email ID",
+      "city": "City",
+      "pincode": "Pincode",
+      "notes": "Additional Notes"
+    }
+  },
+  "docs": {
+    "submitted": "Documents Submitted",
+    "uploadedTitle": "Documents Uploaded Successfully",
+    "uploadedBody": "Our team will verify your documents and process your service order shortly."
+  },
+  "search": {
+    "itr": "Search “ITR Filing”",
+    "panItr": "Search \"PAN Card, ITR Filing…\""
+  },
+  "recommended": {
+    "title": "Recommended for you",
+    "subtitle": "Picked based on what's popular"
+  },
+  "errors": {
+    "checkoutFailed": "Unable to proceed to checkout.",
+    "cartFetch": "Unable to fetch cart items.",
+    "invoiceEmpty": "Invoice PDF is empty"
+  },
+  "payment": {
+    "serviceDescription": "Service Payment"
+  },
+  "r2": {
+    "failedToSubmitEnquiry": "Failed to submit enquiry",
+    "failedToAddBundle": "Failed to add bundle",
+    "failedToAddToCart": "Failed to add to cart",
+    "failedToFetchCart": "Failed to fetch cart",
+    "failedToRemoveCartItem": "Failed to remove cart item",
+    "failedToClearCart": "Failed to clear cart",
+    "failedToLoadBuyNowPreview": "Failed to load buy now preview",
+    "failedToLoadCheckoutPreview": "Failed to load checkout preview",
+    "failedToCreateOrder": "Failed to create order",
+    "failedToFetchBuyNowPreview": "Failed to fetch buy now preview",
+    "failedToFetchCheckoutPreview": "Failed to fetch checkout preview",
+    "orderCreationFailed": "Order creation failed",
+    "unableToAddServiceToCart": "Unable to add service to cart",
+    "unableToRemoveCartItem": "Unable to remove cart item",
+    "unableToClearCart": "Unable to clear cart",
+    "invoiceIsAvailableAfterPayment": "Invoice is available after payment.",
+    "failedToFetchServiceHome": "Failed to fetch service home",
+    "removing": "Removing…",
+    "buyThisNow": "Buy this Now",
+    "expiryDateRequired": "Expiry date required",
+    "uploadingDocuments": "Uploading documents…",
+    "submitDocuments": "Submit Documents",
+    "chooseAFileSource": "Choose a file source",
+    "enquirySubmittedSuccessfully": "Enquiry submitted successfully",
+    "getStarted": "Get Started",
+    "getQuote": "Get Quote",
+    "completeAssistanceFromApplicationToDelivery": "Complete assistance from application to delivery for your document needs.",
+    "selectAnOption": "Select an option",
+    "noArticlesAvailable": "No articles available",
+    "moreAboutMutualFunds": "More about Mutual Funds",
+    "newToMutualFunds": "New to Mutual Funds",
+    "serviceOrder": "Service Order",
+    "failedToLoadOrders": "Failed to load orders",
+    "cancellationUnavailable": "Cancellation unavailable",
+    "unableToLoadCancellationDetails": "Unable to load cancellation details.",
+    "unableToDownloadInvoicePleaseTry": "Unable to download invoice. Please try again.",
+    "cancellationDetailsNotFound": "Cancellation details not found.",
+    "cancellationRejected": "Cancellation Rejected",
+    "serviceCancellation": "Service cancellation",
+    "updatePending": "Update pending",
+    "pleaseTryAgainInAMoment": "Please try again in a moment.",
+    "unableToSubmitCancellationRequest": "Unable to submit cancellation request.",
+    "cancellationRequested": "Cancellation requested",
+    "serviceCancellationRequest": "Service cancellation request",
+    "unableToSubmitFeedback": "Unable to submit feedback.",
+    "tellUsAboutYourCompletedService": "Tell us about your completed service",
+    "orderNotFound": "Order not found.",
+    "failedToLoadOrderDetails": "Failed to load order details.",
+    "documentUploadUnlocksAfterPayment": "Document upload unlocks after payment",
+    "failedToSubmitYourEnquiryPlease": "Failed to submit your enquiry. Please try again.",
+    "addToCart": "Add to Cart",
+    "hide": "Hide",
+    "serviceDetails": "Service details",
+    "failedToProceed": "Failed to proceed",
+    "failedToAddBundleToCart": "Failed to add bundle to cart",
+    "cancellationProcessing": "Cancellation Processing",
+    "unableToLoadTheSelectedItem": "Unable to load the selected item. Please login and try again.",
+    "noDeliveryAddress": "No delivery address",
+    "removing2": "Removing...",
+    "plan": "Plan",
+    "couldNotAddThisServiceTo": "Could not add this service to cart.",
+    "somethingWentWrongWhileAddingTo": "Something went wrong while adding to cart.",
+    "unableToSubmitEnquiryRightNow": "Unable to submit enquiry right now.",
+    "everythingYouNeedToKnow": "Everything You Need to Know",
+    "unableToLoadServiceDetails": "Unable to load service details.",
+    "invalidCategory": "Invalid category.",
+    "failedToLoadServicesPleaseTry": "Failed to load services. Please try again.",
+    "invalidServiceId": "Invalid service ID",
+    "failedToLoadServiceDetailsPlease": "Failed to load service details. Please try again.",
+    "showLess": "Show less",
+    "viewAllCalculators": "View all {{count}} calculators",
+    "moreToolsAvailable": "{{count}} more tools available",
+    "toolsCount": "{{count}} tools"
+  },
+  "src": {
+    "mfBeginners": "Mutual Fund for Beginners",
+    "mfBeginnersSub": "Simple guides to start investing with confidence",
+    "mfInformedSub": "Explore fund types, goal planning & retirement strategies"
+  }
+}

@@ -31,6 +31,9 @@ import { useServiceHome } from '../../hooks/useServiceHome';
 import YouMayNeedServicesCarousel from '../constant/YouMayNeedServicesCarousel';
 import RecommendedServicesCarousel from '../constant/RecommendedServicesCarousel';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceCancellationDetails'>;
@@ -83,6 +86,7 @@ const normalizeName = (value?: string | null) =>
     .replace(/[^a-z0-9]+/g, ' ');
 
 export default function ServiceCancellationDetails() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
@@ -116,13 +120,13 @@ export default function ServiceCancellationDetails() {
 
       const res = await getServiceCancellationDetails(service_order_id);
       if (!res.success || !res.data) {
-        setError(res.message || 'Unable to load cancellation details.');
+        setError(res.message || i18n.t("services:r2.unableToLoadCancellationDetails"));
         return;
       }
 
       setDetails(res.data);
     } catch (err: any) {
-      setError(err?.message || 'Unable to load cancellation details.');
+      setError(err?.message || i18n.t("services:r2.unableToLoadCancellationDetails"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -144,12 +148,12 @@ export default function ServiceCancellationDetails() {
       const res = await getServiceInvoiceDetails(parent_order_id);
 
       if (res.success === false) {
-        Alert.alert('Invoice unavailable', res.message || 'Unable to find invoice for this order.');
+        Alert.alert(i18n.t("services:serviceCancellationDetails.invoiceUnavailable"), res.message || i18n.t('services:orders.invoiceNotFound'));
         return;
       }
 
       await Share.open({
-        title: 'Download Invoice',
+        title: i18n.t('services:serviceCancellationDetails.downloadInvoice'),
         url: `data:application/pdf;base64,${res.base64}`,
         type: 'application/pdf',
         filename: res.fileName.replace(/\.pdf$/i, ''),
@@ -160,7 +164,7 @@ export default function ServiceCancellationDetails() {
     } catch (err: any) {
       Alert.alert(
         'Download failed',
-        err?.message || 'Unable to download invoice. Please try again.'
+        err?.message || i18n.t("services:r2.unableToDownloadInvoicePleaseTry")
       );
     } finally {
       setInvoiceDownloading(false);
@@ -171,13 +175,13 @@ export default function ServiceCancellationDetails() {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
         <Header
-          title="Order Details"
+          title={tx("services:serviceCancellationDetails.orderDetails")}
           onBack={() => navigation.goBack()}
           onHelp={() => navigation.navigate('HelpForm')}
         />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>Loading cancellation details...</Text>
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>{tx("services:serviceCancellationDetails.loadingCancellationDetails")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -187,15 +191,15 @@ export default function ServiceCancellationDetails() {
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
         <Header
-          title="Order Details"
+          title={tx("services:serviceCancellationDetails.orderDetails")}
           onBack={() => navigation.goBack()}
           onHelp={() => navigation.navigate('HelpForm')}
         />
         <View style={styles.centered}>
           <MaterialCommunityIcons name="alert-circle-outline" size={46} color="#DC2626" />
-          <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>{error || 'Cancellation details not found.'}</Text>
+          <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>{error || i18n.t("services:r2.cancellationDetailsNotFound")}</Text>
           <TouchableOpacity style={[styles.retryBtn, { backgroundColor: servicesTheme.colors.primary }]} onPress={() => fetchDetails()}>
-            <Text style={styles.retryText}>Try Again</Text>
+            <Text style={styles.retryText}>{tx("services:serviceCancellationDetails.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -222,7 +226,7 @@ export default function ServiceCancellationDetails() {
     ? details.timeline
     : [
       {
-        label: 'Cancellation Requested',
+        label: i18n.t('services:orders.cancellationRequested'),
         event: 'cancellation_requested',
         date: cancellation?.created_at,
       },
@@ -236,7 +240,7 @@ export default function ServiceCancellationDetails() {
   const isApproved = cancellationStatus === 'approved';
   const isRejected = cancellationStatus === 'rejected';
   const cardTitle = isRejected
-    ? 'Cancellation Rejected'
+    ? i18n.t("services:r2.cancellationRejected")
     : isApproved
       ? 'Order Cancelled'
       : 'Cancellation Requested';
@@ -245,7 +249,7 @@ export default function ServiceCancellationDetails() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
       <Header
-        title="Order Details"
+        title={tx("services:serviceCancellationDetails.orderDetails")}
         onBack={() => navigation.goBack()}
         onHelp={() => navigation.navigate('HelpForm')}
       />
@@ -271,7 +275,7 @@ export default function ServiceCancellationDetails() {
             )
           }
           title={service.service_name || 'Service'}
-          weight={service.variant_name || service.title || 'Service cancellation'}
+          weight={service.variant_name || service.title || i18n.t("services:r2.serviceCancellation")}
           orderId={details.order_ref || parent_order_id}
         />
 
@@ -293,7 +297,7 @@ export default function ServiceCancellationDetails() {
             );
           }}
         >
-          <Text style={[styles.reorderText, { color: servicesTheme.colors.primary }]}>Reorder</Text>
+          <Text style={[styles.reorderText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceCancellationDetails.reorder")}</Text>
         </TouchableOpacity>
 
         <View style={[styles.cancellationCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
@@ -301,7 +305,7 @@ export default function ServiceCancellationDetails() {
 
           {isRejected ? (
             <Text style={[styles.cancelReasonText, { color: servicesTheme.colors.text }]}>
-              Your cancellation request was rejected. This service will continue as scheduled.
+              {tx("services:serviceCancellationDetails.yourCancellationRequestWasRejected")}
             </Text>
           ) : null}
 
@@ -327,8 +331,8 @@ export default function ServiceCancellationDetails() {
                     color={isNegativeEvent ? '#DC2626' : '#22C55E'}
                   />
                 </View>
-                <Text style={[styles.timelineLabel, { color: servicesTheme.colors.text }]}>{step.label}</Text>
-                <Text style={[styles.timelineDate, { color: servicesTheme.colors.muted }]}>{formatDate(step.date) || 'Update pending'}</Text>
+                <Text style={[styles.timelineLabel, { color: servicesTheme.colors.text }]}>{translateSourceText("services", step.label)}</Text>
+                <Text style={[styles.timelineDate, { color: servicesTheme.colors.muted }]}>{formatDate(step.date) || i18n.t("services:r2.updatePending")}</Text>
               </View>
             );
           })}
@@ -342,13 +346,13 @@ export default function ServiceCancellationDetails() {
               <RefundStatusRow
                 icon="bank-outline"
                 amount={formatCurrency(details.refund.money_refund)}
-                label="Refund to Card"
+                label={tx("services:serviceCancellationDetails.refundToCard")}
                 status={formatStatus(cancellation?.refund_status || 'pending')}
               />
               <RefundStatusRow
                 icon="star-four-points-outline"
                 amount={details.refund.coin_refund.toLocaleString('en-IN')}
-                label="Reward Coins Reversed"
+                label={tx("services:serviceCancellationDetails.rewardCoinsReversed")}
                 status={details.refund.coin_refund > 0 ? 'Completed' : 'Pending'}
               />
             </>
@@ -392,8 +396,8 @@ export default function ServiceCancellationDetails() {
 
         <YouMayNeedServicesCarousel />
         <RecommendedServicesCarousel
-          title="Top Picks for You"
-          subtitle="Popular services customers choose next"
+          title={tx("services:serviceCancellationDetails.topPicksForYou")}
+          subtitle={tx("services:serviceCancellationDetails.popularServicesCustomersChooseNext")}
         />
       </ScrollView >
     </SafeAreaView >
@@ -409,6 +413,7 @@ function Header({
   onBack: () => void;
   onHelp: () => void;
 }) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
@@ -428,7 +433,7 @@ function Header({
           color="#EC4899"
           style={styles.helpIcon}
         />
-        <Text style={styles.helpText}>Help</Text>
+        <Text style={styles.helpText}>{tx("services:serviceCancellationDetails.help")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -475,11 +480,12 @@ function InvoiceDownloadRow({
   downloading: boolean;
   onDownload: () => void;
 }) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
     <View style={[styles.invoiceRow, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
-      <Text style={[styles.invoiceText, { color: servicesTheme.colors.text }]}>Save a copy of your order</Text>
+      <Text style={[styles.invoiceText, { color: servicesTheme.colors.text }]}>{tx("services:serviceCancellationDetails.saveACopyOfYour")}</Text>
       <TouchableOpacity
         style={styles.invoiceAction}
         activeOpacity={0.75}
@@ -489,7 +495,7 @@ function InvoiceDownloadRow({
         {downloading ? (
           <ActivityIndicator size="small" color={servicesTheme.colors.primary} />
         ) : (
-          <Text style={[styles.invoiceActionText, { color: servicesTheme.colors.primary }]}>Download Invoice</Text>
+          <Text style={[styles.invoiceActionText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceCancellationDetails.downloadInvoice")}</Text>
         )}
       </TouchableOpacity>
     </View>

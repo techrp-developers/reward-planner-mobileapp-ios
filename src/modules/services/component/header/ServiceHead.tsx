@@ -12,6 +12,8 @@ import ServiceTop from "../../../../assets/homepage/service_top_nav.png";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useServicesTheme } from "../../utils/useServicesTheme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import i18n from "../../../../i18n";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   showSearch?: boolean;
@@ -23,6 +25,7 @@ type Props = {
 };
 
 function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBackPress, autoFocus }: Props) {
+  useTranslation(); // re-render on language change
   const servicesTheme = useServicesTheme();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -56,7 +59,7 @@ function ServiceHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack
         >
           <MaterialCommunityIcons name="magnify" size={20} color={servicesTheme.colors.primary} />
           <TextInput
-            placeholder='Search "PAN Card, ITR Filing…"'
+            placeholder={i18n.t('services:search.panItr')}
             placeholderTextColor={servicesTheme.colors.muted}
             style={[styles.searchInput, { color: servicesTheme.colors.text }]}
             value={search}

@@ -25,6 +25,7 @@ import { fetchHistory } from "../../api/OrderApi";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { useAuth } from "../../../common/auth/context/AuthContext";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
@@ -53,6 +54,7 @@ const toTitleCase = (value?: string) => {
 };
 
 export default function MyOrder() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const { isAuthenticated } = useAuth();
     const { isDark, theme } = useAppTheme();
@@ -117,7 +119,7 @@ export default function MyOrder() {
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
             <OrderHeading
-                title="My Orders"
+                title={tx("products:myOrder.myOrders")}
                 onBackPress={() => navigation.goBack()}
                 isDark={isDark}
             />
@@ -136,7 +138,7 @@ export default function MyOrder() {
                     <View style={[styles.searchBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
                         <MaterialCommunityIcons name="magnify" size={20} color={theme.secondaryText} />
                         <TextInput
-                            placeholder="Search your orders here"
+                            placeholder={tx("products:myOrder.searchYourOrdersHere")}
                             placeholderTextColor={theme.secondaryText}
                             style={[styles.searchInput, { color: theme.text }]}
                             value={searchQuery}
@@ -149,14 +151,14 @@ export default function MyOrder() {
                         onPress={() => setIsFilterVisible(true)}
                     >
                         <MaterialCommunityIcons name="tune-variant" size={20} color={theme.text} />
-                        <Text style={[styles.filterText, { color: theme.text }]}>Filters</Text>
+                        <Text style={[styles.filterText, { color: theme.text }]}>{tx("products:myOrder.filters")}</Text>
                     </TouchableOpacity>
                 </View>
 
                 {/* Stats */}
                 <View style={styles.statsRow}>
                     <LinearGradient colors={isDark ? ["#102016", "#12351F"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: theme.border }]}>
-                        <Text style={styles.statLabel}>Coins Earned Till Date:</Text>
+                        <Text style={styles.statLabel}>{tx("products:myOrder.coinsEarnedTillDate")}</Text>
                         <View style={styles.statValueRow}>
                             <Coin width={22} height={22} />
                             <Text style={styles.statValue}>{summary?.totalCoinsEarned || 0}</Text>
@@ -164,7 +166,7 @@ export default function MyOrder() {
                     </LinearGradient>
 
                     <LinearGradient colors={isDark ? ["#102016", "#12351F"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: theme.border }]}>
-                        <Text style={styles.statLabel}>Total Savings Till Date:</Text>
+                        <Text style={styles.statLabel}>{tx("products:myOrder.totalSavingsTillDate")}</Text>
                         <Text style={[styles.statValue, styles.savingsText]}>
                             ₹{summary?.totalSavings || 0}
                         </Text>
@@ -176,7 +178,7 @@ export default function MyOrder() {
                     <ActivityIndicator size="large" color="#0D862E" style={styles.loadingIndicator} />
                 ) : orders.length === 0 ? (
                     <Text style={[styles.emptyText, { color: theme.secondaryText }]}>
-                        No orders found
+                        {tx("products:myOrder.noOrdersFound")}
                     </Text>
                 ) : (
                     orders.map((order) => (
@@ -203,7 +205,7 @@ export default function MyOrder() {
                                     orderRef={orderRef}
                                     orderedOn={formatDisplayDate(order.created_at)}
                                     itemCount={itemCount || undefined}
-                                    actionText="View Order"
+                                    actionText={tx("products:myOrder.viewOrder")}
                                     onPress={() =>
                                         navigation.navigate("OrderConfirmedScreen", {
                                             order_id: order.order_id,

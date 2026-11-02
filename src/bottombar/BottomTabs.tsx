@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Animated, Image, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 
 import ProfileIcon from "../assets/menu/profile.svg";
 import HomeIcon from "../assets/menu/Home.svg";
@@ -42,12 +44,14 @@ type Props = {
 
 type TabConfig = {
   key: TabKey;
+  /** Translation key; resolved at render so labels follow the app language. */
   label: string;
   Icon: React.ComponentType<{ width: number; height: number; color?: string }>;
 };
 
 type TabItemProps = {
   label: string;
+  tabKey: TabKey;
   active: boolean;
   onPress: () => void;
   Icon: React.ComponentType<{ width: number; height: number; color?: string }>;
@@ -66,17 +70,17 @@ const NOOP = () => { };
 // (MainLayout / Dashbord) decides where each generic tab key actually
 // navigates based on activeMode, so BottomTabs itself stays mode-agnostic.
 const TABS: TabConfig[] = [
-  { key: "Home", label: "Home", Icon: HomeIcon },
-  { key: "Search", label: "Search", Icon: SearchIcon },
-  { key: "Cart", label: "Cart", Icon: CartIcon },
-  { key: "Profile", label: "Profile", Icon: ProfileIcon },
+  { key: "Home", label: "common:tabs.home", Icon: HomeIcon },
+  { key: "Search", label: "common:tabs.search", Icon: SearchIcon },
+  { key: "Cart", label: "common:tabs.cart", Icon: CartIcon },
+  { key: "Profile", label: "common:tabs.profile", Icon: ProfileIcon },
 ];
 
 const PAYMENT_TABS: TabConfig[] = [
-  { key: "Home", label: "Home", Icon: HomeIcon },
-  { key: "Search", label: "Search", Icon: SearchIcon },
-  { key: "History", label: "History", Icon: HistoryIcon },
-  { key: "Profile", label: "Profile", Icon: ProfileIcon },
+  { key: "Home", label: "common:tabs.home", Icon: HomeIcon },
+  { key: "Search", label: "common:tabs.search", Icon: SearchIcon },
+  { key: "History", label: "common:tabs.history", Icon: HistoryIcon },
+  { key: "Profile", label: "common:tabs.profile", Icon: ProfileIcon },
 ];
 
 const ChatIcon = ({ width, color }: { width: number; height: number; color?: string }) => (
@@ -84,8 +88,8 @@ const ChatIcon = ({ width, color }: { width: number; height: number; color?: str
 );
 
 const DASHBOARD_TABS: TabConfig[] = [
-  { key: "Notes", label: "Todo List", Icon: ExploreIcon },
-  { key: "Chat", label: "Chat", Icon: ChatIcon },
+  { key: "Notes", label: "common:tabs.todoList", Icon: ExploreIcon },
+  { key: "Chat", label: "common:tabs.chat", Icon: ChatIcon },
 ];
 
 const INACTIVE_COLOR = "#9CA3AF";
@@ -137,6 +141,7 @@ const ICON_SPRING_CONFIG = { useNativeDriver: true, tension: 220, friction: 5 };
 
 const TabItem = React.memo(({
   label,
+  tabKey,
   active,
   onPress,
   Icon,
@@ -146,21 +151,26 @@ const TabItem = React.memo(({
   badgeCount,
   badgeBorderColor,
 }: TabItemProps) => {
+  useTranslation(); // re-render memoized content on language change
   const iconColor = active ? activeIconColor : inactiveColor;
   const iconScale = useRef(new Animated.Value(active ? ACTIVE_ICON_SCALE : 1)).current;
 
   useEffect(() => {
-    Animated.spring(iconScale, {
+    const animation = Animated.spring(iconScale, {
       toValue: active ? ACTIVE_ICON_SCALE : 1,
       ...ICON_SPRING_CONFIG,
-    }).start();
+    });
+    animation.start();
+    return () => animation.stop();
   }, [active, iconScale]);
 
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       accessibilityRole="button"
-      accessibilityLabel={badgeCount && badgeCount > 0 ? `${label}, ${badgeCount} ${label === "Chat" ? "unread messages" : "items"}` : label}
+      accessibilityLabel={badgeCount && badgeCount > 0
+        ? i18n.t(tabKey === "Chat" ? "common:badges.unreadMessages" : "common:badges.cartItems", { label, count: badgeCount })
+        : label}
       accessibilityState={{ selected: active }}
       onPress={onPress}
       style={styles.item}
@@ -194,6 +204,7 @@ const CenterButton = React.memo(function CenterButton({
   onPress: () => void;
   hasUnviewedStatus?: boolean;
 }) {
+  const { t } = useTranslation();
   const centerTheme = CENTER_BUTTON_THEME[activeMode] ?? CENTER_BUTTON_THEME.Product;
   const statusRingColor = hasUnviewedStatus === undefined
     ? centerTheme.background
@@ -203,7 +214,7 @@ const CenterButton = React.memo(function CenterButton({
     <TouchableOpacity
       activeOpacity={0.9}
       accessibilityRole="button"
-      accessibilityLabel="Home"
+      accessibilityLabel={t("common:tabs.home")}
       onPress={onPress}
       style={styles.fabWrap}
       hitSlop={HIT_SLOP}
@@ -253,6 +264,8 @@ function BottomTabs({
 }: Props) {
   const insets = useSafeAreaInsets();
   const isFocused = useIsFocused();
+  // Re-renders the bar when the app language changes.
+  const { t } = useTranslation();
   // Only the Dashboard/Inbox bar listens for unread chat counts.
   const chatUnreadCount = useChatUnreadCount(isDashboard && isFocused);
   const { isDark, theme } = useAppTheme();
@@ -266,6 +279,7 @@ function BottomTabs({
   const dashboardIndicator = useRef(new Animated.Value(
     activeTabKey === "Notes" ? 0 : activeTabKey === "Chat" ? 2 : 1,
   )).current;
+  useEffect(() => () => dashboardIndicator.stopAnimation(), [dashboardIndicator]);
   const animateDashboardIndicator = useCallback((index: number) => {
     Animated.spring(dashboardIndicator, {
       toValue: index,
@@ -376,7 +390,8 @@ function BottomTabs({
         {tabs.slice(0, isDashboard ? 1 : 2).map((tab) => (
           <TabItem
             key={tab.key}
-            label={tab.label}
+            tabKey={tab.key}
+            label={t(tab.label)}
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
@@ -394,7 +409,8 @@ function BottomTabs({
         {tabs.slice(isDashboard ? 1 : 2).map((tab) => (
           <TabItem
             key={tab.key}
-            label={tab.label}
+            tabKey={tab.key}
+            label={t(tab.label)}
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}

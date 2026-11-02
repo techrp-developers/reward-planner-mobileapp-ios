@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+import { useTranslation } from "react-i18next";
 
 const categories = [
   {
@@ -32,6 +33,7 @@ const categories = [
 ];
 
 export default function HomeCategories() {
+  const { t: tx } = useTranslation();
   return (
     <View style={styles.container}>
       {/* Categories Grid */}
@@ -61,7 +63,7 @@ export default function HomeCategories() {
             source={require('../assets/homepage/menu.png')}
             style={styles.homecategoriesImage}
           />
-          <Text style={styles.categoryText}>All Categories</Text>
+          <Text style={styles.categoryText}>{tx("stepCounter:homeCategories.allCategories")}</Text>
         </View>
       </TouchableOpacity>
     </View>

@@ -35,6 +35,8 @@ import ChatAvatar from "../components/ChatAvatar";
 import { useChatColors } from "../components/chatUiTokens";
 import type { ChatStackParamList, ChatUser } from "../types";
 import { chatError, findDirectConversation } from "../utils";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Navigation = NativeStackNavigationProp<ChatStackParamList>;
 export default function NewChatScreen() {
@@ -42,6 +44,7 @@ export default function NewChatScreen() {
   const { user } = useAuth();
   const currentUserId = getChatUserId(user);
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<ChatUser[]>([]);
@@ -77,7 +80,7 @@ export default function NewChatScreen() {
             setError("");
           }
         } catch (failure) {
-          if (active) setError(chatError(failure, "Unable to load coworkers."));
+          if (active) setError(chatError(failure, i18n.t("chat:newChat.loadError")));
         } finally {
           if (active) setLoading(false);
         }
@@ -93,8 +96,8 @@ export default function NewChatScreen() {
     if (inFlight.current) return;
     if (currentUserId === undefined) {
       Alert.alert(
-        "Account unavailable",
-        "Your sign-in identity could not be verified. Please sign in again."
+        i18n.t("chat:conv.accountUnavailable"),
+        i18n.t("chat:conv.identityFailed")
       );
       return;
     }
@@ -113,8 +116,8 @@ export default function NewChatScreen() {
       (name !== undefined && (!name.trim() || ids.length < 2))
     ) {
       Alert.alert(
-        "Choose participants",
-        "Enter a group name and select at least two coworkers."
+        i18n.t("chat:newChat.chooseTitle"),
+        i18n.t("chat:newChat.chooseBody")
       );
       return;
     }
@@ -149,17 +152,17 @@ export default function NewChatScreen() {
       );
       if (!conversation)
         throw new Error(
-          "Your conversation was created. Please try again to open it."
+          i18n.t("chat:newChat.createdRetry")
         );
       if (mounted.current)
         navigation.replace("ChatConversation", { conversation });
     } catch (failure) {
       if (mounted.current)
         Alert.alert(
-          establishedId ? "Chat created" : "Couldn’t open chat",
+          establishedId ? i18n.t("chat:newChat.created") : i18n.t("chat:newChat.openFailed"),
           establishedId
-            ? "Your conversation was created, but its details could not be loaded. Try again to open it; another conversation will not be created."
-            : chatError(failure, "Please try again.")
+            ? i18n.t("chat:newChat.createdDetailsFailed")
+            : chatError(failure, i18n.t("common:errors.generic"))
         );
     } finally {
       inFlight.current = false;
@@ -185,7 +188,7 @@ export default function NewChatScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={groupMode ? "Back to new chat" : "Back to chats"}
+          accessibilityLabel={groupMode ? t("chat:newChat.backToNew") : t("chat:conv.backToChats")}
           disabled={creating}
           onPress={() =>
             groupMode
@@ -202,18 +205,18 @@ export default function NewChatScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={[styles.title, { color: theme.text }]}>
-            {groupMode ? "New group" : "New chat"}
+            {groupMode ? t("chat:newChat.newGroup") : t("chat:newChat.newChat")}
           </Text>
           <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
             {groupMode
-              ? `${selected.length} people selected`
-              : "Find a coworker"}
+              ? t("chat:newChat.selected", { count: selected.length })
+              : t("chat:newChat.findCoworker")}
           </Text>
         </View>
         {groupMode && (
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Create group"
+            accessibilityLabel={t("chat:newChat.createGroup")}
             disabled={!canCreate}
             onPress={() =>
               void open(
@@ -235,7 +238,7 @@ export default function NewChatScreen() {
                   fontWeight: "600",
                 }}
               >
-                Create
+                {t("chat:newChat.create")}
               </Text>
             )}
           </TouchableOpacity>
@@ -261,10 +264,10 @@ export default function NewChatScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.groupTitle, { color: theme.text }]}>
-              New group
+              {t("chat:newChat.newGroup")}
             </Text>
             <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-              Bring your team together
+              {t("chat:newChat.bringTeam")}
             </Text>
           </View>
           <MaterialCommunityIcons
@@ -276,11 +279,11 @@ export default function NewChatScreen() {
       ) : (
         <View style={{ paddingHorizontal: 20 }}>
           <TextInput
-            accessibilityLabel="Group name"
+            accessibilityLabel={t("chat:newChat.groupName")}
             editable={!creating}
             value={groupName}
             onChangeText={setGroupName}
-            placeholder="Group name"
+            placeholder={t("chat:newChat.groupName")}
             placeholderTextColor={theme.secondaryText}
             maxLength={120}
             style={[
@@ -293,7 +296,7 @@ export default function NewChatScreen() {
             ]}
           />
           <Text style={[styles.hint, { color: theme.secondaryText }]}>
-            Choose at least two coworkers.
+            {i18n.t("chat:r2.chooseAtLeastTwoCoworkers")}
           </Text>
           {selected.length > 0 && (
             <ScrollView
@@ -305,7 +308,7 @@ export default function NewChatScreen() {
               {selected.map((person) => (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel={`Remove ${person.name}`}
+                  accessibilityLabel={t("chat:newChat.remove", { name: person.name })}
                   key={person.user_id}
                   disabled={creating}
                   onPress={() => toggle(person)}
@@ -335,10 +338,10 @@ export default function NewChatScreen() {
           color={theme.secondaryText}
         />
         <TextInput
-          accessibilityLabel="Search coworkers"
+          accessibilityLabel={t("chat:newChat.search")}
           value={query}
           onChangeText={setQuery}
-          placeholder="Search coworkers"
+          placeholder={t("chat:newChat.search")}
           placeholderTextColor={theme.secondaryText}
           style={[styles.input, { color: theme.text }]}
           autoCorrect={false}
@@ -346,7 +349,7 @@ export default function NewChatScreen() {
         {query && (
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Clear search"
+            accessibilityLabel={t("chat:inbox.clearSearch")}
             onPress={() => setQuery("")}
             style={styles.icon}
           >
@@ -402,7 +405,7 @@ export default function NewChatScreen() {
                 >
                   {[item.department, item.job_role || item.role]
                     .filter(Boolean)
-                    .join(" · ") || "Coworker"}
+                    .join(" · ") || t("chat:newChat.coworker")}
                 </Text>
               </View>
               {groupMode && (
@@ -421,14 +424,14 @@ export default function NewChatScreen() {
           !loading ? (
             <View style={{ alignItems: "center", padding: 40 }}>
               <Text style={{ color: theme.secondaryText, textAlign: "center" }}>
-                {error || "No coworkers found"}
+                {error || t("chat:newChat.noneFound")}
               </Text>
               {error && (
                 <TouchableOpacity
                   onPress={() => setReload((value) => value + 1)}
                   style={styles.icon}
                 >
-                  <Text style={{ color: theme.primary }}>Retry</Text>
+                  <Text style={{ color: theme.primary }}>{t("common:actions.retry")}</Text>
                 </TouchableOpacity>
               )}
             </View>

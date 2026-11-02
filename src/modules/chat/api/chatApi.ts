@@ -9,6 +9,7 @@ import type {
   ChatThemeKey,
   ChatUser,
 } from "../types";
+import i18n from "../../../i18n";
 
 /** Keep the same backend and axios authentication as the working Android client. */
 type DataResponse<T> = { success: boolean; data: T; message?: string };
@@ -136,7 +137,7 @@ export async function uploadChatImage(asset: {
   type?: string;
   fileName?: string;
 }): Promise<UploadedChatImage> {
-  if (!asset.uri) throw new Error("Choose a photo first.");
+  if (!asset.uri) throw new Error(i18n.t("chat:errors.choosePhoto"));
   return uploadAsset(
     "/uploads/images",
     "image",
@@ -154,7 +155,7 @@ export async function uploadChatDocument(file: {
   type?: string | null;
   name?: string | null;
 }): Promise<UploadedChatImage> {
-  if (!file.uri) throw new Error("Choose a document first.");
+  if (!file.uri) throw new Error(i18n.t("chat:errors.chooseDocument"));
   return uploadAsset(
     "/uploads/documents",
     "document",
@@ -178,7 +179,7 @@ export async function createConversation(
         .filter((id): id is number => id !== undefined)
     ),
   ];
-  if (!ids.length) throw new Error("Choose at least one person.");
+  if (!ids.length) throw new Error(i18n.t("chat:errors.choosePerson"));
   const type = ids.length === 1 && !name?.trim() ? "direct" : "group";
   if (
     type === "group" &&
@@ -216,7 +217,7 @@ export async function sendTextMessage(
   clientMessageId: string,
   replyToMessageId?: number
 ): Promise<ChatMessage> {
-  if (!body.trim()) throw new Error("Write a message before sending.");
+  if (!body.trim()) throw new Error(i18n.t("chat:errors.writeMessage"));
   const response = await api.post<DataResponse<ChatMessage>>(
     chatUrl(`/conversations/${conversationId}/messages`),
     {
@@ -273,7 +274,7 @@ export async function createChatPoll(
 ): Promise<ChatMessage> {
   const clean = options.map((item) => item.trim()).filter(Boolean);
   if (!question.trim() || clean.length < 2)
-    throw new Error("Enter a question and two choices.");
+    throw new Error(i18n.t("chat:errors.pollIncomplete"));
   const response = await api.post<DataResponse<ChatMessage>>(
     chatUrl(`/conversations/${conversationId}/polls`),
     {
@@ -302,7 +303,7 @@ export async function uploadGroupImage(
   conversationId: number,
   asset: { uri: string; type?: string; fileName?: string }
 ): Promise<GroupImageResponse> {
-  if (!asset.uri) throw new Error("Choose a group photo first.");
+  if (!asset.uri) throw new Error(i18n.t("chat:errors.chooseGroupPhoto"));
   const form = new FormData();
   form.append("image", {
     uri: asset.uri,

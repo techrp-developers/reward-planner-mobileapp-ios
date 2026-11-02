@@ -22,11 +22,15 @@ import { useBbpsTheme } from '../../utils/useBbpsTheme';
 import jio from '../../assets/Sample/jio.png';
 import airtel from '../../assets/Sample/airtel.png';
 import vi from '../../assets/Sample/VI_Card.png';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import i18n from "../../../../i18n";
 
 const RECENT_RECHARGES: any[] = [];
 const CONTACTS: any[] = [];
 
 function ReachargeHomeScreen({ navigation, route }: any) {
+  const { t: tx } = useTranslation();
   const { user } = useAuth();
   const bbpsTheme = useBbpsTheme();
   const [mobileNumber, setMobileNumber] = useState(
@@ -63,7 +67,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
   const myNumberEntry = user?.phone
     ? {
       id: 'my-number',
-      name: user?.name || 'My Number',
+      name: user?.name || i18n.t('payments:src.myNumber'),
       number: user.phone,
       status: 'Your registered number',
       icon: vi,
@@ -94,7 +98,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
         <View style={styles.textContainer}>
           <Text style={styles.contactName} numberOfLines={1}>{item.name}</Text>
           <Text style={styles.contactNumber}>{item.number}</Text>
-          <Text style={styles.rechargeStatus}>{item.status}</Text>
+          <Text style={styles.rechargeStatus}>{translateSourceText("payments", item.status)}</Text>
         </View>
       </View>
 
@@ -108,7 +112,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
           end={{ x: 1, y: 0 }}
           style={styles.rechargeBtn}
         >
-          <Text style={styles.rechargeBtnText}>Recharge</Text>
+          <Text style={styles.rechargeBtnText}>{tx("payments:reachargeHomeScreen.recharge")}</Text>
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -126,7 +130,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
         <View style={styles.modalContainer}>
           {/* Modal Header */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Circle</Text>
+            <Text style={styles.modalTitle}>{tx("payments:reachargeHomeScreen.selectCircle")}</Text>
             <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
               <Icon name="close" size={22} color="#333" />
             </TouchableOpacity>
@@ -137,7 +141,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
             <Icon name="magnify" size={20} color="#9CA3AF" />
             <TextInput
               style={styles.modalSearchInput}
-              placeholder="Search circle..."
+              placeholder={tx("payments:reachargeHomeScreen.searchCircle")}
               placeholderTextColor="#9CA3AF"
               value={locationSearch}
               onChangeText={setLocationSearch}
@@ -178,7 +182,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                 </TouchableOpacity>
               )}
               ListEmptyComponent={
-                <Text style={styles.emptyText}>No circles found</Text>
+                <Text style={styles.emptyText}>{tx("payments:reachargeHomeScreen.noCirclesFound")}</Text>
               }
             />
           )}
@@ -190,7 +194,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
   return (
     <View style={[styles.container, { backgroundColor: bbpsTheme.colors.background }]}>
       <BBPSHead
-        title="Recharge or Pay Mobile Bill"
+        title={tx("payments:reachargeHomeScreen.rechargeOrPayMobileBill")}
         onBackPress={() => navigation.goBack()}
       />
 
@@ -200,7 +204,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
           <View style={[styles.content, { backgroundColor: bbpsTheme.colors.surface, shadowColor: bbpsTheme.colors.shadow }]}>
             {/* Mobile Number */}
             <View style={styles.labelRow}>
-              <Text style={styles.label}>Enter Mobile Number</Text>
+              <Text style={styles.label}>{tx("payments:reachargeHomeScreen.enterMobileNumber")}</Text>
               <View style={styles.operatorRow}>
                 <Image source={jio} style={styles.operatorIcon} />
                 <Image source={airtel} style={styles.operatorIcon} />
@@ -213,7 +217,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                 value={mobileNumber}
                 onChangeText={setMobileNumber}
                 keyboardType="phone-pad"
-                placeholder="Enter 10-digit number"
+                placeholder={tx("payments:reachargeHomeScreen.enter10DigitNumber")}
                 placeholderTextColor="#C4B8F5"
                 maxLength={10}
               />
@@ -224,7 +228,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
 
             {/* Circle / Location Selector */}
             <Text style={[styles.label, { marginTop: 18, marginBottom: 12 }]}>
-              Select Circle
+              {tx("payments:reachargeHomeScreen.selectCircle")}
             </Text>
             <TouchableOpacity
               style={[
@@ -251,7 +255,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                 </View>
               ) : (
                 <Text style={[styles.placeholderText, { color: bbpsTheme.colors.subtle }]}>
-                  {locationsLoading ? 'Loading circles…' : 'Choose your telecom circle'}
+                  {locationsLoading ? i18n.t("payments:msg.loadingCircles") : i18n.t("payments:msg.chooseCircle")}
                 </Text>
               )}
               <Icon
@@ -264,7 +268,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
             {/* Optional: show a hint when circle is not yet selected */}
             {!selectedLocation && (
               <Text style={styles.hintText}>
-                Circle helps find the right plans for your number
+                {tx("payments:reachargeHomeScreen.circleHelpsFindTheRight")}
               </Text>
             )}
           </View>
@@ -282,7 +286,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
                 end={{ x: 1, y: 0 }}
                 style={styles.proceedBtn}
               >
-                <Text style={styles.proceedBtnText}>View Plans & Recharge</Text>
+                <Text style={styles.proceedBtnText}>{tx("payments:reachargeHomeScreen.viewPlansRecharge")}</Text>
                 <Icon name="arrow-right" size={18} color="#FFF" style={{ marginLeft: 8 }} />
               </LinearGradient>
             </TouchableOpacity>
@@ -291,7 +295,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
           {/* ── My Number Section ── */}
           <View style={styles.sectionHeader}>
             <View style={styles.sectionAccent} />
-            <Text style={styles.sectionTitle}>My Number</Text>
+            <Text style={styles.sectionTitle}>{tx("payments:reachargeHomeScreen.myNumber")}</Text>
           </View>
           <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
             {myNumberEntry && renderItem(myNumberEntry)}
@@ -300,7 +304,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
           {/* ── My Recharges & Bill ── */}
           <View style={styles.sectionHeader}>
             <View style={styles.sectionAccent} />
-            <Text style={styles.sectionTitle}>My Recharges & Bill</Text>
+            <Text style={styles.sectionTitle}>{tx("payments:reachargeHomeScreen.myRechargesBill")}</Text>
           </View>
           <View style={[styles.listBackground, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
             {RECENT_RECHARGES.map((item, index, arr) => (
@@ -313,7 +317,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
 
           {/* ── Contacts ── */}
           <View style={styles.contactsHeader}>
-            <Text style={styles.contactsTitle}>Contacts</Text>
+            <Text style={styles.contactsTitle}>{tx("payments:reachargeHomeScreen.contacts")}</Text>
             <View>
               <Icon name="magnify" size={22} color="#7F5DF0" />
             </View>
@@ -332,7 +336,7 @@ function ReachargeHomeScreen({ navigation, route }: any) {
 
           <View style={styles.buttonCenter}>
             <View style={styles.viewAllButton}>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={styles.viewAllText}>{tx("payments:reachargeHomeScreen.viewAll")}</Text>
             </View>
           </View>
         </View>

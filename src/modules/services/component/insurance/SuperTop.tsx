@@ -11,6 +11,8 @@ import Step3SuperTopUp from "./Step3SuperTopUp";
 import QuotesResult from "./QuotesResult";
 import { startInsurance, saveStep, mapMembersConfig, mapMembersAges } from "../../api/InsuranceApi";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 export type FormData = {
   gender: string;
@@ -39,6 +41,7 @@ export type QuoteData = {
 const steps = ["Select Member", "Select Age of Members", "Basic Details"];
 
 function SuperTop() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const { success, info } = useAlert();
   const servicesTheme = useServicesTheme();
@@ -96,7 +99,7 @@ function SuperTop() {
       if (step === 1) {
         const enquiryId = formData.details?.enquiryId;
         if (!enquiryId) {
-          Alert.alert("Error", "Session expired. Please go back to Step 1.");
+          Alert.alert(i18n.t("services:superTop.error"), i18n.t("services:superTop.sessionExpiredPleaseGoBack"));
           return;
         }
         await saveStep(enquiryId, 2, "members", mapMembersAges(formData));
@@ -105,7 +108,7 @@ function SuperTop() {
     } catch (e: any) {
       Alert.alert(
         "Error",
-        e?.response?.data?.message || e?.message || "Failed to proceed. Please try again."
+        e?.response?.data?.message || e?.message || tx("services:insurance.proceedFailed")
       );
     } finally {
       setStepLoading(false);
@@ -134,7 +137,7 @@ function SuperTop() {
       ? results.filter((q: any) => q.success).length
       : results.plans?.filter((q: any) => q.success).length || 0;
 
-    success("Super Top-Up Quotes!", `Found ${successCount} customized plans for you`);
+    success(tx("services:insurance.superQuotesFetched"), tx("services:insurance.foundPlans", { count: successCount }));
   };
 
   const handleBackToForm = () => {
@@ -170,9 +173,9 @@ function SuperTop() {
           <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Super Top-Up Insurance</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:superTop.superTopUpInsurance")}</Text>
           <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-            Extra coverage with affordable premiums
+            {tx("services:superTop.extraCoverageWithAffordablePremiums")}
           </Text>
         </View>
       </View>

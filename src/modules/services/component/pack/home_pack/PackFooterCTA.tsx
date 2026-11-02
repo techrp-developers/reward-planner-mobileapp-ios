@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useServicesTheme } from '../../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../../i18n";
 
 interface StatItem {
   value: string;
@@ -33,6 +35,7 @@ const PackFooterCTA: React.FC<Props> = ({
   onAddToCart,
   isAddingToCart = false,
 }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const showOriginalPrice = originalPrice > totalPrice;
 
@@ -56,7 +59,7 @@ const PackFooterCTA: React.FC<Props> = ({
 
         <TouchableOpacity style={[styles.outlineBorder, { borderColor: servicesTheme.colors.primary }]} onPress={onEnquirePress}>
           <View style={[styles.outlineInner, { backgroundColor: servicesTheme.colors.surface }]}>
-            <Text style={[styles.outlineText, { color: servicesTheme.colors.primary }]}>Enquire Now</Text>
+            <Text style={[styles.outlineText, { color: servicesTheme.colors.primary }]}>{tx("services:packFooterCTA.enquireNow")}</Text>
           </View>
         </TouchableOpacity>
 
@@ -89,7 +92,7 @@ const PackFooterCTA: React.FC<Props> = ({
             disabled={isAddingToCart}
           >
             <Text style={[styles.addToCartText, { color: servicesTheme.colors.primary }]}>
-              {isAddingToCart ? 'Adding...' : 'Add to Cart'}
+              {isAddingToCart ? 'Adding...' : i18n.t("services:r2.addToCart")}
             </Text>
           </Pressable>
         </View>

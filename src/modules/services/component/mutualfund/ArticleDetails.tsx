@@ -19,12 +19,14 @@ import RenderHtml from 'react-native-render-html';
 import { getSectionContent, type MFArticleDetails } from '../../api/MutualFundAPI';
 import type { HomeStackParamList } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
 type ArticleDetailsRouteProp = RouteProp<HomeStackParamList, 'ArticleDetails'>;
 
 function ArticleDetails() {
+    const { t: tx } = useTranslation();
     const route = useRoute<ArticleDetailsRouteProp>();
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
     const servicesTheme = useServicesTheme();
@@ -66,7 +68,7 @@ function ArticleDetails() {
                     <Text style={[styles.backIcon, { color: servicesTheme.colors.text }]}>‹</Text>
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={1}>
-                    {article ? article.title : 'Article'}
+                    {article ? article.title : tx('services:mf.article')}
                 </Text>
             </View>
 
@@ -76,7 +78,7 @@ function ArticleDetails() {
                 </View>
             ) : !article ? (
                 <View style={styles.center}>
-                    <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>Article not found.</Text>
+                    <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>{tx("services:articleDetails.articleNotFound")}</Text>
                 </View>
             ) : (
                 <ScrollView

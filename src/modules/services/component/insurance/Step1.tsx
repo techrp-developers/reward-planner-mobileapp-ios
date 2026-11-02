@@ -18,6 +18,7 @@ import Husband from "../../assete/insurance/Gender (1).png";
 import Wife from "../../assete/insurance/Gender (2).png"; 
 import Son from "../../assete/insurance/Gender (3).png";
 import Daughter from "../../assete/insurance/Gender (4).png";
+import { useTranslation } from "react-i18next";
 
 type FormData = {
   gender: string;
@@ -34,13 +35,14 @@ type Props = {
 };
 
 const membersList = [
-  { key: "self", label: "Self", hasGenderIcon: true },
-  { key: "spouse", label: "Spouse", hasGenderIcon: true },
-  { key: "son", label: "Son", icon: Son, hasCount: true },
-  { key: "daughter", label: "Daughter", icon: Daughter, hasCount: true },
+  { key: "self", label: "services:insurance.member.self", hasGenderIcon: true },
+  { key: "spouse", label: "services:insurance.member.spouse", hasGenderIcon: true },
+  { key: "son", label: "services:insurance.member.son", icon: Son, hasCount: true },
+  { key: "daughter", label: "services:insurance.member.daughter", icon: Daughter, hasCount: true },
 ];
 
 export default function Step1({ data, setData, onNext }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   // Get appropriate icon based on member type and selected gender
   const getIconForMember = (memberKey: string): any => {
@@ -112,7 +114,7 @@ export default function Step1({ data, setData, onNext }: Props) {
                       end={{ x: 1, y: 0 }}
                     />
                   )}
-                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{g}</Text>
+                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{tx(`services:insurance.gender.${g}`)}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -122,8 +124,8 @@ export default function Step1({ data, setData, onNext }: Props) {
         {/* Members Selection Grid */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Insure your family</Text>
-            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>Select everyone you want to protect</Text>
+            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step1.insureYourFamily")}</Text>
+            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>{tx("services:step1.selectEveryoneYouWantTo")}</Text>
           </View>
 
           <View style={styles.grid}>
@@ -148,7 +150,7 @@ export default function Step1({ data, setData, onNext }: Props) {
                     </View>
                     
                     <Text style={[styles.cardLabel, { color: servicesTheme.colors.text }, isSelected && { color: servicesTheme.colors.textStrong }]}>
-                      {member.label}
+                      {tx(member.label)}
                     </Text>
 
                     {isSelected && (
@@ -183,7 +185,7 @@ export default function Step1({ data, setData, onNext }: Props) {
           >
             <MaterialIcons name="info" size={20} color="#8665FF" />
             <View style={styles.summaryInfo}>
-              <Text style={[styles.summaryHeadline, { color: servicesTheme.colors.textStrong }]}>Review Coverage</Text>
+              <Text style={[styles.summaryHeadline, { color: servicesTheme.colors.textStrong }]}>{tx("services:step1.reviewCoverage")}</Text>
               <Text style={[styles.summaryDesc, { color: servicesTheme.colors.muted }]} numberOfLines={2}>
                 Insuring {data.members.length} {data.members.length > 1 ? 'members' : 'member'}
               </Text>
@@ -194,7 +196,7 @@ export default function Step1({ data, setData, onNext }: Props) {
 
       <View style={[styles.footer, { backgroundColor: servicesTheme.isDark ? "rgba(17,17,19,0.96)" : "rgba(255,255,255,0.95)", borderTopColor: servicesTheme.colors.divider }]}>
         <GradientButton
-          title="Continue"
+          title={tx("services:step1.continue")}
           onPress={onNext}
           disabled={isNextDisabled}
         />

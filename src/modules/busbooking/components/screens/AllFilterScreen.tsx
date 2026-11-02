@@ -30,6 +30,8 @@ import Amenities2 from "../../assets/icons/amenities2.svg";
 import Amenities3 from "../../assets/icons/amenities3.svg";
 import Amenities4 from "../../assets/icons/amenities4.svg";
 import Luxurybusimg from "../../assets/banners/Luxurybusimg.svg";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type FilterCategoryId =
   | "bus-type"
@@ -110,7 +112,7 @@ function FilterOptionRow({
           {Icon ? <Icon width={16} height={16} /> : null}
         </View>
         <View style={styles.optionTextWrap}>
-          <Text style={styles.optionLabel}>{item.label}</Text>
+          <Text style={styles.optionLabel}>{translateSourceText("busBooking", item.label)}</Text>
           <Text style={styles.optionAvailability}>{item.count} Available</Text>
         </View>
       </View>
@@ -124,6 +126,7 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 export default function AllFilterScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "AllFilterScreen">>();
   const facets: BusListingFacets = route.params.facets;
@@ -222,8 +225,8 @@ export default function AllFilterScreen() {
             </View>
 
             <View style={styles.timeTextWrap}>
-              <Text style={styles.timeTitle}>{item.label}</Text>
-              <Text style={styles.timeSubtitle}>{DEPARTURE_SUBTITLES[item.id]}</Text>
+              <Text style={styles.timeTitle}>{translateSourceText("busBooking", item.label)}</Text>
+              <Text style={styles.timeSubtitle}>{translateSourceText("busBooking", DEPARTURE_SUBTITLES[item.id])}</Text>
             </View>
 
             <Text style={styles.timeCount}>{item.count}</Text>
@@ -243,7 +246,7 @@ export default function AllFilterScreen() {
       <View style={styles.amenitiesHeader}>
         <Text style={styles.amenitiesTitle}>Common{"\n"}Amenities</Text>
         <View style={styles.multiSelectPill}>
-          <Text style={styles.multiSelectText}>Select multiple</Text>
+          <Text style={styles.multiSelectText}>{tx("busBooking:allFilterScreen.selectMultiple")}</Text>
         </View>
       </View>
 
@@ -290,7 +293,7 @@ export default function AllFilterScreen() {
           <TextInput
             value={operatorSearch}
             onChangeText={setOperatorSearch}
-            placeholder="Search"
+            placeholder={tx("busBooking:allFilterScreen.search")}
             placeholderTextColor="#7F7D83"
             style={styles.searchPillInput}
           />
@@ -372,7 +375,7 @@ export default function AllFilterScreen() {
     if (selectedCategory === "bus-type") {
       return (
         <View>
-          {facets.busTypes.length > 0 ? <SectionHeader title="BUS TYPE" /> : null}
+          {facets.busTypes.length > 0 ? <SectionHeader title={tx("busBooking:allFilterScreen.busType")} /> : null}
           {facets.busTypes.map((item) => (
             <FilterOptionRow
               key={item.id}
@@ -389,7 +392,7 @@ export default function AllFilterScreen() {
                 facets.busTypes.length > 0 ? styles.sectionTitleWithGap : null,
               ]}
             >
-              SEAT TYPE
+              {tx("busBooking:allFilterScreen.seatType")}
             </Text>
           ) : null}
           {facets.seatTypes.map((item) => (
@@ -436,7 +439,7 @@ export default function AllFilterScreen() {
 
     return (
       <Text style={styles.optionAvailability}>
-        There are no buses to filter for this search.
+        {tx("busBooking:allFilterScreen.thereAreNoBusesTo")}
       </Text>
     );
   };
@@ -452,7 +455,7 @@ export default function AllFilterScreen() {
           <MaterialCommunityIcons name="chevron-left" size={28} color="#7A747D" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Filter buses</Text>
+        <Text style={styles.headerTitle}>{tx("busBooking:allFilterScreen.filterBuses")}</Text>
 
         <View style={styles.headerActions} />
       </View>
@@ -461,7 +464,7 @@ export default function AllFilterScreen() {
 
       <View style={styles.body}>
         <View style={styles.sidebar}>
-          <Text style={styles.sidebarTitle}>Sort by</Text>
+          <Text style={styles.sidebarTitle}>{tx("busBooking:allFilterScreen.sortBy")}</Text>
 
           {filterCategories.map((category) => {
             const isSelected = selectedCategory === category.id;
@@ -480,7 +483,7 @@ export default function AllFilterScreen() {
                     isSelected ? styles.sidebarItemTextSelected : null,
                   ]}
                 >
-                  {category.label}
+                  {translateSourceText("busBooking", category.label)}
                 </Text>
               </TouchableOpacity>
             );
@@ -498,7 +501,7 @@ export default function AllFilterScreen() {
 
       <View style={styles.bottomBar}>
         <TouchableOpacity activeOpacity={0.9} onPress={handleClearAll} style={styles.clearButton}>
-          <Text style={styles.clearButtonText}>Clear all</Text>
+          <Text style={styles.clearButtonText}>{tx("busBooking:allFilterScreen.clearAll")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.9} onPress={handleApply} style={styles.applyButtonWrap}>
@@ -508,7 +511,7 @@ export default function AllFilterScreen() {
             end={{ x: 1, y: 0 }}
             style={styles.applyButton}
           >
-            <Text style={styles.applyButtonText}>View buses</Text>
+            <Text style={styles.applyButtonText}>{tx("busBooking:allFilterScreen.viewBuses")}</Text>
             <MaterialCommunityIcons name="chevron-right" size={18} color="#FFFFFF" />
           </LinearGradient>
         </TouchableOpacity>

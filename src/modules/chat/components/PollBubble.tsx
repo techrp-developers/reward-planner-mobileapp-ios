@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useChatColors } from "./chatUiTokens";
 import type { ChatPoll } from "../types";
+import { useTranslation } from "react-i18next";
 
 export type PollBubbleProps = {
   poll: ChatPoll;
@@ -20,6 +21,7 @@ export type PollBubbleProps = {
 
 function PollBubble({ poll, mine, textColor, onVote }: PollBubbleProps) {
   const theme = useChatColors();
+  const { t } = useTranslation();
   const inFlight = useRef(false);
   const mounted = useRef(true);
   const [now, setNow] = useState(Date.now);
@@ -63,8 +65,8 @@ function PollBubble({ poll, mine, textColor, onVote }: PollBubbleProps) {
       // actual vote counts and selected_by_me are shown from server data.
     } catch (error: any) {
       Alert.alert(
-        "Could not vote",
-        error?.response?.data?.message || error?.message || "Please try again."
+        t("chat:poll.voteFailed"),
+        error?.response?.data?.message || error?.message || t("common:errors.generic")
       );
     } finally {
       inFlight.current = false;
@@ -93,10 +95,10 @@ function PollBubble({ poll, mine, textColor, onVote }: PollBubbleProps) {
           </Text>
           <Text style={[styles.tag, { color: textColor }]}>
             {isClosed
-              ? "Poll closed"
+              ? t("chat:poll.closed")
               : poll.allow_multiple
-              ? "Select one or more options"
-              : "Select one option"}
+              ? t("chat:poll.selectMany")
+              : t("chat:poll.selectOne")}
           </Text>
         </View>
       </View>
@@ -116,7 +118,7 @@ function PollBubble({ poll, mine, textColor, onVote }: PollBubbleProps) {
               checked,
               disabled: isClosed || voting !== null,
             }}
-            accessibilityLabel={`${option.text}, ${percent} percent, ${count} votes`}
+            accessibilityLabel={t("chat:poll.optionA11y", { option: option.text, percent, count })}
             style={({ pressed }) => [
               styles.option,
               {
@@ -168,7 +170,7 @@ function PollBubble({ poll, mine, textColor, onVote }: PollBubbleProps) {
           color={textColor}
         />
         <Text style={[styles.votes, { color: textColor }]}>
-          {totalVotes} vote{totalVotes === 1 ? "" : "s"}
+          {t("chat:poll.votes", { count: totalVotes })}
         </Text>
       </View>
     </View>

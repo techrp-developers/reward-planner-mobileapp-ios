@@ -10,6 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../ecommerce/navigation/types";
 import { getProductImageUrl } from "../../ecommerce/api/ProductApi";
+import { useTranslation } from "react-i18next";
 
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
@@ -19,11 +20,13 @@ type Props = {
   cardWidth: number;
 };
 
-export default function OrderProductCart({ item, cardWidth }: Props) {  const navigation = useNavigation<Nav>();
+export default function OrderProductCart({ item, cardWidth }: Props) {
+  const { t: tx } = useTranslation();
+  const navigation = useNavigation<Nav>();
 
   const resolvedProductId = item?.product_id ?? item?.id;
-  const brandText = item?.brand_name ?? item?.brand ?? "Brand";
-  const titleText = item?.product_name ?? item?.title ?? "Product";
+  const brandText = item?.brand_name ?? item?.brand ?? tx("products:order.brandFallback");
+  const titleText = item?.product_name ?? item?.title ?? tx("products:order.productFallback");
   const salePrice = item?.sale_price ?? item?.price ?? item?.variants?.[0]?.sale_price;
   const mrpPrice = item?.mrp ?? item?.original_price ?? item?.variants?.[0]?.mrp;
 
@@ -46,7 +49,7 @@ export default function OrderProductCart({ item, cardWidth }: Props) {  const na
       <View style={styles.imageWrap}>
         {item?.isBestSeller !== false && ( // Showing by default for demo
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Bestseller</Text>
+            <Text style={styles.badgeText}>{tx("products:order.bestseller")}</Text>
           </View>
         )}
         <Image

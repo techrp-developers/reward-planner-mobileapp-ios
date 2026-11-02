@@ -2,6 +2,7 @@ import axios from 'axios';
 import { BASE_API_URL } from './api';
 import { API } from './InsuranceApi';
 import { ServiceHomeResponse } from '../navigation/type';
+import i18n from "../../../i18n";
 
 export const API_BASE = BASE_API_URL;
 
@@ -287,7 +288,7 @@ export const getServiceHome = async (): Promise<ServiceHomeResponse> => {
     const json = await response.json();
 
     if (!response.ok || json?.success === false) {
-      throw new Error(json?.message || "Failed to fetch service home");
+      throw new Error(json?.message || i18n.t("services:r2.failedToFetchServiceHome"));
     }
 
     return json;
@@ -314,7 +315,7 @@ export const getAllServices = async (search = '') => {
 
     throw error?.response?.data || {
       success: false,
-      message: 'Something went wrong',
+      message: i18n.t('common:errors.generic'),
     };
   }
 };

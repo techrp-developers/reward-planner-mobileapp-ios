@@ -12,6 +12,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { HomeStackParamList } from "../../navigation/types";
 import { handleNavigateWithPrefetch } from "../../navigation/navigationPerformance";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   title?: string;
@@ -24,12 +25,14 @@ type Props = {
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 export default function OrderHeading({
-  title = "My Orders",
+  title,
   onBackPress,
   onHelpPress,
   showHelp = true,
   isDark = false,
 }: Props) {
+  const { t: tx } = useTranslation();
+  title ??= tx("products:productHeadImg.myOrdersFallback");
   const navigation = useNavigation<Nav>();
   const appTheme = useAppTheme();
   const darkMode = isDark || appTheme.isDark;
@@ -95,7 +98,7 @@ export default function OrderHeading({
               color="#EC4899"
               style={styles.helpIcon}
             />
-            <Text style={styles.helpText}>Help</Text>
+            <Text style={styles.helpText}>{tx("products:orderHeading.help")}</Text>
           </TouchableOpacity>
         ) : null}
       </View>

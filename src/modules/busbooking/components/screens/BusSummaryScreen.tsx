@@ -50,6 +50,8 @@ import {
 import Selectedseat1 from "../../assets/icons/selectedseat1.svg";
 import Selectedseat2 from "../../assets/icons/selectedseat2.svg";
 import BusImage1 from "../../assets/banners/busimage1.svg";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 
 /*
@@ -215,6 +217,7 @@ const getPointAddress = (
 */
 
 export default function BusSummaryScreen() {
+  const { t: tx } = useTranslation();
   const {
     popup,
     showPopup,
@@ -638,8 +641,8 @@ const taxes =
 
 
           showPopup({
-            title: "Booking Error",
-            message: "Seat block information is missing. Please select the bus and seat again.",
+            title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
+            message: i18n.t("busBooking:busSummaryScreen.msg.seatBlockInformationIsMissing"),
             variant: "error",
           });
 
@@ -694,8 +697,8 @@ if (
 ) {
 
   showPopup({
-    title: "Booking Error",
-    message: "Local bus booking reference is missing. Please select the seat again.",
+    title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
+    message: i18n.t("busBooking:busSummaryScreen.msg.localBusBookingReferenceIs"),
     variant: "error",
   });
 
@@ -707,8 +710,8 @@ if (
         ) {
 
           showPopup({
-            title: "Booking Error",
-            message: "Local bus booking order is missing. Please select the seat again.",
+            title: i18n.t("busBooking:busSummaryScreen.msg.bookingError"),
+            message: i18n.t("busBooking:busSummaryScreen.msg.localBusBookingOrderIs"),
             variant: "error",
           });
 
@@ -1017,7 +1020,7 @@ if (
                     styles.pointLabel
                   }
                 >
-                  Boarding point
+                  {tx("busBooking:busSummaryScreen.boardingPoint")}
                 </Text>
 
 
@@ -1072,7 +1075,7 @@ if (
                     styles.pointLabel
                   }
                 >
-                  Dropping point
+                  {tx("busBooking:busSummaryScreen.droppingPoint")}
                 </Text>
 
 
@@ -1133,7 +1136,7 @@ if (
               styles.sectionTitle
             }
           >
-            Selected Seats
+            {tx("busBooking:busSummaryScreen.selectedSeats")}
           </Text>
 
 
@@ -1238,7 +1241,7 @@ if (
               styles.sectionTitle
             }
           >
-            Passenger List
+            {tx("busBooking:busSummaryScreen.passengerList")}
           </Text>
 
 
@@ -1367,7 +1370,7 @@ if (
               styles.fareCardTitle
             }
           >
-            Fare Summary
+            {tx("busBooking:busSummaryScreen.fareSummary")}
           </Text>
 
 
@@ -1393,8 +1396,8 @@ if (
               {selectedSeats.length}{" "}
               {selectedSeats.length ===
               1
-                ? "Seat"
-                : "Seats"}
+                ? i18n.t("busBooking:r2.seat")
+                : i18n.t("busBooking:r2.seats")}
               )
 
             </Text>
@@ -1434,7 +1437,7 @@ if (
                 styles.fareLabel
               }
             >
-              Taxes & Fees
+              {tx("busBooking:busSummaryScreen.taxesFees")}
             </Text>
 
 
@@ -1481,7 +1484,7 @@ if (
                   styles.totalLabel
                 }
               >
-                TOTAL AMOUNT
+                {tx("busBooking:busSummaryScreen.totalAmount")}
               </Text>
 
 
@@ -1576,7 +1579,7 @@ if (
                 >
                   {processingPayment
                     ? "Processing Payment..."
-                    : "Creating Payment..."}
+                    : i18n.t("busBooking:r2.creatingPayment")}
                 </Text>
               </>
 
@@ -1588,7 +1591,7 @@ if (
                     styles.payButtonText
                   }
                 >
-                  Proceed to Payment
+                  {tx("busBooking:busSummaryScreen.proceedToPayment")}
                 </Text>
 
 

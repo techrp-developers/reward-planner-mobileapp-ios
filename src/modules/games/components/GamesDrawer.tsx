@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../../navigation/RootNavigator';
+import { useTranslation } from "react-i18next";
 
 export type DrawerGame = {
   id: string;
@@ -19,15 +20,16 @@ export type DrawerGame = {
 
 // Add onPlay only after a playable screen is connected.
 const DEFAULT_GAMES: DrawerGame[] = [
-  { id: 'sudoku', title: 'Sudoku', description: 'A little focus. A fresh challenge. Fill the grid and sharpen your mind.', category: 'Puzzle', icon: 'grid', color: '#B9A0FF' },
+  { id: 'sudoku', title: 'Sudoku', description: 'games:gamesDrawer.sudokuDescription', category: 'games:gamesDrawer.puzzle', icon: 'grid', color: '#B9A0FF' },
 ];
 
 type Props = { games?: DrawerGame[] };
 
 export default function GamesDrawer({ games: customGames }: Props) {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>();
   const games = customGames ?? [
-    { id: 'quiz', title: 'Quiz', description: 'Five questions. A new challenge. Test your knowledge with Quivio.', category: 'Trivia', icon: 'head-question-outline', color: '#72DEEF', onPlay: () => navigation.navigate('Quiz') },
+    { id: 'quiz', title: 'Quiz', description: 'games:gamesDrawer.quizDescription', category: 'games:gamesDrawer.trivia', icon: 'head-question-outline', color: '#72DEEF', onPlay: () => navigation.navigate('Quiz') },
     ...DEFAULT_GAMES,
   ];
   const [visible, setVisible] = useState(false);
@@ -49,8 +51,8 @@ export default function GamesDrawer({ games: customGames }: Props) {
     <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel="Open games"
-        accessibilityHint="Opens the games side panel"
+        accessibilityLabel={tx("games:gamesDrawer.openGames")}
+        accessibilityHint={tx("games:gamesDrawer.opensTheGamesSidePanel")}
         onPress={() => setVisible(true)}
         style={[styles.handle, { right: insets.right, top: Math.max(insets.top + 80, height * 0.43) }]}
       >
@@ -82,10 +84,10 @@ export default function GamesDrawer({ games: customGames }: Props) {
               <MaterialCommunityIcons name="controller-classic" size={27} color="#BDF7D4" />
             </View>
             <View style={styles.headerText}>
-              <Text style={styles.eyebrow}>YOUR PLAY SPACE</Text>
-              <Text accessibilityRole="header" style={styles.title}>Games</Text>
+              <Text style={styles.eyebrow}>{tx("games:gamesDrawer.yourPlaySpace")}</Text>
+              <Text accessibilityRole="header" style={styles.title}>{tx("games:gamesDrawer.games")}</Text>
             </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Close games" onPress={close} style={styles.close}>
+            <Pressable accessibilityRole="button" accessibilityLabel={tx("games:gamesDrawer.closeGames")} onPress={close} style={styles.close}>
               <MaterialCommunityIcons name="close" size={26} color="#F5F5F5" />
             </Pressable>
           </View>
@@ -98,37 +100,37 @@ export default function GamesDrawer({ games: customGames }: Props) {
           >
             <View style={styles.intro}>
               <MaterialCommunityIcons name="creation" size={30} color="#BDF7D4" />
-              <Text style={styles.introTitle}>Take a play break</Text>
-              <Text style={styles.secondary}>Your next challenge is right here.</Text>
+              <Text style={styles.introTitle}>{tx("games:gamesDrawer.takeAPlayBreak")}</Text>
+              <Text style={styles.secondary}>{tx("games:gamesDrawer.yourNextChallengeIsRight")}</Text>
             </View>
             <View style={styles.sectionHeader}>
-              <Text accessibilityRole="header" style={styles.sectionTitle}>All games</Text>
+              <Text accessibilityRole="header" style={styles.sectionTitle}>{tx("games:gamesDrawer.allGames")}</Text>
             </View>
-            {games.length === 0 && <Text style={styles.secondary}>New games will appear here when they are added.</Text>}
+            {games.length === 0 && <Text style={styles.secondary}>{tx("games:gamesDrawer.newGamesWillAppearHere")}</Text>}
             {games.map(game => (
               <View key={game.id} style={styles.card}>
                 <View style={styles.cardTop}>
                   <View style={[styles.gameIcon, { backgroundColor: game.color }]}>
                     <MaterialCommunityIcons name={game.icon} size={38} color="#171719" />
                   </View>
-                  <Text style={styles.category}>{game.category}</Text>
+                  <Text style={styles.category}>{tx(game.category)}</Text>
                 </View>
                 <Text style={styles.gameTitle}>{game.title}</Text>
-                <Text style={styles.secondary}>{game.description}</Text>
+                <Text style={styles.secondary}>{tx(game.description)}</Text>
                 {game.onPlay ? (
                   <Pressable
                     accessibilityRole="button"
-                    accessibilityLabel={`Play ${game.title}`}
+                    accessibilityLabel={tx('games:gamesDrawer.play', { game: game.title })}
                     onPress={() => { setPendingGame(game); close(); }}
                     style={styles.playButton}
                   >
-                    <Text style={styles.playText}>Play now</Text>
+                    <Text style={styles.playText}>{tx("games:gamesDrawer.playNow")}</Text>
                     <MaterialCommunityIcons name="arrow-right" size={20} color="#102419" />
                   </Pressable>
                 ) : (
                   <View style={styles.soonBadge}>
                     <MaterialCommunityIcons name="clock-outline" size={16} color="#C8C8CD" />
-                    <Text style={styles.soonText}>Coming soon</Text>
+                    <Text style={styles.soonText}>{tx("games:gamesDrawer.comingSoon")}</Text>
                   </View>
                 )}
               </View>

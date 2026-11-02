@@ -25,6 +25,8 @@ import { HomeStackParamList } from '../../navigation/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { addAddress, fetchAddressByID, fetchAllAddress, fetchCountries, fetchStatesByCountry } from '../../api/AddressApi';
 import { addressesQueryKey } from '../../navigation/navigationPerformance';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 const NOMINATIM_USER_AGENT = 'RewardPlannersApp/1.0 (support@rewardplanners.com)';
@@ -150,6 +152,7 @@ function buildRegion(latitude: number, longitude: number, delta = 0.03): Region 
 }
 
 export default function AddAddressMapScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<AddAddressMapRoute>();
   const manageOnly = route.params?.manageOnly === true;
@@ -248,7 +251,7 @@ export default function AddAddressMapScreen() {
         );
       },
       error => {
-        Alert.alert('Location Error', error.message || 'Could not get your current location.');
+        Alert.alert(i18n.t("products:addAddressMapScreen.locationError"), error.message || i18n.t("products:r2.couldNotGetYourCurrentLocation"));
       },
       {
         enableHighAccuracy: true,
@@ -350,7 +353,7 @@ export default function AddAddressMapScreen() {
     const longitude = Number.parseFloat(item.lon);
 
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      Alert.alert('Invalid Location', 'This search result does not include valid coordinates.');
+      Alert.alert(i18n.t("products:addAddressMapScreen.invalidLocation"), i18n.t("products:addAddressMapScreen.thisSearchResultDoesNot"));
       return;
     }
 
@@ -399,7 +402,7 @@ export default function AddAddressMapScreen() {
 
   const handleSaveLocation = async () => {
     if (!resolvedAddress) {
-      Alert.alert('No Location Selected', 'Please tap the map or search for an address first.');
+      Alert.alert(i18n.t("products:addAddressMapScreen.noLocationSelected"), i18n.t("products:addAddressMapScreen.pleaseTapTheMapOr"));
       return;
     }
 
@@ -430,19 +433,19 @@ export default function AddAddressMapScreen() {
       await addAddress(payload);
       queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => {});
 
-      Alert.alert('Address Saved', 'Your selected location has been saved successfully.', [
+      Alert.alert(i18n.t("products:addAddressMapScreen.addressSaved"), i18n.t("products:addAddressMapScreen.yourSelectedLocationHasBeen"), [
         {
-          text: 'Add Details',
+          text: i18n.t("products:address.addDetails"),
           onPress: () => navigation.navigate('AddressDetails', { mode: 'add', manageOnly }),
         },
         {
-          text: 'Done',
+          text: i18n.t("products:address.done"),
           onPress: () => navigation.goBack(),
         },
       ]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not save address. Please try again.';
-      Alert.alert('Save Failed', message);
+      const message = error instanceof Error ? error.message : i18n.t("products:address.saveFailed");
+      Alert.alert(i18n.t("products:addAddressMapScreen.saveFailed"), message);
     } finally {
       setIsSaving(false);
     }
@@ -483,7 +486,7 @@ export default function AddAddressMapScreen() {
       });
     } catch (error) {
       console.warn('Failed to load existing address for editing:', error);
-      Alert.alert('Error', 'Could not load address details for editing. Please try again.');
+      Alert.alert(i18n.t("products:addAddressMapScreen.error"), i18n.t("products:addAddressMapScreen.couldNotLoadAddressDetails"));
     }
   };
 
@@ -496,7 +499,7 @@ export default function AddAddressMapScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ProductHeadColor title="Select Location" onBackPress={() => navigation.goBack()} />
+      <ProductHeadColor title={tx("products:addAddressMapScreen.selectLocation")} onBackPress={() => navigation.goBack()} />
 
       <View style={styles.mapContainer}>
         <MapView
@@ -524,7 +527,7 @@ export default function AddAddressMapScreen() {
               coordinate={markerCoords}
               draggable
               onDragEnd={handleMarkerDragEnd}
-              title="Selected Location"
+              title={tx("products:addAddressMapScreen.selectedLocation")}
             />
           ) : null}
         </MapView>
@@ -535,7 +538,7 @@ export default function AddAddressMapScreen() {
             <TextInput
               value={searchQuery}
               onChangeText={handleSearchChange}
-              placeholder="Search village, city, address..."
+              placeholder={tx("products:addAddressMapScreen.searchVillageCityAddress")}
               placeholderTextColor="#9CA3AF"
               returnKeyType="search"
               style={styles.searchInput}
@@ -587,7 +590,7 @@ export default function AddAddressMapScreen() {
 
           <View style={styles.sheetHeader}>
             <Text style={styles.sheetTitle}>
-              {resolvedAddress ? 'Deliver here?' : 'Delivering to'}
+              {resolvedAddress ? i18n.t("products:r2.deliverHere") : i18n.t("products:r2.deliveringTo")}
             </Text>
             <TouchableOpacity activeOpacity={0.75} onPress={() => setSheetOpen(false)} style={styles.sheetCloseButton}>
               <MaterialCommunityIcons name="close" size={20} color="#1C1C22" />
@@ -614,24 +617,24 @@ export default function AddAddressMapScreen() {
               <View style={styles.existingAddressRow}>
                 <View style={styles.existingAddressTextBlock}>
                   <Text style={styles.existingName} numberOfLines={1}>
-                    {existingAddress?.contact_name || 'No saved contact'}
+                    {existingAddress?.contact_name || i18n.t("products:r2.noSavedContact")}
                   </Text>
                   <Text style={styles.existingCity} numberOfLines={1}>
-                    {existingAddress?.city || existingAddress?.address1 || 'No saved address yet'}
+                    {existingAddress?.city || existingAddress?.address1 || i18n.t("products:r2.noSavedAddressYet")}
                   </Text>
                 </View>
                 <TouchableOpacity activeOpacity={0.75} onPress={handleChangeAddress}>
-                  <Text style={styles.changeText}>Change</Text>
+                  <Text style={styles.changeText}>{tx("products:addAddressMapScreen.change")}</Text>
                 </TouchableOpacity>
               </View>
 
               <TouchableOpacity activeOpacity={0.85} onPress={handleAddMoreDetails} style={styles.fullPrimaryButton}>
-                <Text style={styles.primaryButtonText}>Add more address details</Text>
+                <Text style={styles.primaryButtonText}>{tx("products:addAddressMapScreen.addMoreAddressDetails")}</Text>
                 <MaterialCommunityIcons name="chevron-right" size={22} color="#FFFFFF" />
               </TouchableOpacity>
 
               <Text style={styles.hintText}>
-                Tap anywhere on the map or drag the pin to set your location
+                {tx("products:addAddressMapScreen.tapAnywhereOnTheMap")}
               </Text>
             </>
           )}
@@ -639,7 +642,7 @@ export default function AddAddressMapScreen() {
           {resolvedAddress ? (
             <View style={styles.actionRow}>
               <TouchableOpacity activeOpacity={0.85} onPress={clearResolvedAddress} style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Change</Text>
+                <Text style={styles.secondaryButtonText}>{tx("products:addAddressMapScreen.change")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -652,7 +655,7 @@ export default function AddAddressMapScreen() {
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <>
-                    <Text style={styles.primaryButtonText}>Save Location</Text>
+                    <Text style={styles.primaryButtonText}>{tx("products:addAddressMapScreen.saveLocation")}</Text>
                     <MaterialCommunityIcons name="chevron-right" size={20} color="#FFFFFF" />
                   </>
                 )}
@@ -668,7 +671,7 @@ export default function AddAddressMapScreen() {
         >
           <MaterialCommunityIcons name="chevron-up" size={20} color="#FFFFFF" />
           <Text style={styles.reopenText}>
-            {resolvedAddress ? 'View selected address' : 'View address options'}
+            {resolvedAddress ? i18n.t("products:r2.viewSelectedAddress") : i18n.t("products:r2.viewAddressOptions")}
           </Text>
         </TouchableOpacity>
       )}

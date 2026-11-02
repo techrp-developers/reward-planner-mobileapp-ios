@@ -8,6 +8,8 @@ import { useBbpsTheme } from '../../utils/useBbpsTheme';
 import bill1 from '../../assets/Sample/HDFC.png';
 import bill2 from '../../assets/Sample/SBI_card.png';
 import bill3 from '../../assets/Sample/VI_Card.png';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 const BILL_DATA = [
   {
@@ -76,7 +78,7 @@ const BillItem = ({
       <View style={styles.details}>
         <Text style={[styles.billTitle, { color: bbpsTheme.colors.text }]}>{item.title}</Text>
         <Text style={[styles.billSubtitle, { color: bbpsTheme.colors.muted }]}>{item.subtitle}</Text>
-        <Text style={[styles.statusText, { color: item.statusColor }]}>{item.status}</Text>
+        <Text style={[styles.statusText, { color: item.statusColor }]}>{translateSourceText("payments", item.status)}</Text>
       </View>
     </View>
     <Text style={[styles.amountText, { color: bbpsTheme.colors.textStrong }]}>{item.amount}</Text>
@@ -84,6 +86,7 @@ const BillItem = ({
 );
 
 const BillsCard = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
 
@@ -99,13 +102,13 @@ const BillsCard = () => {
       ]}
     >
       <View style={styles.header}>
-        <Text style={[styles.headerTitle, { color: bbpsTheme.colors.textStrong }]}>Your Bills</Text>
+        <Text style={[styles.headerTitle, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:billsCard.yourBills")}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('ReachargeHomeScreen')}>
           {/* MASKED VIEW FOR GRADIENT TEXT */}
           <MaskedView
             maskElement={
               <Text style={[styles.viewMoreText, { backgroundColor: 'transparent' }]}>
-                View More
+                {tx("payments:billsCard.viewMore")}
               </Text>
             }>
             <LinearGradient
@@ -114,7 +117,7 @@ const BillsCard = () => {
               end={{ x: 0, y: 0 }}
               style={styles.gradientBox}
             >
-              <Text style={[styles.viewMoreText, { opacity: 0 }]}>View More</Text>
+              <Text style={[styles.viewMoreText, { opacity: 0 }]}>{tx("payments:billsCard.viewMore")}</Text>
             </LinearGradient>
           </MaskedView>
         </TouchableOpacity>

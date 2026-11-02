@@ -19,6 +19,8 @@ import {
 import { BORDER_RADIUS, SPACING, TYPOGRAPHY } from '../../utils/theme';
 import CoinIcon from '../../../../assets/product/rewards.svg';
 import HeartPlantIcon from '../../assets/StepCount/heartPlant.svg';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const VD = {
   accent:      "#8EA2FF",
@@ -53,6 +55,7 @@ const formatHistoryDate = (value: string) => {
 };
 
 const CoinHistoryAndPlan: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<CoinHistoryNavProp>();
   const [history, setHistory] = useState<StepHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,7 +76,7 @@ const CoinHistoryAndPlan: React.FC = () => {
       setHistory(sortedHistory);
     } else {
       setHistory([]);
-      setErrorMessage(res.message || 'Failed to fetch step history');
+      setErrorMessage(res.message || i18n.t("stepCounter:r2.failedToFetchStepHistory"));
     }
 
     setLoading(false);
@@ -95,14 +98,14 @@ const CoinHistoryAndPlan: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.card}>
         <View style={styles.headerRow}>
-          <Text style={styles.cardTitle}>Coin History</Text>
+          <Text style={styles.cardTitle}>{tx("stepCounter:coinHistoryAndPlan.coinHistory")}</Text>
 
           <TouchableOpacity
             activeOpacity={0.86}
             style={styles.viewMoreButton}
             onPress={() => navigation.navigate('CoinHistory')}
           >
-            <Text style={styles.viewMore}>View More</Text>
+            <Text style={styles.viewMore}>{tx("stepCounter:coinHistoryAndPlan.viewMore")}</Text>
             <MaterialCommunityIcons
               name="arrow-right"
               size={16}
@@ -114,7 +117,7 @@ const CoinHistoryAndPlan: React.FC = () => {
         {loading ? (
           <View style={styles.historyState}>
             <ActivityIndicator size="small" color={VD.accent} />
-            <Text style={styles.stateText}>Loading coin activity...</Text>
+            <Text style={styles.stateText}>{tx("stepCounter:coinHistoryAndPlan.loadingCoinActivity")}</Text>
           </View>
         ) : errorMessage ? (
           <TouchableOpacity
@@ -127,7 +130,7 @@ const CoinHistoryAndPlan: React.FC = () => {
               size={20}
               color={VD.accent}
             />
-            <Text style={styles.stateText}>Unable to load coins. Tap to retry.</Text>
+            <Text style={styles.stateText}>{tx("stepCounter:coinHistoryAndPlan.unableToLoadCoinsTap")}</Text>
           </TouchableOpacity>
         ) : visibleHistory.length === 0 ? (
           <View style={styles.historyState}>
@@ -136,7 +139,7 @@ const CoinHistoryAndPlan: React.FC = () => {
               size={22}
               color={VD.accent}
             />
-            <Text style={styles.stateText}>Your earned coins will appear here.</Text>
+            <Text style={styles.stateText}>{tx("stepCounter:coinHistoryAndPlan.yourEarnedCoinsWillAppear")}</Text>
           </View>
         ) : (
           <ScrollView
@@ -171,7 +174,7 @@ const CoinHistoryAndPlan: React.FC = () => {
       <View style={styles.planCard}>
         <View style={styles.planCopy}>
           <View style={styles.planHeader}>
-            <Text style={styles.planTitle}>Want a personalized step plan?</Text>
+            <Text style={styles.planTitle}>{tx("stepCounter:coinHistoryAndPlan.wantAPersonalizedStepPlan")}</Text>
             <MaterialCommunityIcons
               name="chevron-right"
               size={24}
@@ -180,7 +183,7 @@ const CoinHistoryAndPlan: React.FC = () => {
           </View>
 
           <Text style={styles.planDescription}>
-            Based on your BMI, we can recommend how much to walk daily to stay healthy or lose weight.
+            {tx("stepCounter:coinHistoryAndPlan.basedOnYourBmiWe")}
           </Text>
 
           <TouchableOpacity
@@ -188,7 +191,7 @@ const CoinHistoryAndPlan: React.FC = () => {
             style={styles.getPlanButton}
             onPress={() => navigation.navigate('BMICart')}
           >
-            <Text style={styles.getPlan}>Get My Plan</Text>
+            <Text style={styles.getPlan}>{tx("stepCounter:coinHistoryAndPlan.getMyPlan")}</Text>
             <MaterialCommunityIcons
               name="arrow-right"
               size={16}

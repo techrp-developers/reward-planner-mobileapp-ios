@@ -14,6 +14,7 @@ import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { fs, rs } from "../../../utils/responsive";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 interface PaymentsQuickAccessCardProps {
   onOpenPayments?: () => void;
@@ -41,6 +42,7 @@ const PaymentsQuickAccessCard: React.FC<PaymentsQuickAccessCardProps> = ({
   onMakePayment,
 }) => {
   const { isDark, theme } = useAppTheme();
+  const { t: tr } = useTranslation();
   const mountAnim = useRef(new Animated.Value(0)).current;
   const actionIconColor = isDark ? "#FFFFFF" : "#111827";
 
@@ -59,22 +61,22 @@ const PaymentsQuickAccessCard: React.FC<PaymentsQuickAccessCardProps> = ({
   const actions = useMemo<QuickAction[]>(
     () => [
       {
-        title: "Recharges",
+        title: tr("dashboard:payments.recharges"),
         icon: "cellphone-charging",
         onPress: onOpenBills,
       },
       {
-        title: "Bills & Utilities",
+        title: tr("dashboard:payments.bills"),
         icon: "receipt-text-outline",
         onPress: onOpenPayments,
       },
       {
-        title: "Recent Transaction",
+        title: tr("dashboard:payments.recent"),
         icon: "clock-time-four-outline",
         onPress: onOpenHistory,
       },
     ],
-    [onOpenBills, onOpenPayments, onOpenHistory],
+    [onOpenBills, onOpenPayments, onOpenHistory, tr],
   );
 
   const t = useMemo(
@@ -123,10 +125,10 @@ const PaymentsQuickAccessCard: React.FC<PaymentsQuickAccessCardProps> = ({
           </LinearGradient>
           <View style={styles.headerText}>
             <Text style={[styles.title, t.title]} numberOfLines={1}>
-              Payments
+              {tr("dashboard:payments.title")}
             </Text>
             <Text style={[styles.subtitle, t.subtitle]} numberOfLines={1}>
-              Quick Access
+              {tr("dashboard:payments.subtitle")}
             </Text>
           </View>
         </View>
@@ -161,7 +163,7 @@ const PaymentsQuickAccessCard: React.FC<PaymentsQuickAccessCardProps> = ({
             style={styles.cta}
           >
             <Text style={styles.ctaText} numberOfLines={1}>
-              Make a Payment
+              {tr("dashboard:payments.makePayment")}
             </Text>
             <MaterialCommunityIcons name="arrow-right" size={rs(22)} color="#FFFFFF" />
           </LinearGradient>

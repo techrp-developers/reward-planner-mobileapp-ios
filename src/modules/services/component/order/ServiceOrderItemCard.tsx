@@ -13,6 +13,8 @@ import ServiceTimelineCard from './ServiceTimelineCard';
 import ServiceFeedbackCard from './ServiceFeedbackCard';
 import ServiceCancellationCard from './ServiceCancellationCard';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
   pending: { color: '#D97706', bg: '#FFFBEB', label: 'Pending' },
@@ -45,6 +47,7 @@ export default function ServiceOrderItemCard({
   onCancellationDetailsPress,
   onFeedbackPress,
 }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(false);
   const meta = STATUS_META[item.status] || {
@@ -77,7 +80,7 @@ export default function ServiceOrderItemCard({
             <View style={[styles.statusPill, { backgroundColor: meta.bg }]}>
               <View style={[styles.statusDot, { backgroundColor: meta.color }]} />
               <Text style={[styles.statusText, { color: meta.color }]}>
-                {meta.label}
+                {translateSourceText("services", meta.label)}
               </Text>
             </View>
             <Text style={styles.price}>₹{item.price.toLocaleString('en-IN')}</Text>
@@ -98,7 +101,7 @@ export default function ServiceOrderItemCard({
         <View style={[styles.body, { backgroundColor: servicesTheme.colors.surfaceAlt, borderTopColor: servicesTheme.colors.divider }]}>
           {item.timeline.length > 0 && (
             <>
-              <Text style={[styles.sectionLabel, { color: servicesTheme.colors.subtle }]}>Service progress</Text>
+              <Text style={[styles.sectionLabel, { color: servicesTheme.colors.subtle }]}>{tx("services:serviceOrderItemCard.serviceProgress")}</Text>
               <ServiceTimelineCard steps={item.timeline} />
             </>
           )}

@@ -30,6 +30,9 @@ import {
   deleteTodoApi,
   deleteMultipleTodosApi,
 } from "../api/ProfileApi";
+import { formatDate } from "../../../i18n/format";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Todo = {
   id: string;
@@ -82,14 +85,14 @@ const parseLocalDate = (dateKey: string) => {
 
 const formatHeaderDate = (dateKey: string) => {
   const date = parseLocalDate(dateKey);
-  return date.toLocaleDateString("en-US", {
+  return formatDate(date, {
     month: "short",
     day: "numeric",
   });
 };
 
 const getDayName = (date: Date) => {
-  return date.toLocaleDateString("en-US", { weekday: "short" });
+  return formatDate(date, { weekday: "short" });
 };
 
 const buildTimeOptions = () => {
@@ -115,6 +118,7 @@ const buildTimeOptions = () => {
 };
 
 const TodoListScreen = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark, theme } = useAppTheme();
   const { width: windowWidth } = useWindowDimensions();
@@ -218,7 +222,7 @@ const TodoListScreen = () => {
       setTodos(normalizeTodos(res?.data || []));
     } catch (error: any) {
       Alert.alert(
-        "Todo",
+        i18n.t("products:todoList.msg.todo"),
         error?.response?.data?.message ||
         error?.message ||
         "Failed to load todos"
@@ -247,7 +251,9 @@ const TodoListScreen = () => {
     }
 
     return arr;
-  }, [today]);
+    // formatDate reads the active language, so the weekday labels must be rebuilt when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today, i18n.resolvedLanguage]);
 
   const futureDates = useMemo(() => {
     const arr = [];
@@ -264,7 +270,9 @@ const TodoListScreen = () => {
     }
 
     return arr;
-  }, [today]);
+    // formatDate reads the active language, so the weekday labels must be rebuilt when it changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [today, i18n.resolvedLanguage]);
 
   const dateItems = useMemo<DateItem[]>(() => {
     return [
@@ -369,12 +377,12 @@ const TodoListScreen = () => {
   const saveTodo = async () => {
     try {
       if (!title.trim()) {
-        Alert.alert("Todo", "Please enter task title");
+        Alert.alert(i18n.t("products:todoList.todo"), i18n.t("products:todoList.pleaseEnterTaskTitle"));
         return;
       }
 
       if (!startTime || !endTime) {
-        Alert.alert("Todo", "Please select start and end time");
+        Alert.alert(i18n.t("products:todoList.todo"), i18n.t("products:todoList.pleaseSelectStartAndEnd"));
         return;
       }
 
@@ -401,7 +409,7 @@ const TodoListScreen = () => {
       await fetchTodos();
     } catch (error: any) {
       Alert.alert(
-        "Todo",
+        i18n.t("products:todoList.msg.todo"),
         error?.response?.data?.message ||
         error?.message ||
         "Failed to save todo"
@@ -414,10 +422,10 @@ const TodoListScreen = () => {
   const handleDeleteTodo = () => {
     if (!selectedTodo) return;
 
-    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
-      { text: "Cancel" },
+    Alert.alert(i18n.t("products:todoList.deleteTask"), i18n.t("products:todoList.areYouSureYouWant"), [
+      { text: i18n.t("products:todoList.cancel") },
       {
-        text: "Delete",
+        text: i18n.t("products:todo.delete"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -426,10 +434,10 @@ const TodoListScreen = () => {
             await fetchTodos();
           } catch (error: any) {
             Alert.alert(
-              "Todo",
+              i18n.t("products:todoList.msg.todo"),
               error?.response?.data?.message ||
               error?.message ||
-              "Failed to delete todo"
+              i18n.t("products:todo.deleteFailed")
             );
           }
         },
@@ -440,10 +448,10 @@ const TodoListScreen = () => {
   const handleDeleteSelectedTodos = () => {
     if (selectedTodoIds.length === 0) return;
 
-    Alert.alert("Delete Tasks", "Delete all selected tasks?", [
-      { text: "Cancel" },
+    Alert.alert(i18n.t("products:todoList.deleteTasks"), i18n.t("products:todoList.deleteAllSelectedTasks"), [
+      { text: i18n.t("products:todoList.cancel") },
       {
-        text: "Delete",
+        text: i18n.t("products:todo.delete"),
         style: "destructive",
         onPress: async () => {
           try {
@@ -452,7 +460,7 @@ const TodoListScreen = () => {
             await fetchTodos();
           } catch (error: any) {
             Alert.alert(
-              "Todo",
+              i18n.t("products:todoList.msg.todo"),
               error?.response?.data?.message ||
               error?.message ||
               "Failed to delete selected todos"
@@ -490,7 +498,7 @@ const TodoListScreen = () => {
       await fetchTodos();
     } catch (error: any) {
       Alert.alert(
-        "Todo",
+        i18n.t("products:todoList.msg.todo"),
         error?.response?.data?.message ||
         error?.message ||
         "Failed to complete todo"
@@ -507,7 +515,7 @@ const TodoListScreen = () => {
       await fetchTodos();
     } catch (error: any) {
       Alert.alert(
-        "Todo",
+        i18n.t("products:todoList.msg.todo"),
         error?.response?.data?.message ||
         error?.message ||
         "Failed to complete selected todos"
@@ -536,7 +544,7 @@ const TodoListScreen = () => {
 
   const openAlarmModal = () => {
     if (!selectedTodo) {
-      Alert.alert("Reminder", "Please select a task first.");
+      Alert.alert(i18n.t("products:todoList.reminder"), i18n.t("products:todoList.pleaseSelectATaskFirst"));
       return;
     }
 
@@ -551,14 +559,14 @@ const TodoListScreen = () => {
       await updateTodoReminder(
         selectedTodo.id,
         createdBy,
-        reminderTime || "No reminder time"
+        reminderTime || i18n.t("products:r2.noReminderTime")
       );
 
       setAlarmModalVisible(false);
       await fetchTodos();
     } catch (error: any) {
       Alert.alert(
-        "Reminder",
+        i18n.t("products:todoList.msg.reminder"),
         error?.response?.data?.message ||
         error?.message ||
         "Failed to save reminder"
@@ -687,13 +695,13 @@ const TodoListScreen = () => {
                 ? "Today"
                 : selectedDate === todayKey
                   ? "Today"
-                  : "Tasks"}
+                  : i18n.t("products:r2.tasks")}
             </Text>
             <Text style={styles.taskCount}>{filteredTodos.length} Tasks</Text>
           </View>
 
           <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-            <Text style={styles.addButtonText}>Add New</Text>
+            <Text style={styles.addButtonText}>{tx("products:todoList.addNew")}</Text>
           </TouchableOpacity>
         </View>
       </LinearGradient>
@@ -727,19 +735,19 @@ const TodoListScreen = () => {
         {selectedTodo && !showCheckbox && !selectedTodo.completed && (
           <View style={[styles.actionBar, themed.surface]}>
             <TouchableOpacity onPress={openEditModal}>
-              <Text style={[styles.actionText, themed.accentText]}>Edit</Text>
+              <Text style={[styles.actionText, themed.accentText]}>{tx("products:todoList.edit")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={shareTodo}>
-              <Text style={[styles.actionText, themed.accentText]}>Share</Text>
+              <Text style={[styles.actionText, themed.accentText]}>{tx("products:todoList.share")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleDeleteTodo}>
-              <Text style={styles.deleteText}>Delete</Text>
+              <Text style={styles.deleteText}>{tx("products:todoList.delete")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleCompleteTodo}>
-              <Text style={styles.completeText}>Done</Text>
+              <Text style={styles.completeText}>{tx("products:todoList.done")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -747,15 +755,15 @@ const TodoListScreen = () => {
         {showCheckbox && selectedTodoIds.length > 0 && (
           <View style={[styles.actionBar, themed.surface]}>
             <TouchableOpacity onPress={shareSelectedTodos}>
-              <Text style={[styles.actionText, themed.accentText]}>Share</Text>
+              <Text style={[styles.actionText, themed.accentText]}>{tx("products:todoList.share")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleDeleteSelectedTodos}>
-              <Text style={styles.deleteText}>Delete</Text>
+              <Text style={styles.deleteText}>{tx("products:todoList.delete")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={handleCompleteSelectedTodos}>
-              <Text style={styles.completeText}>Done</Text>
+              <Text style={styles.completeText}>{tx("products:todoList.done")}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -763,7 +771,7 @@ const TodoListScreen = () => {
         <View style={styles.myTaskHeader}>
           <Text style={[styles.myTaskTitle, themed.text]}>
             {filterType === "ALL"
-              ? "My Tasks"
+              ? i18n.t("products:r2.myTasks")
               : filterType === "TODAY"
                 ? "Today Tasks"
                 : filterType === "PENDING"
@@ -773,7 +781,7 @@ const TodoListScreen = () => {
 
           <TouchableOpacity onPress={toggleSelectAll}>
             <Text style={[styles.selectAllText, themed.accentText]}>
-              {allSelected ? "Unselect All" : "Select All"}
+              {allSelected ? i18n.t("products:r2.unselectAll") : i18n.t("products:r2.selectAll")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -781,7 +789,7 @@ const TodoListScreen = () => {
         {loading && (
           <View style={styles.loadingBox}>
             <ActivityIndicator size="small" color={accentColor} />
-            <Text style={[styles.loadingText, themed.mutedText]}>Loading tasks...</Text>
+            <Text style={[styles.loadingText, themed.mutedText]}>{tx("products:todoList.loadingTasks")}</Text>
           </View>
         )}
 
@@ -792,9 +800,9 @@ const TodoListScreen = () => {
               size={42}
               color={isDark ? "#6B7280" : "#B7B7B7"}
             />
-            <Text style={[styles.emptyTitle, themed.text]}>No tasks found</Text>
+            <Text style={[styles.emptyTitle, themed.text]}>{tx("products:todoList.noTasksFound")}</Text>
             <Text style={[styles.emptyText, themed.mutedText]}>
-              Add a new task for this selected date.
+              {tx("products:todoList.addANewTaskFor")}
             </Text>
           </View>
         )}
@@ -901,7 +909,7 @@ const TodoListScreen = () => {
                 size={18}
                 color={accentColor}
               />
-              <Text style={[styles.menuText, themed.text]}>All Tasks</Text>
+              <Text style={[styles.menuText, themed.text]}>{tx("products:todoList.allTasks")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -913,7 +921,7 @@ const TodoListScreen = () => {
                 size={18}
                 color={accentColor}
               />
-              <Text style={[styles.menuText, themed.text]}>Today Tasks</Text>
+              <Text style={[styles.menuText, themed.text]}>{tx("products:todoList.todayTasks")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -925,7 +933,7 @@ const TodoListScreen = () => {
                 size={18}
                 color={accentColor}
               />
-              <Text style={[styles.menuText, themed.text]}>Pending Tasks</Text>
+              <Text style={[styles.menuText, themed.text]}>{tx("products:todoList.pendingTasks")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -937,7 +945,7 @@ const TodoListScreen = () => {
                 size={18}
                 color={accentColor}
               />
-              <Text style={[styles.menuText, themed.text]}>Completed Tasks</Text>
+              <Text style={[styles.menuText, themed.text]}>{tx("products:todoList.completedTasks")}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -956,7 +964,7 @@ const TodoListScreen = () => {
               </TouchableOpacity>
 
               <Text style={[styles.createTaskTitle, themed.text]}>
-                {editingId ? "Edit Task" : "Create Task"}
+                {editingId ? i18n.t("products:r2.editTask") : i18n.t("products:r2.createTask")}
               </Text>
 
               <MaterialCommunityIcons
@@ -978,7 +986,7 @@ const TodoListScreen = () => {
                   </TouchableOpacity>
 
                   <Text style={[styles.calendarMonth, themed.text]}>
-                    {calendarMonth.toLocaleDateString("en-US", {
+                    {formatDate(calendarMonth, {
                       month: "long",
                       year: "numeric",
                     })}
@@ -1037,7 +1045,7 @@ const TodoListScreen = () => {
               </View>
 
               <TextInput
-                placeholder="Task Name"
+                placeholder={tx("products:todoList.taskName")}
                 placeholderTextColor={placeholderColor}
                 value={title}
                 onChangeText={setTitle}
@@ -1045,7 +1053,7 @@ const TodoListScreen = () => {
               />
 
               <TextInput
-                placeholder="Task Description..."
+                placeholder={tx("products:todoList.taskDescription")}
                 placeholderTextColor={placeholderColor}
                 value={subtitle}
                 onChangeText={setSubtitle}
@@ -1064,7 +1072,7 @@ const TodoListScreen = () => {
                     color={accentColor}
                   />
                   <Text style={[styles.timePickerText, themed.text]}>
-                    {startTime || "Start Time"}
+                    {startTime || i18n.t("products:r2.startTime")}
                   </Text>
                 </TouchableOpacity>
 
@@ -1078,7 +1086,7 @@ const TodoListScreen = () => {
                     color={accentColor}
                   />
                   <Text style={[styles.timePickerText, themed.text]}>
-                    {endTime || "End Time"}
+                    {endTime || i18n.t("products:r2.endTime")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1092,7 +1100,7 @@ const TodoListScreen = () => {
                   <ActivityIndicator size="small" color="#fff" />
                 ) : (
                   <Text style={styles.createButtonText}>
-                    {editingId ? "Update Task" : "Create Task"}
+                    {editingId ? i18n.t("products:r2.updateTask") : i18n.t("products:r2.createTask")}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -1121,7 +1129,7 @@ const TodoListScreen = () => {
                     style={[styles.cancelFullButton, themed.softButton]}
                     onPress={() => setTimePickerVisible(false)}
                   >
-                    <Text style={[styles.cancelText, themed.text]}>Cancel</Text>
+                    <Text style={[styles.cancelText, themed.text]}>{tx("products:todoList.cancel")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1133,10 +1141,10 @@ const TodoListScreen = () => {
       <Modal visible={alarmModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={[styles.modalCard, themed.surface]}>
-            <Text style={[styles.modalTitle, themed.text]}>Set Alarm Reminder</Text>
+            <Text style={[styles.modalTitle, themed.text]}>{tx("products:todoList.setAlarmReminder")}</Text>
 
             <TextInput
-              placeholder="Reminder time e.g. 10:30 AM"
+              placeholder={tx("products:todoList.reminderTimeEG10")}
               placeholderTextColor={placeholderColor}
               value={reminderTime}
               onChangeText={setReminderTime}
@@ -1148,11 +1156,11 @@ const TodoListScreen = () => {
                 style={styles.cancelBtn}
                 onPress={() => setAlarmModalVisible(false)}
               >
-                <Text style={[styles.cancelText, themed.text]}>Cancel</Text>
+                <Text style={[styles.cancelText, themed.text]}>{tx("products:todoList.cancel")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.saveBtn} onPress={saveReminder}>
-                <Text style={styles.saveText}>Save Alarm</Text>
+                <Text style={styles.saveText}>{tx("products:todoList.saveAlarm")}</Text>
               </TouchableOpacity>
             </View>
           </View>

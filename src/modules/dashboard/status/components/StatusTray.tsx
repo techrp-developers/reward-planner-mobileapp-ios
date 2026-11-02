@@ -20,6 +20,8 @@ import {
   addStatusComment, createStatus, deleteStatus, deleteStatusComment, fetchStatusAudienceOptions,
   fetchStatusComments, fetchStatusLikes, fetchStatusViewers, sameStatusId, toggleStatusLike,
 } from "../api/statusApi";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Props = {
   groups: StatusFeedGroup[];
@@ -96,10 +98,10 @@ const timeAgo = (value?: string | null) => {
   const time = parseServerTime(value);
   if (!Number.isFinite(time)) return "";
   const minutes = Math.max(0, Math.floor((Date.now() - time) / 60000));
-  if (minutes < 1) return "now";
-  if (minutes < 60) return `${minutes}m`;
-  if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
-  return `${Math.floor(minutes / 1440)}d`;
+  if (minutes < 1) return i18n.t("dashboard:status.ageNow");
+  if (minutes < 60) return i18n.t("dashboard:status.ageMinutes", { count: minutes });
+  if (minutes < 1440) return i18n.t("dashboard:status.ageHours", { count: Math.floor(minutes / 60) });
+  return i18n.t("dashboard:status.ageDays", { count: Math.floor(minutes / 1440) });
 };
 
 const getCompany = (status: UserStatus, ownCompany?: string | null) => {
@@ -109,7 +111,7 @@ const getCompany = (status: UserStatus, ownCompany?: string | null) => {
 
 const firstName = (name?: string | null) => name?.trim().split(/\s+/)[0] || "";
 const mediaUri = (url?: string | null) => normalizeLocalCmsImageUrl(url) || url || undefined;
-const errorMessage = (error: any, fallback = "Please try again.") =>
+const errorMessage = (error: any, fallback = i18n.t("common:errors.generic")) =>
   error?.response?.data?.message || error?.message || fallback;
 const isNetworkError = (error: any) =>
   !error?.response && (error?.code === "ERR_NETWORK" || /network/i.test(error?.message ?? ""));
@@ -168,6 +170,7 @@ export default function StatusTray({
   headerMode = false,
   headerTextColor,
 }: Props) {
+  const { t: tr } = useTranslation();
   const { isDark } = useAppTheme();
   const reducedMotion = useReducedMotion();
   // The open status is tracked by ID so a feed refresh (every 15s on the
@@ -308,10 +311,10 @@ export default function StatusTray({
     <View style={[tray.section, isDark && tray.sectionDark, headerMode && tray.headerSection]}>
       {profileMode && (
         <View style={tray.head}>
-          <Text style={[tray.title, isDark && tray.textDark]} accessibilityRole="header">Status</Text>
+          <Text style={[tray.title, isDark && tray.textDark]} accessibilityRole="header">{tr("dashboard:status.title")}</Text>
           <Pressable onPress={() => setCreating(true)} style={tray.addButton} accessibilityRole="button" hitSlop={8}>
             <MaterialCommunityIcons name="plus" size={rs(16)} color={BRAND.violet} />
-            <Text style={tray.addText}>Add Status</Text>
+            <Text style={tray.addText}>{tr("dashboard:status.add")}</Text>
           </Pressable>
         </View>
       )}
@@ -319,14 +322,14 @@ export default function StatusTray({
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={tray.row}>
         <StoryItem
           imageUri={currentUserImage || mine?.user.image_url}
-          label="Your Status"
+          label={tr("dashboard:status.yours")}
           ring={mine ? "own" : "empty"}
           showAdd
           isDark={isDark}
           labelColor={labelColor}
           onPress={() => (mine ? openGroup(mine) : setCreating(true))}
           onAdd={() => setCreating(true)}
-          accessibilityLabel={mine ? "View your status" : "Add a status"}
+          accessibilityLabel={mine ? tr("dashboard:status.viewYours") : tr("dashboard:status.addA")}
         />
 
         {others.map(group => {
@@ -335,12 +338,12 @@ export default function StatusTray({
             <StoryItem
               key={String(group.user.id)}
               imageUri={group.user.image_url}
-              label={firstName(group.user.name) || "User"}
+              label={firstName(group.user.name) || tr("profile:user")}
               ring={unseen ? "unseen" : "seen"}
               isDark={isDark}
               labelColor={labelColor}
               onPress={() => openGroup(group)}
-              accessibilityLabel={`${group.user.name || "User"}'s status${unseen ? ", new" : ""}`}
+              accessibilityLabel={tr(unseen ? "dashboard:status.userStatusNew" : "dashboard:status.userStatus", { name: group.user.name || tr("profile:user") })}
             />
           );
         })}
@@ -350,11 +353,11 @@ export default function StatusTray({
         ))}
 
         {error && (
-          <Pressable onPress={onRetry} style={tray.retry} accessibilityRole="button" accessibilityLabel="Couldn't load updates. Retry">
+          <Pressable onPress={onRetry} style={tray.retry} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.loadFailedRetry")}>
             <View style={[tray.retryCircle, isDark && tray.retryCircleDark]}>
               <MaterialCommunityIcons name="refresh" size={rs(20)} color={BRAND.violet} />
             </View>
-            <Text style={[tray.retryText, labelColor ? { color: labelColor } : isDark && tray.textDark]} numberOfLines={1}>Retry</Text>
+            <Text style={[tray.retryText, labelColor ? { color: labelColor } : isDark && tray.textDark]} numberOfLines={1}>{tr("common:actions.retry")}</Text>
           </Pressable>
         )}
       </ScrollView>
@@ -367,7 +370,7 @@ export default function StatusTray({
               onPress={() => open(item.id)}
               style={({ pressed }) => [tray.tile, { backgroundColor: item.background_color || BRAND.royal }, pressed && tray.pressed]}
               accessibilityRole="button"
-              accessibilityLabel={`Open your ${item.type === "image" ? "photo" : item.type} status`}
+              accessibilityLabel={tr(item.type === "image" ? "dashboard:status.openYourPhoto" : item.type === "video" ? "dashboard:status.openYourVideo" : "dashboard:status.openYourText")}
             >
               {item.type === "image" && item.media_url ? (
                 <Image source={{ uri: mediaUri(item.media_url) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
@@ -377,7 +380,7 @@ export default function StatusTray({
                 </View>
               ) : (
                 <Text style={[tray.tileText, { color: textColorOn(item.background_color) }]} numberOfLines={4}>
-                  {item.text || "Text status"}
+                  {item.text || tr("dashboard:status.textStatus")}
                 </Text>
               )}
               <View style={tray.tileViews}>
@@ -437,6 +440,7 @@ const StoryItem = React.memo(function StoryItem({
   onAdd?: () => void;
   accessibilityLabel: string;
 }) {
+  const { t: tr } = useTranslation();
   const scale = React.useRef(new Animated.Value(1)).current;
   const pressTo = (value: number) =>
     Animated.spring(scale, { toValue: value, useNativeDriver: true, speed: 40, bounciness: value === 1 ? 6 : 0 }).start();
@@ -473,7 +477,7 @@ const StoryItem = React.memo(function StoryItem({
           onPress={onAdd}
           hitSlop={10}
           accessibilityRole="button"
-          accessibilityLabel="Create a new status"
+          accessibilityLabel={tr("dashboard:status.createNew")}
           style={[tray.addBadge, { borderColor: surface }]}
         >
           <MaterialCommunityIcons name="plus" size={rs(12)} color="#FFFFFF" />
@@ -526,6 +530,7 @@ function StatusViewerScreen({
   onInteraction: (statusId: number, patch: Partial<UserStatus>) => void;
   requestCloseRef: React.MutableRefObject<() => void>;
 }) {
+  const { t: tr } = useTranslation();
   const insets = useSafeAreaInsets();
   const group = groups[position.group];
   const active = group?.statuses[position.status];
@@ -695,7 +700,7 @@ function StatusViewerScreen({
       if (activeIdRef.current === statusId) {
         setLiked(before.liked);
         setCounts(value => ({ ...value, likes: before.likes }));
-        showToast("Couldn't update like");
+        showToast(tr("dashboard:status.likeFailed"));
       }
     } finally {
       setLiking(false);
@@ -716,12 +721,12 @@ function StatusViewerScreen({
       setReplyText("");
       setReplyFocused(false);
       Keyboard.dismiss();
-      showToast("Reply sent");
+      showToast(tr("dashboard:status.replySent"));
     } catch (error) {
       if (activeIdRef.current === statusId) {
         setMenuOpen(true);
-        Alert.alert("Couldn't send reply", errorMessage(error), [
-          { text: "OK", onPress: () => setMenuOpen(false) },
+        Alert.alert(tr("dashboard:status.replyFailed"), errorMessage(error), [
+          { text: tr("common:actions.ok"), onPress: () => setMenuOpen(false) },
         ], { onDismiss: () => setMenuOpen(false) });
       }
     } finally {
@@ -736,10 +741,10 @@ function StatusViewerScreen({
     // After deleting, continue with the remaining own statuses, or close.
     const nextStatus = group.statuses[position.status + 1] ?? group.statuses[position.status - 1];
     setMenuOpen(true);
-    Alert.alert("Delete status?", "It will be removed for everyone right away.", [
-      { text: "Cancel", style: "cancel", onPress: () => setMenuOpen(false) },
+    Alert.alert(tr("dashboard:status.deleteTitle"), tr("dashboard:status.deleteBody"), [
+      { text: tr("common:actions.cancel"), style: "cancel", onPress: () => setMenuOpen(false) },
       {
-        text: "Delete",
+        text: tr("common:actions.delete"),
         style: "destructive",
         onPress: async () => {
           setMenuOpen(false);
@@ -750,7 +755,7 @@ function StatusViewerScreen({
             if (nextStatus) onOpen(nextStatus.id);
             else onClose();
           } catch (error) {
-            Alert.alert("Couldn't delete status", errorMessage(error));
+            Alert.alert(tr("dashboard:status.deleteFailed"), errorMessage(error));
           } finally {
             setDeleting(false);
           }
@@ -769,21 +774,21 @@ function StatusViewerScreen({
     };
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
-        { options: ["View activity", "Delete status", "Cancel"], destructiveButtonIndex: 1, cancelButtonIndex: 2 },
+        { options: [tr("dashboard:status.viewActivity"), tr("dashboard:status.deleteStatus"), tr("common:actions.cancel")], destructiveButtonIndex: 1, cancelButtonIndex: 2 },
         index => handle(index === 0 ? "activity" : index === 1 ? "delete" : "cancel"),
       );
     } else {
-      Alert.alert("Status options", undefined, [
-        { text: "View activity", onPress: () => handle("activity") },
-        { text: "Delete status", style: "destructive", onPress: () => handle("delete") },
-        { text: "Cancel", style: "cancel", onPress: () => handle("cancel") },
+      Alert.alert(tr("dashboard:status.options"), undefined, [
+        { text: tr("dashboard:status.viewActivity"), onPress: () => handle("activity") },
+        { text: tr("dashboard:status.deleteStatus"), style: "destructive", onPress: () => handle("delete") },
+        { text: tr("common:actions.cancel"), style: "cancel", onPress: () => handle("cancel") },
       ], { cancelable: true, onDismiss: () => handle("cancel") });
     }
   };
 
   const openVideoExternally = () => {
     const url = mediaUri(active?.media_url);
-    if (url) Linking.openURL(url).catch(() => showToast("Couldn't open this video"));
+    if (url) Linking.openURL(url).catch(() => showToast(tr("dashboard:status.videoOpenFailed")));
   };
 
   requestCloseRef.current = () => (sheet ? setSheet(null) : onClose());
@@ -809,7 +814,7 @@ function StatusViewerScreen({
 
       <Animated.View style={[StyleSheet.absoluteFill, viewer.stage, contentStyle]} pointerEvents="box-none">
         {expired ? (
-          <Notice icon="clock-alert-outline" title="This status has expired" hint="Tap to continue to the next update." />
+          <Notice icon="clock-alert-outline" title={tr("dashboard:status.expiredTitle")} hint={tr("dashboard:status.expiredHint")} />
         ) : active.type === "image" && hasMedia && !mediaFailed ? (
           <>
             <Image
@@ -818,12 +823,12 @@ function StatusViewerScreen({
               resizeMode="contain"
               onLoadEnd={() => setMediaLoading(false)}
               onError={() => { setMediaFailed(true); setMediaLoading(false); }}
-              accessibilityLabel={active.text || "Photo status"}
+              accessibilityLabel={active.text || tr("dashboard:status.photoStatus")}
             />
             {mediaLoading && <ActivityIndicator color="#FFFFFF" size="large" />}
           </>
         ) : active.type === "image" ? (
-          <Notice icon="image-broken-variant" title="Couldn't load this photo" hint="Check your connection and try again." />
+          <Notice icon="image-broken-variant" title={tr("dashboard:status.photoFailedTitle")} hint={tr("dashboard:status.photoFailedHint")} />
         ) : playsVideo ? (
           <>
             <Video
@@ -847,17 +852,17 @@ function StatusViewerScreen({
               }}
               onEnd={() => moveRef.current(1)}
               onError={() => { setMediaFailed(true); setMediaLoading(false); setBuffering(false); }}
-              accessibilityLabel={active.text || "Video status"}
+              accessibilityLabel={active.text || tr("dashboard:status.videoStatus")}
             />
             {(mediaLoading || buffering) && <ActivityIndicator color="#FFFFFF" size="large" />}
           </>
         ) : active.type === "video" ? (
-          <Pressable onPress={openVideoExternally} style={viewer.videoCard} accessibilityRole="button" accessibilityLabel="Open video in player">
+          <Pressable onPress={openVideoExternally} style={viewer.videoCard} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.openInPlayer")}>
             <View style={viewer.playCircle}>
               <MaterialCommunityIcons name="video-off-outline" size={rs(32)} color="#FFFFFF" />
             </View>
-            <Text style={viewer.noticeTitle}>Couldn't play this video</Text>
-            <Text style={viewer.noticeHint}>Tap to open it in your video player</Text>
+            <Text style={viewer.noticeTitle}>{tr("dashboard:status.playFailedTitle")}</Text>
+            <Text style={viewer.noticeHint}>{tr("dashboard:status.playFailedHint")}</Text>
           </Pressable>
         ) : (
           <Text
@@ -892,7 +897,7 @@ function StatusViewerScreen({
             onPressOut={() => setHolding(false)}
             onPress={() => move(direction)}
             accessibilityRole="button"
-            accessibilityLabel={direction === 1 ? "Next status" : "Previous status"}
+            accessibilityLabel={direction === 1 ? tr("dashboard:status.next") : tr("dashboard:status.previous")}
           />
         ))}
       </View>
@@ -922,7 +927,7 @@ function StatusViewerScreen({
           </View>
           <View style={viewer.identityCopy}>
             <Text style={viewer.name} numberOfLines={1}>
-              {own ? "My status" : active.user.name || "User"}
+              {own ? tr("dashboard:status.mine") : active.user.name || tr("profile:user")}
               <Text style={viewer.time}>{"  "}{timeAgo(active.created_at)}</Text>
             </Text>
             {!!company && <Text style={viewer.company} numberOfLines={1}>{company}</Text>}
@@ -934,14 +939,14 @@ function StatusViewerScreen({
               hitSlop={6}
               style={viewer.glassButton}
               accessibilityRole="button"
-              accessibilityLabel="Status options"
+              accessibilityLabel={tr("dashboard:status.options")}
             >
               {deleting
                 ? <ActivityIndicator color="#FFFFFF" size="small" />
                 : <MaterialCommunityIcons name="dots-horizontal" size={rs(24)} color="#FFFFFF" />}
             </Pressable>
           )}
-          <Pressable onPress={onClose} hitSlop={6} style={viewer.glassButton} accessibilityRole="button" accessibilityLabel="Close status">
+          <Pressable onPress={onClose} hitSlop={6} style={viewer.glassButton} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.close")}>
             <MaterialCommunityIcons name="close" size={rs(23)} color="#FFFFFF" />
           </Pressable>
         </View>
@@ -953,9 +958,9 @@ function StatusViewerScreen({
           {own ? (
             <View style={viewer.metrics}>
               {([
-                { key: "views", icon: "eye-outline", label: "Views", value: counts.views },
-                { key: "likes", icon: "heart-outline", label: "Likes", value: counts.likes },
-                { key: "comments", icon: "comment-text-outline", label: "Replies", value: counts.comments },
+                { key: "views", icon: "eye-outline", label: tr("dashboard:status.views"), value: counts.views },
+                { key: "likes", icon: "heart-outline", label: tr("dashboard:status.likes"), value: counts.likes },
+                { key: "comments", icon: "comment-text-outline", label: tr("dashboard:status.replies"), value: counts.comments },
               ] as const).map((metric, index) => (
                 <React.Fragment key={metric.key}>
                   {index > 0 && <View style={viewer.metricDivider} />}
@@ -963,7 +968,7 @@ function StatusViewerScreen({
                     onPress={() => setSheet(metric.key)}
                     style={({ pressed }) => [viewer.metric, pressed && viewer.pressed]}
                     accessibilityRole="button"
-                    accessibilityLabel={`${metric.value} ${metric.label}. Show details`}
+                    accessibilityLabel={tr("dashboard:status.metricDetails", { value: metric.value, label: metric.label })}
                   >
                     <MaterialCommunityIcons name={metric.icon} size={rs(19)} color="#FFFFFF" />
                     <Text style={viewer.metricValue}>{metric.value}</Text>
@@ -978,7 +983,7 @@ function StatusViewerScreen({
                 <TextInput
                   value={replyText}
                   onChangeText={setReplyText}
-                  placeholder={`Reply to ${firstName(active.user.name) || "status"}…`}
+                  placeholder={firstName(active.user.name) ? tr("dashboard:status.replyTo", { name: firstName(active.user.name) }) : tr("dashboard:status.replyToStatus")}
                   placeholderTextColor="rgba(255,255,255,0.7)"
                   maxLength={1000}
                   editable={!sendingReply && !expired}
@@ -987,10 +992,10 @@ function StatusViewerScreen({
                   onBlur={() => setReplyFocused(false)}
                   onSubmitEditing={sendReply}
                   style={viewer.replyInput}
-                  accessibilityLabel="Reply to status"
+                  accessibilityLabel={tr("dashboard:status.replyToStatus")}
                 />
                 {!!replyText.trim() && (
-                  <Pressable onPress={sendReply} disabled={sendingReply} style={viewer.send} accessibilityRole="button" accessibilityLabel="Send reply">
+                  <Pressable onPress={sendReply} disabled={sendingReply} style={viewer.send} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.sendReply")}>
                     {sendingReply
                       ? <ActivityIndicator color="#FFFFFF" size="small" />
                       : <MaterialCommunityIcons name="arrow-up" size={rs(20)} color="#FFFFFF" />}
@@ -1006,7 +1011,7 @@ function StatusViewerScreen({
                     style={viewer.iconButton}
                     accessibilityRole="button"
                     accessibilityState={{ selected: liked }}
-                    accessibilityLabel={liked ? "Unlike status" : "Like status"}
+                    accessibilityLabel={liked ? tr("dashboard:status.unlike") : tr("dashboard:status.like")}
                   >
                     <Animated.View style={{ transform: [{ scale: heart }] }}>
                       <MaterialCommunityIcons name={liked ? "heart" : "heart-outline"} size={rs(28)} color={liked ? BRAND.heart : "#FFFFFF"} />
@@ -1017,7 +1022,7 @@ function StatusViewerScreen({
                     hitSlop={6}
                     style={viewer.iconButton}
                     accessibilityRole="button"
-                    accessibilityLabel="Show replies"
+                    accessibilityLabel={tr("dashboard:status.showReplies")}
                   >
                     <MaterialCommunityIcons name="comment-text-outline" size={rs(25)} color="#FFFFFF" />
                   </Pressable>
@@ -1073,9 +1078,9 @@ type ListState<T> = { items: T[]; loading: boolean; error: string; next: number 
 const emptyList = <T,>(): ListState<T> => ({ items: [], loading: false, error: "", next: null, loaded: false });
 
 const TAB_META: Record<ActivityTab, { icon: string; label: string; empty: string }> = {
-  views: { icon: "eye-outline", label: "Views", empty: "No views yet" },
-  likes: { icon: "heart-outline", label: "Likes", empty: "No likes yet" },
-  comments: { icon: "comment-text-outline", label: "Replies", empty: "No replies yet" },
+  views: { icon: "eye-outline", label: "dashboard:status.views", empty: "dashboard:status.noViews" },
+  likes: { icon: "heart-outline", label: "dashboard:status.likes", empty: "dashboard:status.noLikes" },
+  comments: { icon: "comment-text-outline", label: "dashboard:status.replies", empty: "dashboard:status.noReplies" },
 };
 
 function ActivitySheet({
@@ -1092,6 +1097,7 @@ function ActivitySheet({
   onCommentDeleted: () => void;
   onClose: () => void;
 }) {
+  const { t: tr } = useTranslation();
   const [tab, setTab] = React.useState<ActivityTab>(initialTab);
   const [views, setViews] = React.useState<ListState<StatusViewer>>(emptyList);
   const [likes, setLikes] = React.useState<ListState<StatusLike>>(emptyList);
@@ -1154,10 +1160,10 @@ function ActivitySheet({
 
   const confirmDeleteComment = (comment: StatusComment) => {
     if (deletingId != null) return;
-    Alert.alert("Delete reply?", "This reply will be removed.", [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(tr("dashboard:status.deleteReplyTitle"), tr("dashboard:status.deleteReplyBody"), [
+      { text: tr("common:actions.cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: tr("common:actions.delete"),
         style: "destructive",
         onPress: async () => {
           setDeletingId(comment.id);
@@ -1168,7 +1174,7 @@ function ActivitySheet({
             onCountsChange({ comments: Math.max(0, counts.comments - 1) });
             onCommentDeleted();
           } catch (error) {
-            Alert.alert("Couldn't delete reply", errorMessage(error));
+            Alert.alert(tr("dashboard:status.deleteReplyFailed"), errorMessage(error));
           } finally {
             if (mounted.current) setDeletingId(null);
           }
@@ -1187,7 +1193,7 @@ function ActivitySheet({
             <MaterialCommunityIcons name="wifi-off" size={rs(24)} color="#DC2626" />
           </View>
           <Text style={sheetStyles.emptyText}>{current.error}</Text>
-          <Text style={sheetStyles.retry}>Tap to retry</Text>
+          <Text style={sheetStyles.retry}>{tr("dashboard:status.tapToRetry")}</Text>
         </Pressable>
       );
     }
@@ -1198,7 +1204,7 @@ function ActivitySheet({
           <View style={sheetStyles.emptyIcon}>
             <MaterialCommunityIcons name={TAB_META[tab].icon} size={rs(26)} color={BRAND.violet} />
           </View>
-          <Text style={sheetStyles.emptyText}>{TAB_META[tab].empty}</Text>
+          <Text style={sheetStyles.emptyText}>{tr(TAB_META[tab].empty)}</Text>
         </View>
       );
     }
@@ -1220,7 +1226,7 @@ function ActivitySheet({
               iconColor={BRAND.heart}
             />
           ))}
-          {likes.next != null && <LoadMore loading={likes.loading} label="Load more likes" onPress={() => void load("likes", true)} />}
+          {likes.next != null && <LoadMore loading={likes.loading} label={tr("dashboard:status.loadMoreLikes")} onPress={() => void load("likes", true)} />}
         </>
       );
     }
@@ -1234,7 +1240,7 @@ function ActivitySheet({
                 disabled={deletingId != null}
                 hitSlop={10}
                 accessibilityRole="button"
-                accessibilityLabel={`Delete reply from ${item.user.name || "user"}`}
+                accessibilityLabel={tr("dashboard:status.deleteReplyFrom", { name: item.user.name || tr("profile:user") })}
               >
                 {deletingId === item.id
                   ? <ActivityIndicator size="small" color={BRAND.violet} />
@@ -1243,7 +1249,7 @@ function ActivitySheet({
             ) : null}
           </ActivityRow>
         ))}
-        {comments.next != null && <LoadMore loading={comments.loading} label="Load more replies" onPress={() => void load("comments", true)} />}
+        {comments.next != null && <LoadMore loading={comments.loading} label={tr("dashboard:status.loadMoreReplies")} onPress={() => void load("comments", true)} />}
       </>
     );
   };
@@ -1251,13 +1257,13 @@ function ActivitySheet({
   return (
     <View style={sheetStyles.layer}>
       <Animated.View style={[sheetStyles.backdrop, { opacity: slide }]}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Close activity" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel={tr("dashboard:status.closeActivity")} />
       </Animated.View>
       <Animated.View style={[sheetStyles.sheet, { paddingBottom: bottomInset + rs(12), transform: [{ translateY }] }]}>
         <View style={sheetStyles.handle} />
         <View style={sheetStyles.heading}>
-          <Text style={sheetStyles.title} accessibilityRole="header">{tabs.length > 1 ? "Activity" : "Replies"}</Text>
-          <Pressable onPress={onClose} style={sheetStyles.close} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close">
+          <Text style={sheetStyles.title} accessibilityRole="header">{tabs.length > 1 ? tr("dashboard:status.activity") : tr("dashboard:status.replies")}</Text>
+          <Pressable onPress={onClose} style={sheetStyles.close} hitSlop={8} accessibilityRole="button" accessibilityLabel={tr("common:actions.close")}>
             <MaterialCommunityIcons name="close" size={rs(18)} color="#52525B" />
           </Pressable>
         </View>
@@ -1275,7 +1281,7 @@ function ActivitySheet({
                 >
                   <MaterialCommunityIcons name={TAB_META[key].icon} size={rs(16)} color={selected ? BRAND.violet : "#71717A"} />
                   <Text style={[sheetStyles.tabLabel, selected && sheetStyles.tabLabelActive]}>
-                    {TAB_META[key].label} {counts[key]}
+                    {tr(TAB_META[key].label)} {counts[key]}
                   </Text>
                 </Pressable>
               );
@@ -1299,11 +1305,12 @@ function ActivityRow({ uri, name, meta, body, icon, iconColor = "#A1A1AA", child
   iconColor?: string;
   children?: React.ReactNode;
 }) {
+  const { t: tr } = useTranslation();
   return (
     <View style={sheetStyles.row}>
       <Avatar uri={uri} size={rs(42)} />
       <View style={sheetStyles.rowCopy}>
-        <Text style={sheetStyles.rowName} numberOfLines={1}>{name || "User"}</Text>
+        <Text style={sheetStyles.rowName} numberOfLines={1}>{name || tr("profile:user")}</Text>
         {!!body && <Text style={sheetStyles.rowBody}>{body}</Text>}
         {!!meta && <Text style={sheetStyles.rowMeta}>{meta}</Text>}
       </View>
@@ -1325,22 +1332,22 @@ function LoadMore({ loading, label, onPress }: { loading: boolean; label: string
 // ─────────────────────────────────────────────────────────────────────────────
 
 const TYPES: Array<{ value: StatusType; label: string; icon: string }> = [
-  { value: "text", label: "Text", icon: "format-text" },
-  { value: "image", label: "Photo", icon: "image-outline" },
-  { value: "video", label: "Video", icon: "video-outline" },
+  { value: "text", label: "dashboard:status.typeText", icon: "format-text" },
+  { value: "image", label: "dashboard:status.typePhoto", icon: "image-outline" },
+  { value: "video", label: "dashboard:status.typeVideo", icon: "video-outline" },
 ];
 
 const AUDIENCES: Array<{ value: StatusVisibility; label: string; description: string; icon: string }> = [
-  { value: "same_company", label: "My company", description: "Colleagues at your company", icon: "domain" },
-  { value: "all_companies", label: "All companies", description: "Everyone on Reward Planners", icon: "earth" },
-  { value: "all_except_companies", label: "All except…", description: "Hide from companies you choose", icon: "domain-remove" },
-  { value: "custom_people", label: "Only share with…", description: "People you choose", icon: "account-multiple-check-outline" },
+  { value: "same_company", label: "dashboard:status.audience.sameCompany", description: "dashboard:status.audience.sameCompanyDesc", icon: "domain" },
+  { value: "all_companies", label: "dashboard:status.audience.allCompanies", description: "dashboard:status.audience.allCompaniesDesc", icon: "earth" },
+  { value: "all_except_companies", label: "dashboard:status.audience.allExcept", description: "dashboard:status.audience.allExceptDesc", icon: "domain-remove" },
+  { value: "custom_people", label: "dashboard:status.audience.onlyShare", description: "dashboard:status.audience.onlyShareDesc", icon: "account-multiple-check-outline" },
 ];
 
 const FONTS = [
-  { value: "default", label: "Regular" },
-  { value: "bold", label: "Bold" },
-  { value: "italic", label: "Italic" },
+  { value: "default", label: "dashboard:status.font.regular" },
+  { value: "bold", label: "dashboard:status.font.bold" },
+  { value: "italic", label: "dashboard:status.font.italic" },
 ];
 
 const formatDuration = (seconds?: number) => {
@@ -1359,6 +1366,7 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
   onClose: () => void;
   onCreated: (status: UserStatus) => void;
 }) {
+  const { t: tr } = useTranslation();
   const insets = useSafeAreaInsets();
   const [type, setType] = React.useState<StatusType>("text");
   const [draft, setDraft] = React.useState("");
@@ -1405,9 +1413,9 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
       onClose();
       return;
     }
-    Alert.alert("Discard status?", "Your draft will be lost.", [
-      { text: "Keep editing", style: "cancel" },
-      { text: "Discard", style: "destructive", onPress: () => { reset(); onClose(); } },
+    Alert.alert(tr("dashboard:status.discardTitle"), tr("dashboard:status.discardBody"), [
+      { text: tr("dashboard:status.keepEditing"), style: "cancel" },
+      { text: tr("dashboard:status.discard"), style: "destructive", onPress: () => { reset(); onClose(); } },
     ]);
   };
 
@@ -1423,14 +1431,14 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
     const result = await launchImageLibrary({ mediaType: type === "image" ? "photo" : "video", selectionLimit: 1 });
     if (result.didCancel) return;
     if (result.errorCode === "permission") {
-      Alert.alert("Allow photo access", "Reward Planners needs access to your photos to share a status.", [
-        { text: "Not now", style: "cancel" },
-        { text: "Open Settings", onPress: () => Linking.openSettings() },
+      Alert.alert(tr("dashboard:status.photoAccessTitle"), tr("dashboard:status.photoAccessBody"), [
+        { text: tr("common:actions.notNow"), style: "cancel" },
+        { text: tr("common:actions.openSettings"), onPress: () => Linking.openSettings() },
       ]);
       return;
     }
     if (result.errorCode) {
-      Alert.alert("Couldn't open your gallery", result.errorMessage || "Please try again.");
+      Alert.alert(tr("dashboard:status.galleryFailed"), result.errorMessage || tr("common:errors.generic"));
       return;
     }
     if (result.assets?.[0]?.uri) {
@@ -1442,19 +1450,19 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
   const share = async () => {
     if (busy) return;
     if (!hasContent) {
-      setError(type === "text" ? "Write something to share." : `Choose a ${type === "image" ? "photo" : "video"} to share.`);
+      setError(type === "text" ? tr("dashboard:status.errorWrite") : type === "image" ? tr("dashboard:status.errorChoosePhoto") : tr("dashboard:status.errorChooseVideo"));
       return;
     }
     if (!visibility) {
-      setError("Choose who can see this status.");
+      setError(tr("dashboard:status.errorAudience"));
       return;
     }
     if (visibility === "all_except_companies" && !excludedCompanyIds.length) {
-      setError("Choose at least one company to hide this from.");
+      setError(tr("dashboard:status.errorCompanies"));
       return;
     }
     if (visibility === "custom_people" && !allowedUserIds.length) {
-      setError("Choose at least one person to share with.");
+      setError(tr("dashboard:status.errorPeople"));
       return;
     }
     setError("");
@@ -1484,8 +1492,8 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
     } catch (shareError) {
       setPhase("editing");
       setError(isNetworkError(shareError)
-        ? "You're offline. Check your connection and try again."
-        : errorMessage(shareError, "Couldn't share your status. Please try again."));
+        ? tr("dashboard:status.offline")
+        : errorMessage(shareError, tr("dashboard:status.shareFailed")));
     }
   };
 
@@ -1504,9 +1512,9 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
         <View style={[composer.navBar, { paddingTop: topPadding, borderBottomColor: c.separator }]}>
           <View style={composer.navRow}>
             <Pressable onPress={requestClose} disabled={busy} hitSlop={10} style={composer.navSide} accessibilityRole="button">
-              <Text style={[composer.navCancel, busy && composer.disabledText]}>Cancel</Text>
+              <Text style={[composer.navCancel, busy && composer.disabledText]}>{tr("common:actions.cancel")}</Text>
             </Pressable>
-            <Text style={[composer.navTitle, { color: c.text }]} accessibilityRole="header">New Status</Text>
+            <Text style={[composer.navTitle, { color: c.text }]} accessibilityRole="header">{tr("dashboard:status.newStatus")}</Text>
             <View style={composer.navSide} />
           </View>
         </View>
@@ -1524,7 +1532,7 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                   style={[composer.segment, selected && [composer.segmentActive, { backgroundColor: c.card }]]}
                 >
                   <MaterialCommunityIcons name={item.icon} size={rs(17)} color={selected ? BRAND.violet : c.muted} />
-                  <Text style={[composer.segmentLabel, { color: selected ? c.text : c.muted }]}>{item.label}</Text>
+                  <Text style={[composer.segmentLabel, { color: selected ? c.text : c.muted }]}>{tr(item.label)}</Text>
                 </Pressable>
               );
             })}
@@ -1537,16 +1545,16 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                 value={draft}
                 onChangeText={setDraft}
                 editable={!busy}
-                placeholder="What's on your mind?"
+                placeholder={tr("dashboard:status.placeholder")}
                 placeholderTextColor={textColorOn(color) === "#FFFFFF" ? "rgba(255,255,255,0.65)" : "rgba(24,24,27,0.5)"}
                 style={[composer.textInput, { color: textColorOn(color) }, statusFontStyle(font)]}
-                accessibilityLabel="Status text"
+                accessibilityLabel={tr("dashboard:status.statusText")}
               />
             </View>
           ) : media?.uri ? (
             <View style={[composer.preview, { backgroundColor: "#0B0A10" }]}>
               {type === "image" ? (
-                <Image source={{ uri: media.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityLabel="Selected photo" />
+                <Image source={{ uri: media.uri }} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityLabel={tr("dashboard:status.selectedPhoto")} />
               ) : (
                 <Video
                   source={{ uri: media.uri }}
@@ -1556,23 +1564,23 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                   repeat
                   muted
                   playInBackground={false}
-                  accessibilityLabel="Selected video"
+                  accessibilityLabel={tr("dashboard:status.selectedVideo")}
                 />
               )}
               {type === "video" && (
                 <View style={composer.videoBadge} pointerEvents="none">
                   <MaterialCommunityIcons name="video" size={rs(14)} color="#FFFFFF" />
-                  <Text style={composer.chipText}>{[formatDuration(media.duration), formatSize(media.fileSize)].filter(Boolean).join("  ·  ") || "Video"}</Text>
+                  <Text style={composer.chipText}>{[formatDuration(media.duration), formatSize(media.fileSize)].filter(Boolean).join("  ·  ") || tr("dashboard:status.typeVideo")}</Text>
                 </View>
               )}
               {!busy && (
                 <View style={composer.previewActions}>
-                  <Pressable onPress={() => setMedia(null)} style={composer.chip} accessibilityRole="button" accessibilityLabel="Remove media">
+                  <Pressable onPress={() => setMedia(null)} style={composer.chip} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.removeMedia")}>
                     <MaterialCommunityIcons name="close" size={rs(16)} color="#FFFFFF" />
                   </Pressable>
-                  <Pressable onPress={pickMedia} style={composer.chip} accessibilityRole="button" accessibilityLabel="Choose different media">
+                  <Pressable onPress={pickMedia} style={composer.chip} accessibilityRole="button" accessibilityLabel={tr("dashboard:status.changeMedia")}>
                     <MaterialCommunityIcons name="swap-horizontal" size={rs(16)} color="#FFFFFF" />
-                    <Text style={composer.chipText}>Change</Text>
+                    <Text style={composer.chipText}>{tr("dashboard:status.change")}</Text>
                   </Pressable>
                 </View>
               )}
@@ -1582,13 +1590,13 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
               onPress={pickMedia}
               style={({ pressed }) => [composer.preview, composer.pickPreview, { backgroundColor: c.card, borderColor: c.dashed }, pressed && composer.pressed]}
               accessibilityRole="button"
-              accessibilityLabel={`Choose a ${type === "image" ? "photo" : "video"} from your gallery`}
+              accessibilityLabel={type === "image" ? tr("dashboard:status.choosePhoto") : tr("dashboard:status.chooseVideo")}
             >
               <View style={[composer.pickIcon, { backgroundColor: c.accentFill }]}>
                 <MaterialCommunityIcons name={type === "image" ? "image-plus" : "video-plus"} size={rs(30)} color={BRAND.violet} />
               </View>
               <Text style={[composer.pickTitle, { color: c.text }]}>Choose a {type === "image" ? "photo" : "video"}</Text>
-              <Text style={[composer.pickHint, { color: c.muted }]}>From your gallery</Text>
+              <Text style={[composer.pickHint, { color: c.muted }]}>{tr("dashboard:status.fromGallery")}</Text>
             </Pressable>
           )}
 
@@ -1602,7 +1610,7 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                     disabled={busy}
                     accessibilityRole="radio"
                     accessibilityState={{ selected: color === item }}
-                    accessibilityLabel={`Background ${item}`}
+                    accessibilityLabel={tr("dashboard:status.background", { color: item })}
                     style={[composer.swatchRing, color === item && { borderColor: item }]}
                   >
                     <View style={[composer.swatch, { backgroundColor: item }]} />
@@ -1621,7 +1629,7 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                       accessibilityState={{ selected }}
                       style={[composer.fontChip, { backgroundColor: selected ? c.accentFill : c.fill }]}
                     >
-                      <Text style={[composer.fontChipText, statusFontStyle(item.value), { color: selected ? BRAND.violet : c.text }]}>{item.label}</Text>
+                      <Text style={[composer.fontChipText, statusFontStyle(item.value), { color: selected ? BRAND.violet : c.text }]}>{tr(item.label)}</Text>
                     </Pressable>
                   );
                 })}
@@ -1632,15 +1640,15 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
               value={draft}
               onChangeText={setDraft}
               editable={!busy}
-              placeholder="Add a caption…"
+              placeholder={tr("dashboard:status.captionPlaceholder")}
               placeholderTextColor={c.muted}
               multiline
               style={[composer.caption, { backgroundColor: c.card, color: c.text, borderColor: c.separator }]}
-              accessibilityLabel="Caption"
+              accessibilityLabel={tr("dashboard:status.caption")}
             />
           )}
 
-          <Text style={[composer.sectionLabel, { color: c.muted }]}>WHO CAN SEE THIS</Text>
+          <Text style={[composer.sectionLabel, { color: c.muted }]}>{tr("dashboard:status.whoCanSee")}</Text>
           <View style={[composer.group, { backgroundColor: c.card }]}>
             {AUDIENCES.map((item, index) => {
               const selected = visibility === item.value;
@@ -1658,8 +1666,8 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
                   </View>
                   <View style={[composer.optionCopy, index > 0 && { borderTopColor: c.separator, borderTopWidth: StyleSheet.hairlineWidth }]}>
                     <View style={composer.optionText}>
-                      <Text style={[composer.optionLabel, { color: c.text }]}>{item.label}</Text>
-                      <Text style={[composer.optionDescription, { color: c.muted }]}>{item.description}</Text>
+                      <Text style={[composer.optionLabel, { color: c.text }]}>{tr(item.label)}</Text>
+                      <Text style={[composer.optionDescription, { color: c.muted }]}>{tr(item.description)}</Text>
                     </View>
                     <MaterialCommunityIcons
                       name={selected ? "check-circle" : "checkbox-blank-circle-outline"}
@@ -1700,7 +1708,7 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
             disabled={busy}
             accessibilityRole="button"
             accessibilityState={{ disabled: !canShare, busy }}
-            accessibilityLabel={phase === "uploading" ? `Sharing, ${Math.round(uploaded * 100)} percent` : "Share status"}
+            accessibilityLabel={phase === "uploading" ? tr("dashboard:status.sharingPercent", { percent: Math.round(uploaded * 100) }) : tr("dashboard:status.share")}
             style={({ pressed }) => [composer.shareButton, !canShare && phase === "editing" && composer.shareDisabled, pressed && composer.pressed]}
           >
             <LinearGradient
@@ -1715,18 +1723,18 @@ function StatusComposer({ visible, isDark, onClose, onCreated }: {
             {phase === "success" ? (
               <Animated.View style={[composer.shareContent, { transform: [{ scale: successScale }] }]}>
                 <MaterialCommunityIcons name="check" size={rs(20)} color="#FFFFFF" />
-                <Text style={composer.shareText}>Shared</Text>
+                <Text style={composer.shareText}>{tr("dashboard:status.shared")}</Text>
               </Animated.View>
             ) : phase === "uploading" ? (
               <View style={composer.shareContent}>
                 <ActivityIndicator color="#FFFFFF" size="small" />
                 <Text style={composer.shareText}>
-                  {type === "text" || uploaded <= 0 ? "Sharing…" : uploaded >= 1 ? "Processing…" : `Uploading ${Math.round(uploaded * 100)}%`}
+                  {type === "text" || uploaded <= 0 ? tr("dashboard:status.sharing") : uploaded >= 1 ? tr("dashboard:status.processing") : tr("dashboard:status.uploading", { percent: Math.round(uploaded * 100) })}
                 </Text>
               </View>
             ) : (
               <View style={composer.shareContent}>
-                <Text style={composer.shareText}>Share Status</Text>
+                <Text style={composer.shareText}>{tr("dashboard:status.shareButton")}</Text>
                 <MaterialCommunityIcons name="arrow-up" size={rs(18)} color="#FFFFFF" />
               </View>
             )}
@@ -1744,6 +1752,7 @@ function AudiencePicker({ mode, selected, onToggle, disabled, colors: c }: {
   disabled: boolean;
   colors: typeof composerLight;
 }) {
+  const { t: tr } = useTranslation();
   const [companies, setCompanies] = React.useState<StatusAudienceCompany[]>([]);
   const [people, setPeople] = React.useState<StatusAudiencePerson[]>([]);
   const [loading, setLoading] = React.useState(false);
@@ -1760,7 +1769,7 @@ function AudiencePicker({ mode, selected, onToggle, disabled, colors: c }: {
       setPeople(result.people);
       setLoaded(true);
     } catch (loadError) {
-      setError(errorMessage(loadError, "Couldn't load the list."));
+      setError(errorMessage(loadError, i18n.t("dashboard:status.listFailed")));
     } finally {
       setLoading(false);
     }
@@ -1778,14 +1787,14 @@ function AudiencePicker({ mode, selected, onToggle, disabled, colors: c }: {
   return (
     <View style={[composer.picker, { backgroundColor: c.card }]}>
       <Text style={[composer.pickerTitle, { color: c.text }]}>
-        {mode === "companies" ? "Hide from" : "Share with"} · {selected.length} selected
+        {tr(mode === "companies" ? "dashboard:status.hideFromCount" : "dashboard:status.shareWithCount", { count: selected.length })}
       </Text>
       <View style={[composer.search, { backgroundColor: c.fill }]}>
         <MaterialCommunityIcons name="magnify" size={rs(18)} color={c.muted} />
         <TextInput
           value={search}
           onChangeText={setSearch}
-          placeholder={mode === "companies" ? "Search companies" : "Search people"}
+          placeholder={mode === "companies" ? tr("dashboard:status.searchCompanies") : tr("dashboard:status.searchPeople")}
           placeholderTextColor={c.muted}
           style={[composer.searchInput, { color: c.text }]}
           autoCorrect={false}
@@ -1796,7 +1805,7 @@ function AudiencePicker({ mode, selected, onToggle, disabled, colors: c }: {
       ) : error ? (
         <Pressable onPress={() => void load()} style={composer.pickerError} accessibilityRole="button">
           <Text style={composer.errorText}>{error}</Text>
-          <Text style={composer.pickerRetry}>Retry</Text>
+          <Text style={composer.pickerRetry}>{tr("common:actions.retry")}</Text>
         </Pressable>
       ) : (
         <ScrollView style={composer.pickerList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
@@ -1824,7 +1833,7 @@ function AudiencePicker({ mode, selected, onToggle, disabled, colors: c }: {
               </Pressable>
             );
           }) : (
-            <Text style={[composer.pickerEmpty, { color: c.muted }]}>{query ? "No matches" : "Nothing to show"}</Text>
+            <Text style={[composer.pickerEmpty, { color: c.muted }]}>{query ? tr("dashboard:status.noMatches") : tr("dashboard:status.nothingToShow")}</Text>
           )}
         </ScrollView>
       )}

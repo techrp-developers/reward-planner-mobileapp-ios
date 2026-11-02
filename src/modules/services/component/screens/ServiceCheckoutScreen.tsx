@@ -34,6 +34,8 @@ import RazorpayCheckout from "react-native-razorpay";
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type RouteT = RouteProp<HomeStackParamList, 'ServiceCheckoutScreen'>;
 type NavProps = NativeStackNavigationProp<HomeStackParamList>;
@@ -334,6 +336,7 @@ const serviceCheckoutQueryKey = (
 };
 
 export default function ServiceCheckoutScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavProps>();
   const servicesTheme = useServicesTheme();
   // MainLayout already reserves space for the services-module bottom bar via
@@ -370,7 +373,7 @@ export default function ServiceCheckoutScreen() {
   // ── redirect if not logged in ──────────────────────────────────────────────
   useEffect(() => {
     if (!isAuthenticated) {
-      alert.info('Login Required', 'Please login to continue checkout.');
+      alert.info(i18n.t("services:serviceCheckoutScreen.loginRequired"), i18n.t("services:serviceCheckoutScreen.pleaseLoginToContinueCheckout"));
       navigation.goBack();
     }
   }, [alert, isAuthenticated, navigation]);
@@ -532,8 +535,8 @@ export default function ServiceCheckoutScreen() {
           "Select Address",
           "Please select an address.",
           [
-            { text: "Cancel", style: "cancel" },
-            { text: "Add Address", onPress: () => navigation.navigate('AddressSelect') },
+            { text: i18n.t("services:serviceCheckoutScreen.cancel"), style: "cancel" },
+            { text: i18n.t("services:serviceCheckoutScreen.addAddress"), onPress: () => navigation.navigate('AddressSelect') },
           ],
         );
         return;
@@ -569,7 +572,7 @@ export default function ServiceCheckoutScreen() {
           orderRes.details ||
           "Order creation failed";
         console.error("❌ Order API returned failure:", serverMessage, orderRes);
-        Alert.alert("Checkout failed", String(serverMessage));
+        Alert.alert(i18n.t("services:serviceCheckoutScreen.checkoutFailed"), String(serverMessage));
         return;
       }
 
@@ -610,7 +613,7 @@ export default function ServiceCheckoutScreen() {
         setPlacing(false);
         paymentFlowInProgress.current = false;
         console.error("❌ Order ID extraction failed:", orderRes);
-        Alert.alert("Order Error", "Failed to create order. Please try again.");
+        Alert.alert(i18n.t("services:serviceCheckoutScreen.orderError"), i18n.t("services:serviceCheckoutScreen.failedToCreateOrderPlease"));
         return;
       }
 
@@ -633,7 +636,7 @@ export default function ServiceCheckoutScreen() {
         currency: paymentData.currency || "INR",
         order_id: paymentData.orderId,
         name: "Reward Planners",
-        description: "Service Payment",
+        description: i18n.t("services:payment.serviceDescription"),
         theme: { color: "#8665FF" },
       };
 
@@ -743,7 +746,7 @@ export default function ServiceCheckoutScreen() {
             }
 
             alert.info?.(
-              isUserCancelled ? "Cancellation Processing" : "Payment Processing",
+              isUserCancelled ? i18n.t("services:r2.cancellationProcessing") : "Payment Processing",
               "Do not pay again. Check the order status shortly.",
             );
             navigation.navigate("ServiceOrderDetail", { parent_order_id });
@@ -837,7 +840,7 @@ export default function ServiceCheckoutScreen() {
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <ScreenHeader title="Checkout" onBackPress={() => navigation.goBack()} />
+        <ScreenHeader title={tx("services:serviceCheckoutScreen.checkout")} onBackPress={() => navigation.goBack()} />
         <View style={styles.loadingWrapper}>
           <View style={[styles.checkoutSkeletonCard, { backgroundColor: servicesTheme.colors.surface }]}>
             <SkeletonBox pulse={pulse} width="60%" height={24} borderRadius={10} />
@@ -855,11 +858,11 @@ export default function ServiceCheckoutScreen() {
   if (!isLoading && hasStarted && !isCheckoutFetching && items.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <ScreenHeader title="Checkout" onBackPress={() => navigation.goBack()} />
+        <ScreenHeader title={tx("services:serviceCheckoutScreen.checkout")} onBackPress={() => navigation.goBack()} />
         <EmptyCart
           message={
             isBuyNow
-              ? 'Unable to load the selected item. Please login and try again.'
+              ? i18n.t("services:r2.unableToLoadTheSelectedItem")
               : 'Your cart is empty. Add products to continue.'
           }
         />
@@ -870,7 +873,7 @@ export default function ServiceCheckoutScreen() {
   // ── main checkout UI ───────────────────────────────────────────────────────
   return (
     <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-      <ScreenHeader title="Checkout" onBackPress={() => navigation.goBack()} />
+      <ScreenHeader title={tx("services:serviceCheckoutScreen.checkout")} onBackPress={() => navigation.goBack()} />
 
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: stickyCTA.scrollContentPaddingBottom }]}
@@ -884,7 +887,7 @@ export default function ServiceCheckoutScreen() {
             <View style={styles.addressBody}>
               <View style={styles.addressTopRow}>
                 <Text style={[styles.addressTitle, { color: servicesTheme.colors.textStrong }]}>
-                  {address ? `Delivering to ${address.contact_name || 'User'}` : 'No delivery address'}
+                  {address ? `Delivering to ${address.contact_name || 'User'}` : i18n.t("services:r2.noDeliveryAddress")}
                 </Text>
                 <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate('AddressSelect')}>
                   <Text style={[styles.changeText, { color: servicesTheme.colors.primary }]}>{address ? 'Change' : '+ Add Address'}</Text>
@@ -894,7 +897,7 @@ export default function ServiceCheckoutScreen() {
                 <Text style={[styles.addressSub, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{addressLine}</Text>
               ) : (
                 <Text style={[styles.addressSub, styles.addressMissing]}>
-                  Please add a delivery address to continue
+                  {tx("services:serviceCheckoutScreen.pleaseAddADeliveryAddress")}
                 </Text>
               )}
             </View>
@@ -923,7 +926,7 @@ export default function ServiceCheckoutScreen() {
                     style={styles.removeBtn}
                     onPress={() => handleRemoveFromCheckout(item)}
                   >
-                    <Text style={styles.removeBtnText}>{removingId === item.id ? 'Removing...' : 'Remove'}</Text>
+                    <Text style={styles.removeBtnText}>{removingId === item.id ? i18n.t("services:r2.removing2") : 'Remove'}</Text>
                   </TouchableOpacity>
                 </View>
                 )}
@@ -953,7 +956,7 @@ export default function ServiceCheckoutScreen() {
 
             {item.documents.length > 0 && (
               <View style={[styles.docsSection, { borderTopColor: servicesTheme.colors.divider }]}>
-                <Text style={[styles.docsTitle, { color: servicesTheme.colors.textStrong }]} >Documents Required</Text>
+                <Text style={[styles.docsTitle, { color: servicesTheme.colors.textStrong }]} >{tx("services:serviceCheckoutScreen.documentsRequired")}</Text>
                 {item.documents.map((doc, i) => (
                   <View key={`${doc}-${i}`} style={styles.docRow}>
                     <View style={styles.docDot} />
@@ -968,9 +971,9 @@ export default function ServiceCheckoutScreen() {
         {/* Coupons */}
         {/* <View style={styles.couponsWrapper}>
           <View style={styles.couponsHeader}>
-            <Text style={styles.couponsTitle}>Coupons and Offers</Text>
+            <Text style={styles.couponsTitle}>{tx("services:serviceCheckoutScreen.couponsAndOffers")}</Text>
             <TouchableOpacity onPress={() => setShowAllCoupons((p) => !p)}>
-              <Text style={styles.viewAllText}>{showAllCoupons ? 'Hide' : 'View All'}</Text>
+              <Text style={styles.viewAllText}>{showAllCoupons ? i18n.t("services:r2.hide") : 'View All'}</Text>
             </TouchableOpacity>
           </View>
           <CouponsSection coupons={showAllCoupons ? COUPONS : COUPONS.slice(0, 1)} />

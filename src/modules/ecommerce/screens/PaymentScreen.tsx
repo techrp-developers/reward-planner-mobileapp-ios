@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Button, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import RazorpayCheckout from "react-native-razorpay";
 import { checkPaymentStatus, createPaymentOrder, verifyPayment } from "../api/Payment";
+import i18n from "../../../i18n";
 
 
 const PaymentScreen = () => {
@@ -44,9 +45,9 @@ const PaymentScreen = () => {
             });
 
             if (verifyRes.success) {
-              Alert.alert("Success", "Payment verified successfully 🎉");
+              Alert.alert(i18n.t("products:paymentScreen.success"), i18n.t("products:paymentScreen.paymentVerifiedSuccessfully"));
             } else {
-              Alert.alert("Verification Failed", "Please contact support");
+              Alert.alert(i18n.t("products:paymentScreen.verificationFailed"), i18n.t("products:paymentScreen.pleaseContactSupport"));
             }
 
           } catch (error) {
@@ -67,20 +68,20 @@ const PaymentScreen = () => {
             /cancel|cancelled|dismiss|closed|back/i.test(String(errorText));
 
           if (isUserCancelled) {
-            Alert.alert("Payment Cancelled", "You exited the payment window.");
+            Alert.alert(i18n.t("products:paymentScreen.paymentCancelled"), i18n.t("products:paymentScreen.youExitedThePaymentWindow"));
             return;
           }
 
           Alert.alert(
-            "Payment Failed",
-            String(errorText || "Payment cancelled")
+            i18n.t("products:paymentScreen.msg.paymentFailed"),
+            String(errorText || i18n.t("products:r2.paymentCancelled"))
           );
         });
 
     } catch (error: any) {
       setLoading(false);
       Alert.alert(
-        "Error",
+        i18n.t("products:paymentScreen.msg.error"),
         error?.response?.data?.message || "Failed to create order"
       );
     }
@@ -96,7 +97,7 @@ const PaymentScreen = () => {
         const res = await checkPaymentStatus(orderId);
 
         if (res.status === "paid" || res.status === "captured") {
-          Alert.alert("Success", "Payment verified successfully 🎉");
+          Alert.alert(i18n.t("products:paymentScreen.success"), i18n.t("products:paymentScreen.paymentVerifiedSuccessfully"));
           return;
         }
 
@@ -105,8 +106,8 @@ const PaymentScreen = () => {
           setTimeout(checkStatus, 2000);
         } else {
           Alert.alert(
-            "Verification Pending",
-            "Payment is being verified. Please check orders page."
+            i18n.t("products:paymentScreen.msg.verificationPending"),
+            i18n.t("products:paymentScreen.msg.paymentIsBeingVerifiedPlease")
           );
         }
 

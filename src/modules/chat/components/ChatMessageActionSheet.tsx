@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useChatColors, CHAT_UI } from "./chatUiTokens";
+import { useTranslation } from "react-i18next";
 export type MessageAction = {
   text: string;
   onPress: () => void;
@@ -17,13 +18,15 @@ export type MessageAction = {
 export default function ChatMessageActionSheet({
   actions,
   onClose,
-  title = "Message",
+  title,
 }: {
   actions: MessageAction[] | null;
   onClose: () => void;
   title?: string;
 }) {
   const theme = useChatColors();
+  const { t } = useTranslation();
+  title ??= t("chat:actions.title");
   const insets = useSafeAreaInsets();
   const pending = useRef<(() => void) | null>(null);
   const finish = () => {
@@ -49,7 +52,7 @@ export default function ChatMessageActionSheet({
           style={StyleSheet.absoluteFill}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Dismiss message actions"
+          accessibilityLabel={t("chat:actions.dismiss")}
         />
         <View
           style={[

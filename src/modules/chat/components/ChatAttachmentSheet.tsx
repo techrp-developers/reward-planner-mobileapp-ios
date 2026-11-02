@@ -11,6 +11,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useChatColors } from "./chatUiTokens";
 import { CHAT_UI } from "./chatUiTokens";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   visible: boolean;
@@ -23,22 +24,22 @@ type Props = {
 const choices = [
   {
     key: "image",
-    title: "Photos",
-    subtitle: "Share moments from your gallery",
+    title: "chat:attach.image.title",
+    subtitle: "chat:attach.image.subtitle",
     icon: "image-multiple-outline",
     accent: "#7C3AED",
   },
   {
     key: "document",
-    title: "Documents",
-    subtitle: "PDFs, reports and other files",
+    title: "chat:attach.document.title",
+    subtitle: "chat:attach.document.subtitle",
     icon: "file-document-outline",
     accent: "#2563EB",
   },
   {
     key: "poll",
-    title: "Poll",
-    subtitle: "Ask everyone a question",
+    title: "chat:attach.poll.title",
+    subtitle: "chat:attach.poll.subtitle",
     icon: "poll",
     accent: "#059669",
   },
@@ -52,6 +53,7 @@ function ChatAttachmentSheet({
   onPoll,
 }: Props) {
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const actions = { image: onImage, document: onDocument, poll: onPoll };
   const pending = useRef<(() => void) | null>(null);
@@ -82,7 +84,7 @@ function ChatAttachmentSheet({
     >
       <View style={styles.backdrop}>
         <Pressable
-          accessibilityLabel="Dismiss attachments"
+          accessibilityLabel={t("chat:attach.dismiss")}
           accessibilityRole="button"
           onPress={onClose}
           style={StyleSheet.absoluteFill}
@@ -100,18 +102,18 @@ function ChatAttachmentSheet({
           <View style={styles.header}>
             <View style={styles.headerCopy}>
               <Text style={[styles.eyebrow, { color: theme.primary }]}>
-                ATTACHMENT
+                {t("chat:attach.eyebrow")}
               </Text>
               <Text style={[styles.title, { color: theme.text }]}>
-                Share in chat
+                {t("chat:attach.title")}
               </Text>
               <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-                Choose what you'd like to send
+                {t("chat:attach.subtitle")}
               </Text>
             </View>
             <Pressable
               onPress={onClose}
-              accessibilityLabel="Close attachments"
+              accessibilityLabel={t("chat:attach.close")}
               accessibilityRole="button"
               hitSlop={6}
               style={[styles.close, { backgroundColor: theme.background }]}
@@ -129,7 +131,7 @@ function ChatAttachmentSheet({
                 key={choice.key}
                 onPress={() => choose(choice.key)}
                 accessibilityRole="button"
-                accessibilityLabel={`Attach ${choice.title}`}
+                accessibilityLabel={t("chat:attach.attach", { type: t(choice.title) })}
                 style={({ pressed }) => [
                   styles.option,
                   {
@@ -153,7 +155,7 @@ function ChatAttachmentSheet({
                 </View>
                 <View style={styles.optionCopy}>
                   <Text style={[styles.optionTitle, { color: theme.text }]}>
-                    {choice.title}
+                    {t(choice.title)}
                   </Text>
                   <Text
                     style={[
@@ -162,7 +164,7 @@ function ChatAttachmentSheet({
                     ]}
                     numberOfLines={1}
                   >
-                    {choice.subtitle}
+                    {t(choice.subtitle)}
                   </Text>
                 </View>
                 <MaterialCommunityIcons

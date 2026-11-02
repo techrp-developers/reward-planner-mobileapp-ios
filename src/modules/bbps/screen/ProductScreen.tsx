@@ -10,6 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import BBPSHead from '../constatnt/BBPSHead';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
 
 type RewardItem = { id: string; title: string; sub: string; image: string; brand: string };
 
@@ -23,6 +24,7 @@ const REWARDS: RewardItem[] = [
 ];
 
 const ProductScreenComponent = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const bbpsTheme = useBbpsTheme();
 
@@ -68,7 +70,7 @@ const ProductScreenComponent = () => {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
       {/* Strict use of custom ScreenHeader */}
       <BBPSHead
-        title="Rewards"
+        title={tx("payments:productScreen.rewards")}
         onBackPress={handleBackPress}
       />
 

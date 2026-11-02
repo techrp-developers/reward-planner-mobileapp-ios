@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { ServiceCancellation } from '../../api/OrderAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import i18n from "../../../../i18n";
 
 type Props = {
   cancellation: ServiceCancellation;
@@ -54,7 +55,7 @@ export default function ServiceCancellationCard({
             ? 'View Cancellation Details'
             : enabled
               ? `Cancel ${serviceName}`
-              : 'Cancellation unavailable'}
+              : i18n.t("services:r2.cancellationUnavailable")}
         </Text>
       </TouchableOpacity>
     </View>

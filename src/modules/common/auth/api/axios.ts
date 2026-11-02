@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 export { API_BASE_URL } from '../../../../config/apiConfig';
 import { API_BASE_URL } from '../../../../config/apiConfig';
+import { currentLanguage } from '../../../../i18n';
 
 type SessionHandlers = {
   getAccessToken: () => string | null;
@@ -36,8 +37,15 @@ export const api = axios.create({
 });
 
 const applyNoStoreHeaders = (config: InternalAxiosRequestConfig) => {
-  const nextConfig = config;
-  const headers: any = nextConfig.headers || {};
+  const nextConfig = config as InternalAxiosRequestConfig & { _rpLanguage?: string };
+  const headers = nextConfig.headers;
+  const suppliedLanguage = headers.get("Accept-Language");
+  // Retried requests retain headers from their first attempt. Refresh only the
+  // value we inserted, while preserving explicit caller overrides (geocoding).
+  if (!headers.has("Accept-Language") || suppliedLanguage === nextConfig._rpLanguage) {
+    headers.set("Accept-Language", currentLanguage());
+    nextConfig._rpLanguage = currentLanguage();
+  }
 
   if (typeof headers.set === "function") {
     headers.set("Cache-Control", "no-store");

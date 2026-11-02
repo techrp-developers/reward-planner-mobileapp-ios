@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import LinearGradient from "react-native-linear-gradient";
+import { useTranslation } from "react-i18next";
 
 const OFFERS = [
   {
@@ -23,6 +24,7 @@ const OFFERS = [
 ];
 
 export default function OffersSection() {
+  const { t: tx } = useTranslation();
   return (
     <View style={styles.wrap}>
       <ScrollView
@@ -41,7 +43,7 @@ export default function OffersSection() {
               <View style={styles.offerTop}>
                 <MaterialCommunityIcons name="tag-outline" size={18} color="#A654CD" />
                 <Text style={styles.offerCode}>{offer.code}</Text>
-                <Text style={styles.applyText}>APPLY</Text>
+                <Text style={styles.applyText}>{tx("products:offersection.apply")}</Text>
               </View>
 
               <View style={styles.dashedLine} />
@@ -59,7 +61,7 @@ export default function OffersSection() {
           <View style={styles.percentIcon}>
             <Text style={styles.percentIconText}>%</Text>
           </View>
-          <Text style={styles.seeAllText}>See all offers & discounts</Text>
+          <Text style={styles.seeAllText}>{tx("products:offersection.seeAllOffersDiscounts")}</Text>
         </View>
         <MaterialIcons name="chevron-right" size={22} color="#444" />
       </TouchableOpacity>

@@ -16,6 +16,8 @@ import { useStepTracker, StepDataState } from "../../step_counter/component/Step
 import { useDashboardQuery, useTodaySummaryQuery } from "../../step_counter/api/useFitnessQueries";
 import { useAppTheme } from "../../../theme/ThemeContext";
 import stepcounter from "../../../assets/homepage/step_Counter.jpeg";
+import { Trans, useTranslation } from "react-i18next";
+import { formatNumber } from "../../../i18n/format";
 // ── Constants ──────────────────────────────────────────────────────────────
 const DEFAULT_GOAL_STEPS = 5000;
 
@@ -69,6 +71,7 @@ function StepStatusBanner({ state }: BannerProps) {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export default function Home_Chart({ goalSteps }: HomeChartProps) {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
@@ -151,10 +154,10 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
               <View style={styles.walkIcon}>
                 <MaterialCommunityIcons name="walk" size={rs(16)} color="#FFFFFF" />
               </View>
-              <Text style={[styles.heroLabel, { color: titleColor }]}>Today's Steps</Text>
+              <Text style={[styles.heroLabel, { color: titleColor }]}>{t("dashboard:steps.today")}</Text>
             </View>
             <View style={styles.keepPill}>
-              <Text style={styles.keepText}>Keep it up!</Text>
+              <Text style={styles.keepText}>{t("dashboard:steps.keepItUp")}</Text>
               <MaterialCommunityIcons name="fire" size={rs(11)} color="#F97316" />
             </View>
           </View> */}
@@ -165,10 +168,14 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
                 <Text style={[styles.stepsValue, { color: titleColor }]}>
                   {todaySteps.toLocaleString("en-IN")}
                 </Text>
-                <Text style={[styles.stepsWord, { color: mutedColor }]}>steps</Text>
+                <Text style={[styles.stepsWord, { color: mutedColor }]}>{t("dashboard:steps.stepsWord")}</Text>
               </View>
               <Text style={[styles.goalText, { color: mutedColor }]}>
-                of <Text style={styles.goalNumber}>{targetSteps.toLocaleString("en-IN")}</Text> steps goal
+                <Trans
+                  i18nKey="dashboard:steps.goal"
+                  values={{ goal: formatNumber(targetSteps) }}
+                  components={{ goal: <Text style={styles.goalNumber} /> }}
+                />
               </Text>
               <View style={styles.progressRow}>
                 <View style={styles.progressTrack}>
@@ -188,7 +195,7 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
               </View>
               <View>
                 <Text style={[styles.metricValue, { color: titleColor }]}>{calories}</Text>
-                <Text style={[styles.metricLabel, { color: mutedColor }]}>kcal</Text>
+                <Text style={[styles.metricLabel, { color: mutedColor }]}>{t("dashboard:steps.kcal")}</Text>
               </View>
             </View>
             <View style={styles.metricDivider} />
@@ -198,7 +205,7 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
               </View>
               <View>
                 <Text style={[styles.metricValue, { color: titleColor }]}>{distanceKm.toFixed(1)}</Text>
-                <Text style={[styles.metricLabel, { color: mutedColor }]}>km</Text>
+                <Text style={[styles.metricLabel, { color: mutedColor }]}>{t("dashboard:steps.km")}</Text>
               </View>
             </View>
             <View style={styles.metricDivider} />
@@ -208,7 +215,7 @@ export default function Home_Chart({ goalSteps }: HomeChartProps) {
               </View>
               <View>
                 <Text style={[styles.metricValue, { color: titleColor }]}>{activeMinutes}</Text>
-                <Text style={[styles.metricLabel, { color: mutedColor }]}>Active mins</Text>
+                <Text style={[styles.metricLabel, { color: mutedColor }]}>{t("dashboard:steps.activeMins")}</Text>
               </View>
             </View>
           </View>

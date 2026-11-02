@@ -11,6 +11,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 const PRIMARY = '#3545A3';
 const PRIMARY_DARK = '#080B26';
@@ -319,6 +320,7 @@ export const DonutSummary: React.FC<DonutProps> = ({
   returns,
   size = 120,
 }) => {
+  const { t: tx } = useTranslation();
   const total = invested + returns;
   const returnsPct = total > 0 ? ((returns / total) * 100).toFixed(0) : '50';
 
@@ -327,7 +329,7 @@ export const DonutSummary: React.FC<DonutProps> = ({
       <View style={styles.donutOuter}>
         <View style={styles.donutInner}>
           <Text style={styles.donutPct}>{returnsPct}%</Text>
-          <Text style={styles.donutLabel}>Returns</Text>
+          <Text style={styles.donutLabel}>{tx("services:uIComponents.returns")}</Text>
         </View>
       </View>
     </View>

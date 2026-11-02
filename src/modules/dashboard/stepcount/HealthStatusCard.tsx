@@ -21,6 +21,7 @@ import Svg, {
 } from "react-native-svg";
 import { rs, fs } from "../../../utils/responsive";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 type HealthStatus = "active" | "resting" | "warning" | "critical";
@@ -48,10 +49,10 @@ const STATUS_CONFIG: Record<
   HealthStatus,
   { color: string; bg: string; bgDark: string; label: string; desc: string; badge: string }
 > = {
-  active:   { color: "#10B981", bg: "#ECFDF5", bgDark: "rgba(16,185,129,0.15)", label: "Active",   desc: "All vitals are stable",        badge: "All systems normal"  },
-  resting:  { color: "#10B981", bg: "#ECFDF5", bgDark: "rgba(16,185,129,0.15)", label: "Resting",  desc: "Heart rate is normal",         badge: "All systems normal"  },
-  warning:  { color: "#F59E0B", bg: "#FFFBEB", bgDark: "rgba(245,158,11,0.15)", label: "Warning",  desc: "Elevated heart rate detected",  badge: "Monitor closely"     },
-  critical: { color: "#EF4444", bg: "#FEF2F2", bgDark: "rgba(239,68,68,0.15)", label: "Critical", desc: "Seek medical attention",       badge: "Alert: check vitals" },
+  active:   { color: "#10B981", bg: "#ECFDF5", bgDark: "rgba(16,185,129,0.15)", label: "dashboard:health.active.label", desc: "dashboard:health.active.desc", badge: "dashboard:health.badgeNormal" },
+  resting:  { color: "#10B981", bg: "#ECFDF5", bgDark: "rgba(16,185,129,0.15)", label: "dashboard:health.resting.label", desc: "dashboard:health.resting.desc", badge: "dashboard:health.badgeNormal" },
+  warning:  { color: "#F59E0B", bg: "#FFFBEB", bgDark: "rgba(245,158,11,0.15)", label: "dashboard:health.warning.label", desc: "dashboard:health.warning.desc", badge: "dashboard:health.badgeMonitor" },
+  critical: { color: "#EF4444", bg: "#FEF2F2", bgDark: "rgba(239,68,68,0.15)", label: "dashboard:health.critical.label", desc: "dashboard:health.critical.desc", badge: "dashboard:health.badgeAlert" },
 };
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -65,6 +66,7 @@ const HealthStatusCard: React.FC<HealthStatusCardProps> = ({
   cardWidth,
 }) => {
   const { isDark, theme } = useAppTheme();
+  const { t: tr } = useTranslation();
 
   const screenWidth = Dimensions.get("window").width;
   const cWidth = cardWidth ?? (screenWidth - rs(32)) / 2;
@@ -72,9 +74,9 @@ const HealthStatusCard: React.FC<HealthStatusCardProps> = ({
   const cfg = STATUS_CONFIG[status];
   const color = cfg.color;
   const bgColor = isDark ? cfg.bgDark : cfg.bg;
-  const label = statusLabel ?? cfg.label;
-  const description = statusDescription ?? cfg.desc;
-  const badge = badgeLabel ?? cfg.badge;
+  const label = statusLabel ?? tr(cfg.label);
+  const description = statusDescription ?? tr(cfg.desc);
+  const badge = badgeLabel ?? tr(cfg.badge);
 
   // Pulsing ring
   const pulse = useRef(new Animated.Value(1)).current;
@@ -141,8 +143,8 @@ const HealthStatusCard: React.FC<HealthStatusCardProps> = ({
             <Text style={styles.iconEmoji}>💚</Text>
           </View>
           <View style={styles.headerText}>
-            <Text style={[styles.title, t.title]}>Health Status</Text>
-            <Text style={[styles.subtitle, t.subtitle]}>Latest Update</Text>
+            <Text style={[styles.title, t.title]}>{tr("dashboard:health.title")}</Text>
+            <Text style={[styles.subtitle, t.subtitle]}>{tr("dashboard:health.latest")}</Text>
           </View>
           <TouchableOpacity onPress={onMenuPress} hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <Text style={[styles.menuDots, t.menuDots]}>⋮</Text>

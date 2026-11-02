@@ -9,6 +9,9 @@ import CancellationAndRefundCard from "../../common/order/CancellationTimeline";
 import { fetchItemCancellationDetails, ItemCancellationDetails } from "../api/OrderApi";
 import { HomeStackParamList } from "../navigation/types";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteProps = RouteProp<HomeStackParamList, "ItemCancellationDetails">;
@@ -46,6 +49,7 @@ const formatDisplayDate = (value?: string) => {
 };
 
 export default function ItemCancellationDetailsScreen() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const route = useRoute<RouteProps>();
     const { isDark, theme } = useAppTheme();
@@ -71,7 +75,7 @@ export default function ItemCancellationDetailsScreen() {
             if (response?.success && response.data) {
                 setData(response.data);
             } else {
-                setError("Unable to load cancellation details.");
+                setError(i18n.t("products:r2.unableToLoadCancellationDetails"));
             }
 
             setLoading(false);
@@ -83,10 +87,10 @@ export default function ItemCancellationDetailsScreen() {
     if (loading) {
         return (
             <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-                <OrderHeading title="Cancellation Status" onBackPress={() => navigation.goBack()} isDark={isDark} />
+                <OrderHeading title={tx("products:itemCancellationDetailsScreen.cancellationStatus")} onBackPress={() => navigation.goBack()} isDark={isDark} />
                 <View style={styles.centeredState}>
                     <ActivityIndicator size="large" color={theme.primary} />
-                    <Text style={[styles.stateText, { color: theme.secondaryText }]}>Loading cancellation details...</Text>
+                    <Text style={[styles.stateText, { color: theme.secondaryText }]}>{tx("products:itemCancellationDetailsScreen.loadingCancellationDetails")}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -95,28 +99,28 @@ export default function ItemCancellationDetailsScreen() {
     if (error || !data) {
         return (
             <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-                <OrderHeading title="Cancellation Status" onBackPress={() => navigation.goBack()} isDark={isDark} />
+                <OrderHeading title={tx("products:itemCancellationDetailsScreen.cancellationStatus")} onBackPress={() => navigation.goBack()} isDark={isDark} />
                 <View style={styles.centeredState}>
-                    <Text style={styles.errorText}>{error || "Unable to load cancellation details."}</Text>
+                    <Text style={styles.errorText}>{error || i18n.t("products:r2.unableToLoadCancellationDetails")}</Text>
                 </View>
             </SafeAreaView>
         );
     }
 
     const timeline = (data.timeline || []).map((entry) => ({
-        label: EVENT_LABELS[entry.event] || entry.event,
+        label: translateSourceText("products", EVENT_LABELS[entry.event]) || entry.event,
         date: formatDisplayDate(entry.created_at),
     }));
 
     const refunds = (data.refunds || []).map((refund) => ({
         amount: Number(refund.refund_amount || 0),
-        label: REFUND_METHOD_LABELS[refund.refund_method] || refund.refund_method,
+        label: translateSourceText("products", REFUND_METHOD_LABELS[refund.refund_method]) || refund.refund_method,
         status: refund.status,
     }));
 
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
-            <OrderHeading title="Cancellation Status" onBackPress={() => navigation.goBack()} isDark={isDark} />
+            <OrderHeading title={tx("products:itemCancellationDetailsScreen.cancellationStatus")} onBackPress={() => navigation.goBack()} isDark={isDark} />
 
             <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 {data.item?.product_name ? (
@@ -131,7 +135,7 @@ export default function ItemCancellationDetailsScreen() {
                 ) : null}
 
                 <CancellationAndRefundCard
-                    title={STATUS_TITLES[data.item.status] || "Cancellation Requested"}
+                    title={translateSourceText("products", STATUS_TITLES[data.item.status] || "Cancellation Requested")}
                     reasonText={
                         [data.item.reason_text, data.item.comment].filter(Boolean).join(" — ") || undefined
                     }

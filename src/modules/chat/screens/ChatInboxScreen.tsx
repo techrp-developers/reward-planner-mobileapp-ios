@@ -28,6 +28,8 @@ import BottomTabs, {
   TAB_BAR_HEIGHT,
   type TabKey,
 } from "../../../bottombar/BottomTabs";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Navigation = NativeStackNavigationProp<ChatStackParamList>;
 export default function ChatInboxScreen() {
@@ -35,6 +37,7 @@ export default function ChatInboxScreen() {
   const { user } = useAuth();
   const currentUserId = getChatUserId(user);
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState<ChatConversation[]>([]);
   const [presence, setPresence] = useState<Record<number, boolean>>({});
@@ -83,7 +86,7 @@ export default function ChatInboxScreen() {
           ));
       } catch (failure) {
         if (active.current && generation.current === request)
-          setError(chatError(failure, "Unable to load conversations."));
+          setError(chatError(failure, i18n.t("chat:inbox.loadError")));
       } finally {
         fetching.current = false;
         if (active.current && generation.current === request) {
@@ -189,14 +192,14 @@ export default function ChatInboxScreen() {
     >
       <View style={styles.header}>
         <View style={{ flex: 1, paddingRight: 12 }}>
-          <Text style={[styles.title, { color: theme.text }]}>Chats</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t("chat:inbox.title")}</Text>
           <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-            Stay connected with your team
+            {t("chat:inbox.subtitle")}
           </Text>
         </View>
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Start a new chat"
+          accessibilityLabel={t("chat:inbox.newChat")}
           onPress={() => navigation.navigate("NewChat")}
           style={[styles.newChat, { backgroundColor: `${theme.primary}12` }]}
         >
@@ -222,12 +225,12 @@ export default function ChatInboxScreen() {
           color={theme.secondaryText}
         />
         <TextInput
-          accessibilityLabel="Search people or groups"
+          accessibilityLabel={t("chat:inbox.search")}
           value={query}
           onChangeText={setQuery}
           onFocus={() => setSearchFocused(true)}
           onBlur={() => setSearchFocused(false)}
-          placeholder="Search people or groups"
+          placeholder={t("chat:inbox.search")}
           placeholderTextColor={theme.secondaryText}
           style={[styles.input, { color: theme.text }]}
           returnKeyType="search"
@@ -236,7 +239,7 @@ export default function ChatInboxScreen() {
         {!!query && (
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Clear search"
+            accessibilityLabel={t("chat:inbox.clearSearch")}
             onPress={() => setQuery("")}
             style={styles.clear}
           >
@@ -292,18 +295,18 @@ export default function ChatInboxScreen() {
               : null;
           const preview =
             item.last_message_type === "image"
-              ? "Photo"
+              ? t("chat:preview.photo")
               : item.last_message_type === "file"
-              ? "Shared a document"
+              ? t("chat:preview.sharedDocument")
               : item.last_message_type === "poll"
-              ? "Poll"
-              : item.last_message || "No messages yet";
+              ? t("chat:preview.poll")
+              : item.last_message || t("chat:inbox.noMessages");
           return (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel={`${name}, ${preview}${
-                item.unread_count ? `, ${item.unread_count} unread` : ""
-              }`}
+              accessibilityLabel={item.unread_count
+                ? t("chat:inbox.rowA11yUnread", { name, preview, count: item.unread_count })
+                : t("chat:inbox.rowA11y", { name, preview })}
               onPress={() =>
                 navigation.navigate("ChatConversation", { conversation: item })
               }
@@ -408,18 +411,18 @@ export default function ChatInboxScreen() {
                 </View>
                 <Text style={[styles.emptyTitle, { color: theme.text }]}>
                   {error
-                    ? "Couldn’t load chats"
+                    ? t("chat:inbox.loadFailed")
                     : query.trim()
-                    ? "No chats found"
-                    : "Start a conversation"}
+                    ? t("chat:inbox.noneFound")
+                    : t("chat:inbox.startTitle")}
                 </Text>
                 <Text
                   style={[styles.emptyText, { color: theme.secondaryText }]}
                 >
                   {error ||
                     (query.trim()
-                      ? "Try another person or group name."
-                      : "Message a coworker or bring your team together.")}
+                      ? t("chat:inbox.noneFoundHint")
+                      : t("chat:inbox.startHint"))}
                 </Text>
                 {error && (
                   <TouchableOpacity
@@ -427,7 +430,7 @@ export default function ChatInboxScreen() {
                     style={styles.clear}
                   >
                     <Text style={{ color: theme.primary, fontWeight: "600" }}>
-                      Try again
+                      {t("common:actions.tryAgain")}
                     </Text>
                   </TouchableOpacity>
                 )}

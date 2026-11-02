@@ -15,6 +15,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import type { EnquiryField } from '../../types/ServiceTypes';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 interface Props {
   title: string;
@@ -47,6 +49,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
   onSubmit,
   isSubmitting = false,
 }) => {
+  const { t: tx } = useTranslation();
   const [selectState, setSelectState] = useState<SelectState>({ open: false, field: null });
   const servicesTheme = useServicesTheme();
   const formSurface = servicesTheme.isDark ? '#000000' : '#FFFFFF';
@@ -79,10 +82,10 @@ const DynamicEnquiryForm: React.FC<Props> = ({
               setTimeout(() => setSelectState({ open: true, field }), 80);
             }}
             accessibilityRole="button"
-            accessibilityLabel={`Select ${field.label}`}
+            accessibilityLabel={i18n.t('services:enquiry.selectField', { field: field.label })}
           >
             <Text style={[styles.inputText, { color: servicesTheme.colors.text }, !value && { color: servicesTheme.colors.subtle }]}>
-              {value || `Select ${field.label}`}
+              {value || i18n.t('services:enquiry.selectField', { field: field.label })}
             </Text>
             <View style={styles.rightIcon}>
               <MaterialIcons name="keyboard-arrow-down" size={22} color={servicesTheme.colors.muted} />
@@ -94,7 +97,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
             <TextInput
               value={value}
               onChangeText={(t) => onChange(field.field_name, t)}
-              placeholder={`Enter ${field.label.toLowerCase()}`}
+              placeholder={i18n.t('services:enquiry.enterField', { field: i18n.language === 'en' ? field.label.toLowerCase() : field.label })}
               placeholderTextColor={servicesTheme.colors.subtle}
               style={[styles.inputText, styles.textArea, { color: servicesTheme.colors.text }]}
               multiline
@@ -110,7 +113,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
                 const sanitized = fieldType === 'number' ? t.replace(/[^0-9]/g, '') : t;
                 onChange(field.field_name, sanitized);
               }}
-              placeholder={`Enter ${field.label.toLowerCase()}`}
+              placeholder={i18n.t('services:enquiry.enterField', { field: i18n.language === 'en' ? field.label.toLowerCase() : field.label })}
               placeholderTextColor={servicesTheme.colors.subtle}
               style={[styles.inputTextWithPadding, { color: servicesTheme.colors.text }]}
               keyboardType={getKeyboardType(fieldType)}
@@ -147,7 +150,7 @@ const DynamicEnquiryForm: React.FC<Props> = ({
           {isSubmitting ? (
             <ActivityIndicator color="#FFF" size="small" />
           ) : (
-            <Text style={styles.submitText}>Submit</Text>
+            <Text style={styles.submitText}>{tx("services:dynamicEnquiryForm.submit")}</Text>
           )}
         </LinearGradient>
       </TouchableOpacity>

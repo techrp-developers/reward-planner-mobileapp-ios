@@ -35,6 +35,9 @@ import {
   isAuthenticated,
 } from "../../../common/auth/api/AuthAPI";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { insuranceOptionLabel } from "../../constant/insuranceLabels";
 
 type FormData = {
   gender: string;
@@ -81,6 +84,7 @@ const getCategoryFromWork = (selectedWork?: string): number | null => {
 };
 
 export default function Step3PA({ data, setData, onBack, onShowResults }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [dropdownVisibleFor, setDropdownVisibleFor] = useState<string | null>(
     null
@@ -95,7 +99,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           Alert.alert(
             "Login Required",
             "Please log in to get insurance quotes",
-            [{ text: "OK", onPress: () => onBack() }]
+            [{ text: i18n.t("services:step3PA.ok"), onPress: () => onBack() }]
           );
           setChecking(false);
           return;
@@ -158,7 +162,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
       activeOpacity={0.85}
     >
       <View style={styles.modalTextContainer}>
-        <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+        <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{insuranceOptionLabel(item.label)}</Text>
         {typeof item.category === "number" && (
           <Text style={[styles.modalItemMeta, { color: servicesTheme.colors.muted }]}>{`Category ${item.category}`}</Text>
         )}
@@ -178,24 +182,24 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
   const handleSubmit = async () => {
     if (!isFormValid) {
-      Alert.alert("Validation", "Please fill all required fields");
+      Alert.alert(i18n.t("services:step3PA.validation"), i18n.t("services:step3PA.pleaseFillAllRequiredFields"));
       return;
     }
 
     const category = getCategoryFromWork(data.details.natureOfWork);
     if (!category) {
-      Alert.alert("Validation", "Please select a valid nature of work");
+      Alert.alert(i18n.t("services:step3PA.validation"), i18n.t("services:step3PA.pleaseSelectAValidNature"));
       return;
     }
 
     if (!isAuthenticated()) {
-      Alert.alert("Authentication Required", "Please log in to continue");
+      Alert.alert(i18n.t("services:step3PA.authenticationRequired"), i18n.t("services:step3PA.pleaseLogInToContinue"));
       return;
     }
 
     const enquiryId = data.details.enquiryId;
     if (!enquiryId) {
-      Alert.alert("Error", "Session expired. Please go back to Step 1 and restart.");
+      Alert.alert(i18n.t("services:step3PA.error"), i18n.t("services:step3PA.sessionExpiredPleaseGoBack"));
       return;
     }
 
@@ -253,10 +257,10 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           enquiryId,
         });
       } else {
-        Alert.alert("Error", "No quotes could be fetched. Please try again.");
+        Alert.alert(i18n.t("services:step3PA.error"), i18n.t("services:step3PA.noQuotesCouldBeFetched"));
       }
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.message || error?.message || "Something went wrong");
+      Alert.alert(i18n.t("services:step3PA.error"), error?.response?.data?.message || error?.message || i18n.t("common:errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -273,7 +277,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
         >
         <View style={styles.centerContainer}>
           <MaterialIcons name="lock-outline" size={50} color={servicesTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>{tx("services:step3PA.verifyingAuthentication")}</Text>
         </View>
         </LinearGradient>
       </SafeAreaView>
@@ -297,16 +301,16 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Additional Details</Text>
+            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step3PA.additionalDetails")}</Text>
             <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-              Help us classify risk and fetch Personal Accident quotes.
+              {tx("services:step3PA.helpUsClassifyRiskAnd")}
             </Text>
           </View>
 
           <View style={styles.formContainer}>
             {/* Occupation */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Occupation of Insured *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3PA.occupationOfInsured")}</Text>
               <TouchableOpacity
                 style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("occupation")}
@@ -323,7 +327,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                     ]}
                     numberOfLines={1}
                   >
-                    {data.details.occupation || "Select Occupation"}
+                    {insuranceOptionLabel(data.details.occupation) || tx("services:insurance.selectOccupation")}
                   </Text>
                 </View>
                 <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
@@ -332,7 +336,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
             {/* Annual Income */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Annual Income Range *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3PA.annualIncomeRange")}</Text>
               <TouchableOpacity
                 style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("income")}
@@ -349,7 +353,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                     ]}
                     numberOfLines={1}
                   >
-                    {data.details.annualIncomeRange || "Select Income Range"}
+                    {insuranceOptionLabel(data.details.annualIncomeRange) || tx("services:insurance.selectIncome")}
                   </Text>
                 </View>
                 <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
@@ -358,7 +362,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
             {/* Nature of Work */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Nature of Work / Designation *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3PA.natureOfWorkDesignation")}</Text>
               <TouchableOpacity
                 style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("natureOfWork")}
@@ -375,7 +379,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                     ]}
                     numberOfLines={1}
                   >
-                    {data.details.natureOfWork || "Select Nature of Work / Designation"}
+                    {insuranceOptionLabel(data.details.natureOfWork) || tx("services:insurance.selectWork")}
                   </Text>
                 </View>
                 <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
@@ -385,7 +389,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                 <View style={[styles.categoryPill, { backgroundColor: servicesTheme.isDark ? "#18112A" : "#F8F7FF", borderColor: servicesTheme.colors.border }]}>
                   <MaterialIcons name="verified" size={16} color={servicesTheme.colors.primary} />
                   <Text style={[styles.categoryPillText, { color: servicesTheme.colors.primary }]}>
-                    {`Mapped to Category ${selectedCategory}`}
+                    {tx("services:insurance.mappedCategory", { category: selectedCategory })}
                   </Text>
                 </View>
               )}
@@ -393,7 +397,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
 
             {/* Cover Amount */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Cover Amount *</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3PA.coverAmount")}</Text>
               <TouchableOpacity
                 style={[styles.dropdownField, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("coverAmount")}
@@ -410,7 +414,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                     ]}
                     numberOfLines={1}
                   >
-                    {data.details.coverAmount || "Select Cover Amount"}
+                    {insuranceOptionLabel(data.details.coverAmount) || tx("services:insurance.selectCover")}
                   </Text>
                 </View>
                 <MaterialIcons name="expand-more" size={22} color={servicesTheme.colors.muted} />
@@ -437,8 +441,8 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                 )}
               </View>
               <Text style={[styles.termsLabel, { color: servicesTheme.colors.muted }]}>
-                I agree to the <Text style={styles.boldLink}>Terms & Conditions</Text>{" "}
-                and <Text style={styles.boldLink}>Privacy Policy</Text>
+                I agree to the <Text style={styles.boldLink}>{tx("services:step3PA.termsConditions")}</Text>{" "}
+                and <Text style={styles.boldLink}>{tx("services:step3PA.privacyPolicy")}</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -459,7 +463,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
           </TouchableOpacity>
           <View style={styles.footerButtonWrapper}>
             <GradientButton
-              title={loading ? "Searching..." : "Get Free Quotes"}
+              title={loading ? tx("services:insurance.searching") : tx("services:insurance.getQuotes")}
               onPress={handleSubmit}
               disabled={!isFormValid || loading}
               style={styles.submitButton}
@@ -525,7 +529,7 @@ export default function Step3PA({ data, setData, onBack, onShowResults }: Props)
                     }}
                     activeOpacity={0.85}
                   >
-                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{insuranceOptionLabel(item.label)}</Text>
                     {data.details.coverAmount === item.label && (
                       <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />
                     )}

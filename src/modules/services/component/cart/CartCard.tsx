@@ -14,6 +14,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import LinearGradient from 'react-native-linear-gradient';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -49,6 +51,7 @@ const CartCard = ({
   removing = false,
   buyingNow = false,
 }: CartCardProps) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -75,7 +78,7 @@ const CartCard = ({
       {/* Save badge */}
       {saving > 0 && (
         <View style={styles.bundleBadge}>
-          <Text style={styles.bundleText}>🪙 Save ₹{saving.toLocaleString('en-IN')} more when bundled</Text>
+          <Text style={styles.bundleText}>🪙 {tx("services:cartCard.bundleSavings", { amount: saving.toLocaleString('en-IN') })}</Text>
         </View>
       )}
 
@@ -127,7 +130,7 @@ const CartCard = ({
             <MaterialIcons name="delete-outline" size={20} color="#B91C1C" />
           )}
           <Text style={[styles.buttonText, removing ? styles.removeTextDisabled : styles.removeText]}>
-            {removing ? 'Removing…' : 'Remove Item'}
+            {removing ? i18n.t("services:r2.removing") : 'Remove Item'}
           </Text>
         </TouchableOpacity>
 
@@ -138,7 +141,7 @@ const CartCard = ({
             <MaterialIcons name="auto-awesome" size={18} color="#8665FF" />
           )}
           <Text style={[styles.buttonText, buyingNow ? styles.buyNowTextDisabled : styles.buyNowText]}>
-            {buyingNow ? 'Loading…' : 'Buy this Now'}
+            {buyingNow ? 'Loading…' : i18n.t("services:r2.buyThisNow")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -152,7 +155,7 @@ const CartCard = ({
           style={styles.dropdownSection}
         >
           <TouchableOpacity onPress={toggleOpen} style={styles.dropdownHeader} activeOpacity={0.8}>
-            <Text style={[styles.dropdownTitle, { color: servicesTheme.colors.textStrong }]}>Documents Needed to Proceed</Text>
+            <Text style={[styles.dropdownTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:cartCard.documentsNeededToProceed")}</Text>
             <View style={styles.headerRight}>
               <View style={styles.folderIcon}>
                 <MaterialIcons name="folder" size={18} color="white" />

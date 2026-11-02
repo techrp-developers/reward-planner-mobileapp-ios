@@ -6,6 +6,7 @@ import {
   setCachedService,
 } from '../utils/serviceCache';
 import type { NormalizedServiceData } from '../types/ServiceTypes';
+import i18n from "../../../i18n";
 
 export type ServiceDetailsState = {
   data: NormalizedServiceData | null;
@@ -52,7 +53,7 @@ export function useServiceDetails(
     latestIdRef.current = serviceId;
 
     if (!Number.isFinite(serviceId) || serviceId <= 0) {
-      setState({ data: null, loading: false, error: 'Invalid service ID' });
+      setState({ data: null, loading: false, error: i18n.t("services:r2.invalidServiceId") });
       return;
     }
 
@@ -88,7 +89,7 @@ export function useServiceDetails(
           setState({
             data: null,
             loading: false,
-            error: 'Failed to load service details. Please try again.',
+            error: i18n.t("services:r2.failedToLoadServiceDetailsPlease"),
           });
         });
 
@@ -101,7 +102,7 @@ export function useServiceDetails(
         setState({
           data: null,
           loading: false,
-          error: 'Failed to load service details. Please try again.',
+          error: i18n.t("services:r2.failedToLoadServiceDetailsPlease"),
         });
       });
 

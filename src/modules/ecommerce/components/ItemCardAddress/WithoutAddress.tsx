@@ -39,6 +39,7 @@ import {
 import StickyBottomCTA from '../../../../bottombar/StickyBottomCTA'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import { useTranslation } from "react-i18next";
 
 type Nav = ShoppingNavigation
 const { height } = Dimensions.get('window')
@@ -119,6 +120,7 @@ const CartRow = React.memo(function CartRow({
 })
 
 export default function WithoutAddress() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>()
   const { goToCheckout, isCheckingOut } = useCheckoutFlow()
   const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 16 })
@@ -354,9 +356,9 @@ export default function WithoutAddress() {
       <>
         {/* <View style={styles.wrapper}>
           <View style={styles.headerRow}>
-            <Text style={styles.headerText}>Coupons and Offers</Text>
+            <Text style={styles.headerText}>{tx("products:withoutAddress.couponsAndOffers")}</Text>
             <TouchableOpacity onPress={() => navigation.navigate('Coupan')}>
-              <Text style={styles.viewAllText}>View All</Text>
+              <Text style={styles.viewAllText}>{tx("products:withoutAddress.viewAll")}</Text>
             </TouchableOpacity>
           </View>
           <CouponsSection coupons={COUPONS.slice(0, 1)} />
@@ -391,7 +393,7 @@ export default function WithoutAddress() {
   if (!loading && items.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+        <ProductHeadColor title={tx("products:withoutAddress.cart")} onBackPress={() => navigation.goBack()} />
         <EmptyCart onBrowse={() => navigation.navigate('Home')} />
       </View>
     )
@@ -400,7 +402,7 @@ export default function WithoutAddress() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+        <ProductHeadColor title={tx("products:withoutAddress.cart")} onBackPress={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={[styles.skeletonScrollContent, { paddingBottom: stickyCTA.scrollContentPaddingBottom, backgroundColor: theme.background }]}>
           <SkeletonBox pulse={pulse} width="100%" height={118} borderRadius={14} />
           <SkeletonBox pulse={pulse} width="100%" height={118} borderRadius={14} style={styles.skeletonGap} />
@@ -413,7 +415,7 @@ export default function WithoutAddress() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+      <ProductHeadColor title={tx("products:withoutAddress.cart")} onBackPress={() => navigation.goBack()} />
 
       <FlatList
         data={items}
@@ -434,7 +436,7 @@ export default function WithoutAddress() {
         <View style={[styles.bottomBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
           <TouchableOpacity onPress={() => navigation.navigate('AddressSelect')}>
             <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.button}>
-              <Text style={styles.buttonText}>Select Address</Text>
+              <Text style={styles.buttonText}>{tx("products:withoutAddress.selectAddress")}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -445,7 +447,7 @@ export default function WithoutAddress() {
         <Animated.View style={[styles.sheet, { top: slideAnim, backgroundColor: theme.card }]}>
           <View style={[styles.handle, { backgroundColor: isDark ? '#52525B' : '#CCC' }]} />
           <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, { color: theme.text }]}>Select Address</Text>
+            <Text style={[styles.sheetTitle, { color: theme.text }]}>{tx("products:withoutAddress.selectAddress")}</Text>
             <TouchableOpacity>
               <Text style={styles.close}>✕</Text>
             </TouchableOpacity>

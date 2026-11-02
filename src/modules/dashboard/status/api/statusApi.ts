@@ -3,6 +3,7 @@ import { getAuthHeaders } from '../../../common/auth/api/AuthAPI';
 import { API_V1_URL } from '../../../../config/apiConfig';
 import type { AxiosError } from 'axios';
 import type { StatusAudienceCompany, StatusAudiencePerson, StatusComment, StatusFeedGroup, StatusLike, StatusMediaInput, StatusType, StatusViewer, StatusVisibility, UserStatus } from '../types';
+import i18n from "../../../../i18n";
 
 type StatusFeedResponse = {
   success: boolean;
@@ -77,7 +78,7 @@ export async function createStatus(input: CreateStatusInput): Promise<UserStatus
     },
   );
   if (!response.data?.success || !response.data.data?.id) {
-    throw new Error(response.data?.message || 'Could not publish status.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.publishStatus'));
   }
   return response.data.data;
 }
@@ -267,7 +268,7 @@ export async function fetchStatusViewers(statusId: number): Promise<StatusViewer
     { headers: await statusAuthHeaders() },
   );
   if (!response.data?.success || !Array.isArray(response.data.data)) {
-    throw new Error(response.data?.message || 'Could not load status views.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.loadViews'));
   }
   const viewers = response.data.data;
   return { viewers, viewCount: Number(response.data.view_count ?? viewers.length) };
@@ -282,7 +283,7 @@ export async function addStatusComment(statusId: number, text: string): Promise<
     { headers: await statusAuthHeaders() },
   );
   if (!response.data?.success) {
-    throw new Error(response.data?.message || 'Could not send reply.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.sendReply'));
   }
 }
 
@@ -308,7 +309,7 @@ export async function toggleStatusLike(statusId: number): Promise<StatusLikeResu
     statusUrl(`/${statusId}/like`), undefined, { headers: await statusAuthHeaders() },
   );
   if (!response.data?.success || !response.data.data) {
-    throw new Error(response.data?.message || 'Could not update like.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.updateLike'));
   }
   return response.data.data;
 }
@@ -322,7 +323,7 @@ export async function fetchStatusLikes(statusId: number, beforeUserId?: number |
     params: { limit: 50, ...(beforeUserId != null ? { before_user_id: beforeUserId } : {}) },
   });
   if (!response.data?.success || !Array.isArray(response.data.data)) {
-    throw new Error(response.data?.message || 'Could not load likes.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.loadLikes'));
   }
   const likes = response.data.data;
   return {
@@ -340,7 +341,7 @@ export async function fetchStatusComments(statusId: number, beforeId?: number | 
     params: { limit: 50, ...(beforeId != null ? { before_id: beforeId } : {}) },
   });
   if (!response.data?.success || !Array.isArray(response.data.data)) {
-    throw new Error(response.data?.message || 'Could not load replies.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.loadReplies'));
   }
   return {
     comments: response.data.data,
@@ -366,7 +367,7 @@ export async function fetchStatusAudienceOptions(search?: string): Promise<{
     params: search ? { q: search } : undefined,
   });
   if (!response.data?.success || !response.data.data) {
-    throw new Error(response.data?.message || 'Could not load audience options.');
+    throw new Error(response.data?.message || i18n.t('dashboard:errors.loadAudience'));
   }
   return { companies: response.data.data.companies ?? [], people: response.data.data.people ?? [] };
 }

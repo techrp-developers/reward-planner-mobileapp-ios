@@ -16,6 +16,9 @@ import ProductHeadColor from "../constants/heading/Poduct_Head_Color";
 import AllIcons from "../../../assets/menu/AllCategories.svg";
 import { fetchAllCategories, fetchCategoriesBySubCategories, getProductImageUrl } from "../api/ProductApi";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../i18n/sourceText";
+import i18n from "../../../i18n";
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -123,6 +126,7 @@ const chunkItems = (items: any[], size: number) => {
 };
 
 const AllCategories = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const [categories, setCategories] = useState<any[]>([]);
   const [subcategories, setSubcategories] = useState<any[]>([]);
@@ -226,7 +230,7 @@ const AllCategories = () => {
 
     const categoryTitle = categories.find(
       (category) => getCategoryId(category) === categoryId,
-    )?.name ?? 'Products';
+    )?.name ?? i18n.t("products:r2.products");
 
     navigation.navigate('Category', {
       categoryId,
@@ -259,7 +263,7 @@ const AllCategories = () => {
 
   const renderContentRow = useCallback(({ item }: { item: ContentRow }) => {
     if (item.type === "header") {
-      return <Text style={styles.sectionTitle}>{item.title}</Text>;
+      return <Text style={styles.sectionTitle}>{translateSourceText("products", item.title)}</Text>;
     }
 
     return (
@@ -282,7 +286,7 @@ const AllCategories = () => {
     return (
       <View style={styles.loadingContainer}>
         <ProductHeadColor
-          title="Categories"
+          title={tx("products:allCategories.categories")}
           onBackPress={() => navigation.goBack()}
         />
         <View style={styles.loadingSkeletonWrap}>
@@ -297,7 +301,7 @@ const AllCategories = () => {
   return (
     <View style={styles.screen}>
       <ProductHeadColor
-        title="All Categories"
+        title={tx("products:allCategories.allCategories")}
         onBackPress={() => navigation.goBack()}
       />
 
@@ -317,7 +321,7 @@ const AllCategories = () => {
               <View style={styles.sidebarIconContainer}>
                 <AllIcons width={32} height={32} />
               </View>
-              <Text style={styles.sidebarText}>All</Text>
+              <Text style={styles.sidebarText}>{tx("products:allCategories.all")}</Text>
             </TouchableOpacity>
 
             {/* Dynamic Categories */}

@@ -5,6 +5,7 @@ import MaskedView from '@react-native-masked-view/masked-view';
 const FolderSafe = require('../../assete/service/FolderService.png');
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 interface FeatureItem {
   title: string;
@@ -61,7 +62,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
             </View>
 
 
-            <Text style={[styles.featureText, { color: servicesTheme.colors.text }]}>{item.title}</Text>
+            <Text style={[styles.featureText, { color: servicesTheme.colors.text }]}>{translateSourceText("services", item.title)}</Text>
           </View>
         ))}
       </View>
@@ -71,13 +72,13 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
         <MaskedView
           maskElement={
             <Text style={[styles.header, styles.transparentBg]}>
-              {middleTitle}
+              {translateSourceText("services", middleTitle)}
             </Text>
           }
         >
           <LinearGradient colors={servicesTheme.gradients.primary}>
             <Text style={[styles.header, styles.hidden]}>
-              {middleTitle}
+              {translateSourceText("services", middleTitle)}
             </Text>
           </LinearGradient>
         </MaskedView>
@@ -97,7 +98,7 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
                   {!isLast && <View style={styles.timelineLine} />}
                 </View>
                 <View style={[styles.timelineContent, !isLast && styles.timelineContentSpacing]}>
-                <Text style={[styles.timelineHeading, { color: servicesTheme.colors.textStrong }]}>{heading}</Text>
+                <Text style={[styles.timelineHeading, { color: servicesTheme.colors.textStrong }]}>{translateSourceText("services", heading)}</Text>
                   {!!detail && <Text style={[styles.timelineDetail, { color: servicesTheme.colors.muted }]}>{detail}</Text>}
                 </View>
               </View>
@@ -117,8 +118,8 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
             <React.Fragment key={index}>
               {index > 0 && <View style={styles.statDivider} />}
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: servicesTheme.colors.primary }]}>{item.value}</Text>
-                <Text style={[styles.statLabel, { color: servicesTheme.colors.muted }]}>{item.label}</Text>
+                <Text style={[styles.statValue, { color: servicesTheme.colors.primary }]}>{translateSourceText("services", item.value)}</Text>
+                <Text style={[styles.statLabel, { color: servicesTheme.colors.muted }]}>{translateSourceText("services", item.label)}</Text>
               </View>
             </React.Fragment>
           ))}
@@ -134,9 +135,9 @@ const ServiceFeaturesBullet: React.FC<Props> = ({
           style={styles.safetyCard}
         >
           <View style={styles.flexOne}>
-            <Text style={styles.safetyTitle}>{safetyTitle}</Text>
+            <Text style={styles.safetyTitle}>{translateSourceText("services", safetyTitle)}</Text>
             <Text style={[styles.safetyText, { color: servicesTheme.colors.muted }]}>
-              {safetyText}
+              {translateSourceText("services", safetyText)}
             </Text>
           </View>
 

@@ -2,6 +2,9 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { translateSourceText } from "../../../i18n/sourceText";
+import i18n from "../../../i18n";
+import { useTranslation } from "react-i18next";
 
 export type OrderStatusItem = {
   label: string;
@@ -26,7 +29,8 @@ export default function OrderStatusJourney({
   tone = "success",
 }: Props) {
   const { isDark, theme } = useAppTheme();
-  const title = headerText || (arrivingBy ? `Status: ${arrivingBy}` : "Order status");
+  const { t: tx } = useTranslation();
+  const title = headerText || (arrivingBy ? i18n.t("products:journey.statusBy", { date: arrivingBy }) : i18n.t("products:journey.orderStatus"));
   const isDanger = tone === "danger";
 
   return (
@@ -81,7 +85,7 @@ export default function OrderStatusJourney({
                     isHighlighted && isDanger && styles.dangerText,
                   ]}
                 >
-                  {item.label}
+                  {translateSourceText("products", item.label)}
                 </Text>
 
                 {!!item.date && (
@@ -101,7 +105,7 @@ export default function OrderStatusJourney({
             activeOpacity={0.7}
             onPress={onCancelPress}
           >
-            <Text style={[styles.cancelText, { color: theme.text }]}>Cancel Order</Text>
+            <Text style={[styles.cancelText, { color: theme.text }]}>{tx("products:order.cancelOrder")}</Text>
           </TouchableOpacity>
         </>
       ) : null}

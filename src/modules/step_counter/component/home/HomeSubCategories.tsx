@@ -10,11 +10,13 @@ import {
   ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 const { width: screenWidth } = Dimensions.get('window');
 const PRODUCT_CARD_WIDTH = screenWidth * 0.4;
 
 export default function HomeSubCategories() {
+  const { t: tx } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
   const underlineAnim = useRef(new Animated.Value(0)).current;
 
@@ -184,7 +186,7 @@ export default function HomeSubCategories() {
             source={require('../assets/homepage/menu.png')}
             style={styles.homecategoriesImage}
           />
-          <Text style={styles.categoryText}>See All Products</Text>
+          <Text style={styles.categoryText}>{tx("stepCounter:homeSubCategories.seeAllProducts")}</Text>
         </View>
       </TouchableOpacity>
     </View>

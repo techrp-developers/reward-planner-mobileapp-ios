@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { ServiceFeedback } from '../../api/OrderAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type Props = {
   feedback: ServiceFeedback;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function ServiceFeedbackCard({ feedback, onSubmitFeedback }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   if (!feedback.can_submit || feedback.submitted) return null;
@@ -18,7 +20,7 @@ export default function ServiceFeedbackCard({ feedback, onSubmitFeedback }: Prop
     <View style={[styles.container, { borderTopColor: servicesTheme.colors.divider }]}>
       <View style={styles.header}>
         <MaterialCommunityIcons name="star-outline" size={16} color="#F59E0B" />
-        <Text style={[styles.title, { color: servicesTheme.colors.text }]}>Feedback</Text>
+        <Text style={[styles.title, { color: servicesTheme.colors.text }]}>{tx("services:serviceFeedbackCard.feedback")}</Text>
       </View>
 
       <TouchableOpacity
@@ -27,7 +29,7 @@ export default function ServiceFeedbackCard({ feedback, onSubmitFeedback }: Prop
         activeOpacity={0.8}
       >
         <MaterialCommunityIcons name="star-plus-outline" size={16} color={servicesTheme.colors.primary} />
-        <Text style={[styles.ctaText, { color: servicesTheme.colors.primary }]}>Rate this service</Text>
+        <Text style={[styles.ctaText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceFeedbackCard.rateThisService")}</Text>
       </TouchableOpacity>
     </View>
   );

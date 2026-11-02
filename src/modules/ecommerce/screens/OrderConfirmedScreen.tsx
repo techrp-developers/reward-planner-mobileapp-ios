@@ -17,6 +17,8 @@ import ProductCarousel from "../components/order/ProductCarousel";
 import { fetchOrderDetails } from "../api/OrderApi";
 import { fetchAllProducts, getProductImageUrl } from "../api/ProductApi";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type OrderConfirmedRoute = RouteProp<HomeStackParamList, "OrderConfirmedScreen">;
@@ -160,6 +162,7 @@ const toTitleCase = (value?: string) => {
 };
 
 export default function OrderConfirmedScreen() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const route = useRoute<OrderConfirmedRoute>();
     const { isDark, theme } = useAppTheme();
@@ -188,7 +191,7 @@ export default function OrderConfirmedScreen() {
         if (response?.success) {
             setOrderData(response);
         } else if (!hasLoadedOnce.current) {
-            setError("Unable to load order details.");
+            setError(i18n.t("products:r2.unableToLoadOrderDetails"));
         }
 
         hasLoadedOnce.current = true;
@@ -427,13 +430,13 @@ export default function OrderConfirmedScreen() {
         return (
             <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
                 <OrderHeading
-                    title="Order Confirmed"
+                    title={tx("products:orderConfirmedScreen.orderConfirmed")}
                     onBackPress={() => navigation.goBack()}
                     isDark={isDark}
                 />
                 <View style={styles.centeredState}>
                     <ActivityIndicator size="large" color={theme.primary} />
-                    <Text style={[styles.stateText, { color: theme.secondaryText }]}>Loading order details...</Text>
+                    <Text style={[styles.stateText, { color: theme.secondaryText }]}>{tx("products:orderConfirmedScreen.loadingOrderDetails")}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -443,12 +446,12 @@ export default function OrderConfirmedScreen() {
         return (
             <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
                 <OrderHeading
-                    title="Order Confirmed"
+                    title={tx("products:orderConfirmedScreen.orderConfirmed")}
                     onBackPress={() => navigation.goBack()}
                     isDark={isDark}
                 />
                 <View style={styles.centeredState}>
-                    <Text style={styles.errorText}>{error || "Unable to load order details."}</Text>
+                    <Text style={styles.errorText}>{error || i18n.t("products:r2.unableToLoadOrderDetails")}</Text>
                 </View>
             </SafeAreaView>
         );
@@ -457,7 +460,7 @@ export default function OrderConfirmedScreen() {
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
             <OrderHeading
-                title="Order Confirmed"
+                title={tx("products:orderConfirmedScreen.orderConfirmed")}
                 onBackPress={() => navigation.goBack()}
                 isDark={isDark}
             />
@@ -494,7 +497,7 @@ export default function OrderConfirmedScreen() {
 
                 {orderData.items?.length ? (
                     <View style={[styles.reviewSection, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                        <Text style={[styles.reviewSectionTitle, { color: theme.text }]}>Order items</Text>
+                        <Text style={[styles.reviewSectionTitle, { color: theme.text }]}>{tx("products:orderConfirmedScreen.orderItems")}</Text>
 
                         {cancellationWindowText ? (
                             <View style={[styles.cancelWindowBanner, { backgroundColor: isDark ? "#2A2410" : "#FFF7E0", borderColor: isDark ? "#5C4A16" : "#FDE68A" }]}>
@@ -562,7 +565,7 @@ export default function OrderConfirmedScreen() {
                                                 activeOpacity={0.82}
                                                 onPress={() => openItemCancelScreen(item)}
                                             >
-                                                <Text style={[styles.reviewButtonText, { color: "#DC2626" }]}>Cancel Item</Text>
+                                                <Text style={[styles.reviewButtonText, { color: "#DC2626" }]}>{tx("products:orderConfirmedScreen.cancelItem")}</Text>
                                             </TouchableOpacity>
                                         ) : null}
 
@@ -578,10 +581,10 @@ export default function OrderConfirmedScreen() {
                                                 activeOpacity={0.82}
                                                 onPress={() => openReviewScreen(item)}
                                             >
-                                                <Text style={[styles.reviewButtonText, { color: theme.primary }]}>Write Review</Text>
+                                                <Text style={[styles.reviewButtonText, { color: theme.primary }]}>{tx("products:orderConfirmedScreen.writeReview")}</Text>
                                             </TouchableOpacity>
                                         ) : feedback?.submitted ? (
-                                            <Text style={[styles.reviewDoneText, { color: "#16A34A" }]}>Reviewed</Text>
+                                            <Text style={[styles.reviewDoneText, { color: "#16A34A" }]}>{tx("products:orderConfirmedScreen.reviewed")}</Text>
                                         ) : null}
                                     </View>
                                 </View>
@@ -592,7 +595,7 @@ export default function OrderConfirmedScreen() {
 
                 <DeliveryDetailsCard
                     addressType={orderData.address?.type?.toUpperCase() || "HOME"}
-                    address={fullAddress || "Address unavailable"}
+                    address={fullAddress || i18n.t("products:r2.addressUnavailable")}
                     name={orderData.address?.name || "-"}
                     phone={orderData.address?.phone || "-"}
                 />
@@ -611,7 +614,7 @@ export default function OrderConfirmedScreen() {
 
                 <InvoiceAndServiceBanner orderId={orderData.order.order_id} />
                 <View>
-                    <Text style={[styles.relatedTitle, { color: theme.text }]}>You may also like this</Text>
+                    <Text style={[styles.relatedTitle, { color: theme.text }]}>{tx("products:orderConfirmedScreen.youMayAlsoLikeThis")}</Text>
 
                     <ProductCarousel products={relatedProducts} />
 

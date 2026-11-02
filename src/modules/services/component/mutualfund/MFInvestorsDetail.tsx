@@ -22,6 +22,9 @@ import {
     type MFChildCategory,
 } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.42;
@@ -73,7 +76,7 @@ const PillToggle: React.FC<{
     return (
         <View style={[toggle.container, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
             {(['beginners', 'informed'] as Tab[]).map(tab => {
-                const label = tab === 'beginners' ? 'New to Mutual Funds' : 'More about Mutual Funds';
+                const label = tab === 'beginners' ? i18n.t("services:r2.newToMutualFunds") : i18n.t("services:r2.moreAboutMutualFunds");
                 const isActive = value === tab;
                 return isActive ? (
                     <LinearGradient
@@ -136,6 +139,7 @@ const SectionRow: React.FC<{
     onArticlePress: (articleId: number, sectionId: number) => void;
     onViewAll: (sectionId: number, sectionTitle: string) => void;
 }> = ({ section, accent, accentLight, onArticlePress, onViewAll }) => {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
 
     return (
@@ -166,7 +170,7 @@ const SectionRow: React.FC<{
                 onPress={() => onViewAll(section.id, section.title)}
                 activeOpacity={0.8}
             >
-                <Text style={styles.viewAllText}>View All</Text>
+                <Text style={styles.viewAllText}>{tx("services:mFInvestorsDetail.viewAll")}</Text>
             </TouchableOpacity>
         </View>
     );
@@ -177,6 +181,7 @@ const SectionRow: React.FC<{
 // ─────────────────────────────────────────────
 
 const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
     const { categoryId } = route.params;
 
@@ -220,8 +225,8 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     <Text style={[styles.backIcon, { color: theme.accent }]}>‹</Text>
                 </TouchableOpacity>
                 <View style={styles.headerTextWrap}>
-                    <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{theme.headerTitle}</Text>
-                    <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{theme.headerSubtitle}</Text>
+                    <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{translateSourceText("services", theme.headerTitle)}</Text>
+                    <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{translateSourceText("services", theme.headerSubtitle)}</Text>
                 </View>
             </View>
 
@@ -242,7 +247,7 @@ const MFInvestorsDetail: React.FC<Props> = ({ navigation, route }) => {
                     {/* Sections */}
                     {sections.length === 0 ? (
                         <View style={styles.emptyWrap}>
-                            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No content available.</Text>
+                            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>{tx("services:mFInvestorsDetail.noContentAvailable")}</Text>
                         </View>
                     ) : (
                         sections.map(section => (

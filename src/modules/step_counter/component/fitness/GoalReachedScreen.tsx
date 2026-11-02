@@ -12,6 +12,9 @@ import {
   ViewStyle,
 } from "react-native";
 import type { OverallSummary } from "../../api/Stepsapi";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { formatNumber } from "../../../../i18n/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // Dashboard-overlay only (no registered route) — shown right after the
@@ -105,7 +108,7 @@ const GoalIllustration: React.FC<{ scale: Animated.Value }> = ({ scale }) => (
 
     <View style={styles.goalScene}>
       <View style={styles.signBoard}>
-        <Text style={styles.signBoardText}>GOAL</Text>
+        <Text style={styles.signBoardText}>{i18n.t("stepCounter:goalReachedScreen.goal")}</Text>
       </View>
       <View style={styles.postsRow}>
         <View style={styles.signPost} />
@@ -185,6 +188,7 @@ const GoalReachedScreen: React.FC<Props> = ({
   onContinue,
   onBack,
 }) => {
+  const { t: tx } = useTranslation();
   const heroScaleRef = useRef(new Animated.Value(0.8));
   const heroScale    = heroScaleRef.current;
 
@@ -213,9 +217,9 @@ const GoalReachedScreen: React.FC<Props> = ({
   }, [heroScale, anims]);
 
   const summaryRows = [
-    { icon: "🥾", label: "Steps",          value: `${overallSummary.steps.toLocaleString()} steps` },
-    { icon: "🔥", label: "Calories Burned", value: `${overallSummary.calories} kcal` },
-    { icon: "📍", label: "Distance",        value: `${overallSummary.distance_km} km` },
+    { icon: "🥾", label: tx("stepCounter:summary.steps"), value: tx("stepCounter:units.stepsN", { value: formatNumber(overallSummary.steps) }) },
+    { icon: "🔥", label: tx("stepCounter:summary.calories"), value: tx("stepCounter:units.kcalN", { value: overallSummary.calories }) },
+    { icon: "📍", label: tx("stepCounter:summary.distance"), value: tx("stepCounter:units.kmN", { value: overallSummary.distance_km }) },
   ];
 
   // No daily_target here (that's the detailed screen's job) — use a fixed
@@ -237,7 +241,7 @@ const GoalReachedScreen: React.FC<Props> = ({
           <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Goal Completed</Text>
+          <Text style={styles.headerTitle}>{tx("stepCounter:goalReachedScreen.goalCompleted")}</Text>
         </View>
         <View style={styles.headerSpacer} />
       </View>
@@ -247,14 +251,14 @@ const GoalReachedScreen: React.FC<Props> = ({
         <GoalIllustration scale={heroScale} />
 
         <View style={styles.targetReachedBox}>
-          <Text style={styles.targetReachedTitle}>Target Reached!</Text>
+          <Text style={styles.targetReachedTitle}>{tx("stepCounter:goalReachedScreen.targetReached")}</Text>
           <Text style={styles.targetReachedSub}>
-            You successfully completed your goal for today. Keep the momentum going.
+            {tx("stepCounter:goalReachedScreen.youSuccessfullyCompletedYourGoal")}
           </Text>
         </View>
 
         <SectionCard fadeAnim={anims[0].fade} slideAnim={anims[0].slide} highlighted>
-          <Text style={styles.sectionTitle}>Overall Summary</Text>
+          <Text style={styles.sectionTitle}>{tx("stepCounter:goalReachedScreen.overallSummary")}</Text>
           {summaryRows.map((row, i) => (
             <View key={i} style={[styles.summaryRow, i < summaryRows.length - 1 && styles.rowDivider]}>
               <Text style={styles.summaryIcon}>{row.icon}</Text>
@@ -295,7 +299,7 @@ const GoalReachedScreen: React.FC<Props> = ({
           onPress={onContinue}
           activeOpacity={0.87}
         >
-          <Text style={styles.continueTxt}>Continue</Text>
+          <Text style={styles.continueTxt}>{tx("stepCounter:goalReachedScreen.continue")}</Text>
         </TouchableOpacity>
       </View>
     </View>

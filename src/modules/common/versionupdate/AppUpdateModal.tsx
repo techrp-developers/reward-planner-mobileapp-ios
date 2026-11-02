@@ -16,6 +16,8 @@ import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import Logo from "../../../assets/homepage/login_logo.svg";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -152,6 +154,7 @@ export function AppUpdateModal({
   onLater,
 }: Props) {
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
 
   // Entry animations
   const contentY = useRef(new Animated.Value(40)).current;
@@ -260,7 +263,7 @@ export function AppUpdateModal({
     const webStoreUrl = updateUrl.trim();
 
     if (!webStoreUrl) {
-      Alert.alert("Update unavailable", "The App Store link is not configured.");
+      Alert.alert(i18n.t("common:update.unavailableTitle"), i18n.t("common:update.storeLinkMissing"));
       return;
     }
 
@@ -281,8 +284,8 @@ export function AppUpdateModal({
           updateUrl: webStoreUrl,
         });
         Alert.alert(
-          "Unable to open the store",
-          "Please open the App Store and search for Reward Planners.",
+          i18n.t("common:update.storeOpenFailedTitle"),
+          i18n.t("common:update.storeOpenFailedBody"),
         );
       }
     }
@@ -293,30 +296,27 @@ export function AppUpdateModal({
   const state: State = maintenance ? "maintenance" : forceUpdate ? "force" : "optional";
 
   const badge: Record<State, { label: string; icon: string }> = {
-    maintenance: { label: "Scheduled Maintenance", icon: "wrench-outline" },
-    force: { label: "Required Update", icon: "shield-alert-outline" },
-    optional: { label: "New Version Available", icon: "star-outline" },
+    maintenance: { label: t("common:update.maintenanceTitle"), icon: "wrench-outline" },
+    force: { label: t("common:update.requiredTitle"), icon: "shield-alert-outline" },
+    optional: { label: t("common:update.availableTitle"), icon: "star-outline" },
   };
 
   const title: Record<State, string> = {
-    maintenance: "We'll Be\nRight Back",
-    force: "Time to\nUpgrade",
-    optional: "Something\nBetter Awaits",
+    maintenance: t("common:update.maintenanceHeading"),
+    force: t("common:update.forceHeading"),
+    optional: t("common:update.optionalHeading"),
   };
 
   const body: Record<State, string> = {
-    maintenance:
-      "We're polishing things behind the scenes.\nCheck back in a few minutes.",
-    force:
-      "This version has been retired. Update now to keep your rewards safe and your experience seamless.",
-    optional: `Fresh features and a smoother experience are ready for you on ${Platform.OS === "android" ? "Android" : "iOS"
-      }. Takes just a second.`,
+    maintenance: t("common:update.maintenanceBody"),
+    force: t("common:update.forceBody"),
+    optional: t("common:update.optionalBody", { platform: Platform.OS === "android" ? "Android" : "iOS" }),
   };
 
   const primaryCTA: Record<State, string> = {
-    maintenance: "Got It",
-    force: "Update Now",
-    optional: "Update Now",
+    maintenance: t("common:actions.gotIt"),
+    force: t("common:actions.updateNow"),
+    optional: t("common:actions.updateNow"),
   };
 
   const primaryAction = maintenance ? onLater : handleUpdate;
@@ -503,7 +503,7 @@ export function AppUpdateModal({
               {!maintenance && (
                 <View style={[styles.promiseRow, { borderTopColor: surfaceBorderColor }]}>
                   <MaterialCommunityIcons name="shield-check-outline" size={17} color={badgeGradients[state][0]} />
-                  <Text style={[styles.promiseText, { color: theme.text }]}>Secure rewards, faster checkout, smoother experience</Text>
+                  <Text style={[styles.promiseText, { color: theme.text }]}>{t("common:update.tagline")}</Text>
                 </View>
               )}
             </View>
@@ -558,8 +558,8 @@ export function AppUpdateModal({
             {/* Footer legal note */}
             <Text style={[styles.footerNote, { color: mutedColor }]}>
               {maintenance
-                ? "All your rewards & data are safe"
-                : "Your rewards and data are always safe"}
+                ? t("common:update.dataSafeAll")
+                : t("common:update.dataSafeAlways")}
             </Text>
           </Animated.View>
         </View>

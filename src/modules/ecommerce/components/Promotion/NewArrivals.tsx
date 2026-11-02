@@ -23,6 +23,7 @@ import {
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
 import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
+import { useTranslation } from "react-i18next";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const NEW_ARRIVALS_QUERY_KEY = ["ecommerce", "promotion", "new-arrivals"] as const;
@@ -96,6 +97,7 @@ const fetchNewArrivalsData = async () => {
 };
 
 function NewArrivals() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
 
@@ -130,15 +132,15 @@ function NewArrivals() {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
         <View>
-          <Text style={[styles.heading, { color: theme.text }]}>New Arrivals</Text>
-          <Text style={[styles.subHeading, { color: theme.secondaryText }]}>The latest trends, just for you</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>{tx("products:newArrivals.newArrivals")}</Text>
+          <Text style={[styles.subHeading, { color: theme.secondaryText }]}>{tx("products:newArrivals.theLatestTrendsJustFor")}</Text>
         </View>
         <TouchableOpacity
           style={styles.exploreBtn}
           activeOpacity={0.7}
           onPress={handleViewAll}
         >
-          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
+          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:newArrivals.viewAll")}</Text>
           <MaterialIcons name="chevron-right" size={18} color={isDark ? "#FFFFFF" : "#111827"} />
         </TouchableOpacity>
       </View>

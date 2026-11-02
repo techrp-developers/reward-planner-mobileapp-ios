@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import BannerImage from '../../../../assets/homepage/banner_gift.svg';
 import { useAppTheme } from '../../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ const BANNER_HEIGHT = width * 0.35;
 const IMAGE_SIZE = width * 0.45;
 
 function HomeBanner() {
+  const { t: tx } = useTranslation();
   const { isDark } = useAppTheme();
 
   return (
@@ -22,13 +24,13 @@ function HomeBanner() {
         style={styles.bannerBox}
       >
         <View style={styles.textBlock}>
-          <Text style={styles.bannerTitle}>Big Savings. Bigger Smiles.</Text>
+          <Text style={styles.bannerTitle}>{tx("products:homeBanner.bigSavingsBiggerSmiles")}</Text>
 
           <Text style={styles.bannerSubtitle}>
             Up to <Text style={styles.discount}>60% OFF</Text> across top categories
           </Text>
 
-          <Text style={styles.terms}>*Terms & Conditions apply</Text>
+          <Text style={styles.terms}>{tx("products:homeBanner.termsConditionsApply")}</Text>
         </View>
 
         <BannerImage style={styles.bannerImage} />

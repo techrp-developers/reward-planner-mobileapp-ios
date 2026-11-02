@@ -3,18 +3,21 @@ import { Share, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient'; // Ensure this package is installed
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type RechargeSuccessCardProps = {
   onPayAnother?: () => void;
 };
 
 const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
 
   const handleShare = () => {
     Share.share({
-      title: 'Recharge successful',
-      message: 'DTH recharge of customer 736263728 was successful.',
+      title: i18n.t('payments:msg.rechargeSuccessful'),
+      message: i18n.t('payments:msg.dthRechargeSuccessful', { customer: '736263728' }),
     }).catch(() => {});
   };
 
@@ -31,7 +34,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
           {/* Header Section */}
           <View style={styles.headerRow}>
             <View>
-              <Text style={[styles.successTitle, { color: bbpsTheme.colors.textStrong }]}>DTH Recharge Successful</Text>
+              <Text style={[styles.successTitle, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:rechargeSuccessCard.dthRechargeSuccessful")}</Text>
               <Text style={[styles.dateTimeText, { color: bbpsTheme.colors.muted }]}>19-01-2026, 9:01 AM</Text>
             </View>
             
@@ -55,7 +58,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
             <View>
               <Text style={[styles.billerName, { color: bbpsTheme.colors.textStrong }]}>D2H</Text>
               <Text style={[styles.customerID, { color: bbpsTheme.colors.muted }]}>736263728</Text>
-              <Text style={styles.paidStatus}>Paid</Text>
+              <Text style={styles.paidStatus}>{tx("payments:rechargeSuccessCard.paid")}</Text>
             </View>
           </View>
 
@@ -71,7 +74,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
                 colors={bbpsTheme.gradients.primary}
                 style={styles.payAnotherButton}
               >
-                <Text style={styles.payAnotherText}>Pay Another Bill</Text>
+                <Text style={styles.payAnotherText}>{tx("payments:rechargeSuccessCard.payAnotherBill")}</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -86,7 +89,7 @@ const RechargeSuccessCard = ({ onPayAnother }: RechargeSuccessCardProps) => {
               ]}
               onPress={handleShare}
             >
-              <Text style={[styles.shareText, { color: bbpsTheme.colors.primary }]}>Share</Text>
+              <Text style={[styles.shareText, { color: bbpsTheme.colors.primary }]}>{tx("payments:rechargeSuccessCard.share")}</Text>
             </TouchableOpacity>
           </View>
         </View>

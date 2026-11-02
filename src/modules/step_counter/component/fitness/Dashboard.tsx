@@ -40,6 +40,8 @@ import GoalReachedScreen from "./GoalReachedScreen";
 import TodayGoalCompletedScreen from "./TodayGoalCompletedScreen";
 import type { GoalSyncData } from "../../api/Stepsapi";
 import WeeklyGraph from "./WeeklyGraph";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
@@ -83,6 +85,7 @@ const StepRing: React.FC<RingProps> = ({
   size = 200,
   strokeWidth = 16,
 }) => {
+  const { t: tx } = useTranslation();
   const animatedProgress = useRef(new Animated.Value(0)).current;
   const chargeBrightness = useRef(new Animated.Value(0)).current;
   const radius = (size - strokeWidth) / 2;
@@ -201,7 +204,7 @@ const StepRing: React.FC<RingProps> = ({
           <Text style={styles.ringSteps}>
             {steps.toLocaleString()}
           </Text>
-          <Text style={styles.ringLabel}>steps</Text>
+          <Text style={styles.ringLabel}>{tx("stepCounter:dashboard.steps")}</Text>
         </View>
       </View>
 
@@ -237,15 +240,16 @@ interface StreakProps {
 }
 
 const StreakRow: React.FC<StreakProps> = ({ streak }) => {
+  const { t: tx } = useTranslation();
   const days = ["M", "T", "W", "T", "F", "S", "S"];
   return (
     <View style={styles.streakCard}>
       <View>
         <Text style={styles.streakNum}>
           {streak}{" "}
-          <Text style={styles.streakNumSub}>day streak</Text>
+          <Text style={styles.streakNumSub}>{tx("stepCounter:dashboard.dayStreak")}</Text>
         </Text>
-        <Text style={styles.streakSub}>Keep it going!</Text>
+        <Text style={styles.streakSub}>{tx("stepCounter:dashboard.keepItGoing")}</Text>
       </View>
       <View style={styles.streakDots}>
         {days.map((d, i) => {
@@ -282,8 +286,8 @@ const AchievementsTeaser: React.FC<{ onPress: () => void }> = ({ onPress }) => (
       <MaterialCommunityIcons name="trophy-outline" size={26} color={VD.accentDark} />
     </View>
     <View style={styles.achTeaserCopy}>
-      <Text style={styles.achTeaserTitle}>Achievements</Text>
-      <Text style={styles.achTeaserSub}>See your unlocked milestones and rewards</Text>
+      <Text style={styles.achTeaserTitle}>{i18n.t("stepCounter:dashboard.achievements")}</Text>
+      <Text style={styles.achTeaserSub}>{i18n.t("stepCounter:dashboard.seeYourUnlockedMilestonesAnd")}</Text>
     </View>
     <MaterialCommunityIcons name="chevron-right" size={22} color={VD.softText} />
   </TouchableOpacity>
@@ -291,6 +295,7 @@ const AchievementsTeaser: React.FC<{ onPress: () => void }> = ({ onPress }) => (
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const Dashboard: React.FC = () => {
+  const { t: tx } = useTranslation();
   const today = useMemo(() => new Date(), []);
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
@@ -448,7 +453,7 @@ const Dashboard: React.FC = () => {
       summaryQuery.error ||
       weeklyQuery.error ||
       streakQuery.error
-      ? "Failed to load dashboard"
+      ? i18n.t("stepCounter:r2.failedToLoadDashboard")
       : "");
 
   const handleRetry = useCallback(() => {
@@ -496,7 +501,7 @@ const Dashboard: React.FC = () => {
             {/* ── Header ── */}
             <View style={styles.headerRow}>
               <View style={styles.headerLeft}>
-                <Text style={styles.eyebrow}>Today's movement</Text>
+                <Text style={styles.eyebrow}>{tx("stepCounter:dashboard.todaySMovement")}</Text>
                 <Text style={styles.greetingTitle}>Hello {firstName}</Text>
                 <Text style={styles.subText}>{dateLabel}</Text>
               </View>
@@ -518,14 +523,14 @@ const Dashboard: React.FC = () => {
               <View style={styles.stateBox}>
                 <ActivityIndicator color={VD.accent} size="large" />
                 <Text style={styles.stateText}>
-                  Loading your movement...
+                  {tx("stepCounter:dashboard.loadingYourMovement")}
                 </Text>
               </View>
             ) : errorMsg && !stepStats.currentSteps ? (
               <View style={styles.stateBox}>
                 <Text style={styles.stateText}>{errorMsg}</Text>
                 <TouchableOpacity onPress={handleRetry} style={styles.retryBtn}>
-                  <Text style={styles.retryText}>Retry</Text>
+                  <Text style={styles.retryText}>{tx("stepCounter:dashboard.retry")}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -544,19 +549,19 @@ const Dashboard: React.FC = () => {
                     icon="fire"
                     color="#F97316"
                     value={Math.round(Number(stepStats.calories) || 0).toString()}
-                    label="kcal"
+                    label={tx("stepCounter:dashboard.kcal")}
                   />
                   <StatCard
                     icon="map-marker-distance"
                     color={VD.accent}
                     value={(Number(stepStats.distance_km) || 0).toFixed(1)}
-                    label="km"
+                    label={tx("stepCounter:dashboard.km")}
                   />
                   <StatCard
                     icon="clock-fast"
                     color={VD.success}
                     value={Math.round(Number(stepStats.active_minutes) || 0).toString()}
-                    label="min"
+                    label={tx("stepCounter:dashboard.min")}
                   />
                 </View>
 
@@ -577,7 +582,7 @@ const Dashboard: React.FC = () => {
                 {/* Divider label */}
                 <View style={styles.dividerRow}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerLabel}>Statistics</Text>
+                  <Text style={styles.dividerLabel}>{tx("stepCounter:dashboard.statistics")}</Text>
                   <View style={styles.dividerLine} />
                 </View>
 
@@ -589,7 +594,7 @@ const Dashboard: React.FC = () => {
                 {/* Divider label */}
                 <View style={styles.dividerRow}>
                   <View style={styles.dividerLine} />
-                  <Text style={styles.dividerLabel}>Coins & Plan</Text>
+                  <Text style={styles.dividerLabel}>{tx("stepCounter:dashboard.coinsPlan")}</Text>
                   <View style={styles.dividerLine} />
                 </View>
 

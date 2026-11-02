@@ -4,6 +4,7 @@
 // ==============================
 
 import api from "../../common/auth/api/axios";
+import i18n from "../../../i18n";
 
 // Dashboard overview
 export type DashboardResponse = {
@@ -175,7 +176,7 @@ export const syncStepsToServer = async (
     );
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to sync steps",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToSyncSteps"),
     };
   }
 };
@@ -214,7 +215,7 @@ export const fetchDashboard = async (): Promise<ApiResponse<DashboardResponse>> 
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch dashboard",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchDashboard"),
     };
   }
 };
@@ -242,7 +243,7 @@ export const fetchTodaySummary = async (): Promise<ApiResponse<TodaySummaryRespo
     console.error("[API] today-summary error:", error?.response?.data || error?.message);
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch today summary",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchTodaySummary"),
     };
   }
 };
@@ -263,7 +264,7 @@ export const fetchWeeklyProgress = async (): Promise<ApiResponse<WeeklyProgressI
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch weekly progress",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchWeeklyProgress"),
     };
   }
 };
@@ -283,7 +284,7 @@ export const fetchFitnessStreak = async (): Promise<ApiResponse<FitnessStreakRes
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch streak",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchStreak"),
     };
   }
 };
@@ -298,7 +299,7 @@ export const fetchCalendarProgress = async (
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch calendar",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchCalendar"),
     };
   }
 };
@@ -314,7 +315,7 @@ export const fetchTodayHourlyStats = async (): Promise<ApiResponse<HourlyStatIte
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch hourly stats",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchHourlyStats"),
     };
   }
 };
@@ -333,7 +334,7 @@ export const fetchStepHistory = async (): Promise<ApiResponse<StepHistoryItem[]>
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch step history",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchStepHistory"),
     };
   }
 };
@@ -353,7 +354,7 @@ export const fetchStepSummary = async (): Promise<ApiResponse<StepSummary>> => {
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch step summary",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchStepSummary"),
     };
   }
 };
@@ -372,7 +373,7 @@ export const fetchAchievements = async (): Promise<ApiResponse<AchievementGroup[
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || "Failed to fetch achievements",
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToFetchAchievements"),
     };
   }
 };

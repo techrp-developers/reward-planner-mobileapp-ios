@@ -1,0 +1,348 @@
+{
+  "stepsTrackerScreen": {
+    "required": "आवश्यक",
+    "openAppleHealth": "Apple Health उघडा",
+    "openHealthProfilePrivacyApps": "स्टेप्स ॲक्सेस व्यवस्थापित करण्यासाठी Health → Profile → Privacy → Apps and Services → RewardsPlanners उघडा.",
+    "noStepsFound": "कोणतीही पावले सापडली नाहीत",
+    "connectYourApps": "तुमची ॲप्स जोडा",
+    "appleHealthSettings": "Apple Health सेटिंग्ज",
+    "manageStepsAccessInHealth": "Health → Profile → Privacy → Apps and Services → RewardsPlanners मध्ये स्टेप्स ॲक्सेस व्यवस्थापित करा.",
+    "healthPermissions": "आरोग्य परवानग्या",
+    "manageStepsAccessInApple": "Apple Health मध्ये स्टेप्स ॲक्सेस व्यवस्थापित करा",
+    "alreadyInstalledTryThisInstead": "आधीच इन्स्टॉल आहे? त्याऐवजी हे वापरून पहा",
+    "syncAFitnessApp": "फिटनेस ॲप सिंक करा",
+    "openAnyAppBelowTo": "Health Connect सिंक सुरू करण्यासाठी खालीलपैकी कोणतेही ॲप उघडा. तुम्ही Fitbit, Garmin किंवा इतर सुसंगत ॲपही वापरू शकता — कोणतेही विशिष्ट ॲप आवश्यक नाही.",
+    "idealForSamsungDevicesSyncs": "Samsung डिव्हाइससाठी उत्तम — आपोआप सिंक होते",
+    "worksOnAllAndroidPhones": "सर्व Android फोनवर चालते — पावले ट्रॅक करण्यासाठी उत्तम",
+    "continue": "पुढे जा"
+  },
+  "achievementsScreen": {
+    "achievements": "यश",
+    "loadingAchievements": "यश लोड होत आहे...",
+    "retry": "पुन्हा प्रयत्न करा"
+  },
+  "bMICard": {
+    "viewMore": "अधिक पहा",
+    "yourActiveStreakPlan": "तुमचा सक्रिय स्ट्रीक प्लॅन"
+  },
+  "bMIScreen": {
+    "stepsDay": "पावले / दिवस",
+    "buildingYourBmiPlan": "तुमचा BMI प्लॅन तयार होत आहे",
+    "fetchingYourProfileRecommendations": "तुमच्या प्रोफाइलच्या शिफारसी मिळवत आहे…",
+    "yourCurrentPlan": "तुमचा सध्याचा प्लॅन",
+    "weHavePutTogetherA": "आम्ही असा प्लॅन तयार केला आहे जो तुम्हाला सहज जमेल अशा वेगाने तुमच्या लक्ष्याकडे नेईल.",
+    "weeklyBreakdown": "आठवड्याचा तपशील",
+    "yourWeeklyPlanWillAppear": "तुमचा साप्ताहिक प्लॅन लवकरच येथे दिसेल.",
+    "coinsForConsistency": "नियमितपणासाठी कॉइन",
+    "stayConsistentAndEarnCoins": "नियमित राहा आणि दर आठवड्याला कॉइन मिळवा",
+    "updateMeasurementsAmpRecalculateBmi": "मोजमापे अपडेट करा आणि BMI पुन्हा मोजा",
+    "updateMeasurements": "मोजमापे अपडेट करा",
+    "enterYourCurrentHeightAnd": "BMI पुन्हा मोजण्यासाठी तुमची सध्याची उंची आणि वजन लिहा.",
+    "height": "उंची",
+    "weight": "वजन",
+    "recalculateBmi": "BMI पुन्हा मोजा"
+  },
+  "coinHistoryAndPlan": {
+    "coinHistory": "कॉइन इतिहास",
+    "viewMore": "अधिक पहा",
+    "loadingCoinActivity": "कॉइन ॲक्टिव्हिटी लोड होत आहे...",
+    "unableToLoadCoinsTap": "कॉइन लोड करता आले नाहीत. पुन्हा प्रयत्न करण्यासाठी टॅप करा.",
+    "yourEarnedCoinsWillAppear": "तुम्ही मिळवलेले कॉइन येथे दिसतील.",
+    "wantAPersonalizedStepPlan": "तुम्हाला वैयक्तिक पावलांचा प्लॅन हवा आहे का?",
+    "basedOnYourBmiWe": "तुमच्या BMI नुसार निरोगी राहण्यासाठी किंवा वजन कमी करण्यासाठी रोज किती चालावे हे आम्ही सुचवू शकतो.",
+    "getMyPlan": "माझा प्लॅन मिळवा"
+  },
+  "dailyStats": {
+    "viewMore": "अधिक पहा"
+  },
+  "dashboard": {
+    "steps": "पावले",
+    "dayStreak": "दिवसांची स्ट्रीक",
+    "keepItGoing": "असेच सुरू ठेवा!",
+    "achievements": "यश",
+    "seeYourUnlockedMilestonesAnd": "तुम्ही गाठलेले टप्पे आणि रिवॉर्ड पहा",
+    "todaySMovement": "आजची हालचाल",
+    "loadingYourMovement": "तुमची हालचाल लोड होत आहे...",
+    "retry": "पुन्हा प्रयत्न करा",
+    "kcal": "कॅलरी",
+    "km": "कि.मी.",
+    "min": "मिनिटे",
+    "statistics": "आकडेवारी",
+    "coinsPlan": "कॉइन आणि प्लॅन"
+  },
+  "goalReachedScreen": {
+    "goal": "लक्ष्य",
+    "goalCompleted": "लक्ष्य पूर्ण झाले",
+    "targetReached": "लक्ष्य गाठले!",
+    "youSuccessfullyCompletedYourGoal": "तुम्ही आजचे लक्ष्य यशस्वीरित्या पूर्ण केले. असेच पुढे चालू ठेवा.",
+    "overallSummary": "एकूण सारांश",
+    "continue": "पुढे जा"
+  },
+  "planProgressCard": {
+    "yourProgress": "तुमची प्रगती",
+    "yourHighestStepDay": "तुमचा सर्वाधिक पावलांचा दिवस"
+  },
+  "pointStatement": {
+    "pointsStatement": "पॉइंट स्टेटमेंट",
+    "myBalance": "माझी शिल्लक",
+    "credited": "जमा झाले",
+    "used": "वापरले",
+    "date": "तारीख",
+    "activity": "ॲक्टिव्हिटी",
+    "amount": "रक्कम",
+    "loadingYourCoinHistory": "तुमचा कॉइन इतिहास लोड होत आहे...",
+    "noCoinActivityYet": "अद्याप कोणतीही कॉइन ॲक्टिव्हिटी नाही.",
+    "retry": "पुन्हा प्रयत्न करा"
+  },
+  "progressScreen": {
+    "yourProgress": "तुमची प्रगती",
+    "loadingCalendar": "कॅलेंडर लोड होत आहे...",
+    "retry": "पुन्हा प्रयत्न करा",
+    "steps": "पावले",
+    "kcal": "कॅलरी",
+    "km": "कि.मी.",
+    "moveMin": "सक्रिय मिनिटे",
+    "highest": "सर्वाधिक"
+  },
+  "statisticsGraph": {
+    "statistics": "आकडेवारी",
+    "today": "आज",
+    "retry": "पुन्हा प्रयत्न करा"
+  },
+  "stepForm": {
+    "selectGoal": "लक्ष्य निवडा",
+    "pleaseSelectYourGoalFirst": "कृपया आधी तुमचे लक्ष्य निवडा.",
+    "profileUpdateFailed": "प्रोफाइल अपडेट करता आले नाही",
+    "bodyProfileUpdateFailed": "शरीर प्रोफाइल अपडेट करता आले नाही",
+    "personalPlan": "वैयक्तिक प्लॅन",
+    "whatSYourGoal": "तुमचे लक्ष्य काय आहे?",
+    "chooseWhatYouWantRp": "RP Move ने कशावर लक्ष केंद्रित करावे ते निवडा.",
+    "continue": "पुढे जा",
+    "aboutYou": "तुमच्याबद्दल",
+    "detailsLookCorrect": "तपशील बरोबर आहे का?",
+    "thisHelpsCalculateAMore": "यामुळे अधिक उपयुक्त BMI प्लॅन तयार करण्यास मदत होते.",
+    "finalCheck": "अंतिम तपासणी",
+    "almostThere": "आता थोडेच बाकी",
+    "addYourBodyMetricsTo": "तुमचा प्लॅन तयार करण्यासाठी शरीराची मोजमापे जोडा.",
+    "submit": "सबमिट करा"
+  },
+  "stepGoal": {
+    "selectGoal": "लक्ष्य निवडा",
+    "pleaseSelectYourDailyStep": "कृपया तुमचे दैनंदिन पावलांचे लक्ष्य निवडा.",
+    "goalUpdateFailed": "लक्ष्य अपडेट करता आले नाही",
+    "activityTarget": "ॲक्टिव्हिटी लक्ष्य",
+    "pickThePaceThatFeels": "तुम्हाला योग्य वाटेल असा वेग निवडा. तुम्ही तो नंतर बदलू शकता.",
+    "loadingYourRecommendedGoals": "तुमची सुचवलेली लक्ष्ये लोड होत आहेत…",
+    "retry": "पुन्हा प्रयत्न करा",
+    "noStepGoalsAvailableRight": "सध्या कोणतेही पावलांचे लक्ष्य उपलब्ध नाही.",
+    "dailyStepTarget": "दैनंदिन पावलांचे लक्ष्य",
+    "theLongerYouWalkThe": "जितके जास्त चालाल, तितके मोठे रिवॉर्ड.",
+    "setGoal": "लक्ष्य ठरवा"
+  },
+  "stepWelcome": {
+    "everyStepYouTakeBrings": "तुमचे प्रत्येक पाऊल तुम्हाला चांगल्या आरोग्याच्या आणि जास्त कॉइनच्या जवळ नेते.",
+    "walkEarnRedeem": "चाला. मिळवा. रिडीम करा.",
+    "letSGetMoving": "चला, चालायला सुरुवात करूया"
+  },
+  "todayGoalCompletedScreen": {
+    "goal": "लक्ष्य",
+    "todaySGoalCompleted": "आजचे लक्ष्य पूर्ण झाले",
+    "planOverview": "प्लॅनचा आढावा",
+    "overallSummary": "एकूण सारांश",
+    "youReBuildingStrongHabits": "तुम्ही चांगल्या सवयी लावत आहात.",
+    "coinsEarnedToday": "🪙 आज मिळवलेले कॉइन",
+    "continue": "पुढे जा"
+  },
+  "weeklyGraph": {
+    "thisWeek": "या आठवड्यात",
+    "viewMore": "अधिक पहा"
+  },
+  "banner": {
+    "myBalance": "माझी शिल्लक"
+  },
+  "featuredProducts": {
+    "featuredThisWeek": "या आठवड्यात खास"
+  },
+  "homeCategories": {
+    "allCategories": "सर्व कॅटेगरी"
+  },
+  "homeDeal": {
+    "blockbusterDeals": "ब्लॉकबस्टर डील"
+  },
+  "homeSubCategories": {
+    "seeAllProducts": "सर्व प्रॉडक्ट पहा"
+  },
+  "guide": {
+    "s0": {
+      "title": "Health Connect उघडा",
+      "desc": "ते उघडण्यासाठी किंवा इन्स्टॉल करण्यासाठी वरील Health Connect वर टॅप करा."
+    },
+    "s1": {
+      "title": "ॲप परवानग्या",
+      "desc": "Health Connect च्या होम स्क्रीनवर \"App permissions\" वर टॅप करा."
+    },
+    "s2": {
+      "title": "हे ॲप शोधा",
+      "desc": "Rewards Planners पर्यंत स्क्रोल करा आणि त्यावर टॅप करा."
+    },
+    "s3": {
+      "title": "स्टेप्स सुरू करा",
+      "desc": "Read permissions मध्ये \"Steps\" सुरू करा."
+    },
+    "s4": {
+      "title": "येथे परत या",
+      "desc": "या स्क्रीनवर परत या — स्टेटस आपोआप रिफ्रेश होईल."
+    },
+    "s5": {
+      "title": "फोनची सेटिंग्ज उघडा",
+      "desc": "तुमच्या फोनचे Settings ॲप उघडा."
+    },
+    "s6": {
+      "title": "Apps वर जा",
+      "desc": "\"Apps\" (किंवा \"Apps & notifications\") वर टॅप करा."
+    },
+    "s7": {
+      "title": "Reward Planners शोधा",
+      "desc": "ॲप यादीत \"Reward Planners\" शोधून त्यावर टॅप करा."
+    },
+    "s8": {
+      "title": "Permissions उघडा",
+      "desc": "ॲप माहिती स्क्रीनवर \"Permissions\" वर टॅप करा."
+    },
+    "s9": {
+      "title": "टॉगल सुरू करा",
+      "desc": "\"Physical activity\" आणि \"Health Connect\" सुरू करा, मग येथे परत या."
+    },
+    "s10": {
+      "title": "Apple Health जोडा",
+      "desc": "iOS परवानगी शीट दाखवण्यासाठी वरील Apple Health वर टॅप करा."
+    },
+    "s11": {
+      "title": "स्टेप्सची परवानगी द्या",
+      "desc": "Apple परवानगी शीटमध्ये Steps सुरू करा आणि Allow वर टॅप करा."
+    },
+    "s12": {
+      "title": "येथे परत या",
+      "desc": "परत आल्यावर तुमची पावलांची संख्या आपोआप रिफ्रेश होईल."
+    },
+    "s13": {
+      "title": "Health ॲप उघडा",
+      "desc": "तुमच्या iPhone वर Apple Health उघडा."
+    },
+    "s14": {
+      "title": "Sharing उघडा",
+      "desc": "Sharing वर, मग Apps and Services वर टॅप करा."
+    },
+    "s15": {
+      "title": "RewardsPlanners",
+      "desc": "RewardsPlanners निवडा आणि स्टेप्स ॲक्सेस सुरू करा."
+    }
+  },
+  "bmi": {
+    "under": "कमी",
+    "normal": "सामान्य",
+    "over": "जास्त",
+    "obese": "लठ्ठपणा",
+    "underweight": "कमी वजन",
+    "overweight": "जास्त वजन"
+  },
+  "goals": {
+    "weightLoss": "वजन कमी करणे",
+    "weightGain": "वजन वाढवणे",
+    "stayHealthy": "निरोगी राहणे"
+  },
+  "plan": {
+    "type": "प्लॅनचा प्रकार",
+    "duration": "प्लॅनचा एकूण कालावधी",
+    "today": "आज",
+    "dailyTarget": "दैनंदिन लक्ष्य",
+    "days_one": "{{count}} दिवस",
+    "days_other": "{{count}} दिवस",
+    "dayN": "दिवस {{n}}"
+  },
+  "summary": {
+    "steps": "पावले",
+    "calories": "बर्न झालेल्या कॅलरी",
+    "distance": "अंतर",
+    "activeHours": "सक्रिय तास"
+  },
+  "units": {
+    "stepsN": "{{value}} पावले",
+    "stepsCapN": "{{value}} पावले",
+    "kcalN": "{{value}} कॅलरी",
+    "kmN": "{{value}} कि.मी.",
+    "weekN": "आठवडा {{n}}"
+  },
+  "achievements": {
+    "walkingTitle": "चालण्याचे शौकीन",
+    "walkingDesc": "तुम्ही निरोगी जीवनशैलीकडे पहिले पाऊल टाकले आहे!"
+  },
+  "r2": {
+    "failedToSyncSteps": "पावले सिंक करता आली नाहीत",
+    "failedToFetchDashboard": "डॅशबोर्ड लोड करता आला नाही",
+    "failedToFetchTodaySummary": "आजचा सारांश लोड करता आला नाही",
+    "failedToFetchWeeklyProgress": "साप्ताहिक प्रगती लोड करता आली नाही",
+    "failedToFetchStreak": "स्ट्रीक लोड करता आली नाही",
+    "failedToFetchCalendar": "कॅलेंडर लोड करता आले नाही",
+    "failedToFetchHourlyStats": "तासावार आकडेवारी लोड करता आली नाही",
+    "failedToFetchStepHistory": "पावलांचा इतिहास लोड करता आला नाही",
+    "failedToFetchStepSummary": "पावलांचा सारांश लोड करता आला नाही",
+    "failedToFetchAchievements": "यश लोड करता आले नाही",
+    "invalidGoalType": "अवैध लक्ष्य प्रकार",
+    "invalidDailyStepsValue": "दैनंदिन पावलांची संख्या चुकीची आहे",
+    "connected": "जोडलेले",
+    "install": "इन्स्टॉल करा",
+    "appleHealthRequired": "Apple Health आवश्यक आहे",
+    "healthConnectRequired": "Health Connect आवश्यक आहे",
+    "permissionMissing": "परवानगी नाही",
+    "appleHealthIsNotAvailableOn": "या डिव्हाइसवर Apple Health उपलब्ध नाही.",
+    "pleaseInstallHealthConnectToContinue": "पुढे जाण्यासाठी कृपया Health Connect इन्स्टॉल करा.",
+    "connectAppleHealthSoWeCan": "Apple Health जोडा म्हणजे आम्ही तुमची पावले ट्रॅक करून तुम्हाला कॉइन देऊ शकू.",
+    "linkYourFitnessAppsSoWe": "तुमची फिटनेस ॲप्स जोडा म्हणजे आम्ही तुमची पावले ट्रॅक करून तुम्हाला कॉइन देऊ शकू.",
+    "stepsFromYourIphoneAndApple": "तुमच्या iPhone आणि Apple Watch मधील पावले",
+    "viewPermissionDetails": "परवानगीचा तपशील पहा",
+    "fixPermissionFromPhoneSettings": "फोनच्या सेटिंग्जमधून परवानगी दुरुस्त करा",
+    "fixPermissionInAppleHealth": "Apple Health मध्ये परवानगी दुरुस्त करा",
+    "openAppSettings": "ॲप सेटिंग्ज उघडा",
+    "failedToFetchProfilePlan": "प्रोफाइल प्लॅन लोड करता आला नाही",
+    "chooseANewPlan": "नवीन प्लॅन निवडा",
+    "makeThisMyGoal": "हे माझे लक्ष्य करा",
+    "failedToLoadDashboard": "डॅशबोर्ड लोड करता आला नाही",
+    "calories": "कॅलरी",
+    "awesome": "खूप छान! 🎉",
+    "nextAchievement": "पुढील यश →",
+    "failedToFetchCoinHistory": "कॉइन इतिहास लोड करता आला नाही",
+    "coinsCredited": "कॉइन जमा झाले",
+    "coinsUsed": "कॉइन वापरले",
+    "stepWalletActivity": "स्टेप वॉलेट ॲक्टिव्हिटी",
+    "failedToLoadGoals": "लक्ष्ये लोड करता आली नाहीत",
+    "tracksYourDailyStepsAutomatically": "तुमची दैनंदिन पावले आपोआप ट्रॅक करते",
+    "earnCoinsForHittingYourStep": "पावलांचे लक्ष्य गाठल्यावर कॉइन मिळवा",
+    "seeYourWeeklyProgressAtA": "तुमची साप्ताहिक प्रगती एका दृष्टिक्षेपात पहा",
+    "maintainStreaksForBonusRewards": "बोनस रिवॉर्डसाठी स्ट्रीक कायम ठेवा",
+    "syncFailed": "सिंक अयशस्वी",
+    "healthConnectNotInstalled": "Health Connect इन्स्टॉल केलेले नाही",
+    "healthConnectNeedsSetup": "Health Connect सेट करावे लागेल",
+    "setUpPlan": "चला, तुमचा प्लॅन सेट करूया",
+    "planUnavailable": "प्लॅन उपलब्ध नाही",
+    "addBodyDetails": "तुमच्या शरीराची माहिती जोडा म्हणजे आम्ही तुमच्यासाठी वैयक्तिक पावलांचा प्लॅन तयार करू शकू.",
+    "setUpProfile": "माझे प्रोफाइल सेट करा",
+    "iosRecorded": "तुमच्या <b>iPhone, Apple Watch आणि Apple Health शी जोडलेल्या ॲप्स</b> नी नोंदवलेली पावले समाविष्ट केली जातात.",
+    "androidWorksWith": "<b>Fitbit, Garmin Connect, Huawei Health, Strava</b> आणि Health Connect ला सपोर्ट करणाऱ्या कोणत्याही ॲपसोबतही चालते.",
+    "youWalked": "तुम्ही <b>{{steps}} पावले</b> चालला आहात.",
+    "noStepsIos": "आजची कोणतीही पावले सापडली नाहीत. तुमच्या iPhone किंवा Apple Watch सोबत काही पावले चाला, मग इथे परत या.",
+    "noStepsAndroid": "तुमचे फिटनेस ॲप (Google Fit, Samsung Health, Fitbit, Garmin इ.) उघडा, Health Connect सिंक सुरू करा, काही पावले चाला, मग इथे परत या.",
+    "tipIos": "तुमचा iPhone सोबत ठेवा किंवा Apple Watch घाला. Apple Health दोन्हींचा पावलांचा डेटा आपोआप एकत्र करते.",
+    "tipAndroid": "तुमच्या फिटनेस ॲपमध्ये Settings → Connected apps → Health Connect वर जाऊन ते सुरू करा. मग डेटा दिसण्यासाठी काही पावले चाला."
+  },
+  "src": {
+    "walkingEnthusiast": "चालण्याचे शौकीन",
+    "streakKeeper": "स्ट्रीक कीपर",
+    "trailblazer": "नवी वाट शोधणारे",
+    "sunriseStrider": "सकाळचे चॅम्पियन",
+    "walkHeadline": "छान वेग! आज तुम्ही उत्तम पावले चाललात",
+    "streakHeadline": "तुमची {streak}-दिवसांची स्ट्रीक यशस्वीरित्या पूर्ण झाली",
+    "trailHeadline": "छान फेरफटका! आज तुम्ही नवीन ठिकाणे पाहिलीत",
+    "sunriseHeadline": "लवकर सुरुवात! तुम्ही दिवसाची सुरुवात दमदार पावलांनी केली"
+  }
+}

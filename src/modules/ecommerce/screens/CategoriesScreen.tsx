@@ -20,6 +20,8 @@ import {
 } from "../api/ProductApi";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type NavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -45,6 +47,7 @@ interface CategoryWithSubcategories extends Category {
 }
 
 const CategoriesScreen = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp>();
   const { isDark, theme } = useAppTheme();
   const [loading, setLoading] = useState(true);
@@ -161,7 +164,7 @@ const CategoriesScreen = () => {
   if (loading) {
     return (
       <View style={[styles.screen, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="All Categories" onBackPress={() => navigation.goBack()} isDark={isDark} />
+        <ProductHeadColor title={tx("products:categoriesScreen.allCategories")} onBackPress={() => navigation.goBack()} isDark={isDark} />
         <View style={styles.mainContainer}>
           <View style={[styles.sidebar, { backgroundColor: theme.card, borderRightColor: theme.border }]}>
             {Array.from({ length: 5 }).map((_, index) => (
@@ -198,7 +201,7 @@ const CategoriesScreen = () => {
   return (
     <View style={[styles.screen, { backgroundColor: theme.background }]}>
       <ProductHeadColor
-        title="All Categories"
+        title={tx("products:categoriesScreen.allCategories")}
         onBackPress={() => navigation.goBack()}
         isDark={isDark}
       />
@@ -220,7 +223,7 @@ const CategoriesScreen = () => {
               <View style={[styles.iconContainer, { backgroundColor: isDark ? "#111827" : "#F3F4F6" }]}>
                 <AllIcons width={34} height={34} />
               </View>
-              <Text style={[styles.sidebarText, { color: theme.text }]}>All</Text>
+              <Text style={[styles.sidebarText, { color: theme.text }]}>{tx("products:categoriesScreen.all")}</Text>
             </TouchableOpacity>
 
             {sidebarCategories.map((category) => (
@@ -270,7 +273,7 @@ const CategoriesScreen = () => {
             />
           ) : (
             <View style={styles.emptyWrap}>
-              <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No subcategories available</Text>
+              <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:categoriesScreen.noSubcategoriesAvailable")}</Text>
             </View>
           )}
         </ScrollView>
@@ -338,7 +341,7 @@ const AllCategoriesView = ({ data, expanded, onToggle, resolveImageUri, showView
                 activeOpacity={0.85}
               >
                 <Text style={[styles.viewMore, { color: isDark ? "#FACC15" : "#111827" }]}>
-                  {isExpanded ? "View Less" : "View More"}
+                  {isExpanded ? i18n.t("products:r2.viewLess") : "View More"}
                 </Text>
               </TouchableOpacity>
             )}

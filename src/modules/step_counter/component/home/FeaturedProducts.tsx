@@ -1,8 +1,10 @@
 import React, { useCallback } from 'react';
 import { View, Text, Image, StyleSheet, FlatList } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 export default function FeaturedProductsGrid() {
+  const { t: tx } = useTranslation();
   const data = [
     {
       id: 1,
@@ -119,7 +121,7 @@ export default function FeaturedProductsGrid() {
           source={require('../assets/homepage/Vector.png')}
           style={styles.vectorIcon}
         />
-        <Text style={styles.sectionTitleText}>Featured This Week</Text>
+        <Text style={styles.sectionTitleText}>{tx("stepCounter:featuredProducts.featuredThisWeek")}</Text>
         <Image
           source={require('../assets/homepage/Vector.png')}
           style={[styles.vectorIcon]}

@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import TribalBg from '../../../../../assets/product/tribal_bg.svg';
 import TribalProduct from '../../../../../assets/product/tribal_product.svg';
+import { useTranslation } from "react-i18next";
 
 function Tribal() {
+  const { t: tx } = useTranslation();
   return (
     <View style={styles.container}>
       {/* Background */}
@@ -17,11 +19,11 @@ function Tribal() {
         {/* Left Text */}
         <View style={styles.textWrapper}>
           <Text style={styles.title}>
-            Pure, traditional & handcrafted
+            {tx("products:tribal.pureTraditionalHandcrafted")}
           </Text>
 
           <Text style={styles.subtitle}>
-            Straight from India’s tribal artisans
+            {tx("products:tribal.straightFromIndiaSTribal")}
           </Text>
 
           <Text style={styles.offer}>
@@ -29,7 +31,7 @@ function Tribal() {
           </Text>
 
           <Text style={styles.cta}>
-            Shop Your Favorites Before They're Gone!
+            {tx("products:tribal.shopYourFavoritesBeforeThey")}
           </Text>
         </View>
          <View style={styles.productImage}>

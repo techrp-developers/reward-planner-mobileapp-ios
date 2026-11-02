@@ -17,10 +17,13 @@ import { useCart } from '../context/CartContext';
 import LinearGradient from 'react-native-linear-gradient';
 import { LogoutConfirmationModal } from '../../common/auth/screens/LogoutConfirmationModal';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
 
 function Profile() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const rootNavigation = navigation.getParent() as RootNav | undefined;
     const { isAuthenticated, user, logout } = useAuth();
@@ -93,11 +96,11 @@ function Profile() {
                     routes: [{ name: 'Auth' }],
                 });
             } else {
-                Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
+                Alert.alert(i18n.t("products:profile.deleteFailed"), i18n.t("products:profile.couldNotDeleteTheAccount"));
             }
         } catch (error) {
             console.error('Delete account failed', error);
-            Alert.alert('Delete failed', 'Could not delete the account. Please try again.');
+            Alert.alert(i18n.t("products:profile.deleteFailed"), i18n.t("products:profile.couldNotDeleteTheAccount"));
         } finally {
             setDeleteLoading(false);
         }
@@ -230,10 +233,10 @@ function Profile() {
                             showsHorizontalScrollIndicator={false}
                             contentContainerStyle={styles.scrollContent}
                         >
-                            <OutlineButton title="My Orders" onPress={handleOpenOrders} />
-                            <OutlineButton title="Buy Again" onPress={() => navigation.navigate('BuyNow')} />
-                            <OutlineButton title="Wishlist" onPress={() => navigation.navigate("WishList")} />
-                            <OutlineButton title="Rewards" onPress={() => navigation.navigate("WalletHistory")}
+                            <OutlineButton title={tx("products:profile.myOrders")} onPress={handleOpenOrders} />
+                            <OutlineButton title={tx("products:profile.buyAgain")} onPress={() => navigation.navigate('BuyNow')} />
+                            <OutlineButton title={tx("products:profile.wishlist")} onPress={() => navigation.navigate("WishList")} />
+                            <OutlineButton title={tx("products:profile.rewards")} onPress={() => navigation.navigate("WalletHistory")}
                             />
                         </ScrollView>
                     </View>
@@ -244,7 +247,7 @@ function Profile() {
 
                     {/* Your Orders Row */}
                     <TouchableOpacity style={styles.ordersRow} onPress={handleOpenOrders} activeOpacity={0.8}>
-                        <Text style={[styles.ordersText, isDark && styles.textDark]}>Your Orders</Text>
+                        <Text style={[styles.ordersText, isDark && styles.textDark]}>{tx("products:profile.yourOrders")}</Text>
                         <MaterialIcons name="keyboard-arrow-right" size={22} color={isDark ? "#A1A1AA" : "#444"} />
                     </TouchableOpacity>
                 </View>
@@ -288,27 +291,27 @@ function Profile() {
                     <DarkModeMenuItem isDark={isDark} onToggle={toggleTheme} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Your Notes" showArrow onPress={handleOpenNotes} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.yourNotes")} showArrow onPress={handleOpenNotes} isDark={isDark} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Address Book" showArrow onPress={OpenAddressDetails} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.addressBook")} showArrow onPress={OpenAddressDetails} isDark={isDark} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    {/* <MenuItem title="Settings" />
+                    {/* <MenuItem title={tx("products:profile.settings")} />
                 <View style={styles.menuDivider} /> */}
 
-                    {/* <MenuItem title="Languages" />
+                    {/* <MenuItem title={tx("products:profile.languages")} />
                 <View style={styles.menuDivider} /> */}
 
-                    <MenuItem title="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.privacyPolicy")} onPress={() => navigation.navigate('PrivacyPolicy')} isDark={isDark} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Terms & Conditions" onPress={() => navigation.navigate('TermsAndConditions')} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.termsConditions")} onPress={() => navigation.navigate('TermsAndConditions')} isDark={isDark} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
-                    <MenuItem title="Delete Account" onPress={handleDeleteAccount} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.deleteAccount")} onPress={handleDeleteAccount} isDark={isDark} />
                     <View style={[styles.menuDivider, isDark && styles.dividerDark]} />
 
-                    <MenuItem title="Logout" onPress={handleLogoutPress} isDark={isDark} />
+                    <MenuItem title={tx("products:profile.logout")} onPress={handleLogoutPress} isDark={isDark} />
 
                 </View>
 
@@ -328,11 +331,11 @@ function Profile() {
                     isDark={isDark}
                     danger
                     icon="delete-outline"
-                    title="Delete Account"
-                    description="Are you sure you want to permanently delete your account?"
-                    subText="This action cannot be undone."
-                    confirmText="Delete Account"
-                    loadingText="Deleting..."
+                    title={tx("products:profile.deleteAccount")}
+                    description={tx("products:profile.areYouSureYouWant")}
+                    subText={tx("products:profile.thisActionCannotBeUndone")}
+                    confirmText={tx("products:profile.deleteAccount")}
+                    loadingText={tx("products:profile.deleting")}
                 />
             </ScrollView>
         </View>
@@ -375,7 +378,7 @@ const DarkModeMenuItem = ({ isDark, onToggle }: { isDark: boolean; onToggle: () 
                 color="#6366F1"
             />
             <View>
-                <Text style={[styles.menuText, isDark && styles.textDark]}>Dark Mode</Text>
+                <Text style={[styles.menuText, isDark && styles.textDark]}>{i18n.t("products:profile.darkMode")}</Text>
                 <Text style={[styles.darkModeSub, isDark && styles.mutedDark]}>
                     {isDark ? "Dark theme active" : "Light theme active"}
                 </Text>

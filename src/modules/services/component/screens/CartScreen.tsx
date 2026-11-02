@@ -29,6 +29,8 @@ import SkeletonBox from '../constant/SkeletonBox';
 import { getBuyNowBundlePreview } from '../../api/BundleAPI';
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const TEN_MINUTES = 10 * 60 * 1000;
 const THIRTY_MINUTES = 30 * 60 * 1000;
@@ -168,6 +170,7 @@ const normalizeCartRewards = (response: any) => {
 };
 
 function CartScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavProps>();
   const servicesTheme = useServicesTheme();
   // MainLayout already reserves space for the services-module bottom bar via
@@ -239,7 +242,7 @@ function CartScreen() {
       queryClient.invalidateQueries({ queryKey: serviceCartItemsQueryKey });
       setError('');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unable to fetch cart items.';
+      const message = err instanceof Error ? err.message : i18n.t('services:errors.cartFetch');
       setError(message);
     } finally {
       setLoading(false);
@@ -277,7 +280,7 @@ function CartScreen() {
     // =========================
     if (item.isBundle) {
       if (!item.bundle_id || !item.bundle_items) {
-        Alert.alert('Error', 'Bundle data missing');
+        Alert.alert(i18n.t("services:cartScreen.error"), i18n.t("services:cartScreen.bundleDataMissing"));
         return;
       }
 
@@ -304,7 +307,7 @@ function CartScreen() {
     // ✅ SINGLE SERVICE FLOW
     // =========================
     if (!item.service_id || !item.variant_id) {
-      Alert.alert('Unable to continue', 'Service information is incomplete.');
+      Alert.alert(i18n.t("services:cartScreen.unableToContinue"), i18n.t("services:cartScreen.serviceInformationIsIncomplete"));
       return;
     }
 
@@ -413,9 +416,9 @@ function CartScreen() {
       {/* ── Coupons & Offers (temporarily disabled) ──────────────────────
       <View style={styles.wrapper}>
         <View style={styles.headerRow}>
-          <Text style={styles.headerText}>Coupons and Offers</Text>
+          <Text style={styles.headerText}>{tx("services:cartScreen.couponsAndOffers")}</Text>
           <TouchableOpacity onPress={() => setShowAllCoupons(p => !p)}>
-            <Text style={styles.viewAllText}>{showAllCoupons ? 'Hide' : 'View All'}</Text>
+            <Text style={styles.viewAllText}>{showAllCoupons ? i18n.t("services:r2.hide") : 'View All'}</Text>
           </TouchableOpacity>
         </View>
         <CouponsSection coupons={showAllCoupons ? SERVICE_COUPONS : SERVICE_COUPONS.slice(0, 1)} />
@@ -441,10 +444,10 @@ function CartScreen() {
   if (!loading && !error && !refreshing && items.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <ScreenHeader title="Cart" onBackPress={() => navigation.goBack()} />
+        <ScreenHeader title={tx("services:cartScreen.cart")} onBackPress={() => navigation.goBack()} />
         <EmptyCart
           onBrowse={() => navigation.goBack()}
-          message="Your service cart is empty. Browse services to get started."
+          message={tx("services:cartScreen.yourServiceCartIsEmpty")}
         />
       </View>
     );
@@ -453,7 +456,7 @@ function CartScreen() {
   if (showInitialSkeleton) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <ScreenHeader title="Cart" onBackPress={() => navigation.goBack()} />
+        <ScreenHeader title={tx("services:cartScreen.cart")} onBackPress={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={[styles.skeletonScrollContent, { paddingBottom: stickyCTA.scrollContentPaddingBottom }]}>
           <SkeletonBox pulse={pulse} width="100%" height={98} borderRadius={14} />
           <SkeletonBox pulse={pulse} width="100%" height={118} borderRadius={14} style={styles.skeletonGap} />
@@ -468,11 +471,11 @@ function CartScreen() {
   if (error) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <ScreenHeader title="Cart" onBackPress={() => navigation.goBack()} />
+        <ScreenHeader title={tx("services:cartScreen.cart")} onBackPress={() => navigation.goBack()} />
         <View style={styles.centeredWrap}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={[styles.retryButton, { backgroundColor: servicesTheme.colors.textStrong }]} onPress={() => loadCart()}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{tx("services:cartScreen.retry")}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -481,7 +484,7 @@ function CartScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-      <ScreenHeader title="Cart" onBackPress={() => navigation.goBack()} />
+      <ScreenHeader title={tx("services:cartScreen.cart")} onBackPress={() => navigation.goBack()} />
 
       <FlatList
         data={items}

@@ -24,10 +24,14 @@ import {
   formatBusTime,
   getBusOrderStatus,
 } from "../../utils/busOrderFormat";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import i18n from "../../../../i18n";
 
 const PAGE_SIZE = 20;
 
 export default function BusOrdersScreen() {
+  const { t: tx } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
 
@@ -47,7 +51,7 @@ export default function BusOrdersScreen() {
       setHasMore(result.hasMore);
       setError(null);
     } catch (loadError: any) {
-      setError(loadError?.message || "Unable to load your bus bookings");
+      setError(loadError?.message || i18n.t("busBooking:r2.unableToLoadYourBusBookings"));
     }
   }, []);
 
@@ -116,7 +120,7 @@ export default function BusOrdersScreen() {
           </Text>
           <View style={[styles.statusPill, { backgroundColor: colors.background }]}>
             <Text style={[styles.statusText, { color: colors.text }]}>
-              {status.label}
+              {translateSourceText("busBooking", status.label)}
             </Text>
           </View>
         </View>
@@ -174,7 +178,7 @@ export default function BusOrdersScreen() {
         >
           <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Bus Bookings</Text>
+        <Text style={styles.headerTitle}>{tx("busBooking:busOrdersScreen.myBusBookings")}</Text>
       </View>
 
       {loading ? (
@@ -184,14 +188,14 @@ export default function BusOrdersScreen() {
       ) : error && orders.length === 0 ? (
         <View style={styles.centerState}>
           <MaterialCommunityIcons name="alert-circle-outline" size={34} color="#C81E3A" />
-          <Text style={styles.stateTitle}>Could not load bookings</Text>
+          <Text style={styles.stateTitle}>{tx("busBooking:busOrdersScreen.couldNotLoadBookings")}</Text>
           <Text style={styles.stateMessage}>{error}</Text>
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.retryButton}
             onPress={handleRefresh}
           >
-            <Text style={styles.retryButtonText}>Try again</Text>
+            <Text style={styles.retryButtonText}>{tx("busBooking:busOrdersScreen.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -216,9 +220,9 @@ export default function BusOrdersScreen() {
           ListEmptyComponent={
             <View style={styles.centerState}>
               <MaterialCommunityIcons name="bus-clock" size={36} color="#D31637" />
-              <Text style={styles.stateTitle}>No bus bookings yet</Text>
+              <Text style={styles.stateTitle}>{tx("busBooking:busOrdersScreen.noBusBookingsYet")}</Text>
               <Text style={styles.stateMessage}>
-                Tickets you book will appear here.
+                {tx("busBooking:busOrdersScreen.ticketsYouBookWillAppear")}
               </Text>
             </View>
           }

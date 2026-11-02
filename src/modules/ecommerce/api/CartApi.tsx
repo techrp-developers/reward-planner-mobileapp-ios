@@ -1,5 +1,6 @@
 // src/api/CartApi.ts
 import api from "../../common/auth/api/axios";
+import i18n from "../../../i18n";
 
 export type AddToCartPayload = {
   product_id: number;
@@ -49,7 +50,7 @@ export const addToCart = async (payload: AddToCartPayload) => {
       const data = res?.data;
       if (data?.success === false) {
         const apiError = new Error(
-          String(data?.message || data?.error || "Add to cart failed")
+          String(data?.message || data?.error || i18n.t("products:r2.addToCartFailed"))
         );
         (apiError as any).response = { data, status: res?.status };
         lastError = apiError;

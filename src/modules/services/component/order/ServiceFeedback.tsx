@@ -22,6 +22,9 @@ import OrderItemCard from '../../../../modules/common/order/OrderItemCard';
 import { submitServiceFeedback } from '../../api/OrderAPI';
 import type { HomeStackParamList } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceFeedback'>;
@@ -59,6 +62,7 @@ const REUSE_OPTIONS = [
 ];
 
 export default function ServiceFeedback() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
@@ -84,7 +88,7 @@ export default function ServiceFeedback() {
 
   const handleSubmit = async () => {
     if (!rating) {
-      Alert.alert('Rating required', 'Please rate your overall service experience.');
+      Alert.alert(i18n.t("services:serviceFeedback.ratingRequired"), i18n.t("services:serviceFeedback.pleaseRateYourOverallService"));
       return;
     }
 
@@ -102,18 +106,18 @@ export default function ServiceFeedback() {
       });
 
       if (res?.success) {
-        Alert.alert('Thank you!', 'Your feedback has been submitted successfully.', [
+        Alert.alert(i18n.t("services:serviceFeedback.thankYou"), i18n.t("services:serviceFeedback.yourFeedbackHasBeenSubmitted"), [
           {
-            text: 'OK',
+            text: i18n.t('common:actions.ok'),
             onPress: () => navigation.navigate('ServiceOrderDetail', { parent_order_id }),
           },
         ]);
         return;
       }
 
-      Alert.alert('Submission failed', res?.message || 'Unable to submit feedback.');
+      Alert.alert(i18n.t("services:serviceFeedback.submissionFailed"), res?.message || i18n.t("services:r2.unableToSubmitFeedback"));
     } catch (err: any) {
-      Alert.alert('Submission failed', err?.message || 'Unable to submit feedback.');
+      Alert.alert(i18n.t("services:serviceFeedback.submissionFailed"), err?.message || i18n.t("services:r2.unableToSubmitFeedback"));
     } finally {
       setSubmitting(false);
     }
@@ -122,7 +126,7 @@ export default function ServiceFeedback() {
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
       <Header
-        title="Service Feedback"
+        title={tx("services:serviceFeedback.serviceFeedback")}
         onBack={() => navigation.goBack()}
       />
 
@@ -139,57 +143,57 @@ export default function ServiceFeedback() {
             )
           }
           title={service_name || 'Service'}
-          weight={variant_name || 'Tell us about your completed service'}
+          weight={variant_name || i18n.t("services:r2.tellUsAboutYourCompletedService")}
           orderId={order_ref}
         />
 
         <StarRatingCard
-          title="How was your experience with this service?"
+          title={tx("services:serviceFeedback.howWasYourExperienceWith")}
           rating={rating}
           onChange={setRating}
         />
 
         <IconScaleCard
-          title="How easy was it to complete this service on our app?"
+          title={tx("services:serviceFeedback.howEasyWasItTo")}
           value={easeRating}
           labels={EASE_LABELS}
           onChange={setEaseRating}
         />
 
         <IconScaleCard
-          title="How was your experience with our Service Expert?"
+          title={tx("services:serviceFeedback.howWasYourExperienceWith2")}
           value={expertRating}
           labels={EXPERT_LABELS}
           onChange={setExpertRating}
         />
 
         <OptionCard
-          title="Was your service completed within the expected time?"
+          title={tx("services:serviceFeedback.wasYourServiceCompletedWithin")}
           options={COMPLETION_OPTIONS}
           value={completionTime}
           onChange={setCompletionTime}
         />
 
         <OptionCard
-          title="Did you feel confident that your service was handled correctly?"
+          title={tx("services:serviceFeedback.didYouFeelConfidentThat")}
           options={CONFIDENCE_OPTIONS}
           value={confidence}
           onChange={setConfidence}
         />
 
         <OptionCard
-          title="Would you use this service again?"
+          title={tx("services:serviceFeedback.wouldYouUseThisService")}
           options={REUSE_OPTIONS}
           value={reuseIntent}
           onChange={setReuseIntent}
         />
 
         <View style={[styles.commentSection, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
-          <Text style={[styles.commentTitle, { color: servicesTheme.colors.textStrong }]}>Anything you’d like us to improve?</Text>
+          <Text style={[styles.commentTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceFeedback.anythingYouDLikeUs")}</Text>
           <TextInput
             value={comment}
             onChangeText={setComment}
-            placeholder="Type here"
+            placeholder={tx("services:serviceFeedback.typeHere")}
             placeholderTextColor={servicesTheme.colors.subtle}
             multiline
             textAlignVertical="top"
@@ -211,7 +215,7 @@ export default function ServiceFeedback() {
             {submitting ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.submitText}>Submit</Text>
+              <Text style={styles.submitText}>{tx("services:serviceFeedback.submit")}</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>
@@ -379,7 +383,7 @@ function OptionCard({
               <View style={[styles.radio, selected && styles.radioActive]}>
                 {selected ? <View style={styles.radioInner} /> : null}
               </View>
-              <Text style={[styles.optionText, { color: servicesTheme.colors.text }]}>{option.label}</Text>
+              <Text style={[styles.optionText, { color: servicesTheme.colors.text }]}>{translateSourceText("services", option.label)}</Text>
             </TouchableOpacity>
           );
         })}

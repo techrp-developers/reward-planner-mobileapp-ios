@@ -32,6 +32,8 @@ import {
 import { chatSocket } from "../services/chatSocket";
 import { chatError } from "../utils";
 import type { ChatMember, ChatStackParamList } from "../types";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Route = NativeStackScreenProps<ChatStackParamList, "GroupInfo">["route"];
 type Navigation = NativeStackNavigationProp<ChatStackParamList>;
@@ -43,6 +45,7 @@ export default function GroupInfoScreen() {
   const { user } = useAuth();
   const currentUserId = getChatUserId(user);
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [imageUrl, setImageUrl] = useState(conversation.image_url || null);
   const [photoActions, setPhotoActions] = useState<MessageAction[] | null>(
@@ -102,7 +105,7 @@ export default function GroupInfoScreen() {
       if (result.didCancel) return;
       if (result.errorCode)
         throw new Error(
-          result.errorMessage || "The photo library is unavailable."
+          result.errorMessage || i18n.t("chat:group.libraryUnavailable")
         );
       const asset = result.assets?.[0];
       if (!asset?.uri || !mounted.current) return;
@@ -115,7 +118,7 @@ export default function GroupInfoScreen() {
       chatSocket.requestResync();
     } catch (error) {
       if (mounted.current)
-        Alert.alert("Photo not updated", chatError(error, "Please try again."));
+        Alert.alert(i18n.t("chat:group.photoNotUpdated"), chatError(error, i18n.t("common:errors.generic")));
     } finally {
       imageBusy.current = false;
       if (mounted.current) setImageSaving(false);
@@ -131,7 +134,7 @@ export default function GroupInfoScreen() {
       chatSocket.requestResync();
     } catch (error) {
       if (mounted.current)
-        Alert.alert("Photo not removed", chatError(error, "Please try again."));
+        Alert.alert(i18n.t("chat:group.photoNotRemoved"), chatError(error, i18n.t("common:errors.generic")));
     } finally {
       imageBusy.current = false;
       if (mounted.current) setImageSaving(false);
@@ -139,12 +142,12 @@ export default function GroupInfoScreen() {
   };
   const confirmRemove = () =>
     Alert.alert(
-      "Remove group photo?",
-      "The photo will be removed for everyone in this group.",
+      i18n.t("chat:group.removePhotoTitle"),
+      i18n.t("chat:group.removePhotoBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: i18n.t("common:actions.cancel"), style: "cancel" },
         {
-          text: "Remove",
+          text: i18n.t("chat:group.remove"),
           style: "destructive",
           onPress: () => {
             void deleteGroupImage();
@@ -157,7 +160,7 @@ export default function GroupInfoScreen() {
     if (imageBusy.current) return;
     setPhotoActions([
       {
-        text: "Choose from gallery",
+        text: i18n.t("chat:group.chooseFromGallery"),
         onPress: () => {
           void pickGroupImage();
         },
@@ -165,7 +168,7 @@ export default function GroupInfoScreen() {
       ...(imageUrl
         ? [
             {
-              text: "Remove photo",
+              text: i18n.t("chat:group.removePhoto"),
               style: "destructive" as const,
               onPress: confirmRemove,
             },
@@ -190,7 +193,7 @@ export default function GroupInfoScreen() {
     return (
       <TouchableOpacity
         accessibilityRole="button"
-        accessibilityLabel={`View ${item.name}'s profile`}
+        accessibilityLabel={t("chat:group.viewProfile", { name: item.name })}
         activeOpacity={0.7}
         onPress={() => navigation.navigate("MemberProfile", { member: item })}
         style={[styles.memberRow, { borderBottomColor: theme.border }]}
@@ -202,20 +205,20 @@ export default function GroupInfoScreen() {
             numberOfLines={1}
           >
             {item.name}
-            {isMe ? " (You)" : ""}
+            {isMe ? t("chat:group.youSuffix") : ""}
           </Text>
           <Text
             style={[styles.memberMeta, { color: theme.secondaryText }]}
             numberOfLines={1}
           >
             {[item.department, item.job_role].filter(Boolean).join(" · ") ||
-              "Group member"}
+              t("chat:group.member")}
           </Text>
         </View>
         {isAdmin ? (
           <View style={[styles.adminBadge, { borderColor: theme.primary }]}>
             <Text style={[styles.adminText, { color: theme.primary }]}>
-              Group admin
+              {t("chat:group.admin")}
             </Text>
           </View>
         ) : null}
@@ -246,7 +249,7 @@ export default function GroupInfoScreen() {
       >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t("common:actions.goBack")}
           onPress={() => navigation.goBack()}
           style={styles.back}
         >
@@ -257,11 +260,11 @@ export default function GroupInfoScreen() {
           />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.text }]}>
-          Group info
+          {t("chat:group.info")}
         </Text>
       </View>
       <ChatMessageActionSheet
-        title="Group photo"
+        title={t("chat:group.photo")}
         actions={photoActions}
         onClose={() => setPhotoActions(null)}
       />
@@ -284,13 +287,13 @@ export default function GroupInfoScreen() {
             <View style={styles.groupSummary}>
               <TouchableOpacity
                 accessibilityRole="button"
-                accessibilityLabel="Change group photo"
+                accessibilityLabel={t("chat:group.changePhoto")}
                 activeOpacity={0.8}
                 onPress={changeGroupImage}
                 disabled={imageSaving}
               >
                 <ChatAvatar
-                  name={conversation.name || "Group"}
+                  name={conversation.name || t("chat:groupFallback")}
                   uri={imageUrl}
                   size={104}
                 />
@@ -316,12 +319,12 @@ export default function GroupInfoScreen() {
                 </View>
               </TouchableOpacity>
               <Text style={[styles.groupName, { color: theme.text }]}>
-                {conversation.name || "Group chat"}
+                {conversation.name || t("chat:groupChat")}
               </Text>
               <Text
                 style={[styles.memberCount, { color: theme.secondaryText }]}
               >
-                {members.length} members
+                {t("chat:group.membersCount", { count: members.length })}
               </Text>
               {conversation.description ? (
                 <Text
@@ -338,7 +341,7 @@ export default function GroupInfoScreen() {
               ]}
             >
               <Text style={[styles.sectionTitle, { color: theme.text }]}>
-                {members.length} participants
+                {t("chat:group.participants", { count: members.length })}
               </Text>
             </View>
           </>

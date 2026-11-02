@@ -1,0 +1,170 @@
+{
+  "appName": "Reward Planners",
+  "actions": {
+    "continue": "पुढे जा",
+    "cancel": "रद्द करा",
+    "save": "सेव्ह करा",
+    "done": "झाले",
+    "back": "मागे",
+    "goBack": "मागे जा",
+    "close": "बंद करा",
+    "retry": "पुन्हा प्रयत्न करा",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "ok": "ठीक आहे",
+    "gotIt": "समजले",
+    "yes": "होय",
+    "no": "नाही",
+    "later": "नंतर",
+    "notNow": "आता नाही",
+    "openSettings": "सेटिंग्ज उघडा",
+    "updateNow": "आता अपडेट करा",
+    "delete": "हटवा",
+    "edit": "बदला",
+    "submit": "सबमिट करा",
+    "send": "पाठवा",
+    "search": "शोधा",
+    "viewAll": "सर्व पहा",
+    "seeAll": "सर्व पहा",
+    "apply": "लागू करा",
+    "clear": "साफ करा",
+    "confirm": "पुष्टी करा",
+    "share": "शेअर करा",
+    "copy": "कॉपी करा",
+    "reply": "उत्तर द्या",
+    "next": "पुढे",
+    "previous": "मागील",
+    "skip": "वगळा",
+    "select": "निवडा",
+    "remove": "काढा",
+    "add": "जोडा",
+    "update": "अपडेट करा",
+    "download": "डाउनलोड करा",
+    "upload": "अपलोड करा",
+    "refresh": "रिफ्रेश करा",
+    "startExploring": "सुरुवात करा",
+    "getStarted": "सुरुवात करा"
+  },
+  "tabs": {
+    "home": "होम",
+    "search": "शोधा",
+    "cart": "कार्ट",
+    "profile": "प्रोफाइल",
+    "history": "इतिहास",
+    "todoList": "कामांची यादी",
+    "chat": "चॅट"
+  },
+  "modules": {
+    "product": "प्रॉडक्ट",
+    "services": "सेवा",
+    "payments": "पेमेंट",
+    "dineOut": "डाइनआउट"
+  },
+  "badges": {
+    "cartItems_one": "{{label}}, {{count}} वस्तू",
+    "cartItems_other": "{{label}}, {{count}} वस्तू",
+    "unreadMessages_one": "{{label}}, {{count}} न वाचलेला संदेश",
+    "unreadMessages_other": "{{label}}, {{count}} न वाचलेले संदेश"
+  },
+  "status": {
+    "loading": "लोड होत आहे…",
+    "saving": "सेव्ह होत आहे…",
+    "sending": "पाठवत आहे…",
+    "checking": "तपासत आहे…",
+    "pleaseWait": "कृपया प्रतीक्षा करा…",
+    "active": "सक्रिय",
+    "success": "यशस्वी",
+    "failed": "अयशस्वी",
+    "pending": "प्रलंबित"
+  },
+  "errors": {
+    "generic": "काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.",
+    "network": "कृपया तुमचे इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.",
+    "unavailable": "हे सध्या उपलब्ध नाही. कृपया नंतर प्रयत्न करा."
+  },
+  "notifications": {
+    "disabledTitle": "सूचना बंद आहेत",
+    "disabledMessage": "ऑर्डर अपडेट, डिलिव्हरी अलर्ट आणि रिवॉर्ड क्रेडिट मिळवण्यासाठी सूचना सुरू करा."
+  },
+  "offline": {
+    "connectionLost": "कनेक्शन तुटले",
+    "title": "इंटरनेट कनेक्शन नाही",
+    "tryReconnecting": "पुन्हा कनेक्ट करा",
+    "autoSyncTitle": "ऑटो सिंक",
+    "autoSyncBody": "कनेक्शन परत आल्यावर रिवॉर्ड आणि ऑर्डर आपोआप रिफ्रेश होतील.",
+    "protectedTitle": "डेटा सुरक्षित आहे",
+    "protectedBody": "तुम्ही ऑफलाइन असतानाही तुमची वॉलेट ॲक्टिव्हिटी सुरक्षित राहते.",
+    "checkingConnection": "कनेक्शन तपासत आहे…"
+  },
+  "update": {
+    "readyTitle": "अपडेट तयार आहे",
+    "maintenanceTitle": "नियोजित देखभाल",
+    "requiredTitle": "आवश्यक अपडेट",
+    "availableTitle": "नवीन आवृत्ती उपलब्ध आहे",
+    "tagline": "सुरक्षित रिवॉर्ड, जलद चेकआउट, सुलभ अनुभव",
+    "unavailableTitle": "अपडेट उपलब्ध नाही",
+    "storeLinkMissing": "ॲप स्टोअर लिंक सेट केलेली नाही.",
+    "maintenanceHeading": "आम्ही लवकरच\nपरत येऊ",
+    "forceHeading": "अपडेट करण्याची\nवेळ",
+    "optionalHeading": "काहीतरी चांगले\nतुमची वाट पाहत आहे",
+    "maintenanceBody": "आम्ही पडद्यामागे सुधारणा करत आहोत.\nकाही मिनिटांनी पुन्हा पहा.",
+    "forceBody": "ही आवृत्ती आता बंद झाली आहे. तुमचे रिवॉर्ड सुरक्षित ठेवण्यासाठी आणि सुलभ अनुभवासाठी आता अपडेट करा.",
+    "optionalBody": "{{platform}} वर तुमच्यासाठी नवीन वैशिष्ट्ये आणि सुलभ अनुभव तयार आहे. यासाठी फक्त एक क्षण लागेल.",
+    "storeOpenFailedTitle": "स्टोअर उघडता आले नाही",
+    "storeOpenFailedBody": "कृपया ॲप स्टोअर उघडा आणि Reward Planners शोधा.",
+    "readyBody": "एक छोटी सुधारणा लागू करण्यासाठी तयार आहे. यासाठी फक्त एक क्षण लागेल आणि ॲप पुन्हा सुरू होईल.",
+    "dataSafeAll": "तुमचे सर्व रिवॉर्ड आणि डेटा सुरक्षित आहेत",
+    "dataSafeAlways": "तुमचे रिवॉर्ड आणि डेटा नेहमी सुरक्षित असतात"
+  },
+  "reward": {
+    "welcomeBonus": "वेलकम बोनस",
+    "welcomeTitle": "Reward Planners मध्ये तुमचे स्वागत आहे",
+    "accountActive": "तुमचे खाते आता सक्रिय आहे",
+    "firstLoginBonus": "पहिल्या लॉगिनचा बोनस",
+    "rewardCoins": "रिवॉर्ड कॉइन",
+    "credited": "यशस्वीरित्या जमा झाले",
+    "rewardWallet": "रिवॉर्ड वॉलेट",
+    "readyToUse": "वापरण्यासाठी तयार"
+  },
+  "time": {
+    "justNow": "आत्ताच",
+    "today": "आज",
+    "yesterday": "काल",
+    "minutesAgo_one": "{{count}} मिनिटापूर्वी",
+    "minutesAgo_other": "{{count}} मिनिटांपूर्वी",
+    "hoursAgo_one": "{{count}} तासापूर्वी",
+    "hoursAgo_other": "{{count}} तासांपूर्वी",
+    "daysAgo_one": "{{count}} दिवसापूर्वी",
+    "daysAgo_other": "{{count}} दिवसांपूर्वी"
+  },
+  "nav": {
+    "guest": "अतिथी",
+    "deliverTo": "डिलिव्हरी पत्ता",
+    "setLocation": "डिलिव्हरी लोकेशन निवडा",
+    "searchHints": {
+      "product": [
+        "प्रॉडक्ट आणि ऑफर शोधा",
+        "ब्रँड आणि कॅटेगरी शोधा",
+        "रिवॉर्ड आणि डील शोधा"
+      ],
+      "service": [
+        "PAN आणि आधार शोधा",
+        "पासपोर्ट सेवा शोधा",
+        "विमा आणि SIP शोधा"
+      ],
+      "payment": [
+        "मोबाइल रिचार्ज शोधा",
+        "वीज बिल शोधा",
+        "पाणी आणि DTH बिल शोधा"
+      ],
+      "dineout": [
+        "बस मार्ग शोधा",
+        "बस तिकीट शोधा",
+        "ठिकाणे शोधा"
+      ]
+    }
+  },
+  "r2": {
+    "weAreHoldingYourPlaceReconnect": "आम्ही तुमची जागा राखून ठेवली आहे. खरेदी, बुकिंग आणि रिवॉर्ड रिडीम करणे सुरू ठेवण्यासाठी पुन्हा कनेक्ट करा.",
+    "checkWiFiMobileDataOr": "Wi-Fi, मोबाइल डेटा किंवा एअरप्लेन मोड तपासा."
+  }
+}

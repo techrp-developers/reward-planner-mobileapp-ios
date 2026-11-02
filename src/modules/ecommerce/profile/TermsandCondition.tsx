@@ -22,6 +22,8 @@ import {
   type TermItem,
 } from "../api/TermsConditionAPI";
 import { useAlert } from "../components/alerts";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 // ─────────────────────────────────────────────────────────────
 // THEME
@@ -76,6 +78,7 @@ const TermCard = ({ title, content, iconText, isDark }: TermCardProps) => (
 // ─────────────────────────────────────────────────────────────
 
 const TermsAndConditionsScreen = () => {
+  const { t: tx } = useTranslation();
   const alert = useAlert();
   const { isDark, theme } = useAppTheme();
 
@@ -117,7 +120,7 @@ const TermsAndConditionsScreen = () => {
         console.warn("[Terms] initial load failed", error);
 
         if (mountedRef.current) {
-          alert.error("Error", "Failed to load Terms & Conditions.");
+          alert.error(i18n.t("products:termsandCondition.error"), i18n.t("products:termsandCondition.failedToLoadTermsConditions"));
         }
       } finally {
         if (mountedRef.current) {
@@ -148,13 +151,13 @@ const TermsAndConditionsScreen = () => {
       setAlreadyAccepted(true);
 
       alert.success(
-        "Accepted",
-        "Terms & Conditions accepted successfully.",
+        i18n.t("products:termsandCondition.msg.accepted"),
+        i18n.t("products:termsandCondition.msg.termsConditionsAcceptedSuccessfully"),
       );
     } catch {
       alert.error(
-        "Update Failed",
-        "Could not save your preference. Please try again.",
+        i18n.t("products:termsandCondition.msg.updateFailed"),
+        i18n.t("products:termsandCondition.msg.couldNotSaveYourPreference"),
       );
     } finally {
       setSaving(false);
@@ -183,8 +186,8 @@ const TermsAndConditionsScreen = () => {
           {/* ── HEADER ───────────────────────────────────── */}
           <View style={styles.header}>
             <View>
-              <Text style={[styles.mainTitle, isDark && darkStyles.primaryText]}>Terms &</Text>
-              <Text style={[styles.mainTitleBold, isDark && darkStyles.primaryText]}>Conditions</Text>
+              <Text style={[styles.mainTitle, isDark && darkStyles.primaryText]}>{tx("products:termsandCondition.terms")}</Text>
+              <Text style={[styles.mainTitleBold, isDark && darkStyles.primaryText]}>{tx("products:termsandCondition.conditions")}</Text>
             </View>
             <View style={[styles.dateBadge, isDark && darkStyles.badge]}>
               <Text style={[styles.dateText, isDark && darkStyles.primaryText]}>v1.2 • MAR 2026</Text>
@@ -195,7 +198,7 @@ const TermsAndConditionsScreen = () => {
           {loading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={theme.primary} />
-              <Text style={[styles.loadingText, isDark && darkStyles.mutedText]}>Loading…</Text>
+              <Text style={[styles.loadingText, isDark && darkStyles.mutedText]}>{tx("products:termsandCondition.loading")}</Text>
             </View>
           ) : (
             <ScrollView
@@ -233,7 +236,7 @@ const TermsAndConditionsScreen = () => {
                   </View>
 
                   <Text style={[styles.acceptedPillText, isDark && darkStyles.acceptedPillText]}>
-                    Terms & Conditions Accepted
+                    {tx("products:termsandCondition.termsConditionsAccepted")}
                   </Text>
                 </View>
               ) : (
@@ -258,7 +261,7 @@ const TermsAndConditionsScreen = () => {
                     </View>
                     <Text style={[styles.checkboxText, isDark && darkStyles.bodyText]}>
                       I have read and agree to the{" "}
-                      <Text style={[styles.checkboxBold, isDark && darkStyles.primaryText]}>Terms & Conditions</Text>
+                      <Text style={[styles.checkboxBold, isDark && darkStyles.primaryText]}>{tx("products:termsandCondition.termsConditions")}</Text>
                     </Text>
                   </TouchableOpacity>
 
@@ -285,7 +288,7 @@ const TermsAndConditionsScreen = () => {
                         <ActivityIndicator color="#FFF" size="small" />
                       ) : (
                         <Text style={styles.acceptButtonText}>
-                          I Understand & Agree
+                          {tx("products:termsandCondition.iUnderstandAgree")}
                         </Text>
                       )}
                     </LinearGradient>

@@ -18,6 +18,7 @@ import {
 } from "../../navigation/navigationPerformance";
 import { useCart } from "../../context/CartContext";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -143,7 +144,7 @@ export default function ProductHead({
 
 
           <TextInput
-            placeholder='Search "TRF Bling"'
+            placeholder={i18n.t('products:productHeadImg.searchPlaceholder')}
             placeholderTextColor={theme.secondaryText}
             style={[styles.searchInput, { fontSize: width * 0.038, color: theme.text }]}
             onFocus={handleSearch}

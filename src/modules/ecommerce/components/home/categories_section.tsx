@@ -19,6 +19,7 @@ import { fetchAllCategories, getProductImageUrl } from "../../api/ProductApi";
 import { queryClient } from "../../../../query/queryClient";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 import { fs, rs } from "../../../../utils/responsive";
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 const CATEGORIES_QUERY_KEY = ["ecommerce", "home", "categories-section"] as const;
@@ -190,6 +191,7 @@ function CategoryCarouselSkeleton({ cardWidth }: { cardWidth: number }) {
 }
 
 export default function CategoriesSection() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { width } = useWindowDimensions();
   const { isDark, theme } = useAppTheme();
@@ -261,7 +263,7 @@ export default function CategoriesSection() {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <View style={styles.headerRow}>
-          <Text style={[styles.heading, { color: theme.text }]}>Categories</Text>
+          <Text style={[styles.heading, { color: theme.text }]}>{tx("products:categoriessection.categories")}</Text>
         </View>
         <CategoryCarouselSkeleton cardWidth={layout.cardWidth} />
       </View>
@@ -273,14 +275,14 @@ export default function CategoriesSection() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: theme.text }]}>Categories</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>{tx("products:categoriessection.categories")}</Text>
 
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={() => navigation.navigate("CategoriesScreen")}
           style={styles.exploreBtn}
         >
-          <Text style={[styles.exploreText, { color: theme.text }]}>View All</Text>
+          <Text style={[styles.exploreText, { color: theme.text }]}>{tx("products:categoriessection.viewAll")}</Text>
           <MaterialIcons name="chevron-right" size={18} color={theme.text} />
         </TouchableOpacity>
       </View>

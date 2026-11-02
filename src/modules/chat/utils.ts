@@ -1,6 +1,8 @@
 import { normalizeLocalCmsImageUrl } from "../../config/apiConfig";
 import type { ChatConversation, ChatMember } from "./types";
 import { normalizeChatId, sameChatId } from "./identity";
+import i18n from "../../i18n";
+import { formatDate, formatTime } from "../../i18n/format";
 
 export const chatImageUrl = (value?: string | null) =>
   normalizeLocalCmsImageUrl(value) ?? undefined;
@@ -52,8 +54,8 @@ export function conversationTitle(
   currentUserId?: number
 ) {
   return conversation.type === "group"
-    ? conversation.name || "Group chat"
-    : otherMember(conversation, currentUserId)?.name || "Chat";
+    ? conversation.name || i18n.t("chat:groupChat")
+    : otherMember(conversation, currentUserId)?.name || i18n.t("chat:chat");
 }
 
 export function conversationMatchesQuery(conversation: ChatConversation, query: string, currentUserId?: number) {
@@ -80,12 +82,12 @@ export function chatTime(value?: string | null) {
   if (Number.isNaN(date.getTime())) return "";
   const today = new Date();
   if (date.toDateString() === today.toDateString()) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return formatTime(date, { hour: "2-digit", minute: "2-digit" });
   }
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
-  if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-  return date.toLocaleDateString([], { day: "2-digit", month: "short" });
+  if (date.toDateString() === yesterday.toDateString()) return i18n.t("common:time.yesterday");
+  return formatDate(date, { day: "2-digit", month: "short" });
 }
 
 export function chatError(error: any, fallback: string) {
@@ -141,6 +143,6 @@ export function safeChatAttachmentUrl(value?: string | null) {
 export function messageTime(value: string) {
   const date = new Date(value);
   return Number.isFinite(date.getTime())
-    ? date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    ? formatTime(date, { hour: "2-digit", minute: "2-digit" })
     : "";
 }

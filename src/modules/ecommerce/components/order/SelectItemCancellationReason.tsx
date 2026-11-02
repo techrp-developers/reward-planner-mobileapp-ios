@@ -13,6 +13,8 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { requestItemCancellation, CancellationReason, fetchCancellationReasons } from "../../api/OrderApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type RouteProps = RouteProp<
     HomeStackParamList,
@@ -22,6 +24,7 @@ type RouteProps = RouteProp<
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
 export default function SelectItemCancellationReason() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const { isDark, theme } = useAppTheme();
     const [comment, setComment] = useState("");
@@ -56,7 +59,7 @@ export default function SelectItemCancellationReason() {
 
     const handleCancelItem = async () => {
         if (!selectedReason) {
-            Alert.alert("Reason required", "Please select cancellation reason");
+            Alert.alert(i18n.t("products:selectItemCancellationReason.reasonRequired"), i18n.t("products:selectItemCancellationReason.pleaseSelectCancellationReason"));
             return;
         }
 
@@ -69,16 +72,16 @@ export default function SelectItemCancellationReason() {
             );
 
             if (res?.success) {
-                Alert.alert("Success", "Item cancellation request submitted successfully", [
-                    { text: "OK", onPress: () => navigation.goBack() },
+                Alert.alert(i18n.t("products:selectItemCancellationReason.success"), i18n.t("products:selectItemCancellationReason.itemCancellationRequestSubmittedSuccessfully"), [
+                    { text: i18n.t("products:selectItemCancellationReason.ok"), onPress: () => navigation.goBack() },
                 ]);
                 return;
             }
 
-            Alert.alert("Cancellation failed", res?.message || "Unable to submit cancellation request");
+            Alert.alert(i18n.t("products:selectItemCancellationReason.cancellationFailed"), res?.message || i18n.t("products:r2.unableToSubmitCancellationRequest"));
         } catch (error) {
             __DEV__ && console.log("Cancel item failed", error);
-            Alert.alert("Error", "Unable to submit cancellation request. Please try again.");
+            Alert.alert(i18n.t("products:selectItemCancellationReason.error"), i18n.t("products:selectItemCancellationReason.unableToSubmitCancellationRequest"));
         } finally {
             setSubmitting(false);
         }
@@ -87,7 +90,7 @@ export default function SelectItemCancellationReason() {
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
             <OrderHeading
-                title="Request Item Cancellation"
+                title={tx("products:selectItemCancellationReason.requestItemCancellation")}
                 onBackPress={() => navigation.goBack()}
                 isDark={isDark}
             />
@@ -106,7 +109,7 @@ export default function SelectItemCancellationReason() {
 
                 {/* Reason Section */}
                 <View style={[styles.reasonCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                    <Text style={[styles.reasonTitle, { color: theme.text }]}>Reason For Cancellation</Text>
+                    <Text style={[styles.reasonTitle, { color: theme.text }]}>{tx("products:selectItemCancellationReason.reasonForCancellation")}</Text>
 
                     {/* WHEN NO REASON SELECTED → SHOW ALL */}
                     {!selectedReason &&
@@ -123,7 +126,7 @@ export default function SelectItemCancellationReason() {
                         ))}
 
                     {!selectedReason && !loadingReasons && reasons.length === 0 && (
-                        <Text style={[styles.emptyReasonText, { color: theme.secondaryText }]}>No cancellation reasons available.</Text>
+                        <Text style={[styles.emptyReasonText, { color: theme.secondaryText }]}>{tx("products:selectItemCancellationReason.noCancellationReasonsAvailable")}</Text>
                     )}
 
                     {/* WHEN REASON SELECTED → SHOW ONLY SELECTED */}
@@ -138,9 +141,9 @@ export default function SelectItemCancellationReason() {
 
                             {/* Comments Input */}
                             <View style={[styles.commentBox, { backgroundColor: isDark ? "#111827" : "#F9FAFB", borderColor: theme.border }]}>
-                                <Text style={[styles.commentLabel, { color: theme.text }]}>Comments*</Text>
+                                <Text style={[styles.commentLabel, { color: theme.text }]}>{tx("products:selectItemCancellationReason.comments")}</Text>
                                 <TextInput
-                                    placeholder="Enter any specific questions or requirements you'd like to share"
+                                    placeholder={tx("products:selectItemCancellationReason.enterAnySpecificQuestionsOr")}
                                     placeholderTextColor={theme.secondaryText}
                                     value={comment}
                                     onChangeText={setComment}
@@ -174,7 +177,7 @@ export default function SelectItemCancellationReason() {
                             isSubmitDisabled && styles.disabledButton,
                         ]}
                     >
-                        <Text style={styles.submitText}>{submitting ? "Submitting..." : "Submit Request"}</Text>
+                        <Text style={styles.submitText}>{submitting ? i18n.t("products:r2.submitting") : "Submit Request"}</Text>
                     </LinearGradient>
                 </TouchableOpacity>
             </ScrollView>

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-nati
 import LinearGradient from "react-native-linear-gradient";
 import EmptyCartImage from "../../../../assets/product/EmptyCart.svg";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const { width } = Dimensions.get("window");
 
@@ -12,16 +14,17 @@ type EmptyCartProps = {
 };
 
 export default function EmptyCart({ onBrowse, message }: EmptyCartProps) {
+  const { t: tx } = useTranslation();
   const { theme } = useAppTheme();
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <EmptyCartImage width={180} height={180} />
 
-      <Text style={[styles.title, { color: theme.text }]}>Your cart looks a little lonely 🛒</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{tx("products:emptyCart.yourCartLooksALittle")}</Text>
 
       <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-        {message ?? "Add a few favourites and watch this space glow up. ✨"}
+        {message ?? i18n.t("products:r2.addAFewFavouritesAndWatch")}
       </Text>
 
       <TouchableOpacity activeOpacity={0.9} onPress={onBrowse} style={styles.buttonWrap}>
@@ -31,7 +34,7 @@ export default function EmptyCart({ onBrowse, message }: EmptyCartProps) {
           end={{ x: 1, y: 0 }}
           style={styles.button}
         >
-          <Text style={styles.buttonText}>Browse products</Text>
+          <Text style={styles.buttonText}>{tx("products:emptyCart.browseProducts")}</Text>
         </LinearGradient>
       </TouchableOpacity>
     </View>

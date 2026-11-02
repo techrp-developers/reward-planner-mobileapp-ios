@@ -18,6 +18,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { getSectionContent, type MFArticleDetails } from '../../api/MutualFundAPI';
 import type { HomeStackParamList } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_GAP = 12;
@@ -35,6 +36,7 @@ function getAccent(sectionId: number) {
 }
 
 function MFSectionArticles() {
+    const { t: tx } = useTranslation();
     const route = useRoute<SectionArticlesRoute>();
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
     const servicesTheme = useServicesTheme();
@@ -68,7 +70,7 @@ function MFSectionArticles() {
                 <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={3}>{item.title}</Text>
                 <Text style={[styles.cardExcerpt, { color: servicesTheme.colors.muted }]} numberOfLines={2}>{item.short_description}</Text>
                 <View style={[styles.readMoreRow]}>
-                    <Text style={[styles.readMore, { color: accent }]}>Read More</Text>
+                    <Text style={[styles.readMore, { color: accent }]}>{tx("services:mFSectionArticles.readMore")}</Text>
                     <Text style={[styles.readMoreArrow, { color: accent }]}> ›</Text>
                 </View>
             </View>
@@ -97,7 +99,7 @@ function MFSectionArticles() {
                 </View>
             ) : articles.length === 0 ? (
                 <View style={styles.center}>
-                    <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No articles found.</Text>
+                    <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>{tx("services:mFSectionArticles.noArticlesFound")}</Text>
                 </View>
             ) : (
                 <FlatList

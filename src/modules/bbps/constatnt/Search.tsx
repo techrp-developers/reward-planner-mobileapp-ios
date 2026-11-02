@@ -37,6 +37,8 @@ import Housing from '../assets/BBPS_Service/Housing_Socity.svg';
 import Municipal from '../assets/BBPS_Service/Munsiple_taxes.svg';
 import Education from '../assets/BBPS_Service/Education.svg';
 import Hospital from '../assets/BBPS_Service/Hospital_bill.svg';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const MIN_SEARCH_LENGTH = 2;
 
@@ -100,6 +102,7 @@ const SearchResultIcon = ({ categoryName }: { categoryName: string }) => {
 };
 
 function Search({ navigation }: any) {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
   const { width } = useWindowDimensions();
   const [search, setSearch] = useState('');
@@ -182,7 +185,7 @@ function Search({ navigation }: any) {
             autoFocus
             value={search}
             onChangeText={setSearch}
-            placeholder='Search "Electricity, DTH, FASTag…"'
+            placeholder={i18n.t('payments:msg.searchPlaceholder')}
             placeholderTextColor={bbpsTheme.colors.muted}
             returnKeyType="search"
             style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
@@ -201,7 +204,7 @@ function Search({ navigation }: any) {
         showsVerticalScrollIndicator={false}
       >
         {!isSearchActive && (
-          <Text style={[styles.hint, { color: bbpsTheme.colors.subtle }]}>Type at least 2 characters to search bill payments</Text>
+          <Text style={[styles.hint, { color: bbpsTheme.colors.subtle }]}>{tx("payments:search.typeAtLeast2Characters")}</Text>
         )}
 
         {isSearchActive && loading && (
@@ -225,7 +228,7 @@ function Search({ navigation }: any) {
         )}
 
         {isSearchActive && !loading && failed && (
-          <Text style={[styles.message, { color: bbpsTheme.colors.muted }]}>Unable to load bill-payment services right now.</Text>
+          <Text style={[styles.message, { color: bbpsTheme.colors.muted }]}>{tx("payments:search.unableToLoadBillPayment")}</Text>
         )}
 
         {isSearchActive && !loading && !failed && results.length === 0 && (
@@ -257,7 +260,7 @@ function Search({ navigation }: any) {
                 {item.operator_category_name}
               </Text>
               <Text style={[styles.resultType, { color: bbpsTheme.colors.subtle }]} numberOfLines={1}>
-                {item.operator_category_group || 'Payments & bills'}
+                {item.operator_category_group || i18n.t("payments:msg.paymentsAndBills")}
               </Text>
             </View>
             <MaterialCommunityIcons name="arrow-top-left" size={20} color={bbpsTheme.colors.subtle} />

@@ -10,6 +10,7 @@ import {
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { getProductImageUrl } from "../../api/ProductApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   attributes: Record<string, string[]>;
@@ -39,6 +40,7 @@ export default function ProductVariants({
   variants,
   onChange,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme();
   const variantList = Array.isArray(variants) ? variants : [];
   const attrEntries = Object.entries(attributes || {}).sort(([a], [b]) => {
@@ -199,11 +201,11 @@ export default function ProductVariants({
                     ) : null}
 
                     {isOutOfStock ? (
-                      <Text style={styles.metaText}>Out of stock</Text>
+                      <Text style={styles.metaText}>{tx("products:productvariants.outOfStock")}</Text>
                     ) : isUnavailable ? (
-                      <Text style={styles.metaText}>Unavailable</Text>
+                      <Text style={styles.metaText}>{tx("products:productvariants.unavailable")}</Text>
                     ) : !variant && !isSelected ? (
-                      <Text style={styles.availableMetaText}>Available</Text>
+                      <Text style={styles.availableMetaText}>{tx("products:productvariants.available")}</Text>
                     ) : null}
                   </TouchableOpacity>
                 );

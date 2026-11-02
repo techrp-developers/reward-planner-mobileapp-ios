@@ -13,18 +13,21 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const CashlessReviewScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
 
   const handleSubmission = () => {
     Alert.alert(
-      'Claim Submitted',
-      'Your cashless pre-authorization request CLM12345678 has been submitted successfully.',
+      i18n.t('insurance:cashless.submittedTitle'),
+      i18n.t('insurance:cashless.submittedBody', { id: 'CLM12345678' }),
       [
         {
-          text: 'Ok',
+          text: i18n.t('common:actions.ok'),
           onPress: () => navigation.navigate('HealthClaimsScreen'),
         },
       ]
@@ -45,7 +48,7 @@ const CashlessReviewScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Cashless Claim</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:cashlessReviewScreen.cashlessClaim")}</Text>
         </View>
 
         <TouchableOpacity style={[styles.backBtn, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]} activeOpacity={0.7}>
@@ -59,7 +62,7 @@ const CashlessReviewScreen: React.FC = () => {
           <View style={[styles.stepCircleDone, { backgroundColor: '#10B981' }]}>
             <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" />
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Member</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.member")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: '#10B981' }]} />
@@ -68,7 +71,7 @@ const CashlessReviewScreen: React.FC = () => {
           <View style={[styles.stepCircleDone, { backgroundColor: '#10B981' }]}>
             <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" />
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Hospital</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.hospital")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: '#10B981' }]} />
@@ -77,7 +80,7 @@ const CashlessReviewScreen: React.FC = () => {
           <View style={[styles.stepCircleDone, { backgroundColor: '#10B981' }]}>
             <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" />
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Documents</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.documents")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: '#10B981' }]} />
@@ -86,7 +89,7 @@ const CashlessReviewScreen: React.FC = () => {
           <View style={[styles.stepCircleActive, { borderColor: '#005b7f', backgroundColor: '#005b7f' }]}>
             <Text style={styles.stepCircleActiveText}>4</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>Review</Text>
+          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:cashlessReviewScreen.review")}</Text>
         </View>
       </View>
 
@@ -97,30 +100,30 @@ const CashlessReviewScreen: React.FC = () => {
           <View style={styles.briefHeader}>
             <Text style={styles.briefLogoText}>care</Text>
             <View style={styles.briefStatusBadge}>
-              <Text style={styles.briefStatusText}>Active</Text>
+              <Text style={styles.briefStatusText}>{tx("insurance:cashlessReviewScreen.active")}</Text>
             </View>
           </View>
           <View style={styles.briefInfoGrid}>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Policy Number</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:cashlessReviewScreen.policyNumber")}</Text>
               <Text style={styles.briefVal}>B7812841</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Employee ID</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:cashlessReviewScreen.employeeId")}</Text>
               <Text style={styles.briefVal}>EMP124567</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Covered Members</Text>
-              <Text style={styles.briefVal}>4 Members</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:cashlessReviewScreen.coveredMembers")}</Text>
+              <Text style={styles.briefVal}>{tx("insurance:cashlessReviewScreen.n4Members")}</Text>
             </View>
           </View>
           <View style={[styles.briefInfoGrid, { marginTop: rs(6) }]}>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Valid Till</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:cashlessReviewScreen.validTill")}</Text>
               <Text style={styles.briefVal}>28 Jun 2027</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Member ID</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:cashlessReviewScreen.memberId")}</Text>
               <Text style={styles.briefVal}>00SWITRN10</Text>
             </View>
             <View style={styles.briefInfoCol} />
@@ -131,39 +134,39 @@ const CashlessReviewScreen: React.FC = () => {
         <View style={[styles.cardSection, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
           <View style={styles.sectionHeaderCompact}>
             <MaterialCommunityIcons name="clipboard-text-outline" size={16} color="#005b7f" />
-            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Treatment Details</Text>
+            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:cashlessReviewScreen.treatmentDetails")}</Text>
           </View>
 
           <View style={styles.detailsGrid}>
             <View style={styles.detailsRow}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Selected Member</Text>
-                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Ravi Sharma - Self</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.selectedMember")}</Text>
+                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:cashlessReviewScreen.raviSharmaSelf")}</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Selected Hospital</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.selectedHospital")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Manipal Hospital</Text>
               </View>
             </View>
 
             <View style={[styles.detailsRow, { marginTop: rs(8) }]}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Admission Type</Text>
-                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Planned</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.admissionType")}</Text>
+                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:cashlessReviewScreen.planned")}</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Admission Date</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.admissionDate")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>22 Aug 2026</Text>
               </View>
             </View>
 
             <View style={[styles.detailsRow, { marginTop: rs(8) }]}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Diagnosis</Text>
-                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>General Surgery</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.diagnosis")}</Text>
+                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:cashlessReviewScreen.generalSurgery")}</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Estimated Amount</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.estimatedAmount")}</Text>
                 <Text style={[styles.detailsVal, { color: '#10B981', fontWeight: '700' }]}>₹75,000</Text>
               </View>
             </View>
@@ -174,7 +177,7 @@ const CashlessReviewScreen: React.FC = () => {
         <View style={[styles.cardSection, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', marginTop: rs(14) }]}>
           <View style={styles.sectionHeaderCompact}>
             <MaterialCommunityIcons name="folder-outline" size={16} color="#005b7f" />
-            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Documents Checklist</Text>
+            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:cashlessReviewScreen.documentsChecklist")}</Text>
           </View>
 
           <View style={styles.docsRow}>
@@ -183,8 +186,8 @@ const CashlessReviewScreen: React.FC = () => {
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={styles.checkBadgeMini} />
                 <MaterialCommunityIcons name="card-bulleted-outline" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Health E-Card</Text>
-              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>Uploaded</Text>
+              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.healthECard")}</Text>
+              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>{tx("insurance:cashlessReviewScreen.uploaded")}</Text>
             </View>
 
             <View style={styles.docCheckItem}>
@@ -192,8 +195,8 @@ const CashlessReviewScreen: React.FC = () => {
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={styles.checkBadgeMini} />
                 <MaterialCommunityIcons name="badge-account-outline" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>ID Proof</Text>
-              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>Uploaded</Text>
+              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.idProof")}</Text>
+              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>{tx("insurance:cashlessReviewScreen.uploaded")}</Text>
             </View>
 
             <View style={styles.docCheckItem}>
@@ -201,8 +204,8 @@ const CashlessReviewScreen: React.FC = () => {
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={styles.checkBadgeMini} />
                 <MaterialCommunityIcons name="file-document-outline" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Prescription</Text>
-              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>Uploaded</Text>
+              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.prescription")}</Text>
+              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>{tx("insurance:cashlessReviewScreen.uploaded")}</Text>
             </View>
 
             <View style={styles.docCheckItem}>
@@ -210,8 +213,8 @@ const CashlessReviewScreen: React.FC = () => {
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={styles.checkBadgeMini} />
                 <MaterialCommunityIcons name="hospital-marker" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Admission Advice</Text>
-              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>Uploaded</Text>
+              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.admissionAdvice")}</Text>
+              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>{tx("insurance:cashlessReviewScreen.uploaded")}</Text>
             </View>
 
             <View style={styles.docCheckItem}>
@@ -219,8 +222,8 @@ const CashlessReviewScreen: React.FC = () => {
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={styles.checkBadgeMini} />
                 <MaterialCommunityIcons name="file-chart-outline" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Estimated Bill</Text>
-              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>Uploaded</Text>
+              <Text style={[styles.docCheckLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.estimatedBill")}</Text>
+              <Text style={[styles.docCheckSub, { color: '#10B981' }]}>{tx("insurance:cashlessReviewScreen.uploaded")}</Text>
             </View>
           </View>
         </View>
@@ -229,30 +232,30 @@ const CashlessReviewScreen: React.FC = () => {
         <View style={[styles.cardSection, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', marginTop: rs(14) }]}>
           <View style={styles.sectionHeaderCompact}>
             <MaterialCommunityIcons name="check-decagram-outline" size={16} color="#005b7f" />
-            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Review Cashless Request</Text>
+            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:cashlessReviewScreen.reviewCashlessRequest")}</Text>
           </View>
 
           <View style={styles.summaryGrid}>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Claim Type</Text>
-              <Text style={[styles.summaryVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Cashless</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.claimType")}</Text>
+              <Text style={[styles.summaryVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:cashlessReviewScreen.cashless")}</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Patient</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.patient")}</Text>
               <Text style={[styles.summaryVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Ravi Sharma</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Hospital</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.hospital")}</Text>
               <Text style={[styles.summaryVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Manipal Hospital</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Documents Uploaded</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.documentsUploaded")}</Text>
               <Text style={[styles.summaryVal, { color: '#10B981', fontWeight: '700' }]}>5 / 5</Text>
             </View>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Pre-auth Status</Text>
+              <Text style={[styles.summaryLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.preAuthStatus")}</Text>
               <View style={styles.readyBadge}>
-                <Text style={styles.readyBadgeText}>Ready to submit</Text>
+                <Text style={styles.readyBadgeText}>{tx("insurance:cashlessReviewScreen.readyToSubmit")}</Text>
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={{ marginLeft: 3 }} />
               </View>
             </View>
@@ -263,17 +266,17 @@ const CashlessReviewScreen: React.FC = () => {
         <View style={[styles.noticeBanner, { backgroundColor: isDark ? '#1E293B' : '#e5f6fd' }]}>
           <MaterialCommunityIcons name="information" size={16} color="#005b7f" />
           <Text style={[styles.noticeText, { color: isDark ? '#D4D4D8' : '#003950' }]}>
-            Pre-authorization is usually reviewed within 2–4 hours.
+            {tx("insurance:cashlessReviewScreen.preAuthorizationIsUsuallyReviewed")}
           </Text>
         </View>
 
         {/* Action Triggers */}
         <TouchableOpacity style={styles.submitBtn} activeOpacity={0.85} onPress={handleSubmission}>
-          <Text style={styles.submitBtnText}>Submit Cashless Request</Text>
+          <Text style={styles.submitBtnText}>{tx("insurance:cashlessReviewScreen.submitCashlessRequest")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.draftBtn, { borderColor: isDark ? '#52525B' : '#D1D5DB' }]} activeOpacity={0.8}>
-          <Text style={[styles.draftBtnText, { color: isDark ? '#FFFFFF' : '#475569' }]}>Save Draft</Text>
+          <Text style={[styles.draftBtnText, { color: isDark ? '#FFFFFF' : '#475569' }]}>{tx("insurance:cashlessReviewScreen.saveDraft")}</Text>
         </TouchableOpacity>
 
         {/* Helpdesk Call Row */}
@@ -283,8 +286,8 @@ const CashlessReviewScreen: React.FC = () => {
               <MaterialCommunityIcons name="headphones" size={16} color="#005b7f" />
             </View>
             <View style={{ marginLeft: 8 }}>
-              <Text style={[styles.helpLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Call Helpdesk 24x7</Text>
-              <Text style={[styles.helpSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>We're here to help you anytime.</Text>
+              <Text style={[styles.helpLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:cashlessReviewScreen.callHelpdesk24x7")}</Text>
+              <Text style={[styles.helpSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:cashlessReviewScreen.weReHereToHelp")}</Text>
             </View>
           </View>
           <TouchableOpacity style={styles.callLink} activeOpacity={0.7}>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 // Enable LayoutAnimation for smooth expansion
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -31,7 +32,7 @@ const FAQItem = ({ item }: { item: FAQItemData }) => {
     return (
         <View style={styles.itemWrapper}>
             <TouchableOpacity style={styles.itemHeader} onPress={toggle} activeOpacity={0.7}>
-                <Text style={styles.questionText}>{item.question}</Text>
+                <Text style={styles.questionText}>{translateSourceText("services", item.question)}</Text>
                 <View style={[styles.toggleIconWrap, isExpanded && styles.toggleIconWrapActive]}>
                     <MaterialIcons
                         name={isExpanded ? 'remove' : 'add'}
@@ -42,7 +43,7 @@ const FAQItem = ({ item }: { item: FAQItemData }) => {
             </TouchableOpacity>
             {isExpanded && (
                 <View style={styles.answerBox}>
-                    <Text style={styles.answerText}>{item.answer}</Text>
+                    <Text style={styles.answerText}>{translateSourceText("services", item.answer)}</Text>
                 </View>
             )}
         </View>

@@ -37,6 +37,7 @@ import {
 } from '../../navigation/navigationPerformance'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import { useTranslation } from "react-i18next";
 
 type Nav = ShoppingNavigation
 
@@ -119,6 +120,7 @@ const CartRow = React.memo(function CartRow({
 })
 
 export default function WithAddress() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>()
   const { goToCheckout, isCheckingOut } = useCheckoutFlow()
   const stickyCTA = useStickyBottomCTA({ tabBarAware: false, extraSpacing: 16 })
@@ -369,9 +371,9 @@ export default function WithAddress() {
       <>
         {/* <View style={styles.wrapper}>
           <View style={styles.headerRow}>
-            <Text style={styles.headerText}>Coupons and Offers</Text>
+            <Text style={styles.headerText}>{tx("products:withAddress.couponsAndOffers")}</Text>
             <TouchableOpacity onPress={() => setShowAllCoupons(p => !p)}>
-              <Text style={styles.viewAllText}>{showAllCoupons ? 'Hide' : 'View All'}</Text>
+              <Text style={styles.viewAllText}>{showAllCoupons ? i18n.t("products:r2.hide") : 'View All'}</Text>
             </TouchableOpacity>
           </View>
           <CouponsSection coupons={showAllCoupons ? COUPONS : COUPONS.slice(0, 1)} />
@@ -407,7 +409,7 @@ export default function WithAddress() {
   if (!loading && items.length === 0) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+        <ProductHeadColor title={tx("products:withAddress.cart")} onBackPress={() => navigation.goBack()} />
         <EmptyCart onBrowse={() => navigation.navigate('Home')} />
       </View>
     )
@@ -416,7 +418,7 @@ export default function WithAddress() {
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+        <ProductHeadColor title={tx("products:withAddress.cart")} onBackPress={() => navigation.goBack()} />
         <ScrollView contentContainerStyle={[styles.skeletonScrollContent, { paddingBottom: stickyCTA.scrollContentPaddingBottom, backgroundColor: theme.background }]}>
           <SkeletonBox pulse={pulse} width="100%" height={98} borderRadius={14} />
           <SkeletonBox pulse={pulse} width="100%" height={118} borderRadius={14} style={styles.skeletonGap} />
@@ -430,7 +432,7 @@ export default function WithAddress() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <ProductHeadColor title="Cart" onBackPress={() => navigation.goBack()} />
+      <ProductHeadColor title={tx("products:withAddress.cart")} onBackPress={() => navigation.goBack()} />
 
       <FlatList
         data={items}

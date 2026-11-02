@@ -14,6 +14,7 @@ import type { NavigationProp } from '@react-navigation/native';
 import { HomeStackParamList, ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import ServiceGridCard from '../constant/ServiceGridCard';
+import { useTranslation } from "react-i18next";
 
 const CONTAINER_PADDING = 16;
 const GRID_COLUMNS = 3;
@@ -22,6 +23,7 @@ const GRID_GAP = 12;
 const CardSeparator = () => <View style={styles.cardGap} />;
 
 export default function MostBookedServices() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const { data, isLoading, error } = useServiceHome();
   const { width } = useWindowDimensions();
@@ -62,7 +64,7 @@ export default function MostBookedServices() {
         end={{ x: 1, y: 1 }}
         style={[styles.container, styles.loaderContainer]}
       >
-        <Text style={styles.title}>Most Booked Services</Text>
+        <Text style={styles.title}>{tx("services:mostBookedServices.mostBookedServices")}</Text>
         <ActivityIndicator size="large" color="#FFFFFF" />
       </LinearGradient>
     );
@@ -81,11 +83,11 @@ export default function MostBookedServices() {
     >
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>Most Booked Services</Text>
-          <Text style={styles.subtitle}>Trusted by thousands of customers</Text>
+          <Text style={styles.title}>{tx("services:mostBookedServices.mostBookedServices")}</Text>
+          <Text style={styles.subtitle}>{tx("services:mostBookedServices.trustedByThousandsOfCustomers")}</Text>
         </View>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>Trending</Text>
+          <Text style={styles.badgeText}>{tx("services:mostBookedServices.trending")}</Text>
         </View>
       </View>
 

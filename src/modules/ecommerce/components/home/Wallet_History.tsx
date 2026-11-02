@@ -19,6 +19,8 @@ import {
 } from "../../api/WalleteAPI";
 import ProductHeadColor from "../../constants/heading/Poduct_Head_Color";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { formatDate, formatNumber } from "../../../../i18n/format";
 
 type Transaction = {
   id: string;
@@ -35,6 +37,7 @@ type Transaction = {
 const FILTERS = ["All Transactions", "Additions", "Deductions", "Expired"];
 
 export default function WalletHistoryScreen({ navigation }: any) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme();
   const [activeFilter, setActiveFilter] = useState("All Transactions");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -59,11 +62,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
       txnId: txn.transaction_id,
       title: txn.title,
       subtitle: txn.description,
-      date: new Date(txn.created_at).toLocaleDateString("en-IN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
+      date: txn.created_at, // raw; formatted at render
       coins: txn.transaction_type === "credit" ? txn.coins : -txn.coins,
       icon:
         txn.transaction_type === "credit"
@@ -134,10 +133,10 @@ export default function WalletHistoryScreen({ navigation }: any) {
           <View style={styles.cardGlowBottom} />
 
           <View style={styles.walletTopRow}>
-            <Text style={styles.cardKicker}>REWARD WALLET</Text>
+            <Text style={styles.cardKicker}>{tx("products:walletHistory.rewardWallet")}</Text>
             <View style={styles.chipBadge}>
               <MaterialCommunityIcons name="shield-check" size={12} color="#FFE9A8" />
-              <Text style={styles.chipBadgeText}>Premium</Text>
+              <Text style={styles.chipBadgeText}>{tx("products:walletHistory.premium")}</Text>
             </View>
           </View>
 
@@ -146,15 +145,15 @@ export default function WalletHistoryScreen({ navigation }: any) {
               <Reward width={30} height={30} />
             </View>
             <View style={styles.balanceBlock}>
-              <Text style={styles.balanceLabel}>My Balance</Text>
-              <Text style={styles.balance}>{balance.toLocaleString("en-IN")}</Text>
+              <Text style={styles.balanceLabel}>{tx("products:walletHistory.myBalance")}</Text>
+              <Text style={styles.balance}>{formatNumber(balance)}</Text>
             </View>
           </View>
 
           <View style={styles.cardBottomRow}>
             <View style={styles.rateBox}>
               <Reward width={13} height={13} />
-              <Text style={styles.rateText}> 1 Coin = ₹1</Text>
+              <Text style={styles.rateText}>{tx("products:walletHistory.n1Coin1")}</Text>
             </View>
           </View>
         </LinearGradient>
@@ -172,23 +171,19 @@ export default function WalletHistoryScreen({ navigation }: any) {
               <MaterialCommunityIcons name="clock-alert-outline" size={15} color="#F97316" />
             </View>
             <Text style={[styles.expiryText, { color: isDark ? "#FB923C" : "#7C4A12" }]}>
-              {expiringCoins} Coins Expiring
+              {tx("products:wallet.coinsExpiring", { count: Number(expiringCoins) || 0 })}
             </Text>
           </View>
           <Text style={[styles.expiryDate, { color: isDark ? "#D97706" : "#9A6B33" }]}>
             {expiryDate
-              ? new Date(expiryDate).toLocaleDateString("en-GB", {
-                day: "numeric",
-                month: "short",
-                year: "numeric",
-              })
-              : "N/A"}
+              ? formatDate(expiryDate, { day: "numeric", month: "short", year: "numeric" }) || tx("products:wallet.notAvailable")
+              : tx("products:wallet.notAvailable")}
           </Text>
         </View>
       </View>
 
       {/* TITLE */}
-      <Text style={[styles.sectionHeading, { color: theme.text }]}>Transaction History</Text>
+      <Text style={[styles.sectionHeading, { color: theme.text }]}>{tx("products:walletHistory.transactionHistory")}</Text>
 
       {/* FILTERS */}
       <FlatList
@@ -213,7 +208,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
                 activeFilter === item && styles.filterTextActive,
               ]}
             >
-              {item}
+              {tx(`products:wallet.filters.${item}`)}
             </Text>
           </TouchableOpacity>
         )}
@@ -232,14 +227,14 @@ export default function WalletHistoryScreen({ navigation }: any) {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       <ProductHeadColor
-        title="Wallet"
+        title={tx("products:walletHistory.wallet")}
         onBackPress={() => navigation.goBack()}
         showSearch={false}
       />
 
       <View style={[styles.screen, { backgroundColor: theme.background }]}>
         {loading ? (
-          <Text style={[styles.loading, { color: theme.secondaryText }]}>Loading...</Text>
+          <Text style={[styles.loading, { color: theme.secondaryText }]}>{tx("products:walletHistory.loading")}</Text>
         ) : (
           <FlatList
             data={transactions}
@@ -259,6 +254,7 @@ export default function WalletHistoryScreen({ navigation }: any) {
 /* TRANSACTION CARD */
 function TransactionCard({ item }: { item: Transaction }) {
   const { isDark, theme } = useAppTheme();
+  const { t: tx } = useTranslation();
   const isPositive = item.coins > 0;
 
   return (
@@ -282,9 +278,9 @@ function TransactionCard({ item }: { item: Transaction }) {
         </View>
 
         <View style={styles.textBlock}>
-          <Text style={[styles.orderText, { color: theme.text }]}>Order No. {item.orderNo}</Text>
+          <Text style={[styles.orderText, { color: theme.text }]}>{tx("products:wallet.orderNo", { id: item.orderNo })}</Text>
           {item.txnId && (
-            <Text style={[styles.subText, { color: theme.secondaryText }]}>Txn Id: {item.txnId}</Text>
+            <Text style={[styles.subText, { color: theme.secondaryText }]}>{tx("products:wallet.txnId", { id: item.txnId })}</Text>
           )}
           <Text style={[styles.categoryText, { color: theme.secondaryText }]}>{item.title}</Text>
         </View>
@@ -302,7 +298,7 @@ function TransactionCard({ item }: { item: Transaction }) {
             {isPositive ? `+${item.coins}` : item.coins}
           </Text>
         </View>
-        <Text style={[styles.dateText, { color: theme.secondaryText }]}>{item.date}</Text>
+        <Text style={[styles.dateText, { color: theme.secondaryText }]}>{formatDate(item.date, { day: "numeric", month: "short", year: "numeric" })}</Text>
       </View>
     </View>
   );

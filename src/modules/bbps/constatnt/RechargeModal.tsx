@@ -11,6 +11,7 @@ import {
 
 import Eko from '../assets/BBPS_Service/serviceorg-medium.png';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
 
 interface RechargeModalProps {
   visible: boolean;
@@ -22,6 +23,7 @@ const RechargeModal: React.FC<RechargeModalProps> = ({
   visible,
   onClose,
 }) => {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
   const scaleValue = useRef(new Animated.Value(0)).current;
 
@@ -64,7 +66,7 @@ const RechargeModal: React.FC<RechargeModalProps> = ({
 
               <View style={styles.divider} />
 
-              <Text style={styles.title}>Service Temporarily Unavailable</Text>
+              <Text style={styles.title}>{tx("payments:rechargeModal.serviceTemporarilyUnavailable")}</Text>
 
               <Text style={[styles.detailsText, { color: bbpsTheme.colors.muted }]}>
                 BBPS (Eko) services are currently unavailable.{'\n'}
@@ -77,7 +79,7 @@ const RechargeModal: React.FC<RechargeModalProps> = ({
                 style={[styles.okBtn, { backgroundColor: bbpsTheme.colors.primary }]}
                 onPress={onClose}
               >
-                <Text style={styles.okBtnText}>Okay, Got It</Text>
+                <Text style={styles.okBtnText}>{tx("payments:rechargeModal.okayGotIt")}</Text>
               </TouchableOpacity>
             </View>
           </Animated.View>

@@ -20,6 +20,8 @@ import type { HomeStackParamList } from '../../navigation/type';
 import SkeletonBox from '../constant/SkeletonBox';
 import { getSectionContent, type MFArticleDetails } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -62,6 +64,7 @@ const ArticleCard: React.FC<{
   index: number;
   onPress: () => void;
 }> = ({ item, index, onPress }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const grad = GRADIENTS[index % GRADIENTS.length];
 
@@ -91,7 +94,7 @@ const ArticleCard: React.FC<{
 
         <View style={styles.articleFooter}>
           <TouchableOpacity activeOpacity={0.75} style={styles.readBtn} onPress={onPress}>
-            <Text style={styles.readBtnText}>Read Article </Text>
+            <Text style={styles.readBtnText}>{tx("services:fAQListingScreen.readArticle")}</Text>
             <Text style={styles.readBtnArrow}>›</Text>
           </TouchableOpacity>
         </View>
@@ -103,6 +106,7 @@ const ArticleCard: React.FC<{
 // ─── Screen ───────────────────────────────────────────────────────
 
 const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const { categoryId, categoryTitle } = route.params;
   const sectionId = parseInt(categoryId, 10);
@@ -193,14 +197,14 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
-          <Text style={styles.headerCategory}>Commonly Asked Questions</Text>
+          <Text style={styles.headerCategory}>{tx("services:fAQListingScreen.commonlyAskedQuestions")}</Text>
           <Text style={styles.headerTitle} numberOfLines={1}>{categoryTitle}</Text>
         </View>
 
         {articles.length > 0 && (
           <View style={styles.headerBadge}>
             <Text style={styles.headerBadgeNum}>{articles.length}</Text>
-            <Text style={styles.headerBadgeLabel}>articles</Text>
+            <Text style={styles.headerBadgeLabel}>{tx("services:fAQListingScreen.articles")}</Text>
           </View>
         )}
       </LinearGradient>
@@ -229,7 +233,7 @@ const FAQListingScreen: React.FC<Props> = ({ navigation, route }) => {
               <Text style={[styles.listHeaderSub, { color: servicesTheme.colors.muted }]}>
                 {articles.length > 0
                   ? `${articles.length} articles · Tap any to read`
-                  : 'No articles available'}
+                  : i18n.t("services:r2.noArticlesAvailable")}
               </Text>
             </View>
           }

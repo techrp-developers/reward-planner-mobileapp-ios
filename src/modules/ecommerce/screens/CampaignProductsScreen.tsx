@@ -22,6 +22,8 @@ import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import { normalizeProduct } from '../utils/normalizeProduct';
 import type { HomeStackParamList } from '../navigation/types';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type CampaignRoute = RouteProp<HomeStackParamList, 'CampaignProducts'>;
 type Navigation = NativeStackNavigationProp<HomeStackParamList>;
@@ -62,6 +64,7 @@ const normalizeCampaignProducts = (response: any) => {
 };
 
 export default function CampaignProductsScreen() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Navigation>();
     const route = useRoute<CampaignRoute>();
     const { theme } = useAppTheme();
@@ -71,7 +74,7 @@ export default function CampaignProductsScreen() {
     const cardWidth = (width - 44) / 2;
     const campaignId = route.params.campaignId;
     const contentId = route.params.contentId;
-    const title = route.params.title || 'Campaign Products';
+    const title = route.params.title || i18n.t("products:r2.campaignProducts");
 
     const { data: products = [], isLoading, error } = useQuery({
         queryKey: contentId
@@ -104,7 +107,7 @@ export default function CampaignProductsScreen() {
                 </View>
             ) : error ? (
                 <View style={styles.emptyWrap}>
-                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>Unable to load this campaign.</Text>
+                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:campaignProductsScreen.unableToLoadThisCampaign")}</Text>
                 </View>
             ) : (
                 <FlatList
@@ -130,7 +133,7 @@ export default function CampaignProductsScreen() {
                     )}
                     ListEmptyComponent={
                         <View style={styles.emptyWrap}>
-                            <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No products found in this campaign.</Text>
+                            <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:campaignProductsScreen.noProductsFoundInThis")}</Text>
                         </View>
                     }
                 />

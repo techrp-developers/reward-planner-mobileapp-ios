@@ -5,8 +5,10 @@ import RechargeSuccessCard from '../component/order/RechargeSuccessCard';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
 
 function OrderSuccessfulComponent() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
 
@@ -31,7 +33,7 @@ function OrderSuccessfulComponent() {
       >
         <View style={styles.helpContent}>
           <MaterialIcons name="headset-mic" size={20} color={bbpsTheme.colors.primary} />
-          <Text style={[styles.helpText, { color: bbpsTheme.colors.text }]}>24/7 Help & Support</Text>
+          <Text style={[styles.helpText, { color: bbpsTheme.colors.text }]}>{tx("payments:orderSuccessful.n247HelpSupport")}</Text>
         </View>
         <MaterialIcons name="chevron-right" size={24} color={bbpsTheme.colors.subtle} />
       </TouchableOpacity>

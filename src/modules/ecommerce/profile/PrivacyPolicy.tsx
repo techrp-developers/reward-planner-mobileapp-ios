@@ -24,6 +24,8 @@ import {
 } from "../api/TermsConditionAPI";
 
 import { useAlert } from "../components/alerts";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 // ─────────────────────────────────────────────────────────────
 // THEME
@@ -79,6 +81,7 @@ const PolicyCard = ({
 // ─────────────────────────────────────────────────────────────
 
 const PrivacyPolicyScreen = () => {
+  const { t: tx } = useTranslation();
   const alert = useAlert();
   const { isDark, theme } = useAppTheme();
 
@@ -119,8 +122,8 @@ const PrivacyPolicyScreen = () => {
 
         if (mounted) {
           alert.error(
-            "Error",
-            "Failed to load Privacy Policy.",
+            i18n.t("products:privacyPolicy.msg.error"),
+            i18n.t("products:privacyPolicy.msg.failedToLoadPrivacyPolicy"),
           );
         }
       } finally {
@@ -164,13 +167,13 @@ const PrivacyPolicyScreen = () => {
               <Text
                 style={[styles.mainTitle, isDark && darkStyles.primaryText]}
               >
-                Privacy
+                {tx("products:privacyPolicy.privacy")}
               </Text>
 
               <Text
                 style={[styles.mainTitleBold, isDark && darkStyles.primaryText]}
               >
-                Policy
+                {tx("products:privacyPolicy.policy")}
               </Text>
             </View>
 

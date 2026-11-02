@@ -14,6 +14,7 @@ import { useServicesTheme } from "../../utils/useServicesTheme";
 
 import Husband from "../../assete/insurance/Gender (1).png";
 import Wife from "../../assete/insurance/Gender (2).png";
+import { useTranslation } from "react-i18next";
 
 type FormData = {
   gender: string;
@@ -30,6 +31,7 @@ type Props = {
 };
 
 export default function Step1PA({ data, setData, onNext }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const selectedGender = data.gender || "Male";
   const selfIcon = selectedGender === "Male" ? Husband : Wife;
@@ -66,7 +68,7 @@ export default function Step1PA({ data, setData, onNext }: Props) {
       >
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Select your gender</Text>
+          <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step1PA.selectYourGender")}</Text>
           <View style={[styles.genderContainer, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
             {["Male", "Female"].map((gender) => {
               const isActive = selectedGender === gender;
@@ -86,7 +88,7 @@ export default function Step1PA({ data, setData, onNext }: Props) {
                       end={{ x: 1, y: 0 }}
                     />
                   )}
-                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{gender}</Text>
+                  <Text style={[styles.genderText, { color: servicesTheme.colors.text }, isActive && styles.textWhite]}>{tx(`services:insurance.gender.${gender}`)}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -95,8 +97,8 @@ export default function Step1PA({ data, setData, onNext }: Props) {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Personal Accident covers self only</Text>
-            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>This policy is issued for the insured individual only.</Text>
+            <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step1PA.personalAccidentCoversSelfOnly")}</Text>
+            <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>{tx("services:step1PA.thisPolicyIsIssuedFor")}</Text>
           </View>
 
           <View style={styles.singleCardWrap}>
@@ -112,7 +114,7 @@ export default function Step1PA({ data, setData, onNext }: Props) {
               <View style={[styles.iconCircle, styles.iconCircleActive, { backgroundColor: servicesTheme.isDark ? "#27272A" : "#EEECFF" }]}>
                 <Image source={selfIcon} style={styles.iconImage} />
               </View>
-              <Text style={[styles.cardLabel, { color: servicesTheme.colors.textStrong }]}>Self</Text>
+              <Text style={[styles.cardLabel, { color: servicesTheme.colors.textStrong }]}>{tx("services:step1PA.self")}</Text>
             </View>
           </View>
         </View>
@@ -125,7 +127,7 @@ export default function Step1PA({ data, setData, onNext }: Props) {
           borderTopColor: servicesTheme.colors.divider,
         },
       ]}>
-        <GradientButton title="Continue" onPress={handleContinue} />
+        <GradientButton title={tx("services:step1PA.continue")} onPress={handleContinue} />
       </View>
       </LinearGradient>
     </SafeAreaView>

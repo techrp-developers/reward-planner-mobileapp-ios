@@ -6,6 +6,7 @@ import {
 import HomeStack from "../modules/ecommerce/navigation/HomeStack";
 import type { MainTabParamList } from "../modules/ecommerce/navigation/types";
 import BottomTabs from "./BottomTabs";
+import { shouldShowBottomTabs } from "../navigation/shoppingChrome";
 import { useAuth } from "../modules/common/auth/context/AuthContext";
 import { useCart } from "../modules/ecommerce/context/CartContext";
 
@@ -53,6 +54,8 @@ function CustomTabBar({ navigation, state, isAuthenticated }: CustomTabBarProps)
 
     navigation.navigate("HomeTab", { screen: "Home" });
   }, [navigation]);
+
+  if (!shouldShowBottomTabs("Product", focusedRouteName ? [focusedRouteName] : [])) return null;
 
   return (
     <BottomTabs

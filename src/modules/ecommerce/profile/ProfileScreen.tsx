@@ -19,6 +19,11 @@ import type { HomeStackParamList } from '../navigation/types';
 import type { RootStackParamList } from '../../../navigation/RootNavigator';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../../i18n';
+import { formatDate as formatLocalDate, formatNumber } from '../../../i18n/format';
+import { useAppLanguage } from '../../../i18n/LanguageContext';
+import { getLanguageOption } from '../../../i18n/languages';
 import { getStoredUserName, deleteCustomer, getAuthHeaders, updateProfile } from '../../common/auth/api/AuthAPI';
 import { LogoutConfirmationModal } from '../../common/auth/screens/LogoutConfirmationModal';
 import { rs, fs } from '../../../utils/responsive';
@@ -88,10 +93,7 @@ const formatPhone = (phone: string) => {
 
 const formatDate = (dateStr: string): string => {
     if (!dateStr) return '—';
-    try {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    } catch { return dateStr; }
+    return formatLocalDate(dateStr, { day: 'numeric', month: 'long', year: 'numeric' }) || dateStr;
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -106,9 +108,11 @@ const ProfileScreen: React.FC = () => {
     const theme = appTheme;
     const { isAuthenticated, user: authUser, logout } = useAuth();
     const insets = useSafeAreaInsets();
+    const { t } = useTranslation();
+    const { language } = useAppLanguage();
 
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-    const [displayName, setDisplayName] = useState('User');
+    const [displayName, setDisplayName] = useState(() => i18n.t('profile:user'));
     const [avatarUri, setAvatarUri] = useState<string | null>(null);
     const [imageUploading, setImageUploading] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -118,7 +122,7 @@ const ProfileScreen: React.FC = () => {
     const [logoutLoading, setLogoutLoading] = useState(false);
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deletionScheduled, setDeletionScheduled] = useState<{
-        deadline: string;
+        deadline: string | null;
         gracePeriodDays: number;
     } | null>(null);
     const [deletionExitLoading, setDeletionExitLoading] = useState(false);
@@ -128,7 +132,7 @@ const ProfileScreen: React.FC = () => {
 
     // ── Fetch user info ──────────────────────────────────────────────────────
     const loadUser = useCallback(async () => {
-        if (!isAuthenticated) { setDisplayName('Guest'); setLoading(false); return; }
+        if (!isAuthenticated) { setDisplayName(i18n.t('profile:guest')); setLoading(false); return; }
         try {
             // Seed name from cache while API loads
             if (authUser?.name) setDisplayName(String(authUser.name));
@@ -151,7 +155,7 @@ const ProfileScreen: React.FC = () => {
             }
         } catch {
             const fallback = await getStoredUserName();
-            setDisplayName(fallback || 'User');
+            setDisplayName(fallback || i18n.t('profile:user'));
         } finally {
             setLoading(false);
         }
@@ -185,7 +189,7 @@ const ProfileScreen: React.FC = () => {
                 }
             } catch {
                 setAvatarUri(null);
-                Alert.alert('Upload Failed', 'Could not update profile photo. Please try again.');
+                Alert.alert(i18n.t('profile:uploadFailedTitle'), i18n.t('profile:uploadFailedBody'));
             } finally {
                 setImageUploading(false);
             }
@@ -214,13 +218,8 @@ const ProfileScreen: React.FC = () => {
             const res = await deleteCustomer();
             if (res?.success) {
                 const gracePeriodDays = res?.data?.gracePeriodDays ?? 30;
-                const deletionDeadline = res?.data?.permanentDeletionAt
-                    ? `on ${new Date(res.data.permanentDeletionAt).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                    })}`
-                    : `after ${gracePeriodDays} days`;
+                // Keep the raw date; it is formatted in the current language when shown.
+                const deletionDeadline: string | null = res?.data?.permanentDeletionAt ?? null;
 
                 setDeleteModalVisible(false);
                 setDeletionScheduled({
@@ -228,10 +227,10 @@ const ProfileScreen: React.FC = () => {
                     gracePeriodDays,
                 });
             } else {
-                Alert.alert('Failed', 'Could not delete account. Please try again.');
+                Alert.alert(i18n.t('profile:deleteFailedTitle'), i18n.t('profile:deleteFailedBody'));
             }
         } catch {
-            Alert.alert('Failed', 'Could not delete account. Please try again.');
+            Alert.alert(i18n.t('profile:deleteFailedTitle'), i18n.t('profile:deleteFailedBody'));
         } finally {
             setDeleteLoading(false);
         }
@@ -299,7 +298,7 @@ const ProfileScreen: React.FC = () => {
                     {/* Top bar */}
                     <View style={styles.heroBar}>
                         <View style={styles.heroBtnGhost} />
-                        <Text style={[styles.heroTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>My Profile</Text>
+                        <Text style={[styles.heroTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{t('profile:title')}</Text>
                         <View style={styles.heroBtnGhost} />
                     </View>
 
@@ -350,9 +349,9 @@ const ProfileScreen: React.FC = () => {
                                     </View>
                                     <View style={styles.flex1}>
                                         <Text style={styles.heroMetricValue} numberOfLines={1}>
-                                            {userInfo?.rewardPoints?.toLocaleString() ?? '0'}
+                                            {formatNumber(userInfo?.rewardPoints ?? 0)}
                                         </Text>
-                                        <Text style={styles.heroMetricLabel}>Points</Text>
+                                        <Text style={styles.heroMetricLabel}>{t('profile:points')}</Text>
                                     </View>
                                 </View>
 
@@ -366,9 +365,9 @@ const ProfileScreen: React.FC = () => {
                                     )}
                                     <View style={styles.flex1}>
                                         <Text style={styles.heroMetricValue} numberOfLines={1}>
-                                            {userInfo?.company?.name ?? 'Company'}
+                                            {userInfo?.company?.name ?? t('profile:company')}
                                         </Text>
-                                        <Text style={styles.heroMetricLabel}>Company</Text>
+                                        <Text style={styles.heroMetricLabel}>{t('profile:company')}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -386,39 +385,39 @@ const ProfileScreen: React.FC = () => {
           ════════════════════════════════════ */}
                     {isDashboardProfile && (
                         <>
-                            <SectionHead title="User Info" isDark={isDark} />
+                            <SectionHead title={t('profile:sections.userInfo')} isDark={isDark} />
                             <View style={[styles.userInfoCard, cardColor(isDark, theme)]}>
-                                <InfoGroupTitle title="Contact Info" isDark={isDark} />
+                                <InfoGroupTitle title={t('profile:info.contact')} isDark={isDark} />
                                 <InfoTableRow
                                     icon="phone-outline"
-                                    label="Mobile"
+                                    label={t('profile:info.mobile')}
                                     value={formatPhone(userInfo?.phone ?? '')}
                                     isDark={isDark}
                                     theme={theme}
                                 />
                                 <InfoTableRow
                                     icon="email-outline"
-                                    label="Email"
+                                    label={t('profile:info.email')}
                                     value={userInfo?.email ?? ''}
                                     isDark={isDark}
                                     theme={theme}
                                 />
                                 <InfoTableRow
                                     icon="identifier"
-                                    label="User ID"
+                                    label={t('profile:info.userId')}
                                     value={`#RP-${String(userInfo?.userId ?? 0).padStart(5, '0')}`}
                                     isDark={isDark}
                                     theme={theme}
-                                    badge="Active"
+                                    badge={t('common:status.active')}
                                     last={!showRole && !showDepartment && !showJoining}
                                 />
                                 {(showRole || showDepartment || showJoining) && (
-                                    <InfoGroupTitle title="Work Info" isDark={isDark} />
+                                    <InfoGroupTitle title={t('profile:info.work')} isDark={isDark} />
                                 )}
                                 {showRole && (
                                     <InfoTableRow
                                         icon="briefcase-outline"
-                                        label="Role"
+                                        label={t('profile:info.role')}
                                         value={emp!.role}
                                         isDark={isDark}
                                         theme={theme}
@@ -428,7 +427,7 @@ const ProfileScreen: React.FC = () => {
                                 {showDepartment && (
                                     <InfoTableRow
                                         icon="domain"
-                                        label="Department"
+                                        label={t('profile:info.department')}
                                         value={emp!.department}
                                         isDark={isDark}
                                         theme={theme}
@@ -438,7 +437,7 @@ const ProfileScreen: React.FC = () => {
                                 {showJoining && (
                                     <InfoTableRow
                                         icon="calendar-check-outline"
-                                        label="Joined"
+                                        label={t('profile:info.joined')}
                                         value={formatDate(emp!.dateOfJoining)}
                                         isDark={isDark}
                                         theme={theme}
@@ -451,12 +450,12 @@ const ProfileScreen: React.FC = () => {
 
                     {userInfo && (
                         <>
-                            <SectionHead title="Visiting Card" isDark={isDark} />
+                            <SectionHead title={t('profile:sections.visitingCard')} isDark={isDark} />
                             <View style={[styles.card, cardColor(isDark, theme)]}>
                                 <AccountRow
                                     icon="card-account-details-outline"
-                                    label="My Visiting Card"
-                                    sub="View, save or share your card"
+                                    label={t('profile:rows.visitingCard')}
+                                    sub={t('profile:rows.visitingCardSub')}
                                     isDark={isDark}
                                     theme={theme}
                                     last
@@ -477,7 +476,7 @@ const ProfileScreen: React.FC = () => {
           ════════════════════════════════════ */}
                     {(profileContext === 'ecommerce' || profileContext === 'services' || profileContext === 'bbps') && (
                         <>
-                            <SectionHead title={profileContext === 'services' ? 'Services' : 'Shop'} isDark={isDark} />
+                            <SectionHead title={profileContext === 'services' ? t('profile:sections.services') : t('profile:sections.shop')} isDark={isDark} />
                             <View style={[styles.card, cardColor(isDark, theme)]}>
                                 {/* My Orders — expandable dropdown */}
                                 <TouchableOpacity
@@ -494,29 +493,29 @@ const ProfileScreen: React.FC = () => {
                                         <MaterialCommunityIcons name={profileContext === 'services' ? 'briefcase-check-outline' : 'shopping-outline'} size={17} color="#4F46E5" />
                                     </View>
                                     <View style={styles.flex1}>
-                                        <Text style={[styles.rowVal, { color: theme.text }]}>My Orders</Text>
+                                        <Text style={[styles.rowVal, { color: theme.text }]}>{t('profile:rows.myOrders')}</Text>
                                     </View>
                                     <MaterialCommunityIcons name="chevron-right" size={18} color="#CBD5E1" />
                                 </TouchableOpacity>
 
-                                {profileContext === 'ecommerce' && <AccountRow icon="heart-outline" label="Wishlist" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('WishList' as any)} />}
+                                {profileContext === 'ecommerce' && <AccountRow icon="heart-outline" label={t('profile:rows.wishlist')} isDark={isDark} theme={theme} last onPress={() => navigation.navigate('WishList' as any)} />}
                             </View>
                         </>
                     )}
 
-                    <SectionHead title="Address" isDark={isDark} />
+                    <SectionHead title={t('profile:sections.address')} isDark={isDark} />
                     <View style={[styles.card, cardColor(isDark, theme)]}>
-                        <AccountRow icon="map-marker-outline" label="Saved Addresses" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('AddressSelect', { manageOnly: true } as any)} />
+                        <AccountRow icon="map-marker-outline" label={t('profile:rows.savedAddresses')} isDark={isDark} theme={theme} last onPress={() => navigation.navigate('AddressSelect', { manageOnly: true } as any)} />
                     </View>
 
                     {isDashboardProfile && (
                         <>
-                            <SectionHead title="All Orders" isDark={isDark} />
+                            <SectionHead title={t('profile:sections.allOrders')} isDark={isDark} />
                             <View style={[styles.card, cardColor(isDark, theme)]}>
                                 <AccountRow
                                     icon="clipboard-list-outline"
-                                    label="All Orders"
-                                    sub="Products, services, BBPS, and more"
+                                    label={t('profile:rows.allOrders')}
+                                    sub={t('profile:rows.allOrdersSub')}
                                     isDark={isDark}
                                     theme={theme}
                                     last
@@ -531,18 +530,31 @@ const ProfileScreen: React.FC = () => {
                     {/* ════════════════════════════════════
               OTHERS / ACCOUNT
           ════════════════════════════════════ */}
-                    <SectionHead title="Others" isDark={isDark} />
+                    <SectionHead title={t('profile:sections.settings')} isDark={isDark} />
                     <View style={[styles.card, cardColor(isDark, theme)]}>
                         <DarkModeRow isDark={isDark} theme={theme} onToggle={toggleTheme} />
-                        <AccountRow icon="file-document-outline" label="Terms & Conditions" isDark={isDark} theme={theme} onPress={() => navigation.navigate('TermsAndConditions' as any)} />
-                        <AccountRow icon="shield-lock-outline" label="Privacy Policy" isDark={isDark} theme={theme} onPress={() => navigation.navigate('PrivacyPolicy' as any)} />
-                        <AccountRow icon="star-outline" label="Rate Us" isDark={isDark} theme={theme} onPress={handleRateUs} />
-                        <AccountRow icon="help-circle-outline" label="Help & Support" isDark={isDark} theme={theme} last onPress={() => navigation.navigate('HelpForm' as any, { context: profileContext })} />
+                        <AccountRow
+                            icon="translate"
+                            label={t('profile:rows.appLanguage')}
+                            sub={getLanguageOption(language).nativeName}
+                            isDark={isDark}
+                            theme={theme}
+                            last
+                            onPress={() => rootNavigation.navigate('App', { screen: 'LanguageSettings' } as any)}
+                        />
+                    </View>
+
+                    <SectionHead title={t('profile:sections.others')} isDark={isDark} />
+                    <View style={[styles.card, cardColor(isDark, theme)]}>
+                        <AccountRow icon="file-document-outline" label={t('profile:rows.terms')} isDark={isDark} theme={theme} onPress={() => navigation.navigate('TermsAndConditions' as any)} />
+                        <AccountRow icon="shield-lock-outline" label={t('profile:rows.privacy')} isDark={isDark} theme={theme} onPress={() => navigation.navigate('PrivacyPolicy' as any)} />
+                        <AccountRow icon="star-outline" label={t('profile:rows.rateUs')} isDark={isDark} theme={theme} onPress={handleRateUs} />
+                        <AccountRow icon="help-circle-outline" label={t('profile:rows.help')} isDark={isDark} theme={theme} last onPress={() => navigation.navigate('HelpForm' as any, { context: profileContext })} />
                     </View>
 
                     <View style={[styles.dangerCard, cardColor(isDark, theme)]}>
-                        <AccountRow icon="logout" label="Log Out" isDark={isDark} theme={theme} danger onPress={() => setLogoutModalVisible(true)} />
-                        <AccountRow icon="delete-outline" label="Delete Account" sub="30-day recovery period" isDark={isDark} theme={theme} danger last onPress={handleDeleteAccount} />
+                        <AccountRow icon="logout" label={t('profile:rows.logout')} isDark={isDark} theme={theme} danger onPress={() => setLogoutModalVisible(true)} />
+                        <AccountRow icon="delete-outline" label={t('profile:rows.deleteAccount')} sub={t('profile:rows.deleteAccountSub')} isDark={isDark} theme={theme} danger last onPress={handleDeleteAccount} />
                     </View>
 
                     {/* ════════════════════════════════════
@@ -552,7 +564,7 @@ const ProfileScreen: React.FC = () => {
 
                         {userInfo?.created_at ? (
                             <Text style={[styles.footerMember, { color: theme.secondaryText }]}>
-                                Member since {formatDate(userInfo.created_at)}
+                                {t('profile:memberSince', { date: formatDate(userInfo.created_at) })}
                             </Text>
                         ) : null}
                     </View>
@@ -586,7 +598,7 @@ const ProfileScreen: React.FC = () => {
                 activeOpacity={0.72}
                 hitSlop={10}
                 accessibilityRole="button"
-                accessibilityLabel="Go back"
+                accessibilityLabel={t('common:actions.goBack')}
             >
                 <MaterialCommunityIcons
                     name="chevron-left"
@@ -608,11 +620,11 @@ const ProfileScreen: React.FC = () => {
                 isDark={isDark}
                 danger
                 icon="delete-outline"
-                title="Delete Account"
-                description="Schedule your account for permanent deletion?"
-                subText="Your account and data will be retained for 30 days. Logging in during this period will restore your account."
-                confirmText="Schedule Deletion"
-                loadingText="Scheduling..."
+                title={t('profile:delete.title')}
+                description={t('profile:delete.description')}
+                subText={t('profile:delete.subText')}
+                confirmText={t('profile:delete.confirm')}
+                loadingText={t('profile:delete.loading')}
                 onConfirm={handleDeleteAccountConfirm}
                 onCancel={() => setDeleteModalVisible(false)}
             />
@@ -621,11 +633,13 @@ const ProfileScreen: React.FC = () => {
                 isLoading={deletionExitLoading}
                 isDark={isDark}
                 icon="calendar-check-outline"
-                title="Deletion Scheduled"
-                description={`Your account will be permanently deleted ${deletionScheduled?.deadline ?? 'after 30 days'}.`}
-                subText={`Changed your mind? Log in again within ${deletionScheduled?.gracePeriodDays ?? 30} days to restore your account and all retained data.`}
-                confirmText="Got It"
-                loadingText="Signing out..."
+                title={t('profile:delete.scheduledTitle')}
+                description={deletionScheduled?.deadline
+                    ? t('profile:delete.scheduledOnDate', { date: formatDate(deletionScheduled.deadline) })
+                    : t('profile:delete.scheduledAfterDays', { count: deletionScheduled?.gracePeriodDays ?? 30 })}
+                subText={t('profile:delete.restoreHint', { count: deletionScheduled?.gracePeriodDays ?? 30 })}
+                confirmText={t('common:actions.gotIt')}
+                loadingText={t('profile:delete.signingOut')}
                 showCancel={false}
                 onConfirm={handleDeletionScheduledAcknowledge}
                 onCancel={handleDeletionScheduledAcknowledge}
@@ -731,7 +745,9 @@ const AccountRow: React.FC<AccountRowProps> = ({
 
 const DarkModeRow: React.FC<{ isDark: boolean; theme: any; onToggle: () => void }> = ({
     isDark, theme, onToggle,
-}) => (
+}) => {
+    const { t } = useTranslation();
+    return (
     <View style={[styles.mrow, {
         borderBottomWidth: 0.5,
         borderBottomColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(15,23,42,0.07)',
@@ -744,9 +760,9 @@ const DarkModeRow: React.FC<{ isDark: boolean; theme: any; onToggle: () => void 
             />
         </View>
         <View style={{ flex: 1 }}>
-            <Text style={[styles.rowVal, { color: theme.text }]}>Dark Mode</Text>
+            <Text style={[styles.rowVal, { color: theme.text }]}>{t('profile:rows.darkMode')}</Text>
             <Text style={[styles.rowLbl, { color: theme.secondaryText }]}>
-                {isDark ? 'Dark theme active' : 'Light theme active'}
+                {isDark ? t('profile:rows.darkActive') : t('profile:rows.lightActive')}
             </Text>
         </View>
         <Switch
@@ -757,7 +773,8 @@ const DarkModeRow: React.FC<{ isDark: boolean; theme: any; onToggle: () => void 
             ios_backgroundColor="#CBD5E1"
         />
     </View>
-);
+    );
+};
 
 // ── Style helpers ─────────────────────────────────────────────────────────────
 const cardColor = (isDark: boolean, _theme: any) => ({

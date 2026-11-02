@@ -28,6 +28,9 @@ import { createFirebaseEnquiry } from "../../api/FirebaseService";
 import { SUPER_COVER_AMOUNTS, CITIES, CoverAmount } from "../../constant/InsuranceConstants";
 import { fetchUserInfo, getAuthHeaders, isAuthenticated } from "../../../common/auth/api/AuthAPI";
 import { buildSuperTopupEnquiryData } from "../../api/enquiryPayloadBuilders";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { insuranceOptionLabel } from "../../constant/insuranceLabels";
 
 type FormData = {
   gender: string;
@@ -54,6 +57,7 @@ type Props = {
 };
 
 export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [dropdownVisibleFor, setDropdownVisibleFor] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -70,7 +74,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
             "Login Required",
             "Please log in to get insurance quotes",
             [
-              { text: "OK", onPress: () => onBack() }
+              { text: i18n.t("services:step3SuperTopUp.ok"), onPress: () => onBack() }
             ]
           );
           setChecking(false);
@@ -198,12 +202,12 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
   // Logic: API Submission - CRM Flow
   const handleSubmit = async () => {
     if (!isFormValid) {
-      Alert.alert("Validation", "Please fill all required fields");
+      Alert.alert(i18n.t("services:step3SuperTopUp.validation"), i18n.t("services:step3SuperTopUp.pleaseFillAllRequiredFields"));
       return;
     }
 
     if (!isAuthenticated()) {
-      Alert.alert("Authentication Required", "Please log in to continue");
+      Alert.alert(i18n.t("services:step3SuperTopUp.authenticationRequired"), i18n.t("services:step3SuperTopUp.pleaseLogInToContinue"));
       return;
     }
 
@@ -215,7 +219,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
       const enquiryId = data.details.enquiryId;
       if (!enquiryId) {
-        Alert.alert("Error", "Session expired. Please go back to Step 1 and restart.");
+        Alert.alert(i18n.t("services:step3SuperTopUp.error"), i18n.t("services:step3SuperTopUp.sessionExpiredPleaseGoBack"));
         return;
       }
 
@@ -293,9 +297,9 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
           enquiry_data: enquiryData,
         });
 
-        Alert.alert("Success", `Found ${successfulPlans.filter((p) => p.success).length} quotes for your family!`);
+        Alert.alert(tx("services:insurance.success"), tx("services:insurance.foundFamilyQuotes", { count: successfulPlans.filter((p) => p.success).length }));
       } else {
-        Alert.alert("Error", "No quotes could be fetched. Please try again.");
+        Alert.alert(i18n.t("services:step3SuperTopUp.error"), i18n.t("services:step3SuperTopUp.noQuotesCouldBeFetched"));
       }
 
       if (onShowResults && enquiryId) {
@@ -310,7 +314,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
       console.error("❌ Submission error:", error);
       Alert.alert(
         "Error", 
-        error?.message || "Unable to process your request. Please try again."
+        error?.message || tx("services:insurance.processFailed")
       );
     } finally {
       setLoading(false);
@@ -328,7 +332,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
         >
         <View style={styles.centerContainer}>
           <MaterialIcons name="lock-outline" size={50} color={servicesTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>{tx("services:step3SuperTopUp.verifyingAuthentication")}</Text>
         </View>
         </LinearGradient>
       </SafeAreaView>
@@ -346,19 +350,19 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Details</Text>
-            <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>This information helps us personalize your insurance quotes.</Text>
+            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step3SuperTopUp.personalDetails")}</Text>
+            <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{tx("services:step3SuperTopUp.thisInformationHelpsUsPersonalize")}</Text>
           </View>
 
           <View style={styles.formContainer}>
             {/* Name Row */}
             <View style={styles.row}>
               <View style={styles.flex1}>
-                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>First Name</Text>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.firstName")}</Text>
                 <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
                     style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                    placeholder="John"
+                    placeholder={tx("services:step3SuperTopUp.john")}
                     placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.firstName}
                     onChangeText={(v) => handleInputChange("firstName", v)}
@@ -367,11 +371,11 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
               </View>
               <View style={styles.spacer} />
               <View style={styles.flex1}>
-                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Last Name</Text>
+                <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.lastName")}</Text>
                 <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                   <TextInput
                     style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                    placeholder="Doe"
+                    placeholder={tx("services:step3SuperTopUp.doe")}
                     placeholderTextColor={servicesTheme.colors.subtle}
                     value={data.details.lastName}
                     onChangeText={(v) => handleInputChange("lastName", v)}
@@ -382,7 +386,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
             {/* Mobile Number */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Mobile Number</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.mobileNumber")}</Text>
               <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
                   style={[styles.textInput, styles.mobileInput, { color: servicesTheme.colors.text }]}
@@ -399,7 +403,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
             {/* Pincode */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Pincode</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.pincode")}</Text>
               <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
                   style={[styles.textInput, { color: servicesTheme.colors.text }]}
@@ -415,11 +419,11 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
             {/* City */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>City</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.city")}</Text>
               <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                 <TextInput
                   style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                  placeholder="Search or select city"
+                  placeholder={tx("services:step3SuperTopUp.searchOrSelectCity")}
                   placeholderTextColor={servicesTheme.colors.subtle}
                   value={data.details.city || citySearchTerm}
                   onChangeText={handleCityChange}
@@ -433,13 +437,13 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
 
             {/* Cover Amount */}
             <View style={styles.fieldWrapper}>
-              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Required Cover Amount</Text>
+              <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3SuperTopUp.requiredCoverAmount")}</Text>
               <TouchableOpacity
                 style={[styles.dropdownBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                 onPress={() => setDropdownVisibleFor("coverAmount")}
               >
                 <Text style={[styles.dropdownText, { color: data.details.coverAmount ? servicesTheme.colors.text : servicesTheme.colors.subtle }]}>
-                  {data.details.coverAmount || "Select coverage"}
+                  {insuranceOptionLabel(data.details.coverAmount) || tx("services:insurance.selectCoverage")}
                 </Text>
                 <MaterialIcons name="shield" size={18} color={servicesTheme.colors.primary} />
               </TouchableOpacity>
@@ -454,7 +458,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
                 {data.details.agreeToTerms && <MaterialIcons name="check" size={14} color="#FFF" />}
               </View>
               <Text style={[styles.termsLabel, { color: servicesTheme.colors.muted }]}>
-                I agree to the <Text style={styles.boldLink}>Terms & Conditions</Text>
+                I agree to the <Text style={styles.boldLink}>{tx("services:step3SuperTopUp.termsConditions")}</Text>
               </Text>
             </TouchableOpacity>
 
@@ -469,7 +473,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
           </TouchableOpacity>
           <View style={styles.footerButtonWrapper}>
             <GradientButton
-              title={loading ? "Searching..." : "Get Free Quotes"}
+              title={loading ? tx("services:insurance.searching") : tx("services:insurance.getQuotes")}
               onPress={handleSubmit}
               disabled={!isFormValid || loading}
               style={styles.submitButton}
@@ -510,7 +514,7 @@ export default function Step3SuperTopUp({ data, setData, onBack, onShowResults }
                       setDropdownVisibleFor(null);
                     }}
                   >
-                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                    <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{insuranceOptionLabel(item.label)}</Text>
                     {data.details.coverAmount === item.label && <MaterialIcons name="check-circle" size={20} color={servicesTheme.colors.primary} />}
                   </TouchableOpacity>
                 ))}

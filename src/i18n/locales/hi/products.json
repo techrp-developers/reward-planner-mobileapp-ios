@@ -1,0 +1,858 @@
+{
+  "radialProgressCard": {
+    "retry": "फिर से कोशिश करें"
+  },
+  "addAddressMapScreen": {
+    "locationError": "लोकेशन त्रुटि",
+    "invalidLocation": "गलत लोकेशन",
+    "thisSearchResultDoesNot": "इस खोज परिणाम में सही लोकेशन नहीं है।",
+    "noLocationSelected": "कोई लोकेशन नहीं चुनी गई",
+    "pleaseTapTheMapOr": "कृपया पहले मैप पर टैप करें या पता खोजें।",
+    "addressSaved": "पता सेव हो गया",
+    "yourSelectedLocationHasBeen": "आपकी चुनी हुई लोकेशन सफलतापूर्वक सेव हो गई।",
+    "saveFailed": "सेव नहीं हो सका",
+    "error": "त्रुटि",
+    "couldNotLoadAddressDetails": "बदलने के लिए पते का विवरण लोड नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "selectLocation": "लोकेशन चुनें",
+    "selectedLocation": "चुनी गई लोकेशन",
+    "searchVillageCityAddress": "गाँव, शहर, पता खोजें...",
+    "change": "बदलें",
+    "addMoreAddressDetails": "पते का और विवरण जोड़ें",
+    "tapAnywhereOnTheMap": "अपनी लोकेशन सेट करने के लिए मैप पर कहीं भी टैप करें या पिन खिसकाएँ",
+    "saveLocation": "लोकेशन सेव करें"
+  },
+  "addressFormPayload": {
+    "error": "त्रुटि",
+    "enterCompleteAddress": "पूरा पता लिखें",
+    "saveAddressAs": "पते को इस नाम से सेव करें",
+    "flatHouseNoBuildingName": "फ़्लैट / मकान नं. / बिल्डिंग का नाम*",
+    "enterHere": "यहाँ लिखें",
+    "areaSectorLocality": "इलाका / सेक्टर / मोहल्ला*",
+    "nearbyLandmarkOptional": "पास का लैंडमार्क (वैकल्पिक)",
+    "pincode": "पिनकोड*",
+    "enterPincode": "पिनकोड लिखें",
+    "city": "शहर*",
+    "enterCity": "शहर लिखें",
+    "state": "राज्य*",
+    "couldnTLoadStatesTap": "राज्य लोड नहीं हो सके। फिर से कोशिश करने के लिए टैप करें।",
+    "contactName": "संपर्क नाम*",
+    "enterName": "नाम लिखें",
+    "phoneNumber": "फ़ोन नंबर*",
+    "enterPhone": "फ़ोन नंबर लिखें"
+  },
+  "addressPage": {
+    "error": "त्रुटि",
+    "failedToLoadAddresses": "पते लोड नहीं हो सके",
+    "addNewAddress": "नया पता जोड़ें",
+    "savedAddresses": "सेव किए गए पते",
+    "default": "डिफ़ॉल्ट",
+    "info": "जानकारी",
+    "formSubmissionComingSoon": "फ़ॉर्म जमा करने की सुविधा जल्द आ रही है",
+    "saveAddress": "पता सेव करें"
+  },
+  "addressSelectScreen": {
+    "error": "त्रुटि",
+    "failedToLoadAddresses": "पते लोड नहीं हो सके",
+    "deleted": "हटा दिया गया",
+    "addressDeletedSuccessfully": "पता सफलतापूर्वक हटाया गया",
+    "couldNotDeleteAddress": "पता हटाया नहीं जा सका",
+    "defaultAddressUpdated": "डिफ़ॉल्ट पता अपडेट हुआ",
+    "thisAddressIsNowYour": "अब यह आपका डिफ़ॉल्ट पता है",
+    "couldNotSetThisAddress": "यह पता डिफ़ॉल्ट नहीं बनाया जा सका",
+    "couldNotSaveYourSelected": "आपका चुना हुआ पता सेव नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "couldNotLoadAddressDetails": "बदलने के लिए पते का विवरण लोड नहीं हो सका",
+    "selectAddress": "पता चुनें",
+    "searchForAreaStreetName": "इलाका, गली का नाम खोजें...",
+    "addNewAddress": "नया पता जोड़ें",
+    "savedAddresses": "सेव किए गए पते",
+    "loadingAddresses": "पते लोड हो रहे हैं...",
+    "default": "डिफ़ॉल्ट",
+    "selectAddress2": "पता चुनें",
+    "selectOption": "विकल्प चुनें",
+    "setAsDefault": "डिफ़ॉल्ट बनाएँ",
+    "editAddress": "पता बदलें",
+    "deleteAddress": "पता हटाएँ"
+  },
+  "newAddressForm": {
+    "success": "सफल",
+    "error": "त्रुटि"
+  },
+  "withAddress": {
+    "couponsAndOffers": "कूपन और ऑफ़र",
+    "cart": "कार्ट"
+  },
+  "withoutAddress": {
+    "couponsAndOffers": "कूपन और ऑफ़र",
+    "viewAll": "सभी देखें",
+    "cart": "कार्ट",
+    "selectAddress": "पता चुनें"
+  },
+  "bestSeller": {
+    "bestSellers": "बेस्ट सेलर",
+    "viewAll": "सभी देखें"
+  },
+  "mostView": {
+    "mostViewed": "सबसे ज़्यादा देखे गए",
+    "exploreMore": "और देखें"
+  },
+  "newArrivals": {
+    "newArrivals": "नए प्रोडक्ट",
+    "theLatestTrendsJustFor": "नए ट्रेंड, सिर्फ़ आपके लिए",
+    "viewAll": "सभी देखें"
+  },
+  "recentProduct": {
+    "recentlyViewed": "हाल में देखे गए",
+    "viewAll": "सभी देखें"
+  },
+  "recommendedProducts": {
+    "youMayLikeThis": "आपको यह पसंद आ सकता है",
+    "exploreMore": "और देखें"
+  },
+  "topRated": {
+    "topRated": "टॉप रेटेड",
+    "exploreMore": "और देखें"
+  },
+  "addToCartSheet": {
+    "productAddedToCartSuccessfully": "प्रोडक्ट सफलतापूर्वक कार्ट में जुड़ गया",
+    "productAddedToCartSuccessfully2": "✔ प्रोडक्ट सफलतापूर्वक कार्ट में जुड़ गया"
+  },
+  "emptyCart": {
+    "yourCartLooksALittle": "आपका कार्ट थोड़ा खाली लग रहा है 🛒",
+    "browseProducts": "प्रोडक्ट देखें"
+  },
+  "benefitsrow": {
+    "fastDelivery": "तेज़ डिलीवरी"
+  },
+  "buysections": {
+    "rpSecureDelivery": "RP सुरक्षित डिलीवरी",
+    "outOfStock": "स्टॉक में नहीं",
+    "adding": "जोड़ा जा रहा है..."
+  },
+  "deliverysections": {
+    "deliverTo": "डिलीवरी पता",
+    "estimatedDelivery": "अनुमानित डिलीवरी"
+  },
+  "offersection": {
+    "apply": "लागू करें",
+    "seeAllOffersDiscounts": "सभी ऑफ़र और छूट देखें"
+  },
+  "productInioaccordions": {
+    "noSpecificationsAvailable": "कोई विशेषता उपलब्ध नहीं"
+  },
+  "productvariants": {
+    "outOfStock": "स्टॉक में नहीं",
+    "unavailable": "उपलब्ध नहीं",
+    "available": "उपलब्ध"
+  },
+  "checkoutSummary": {
+    "proceedToBuy": "खरीदने के लिए आगे बढ़ें"
+  },
+  "orderProcedbutton": {
+    "placeOrder": "ऑर्डर करें"
+  },
+  "orderStepUI": {
+    "msg": {
+      "sessionExpired": "सत्र समाप्त हो गया",
+      "yourSessionHasExpiredPlease": "आपका सत्र समाप्त हो गया है। कृपया फिर से लॉग इन करें।",
+      "paymentProcessing": "भुगतान प्रोसेस हो रहा है",
+      "doNotPayAgainCheck": "दोबारा भुगतान न करें; थोड़ी देर में यह ऑर्डर देखें।",
+      "paymentFailed": "भुगतान विफल",
+      "thePaymentWasNotCompleted": "भुगतान पूरा नहीं हुआ। आपका कार्ट वापस आ गया है।",
+      "paymentStatusPending": "भुगतान स्टेटस लंबित",
+      "checkYourOrderBeforeTrying": "दूसरा भुगतान करने से पहले अपना ऑर्डर जाँच लें।",
+      "paymentStatusUnavailable": "भुगतान स्टेटस उपलब्ध नहीं",
+      "doNotPayAgainYet": "अभी दोबारा भुगतान न करें। कृपया कुछ मिनट बाद अपना ऑर्डर देखें।",
+      "paymentCancelled": "भुगतान रद्द हुआ",
+      "youCancelledThePaymentYour": "आपने भुगतान रद्द कर दिया। आपका कार्ट वापस आ गया है।",
+      "checkYourOrderBeforePaying": "दोबारा भुगतान करने से पहले अपना ऑर्डर जाँच लें।",
+      "updateFailed": "अपडेट विफल",
+      "couldNotUpdateQuantityPlease": "मात्रा अपडेट नहीं हो सकी। कृपया फिर से कोशिश करें।"
+    },
+    "selectAddress": "पता चुनें",
+    "pleaseSelectAnAddress": "कृपया पता चुनें।",
+    "checkoutFailed": "चेकआउट विफल",
+    "orderError": "ऑर्डर त्रुटि",
+    "orderIdMissingPleaseTry": "ऑर्डर आईडी नहीं मिली। कृपया फिर से कोशिश करें।",
+    "paymentFailed": "भुगतान विफल",
+    "error": "त्रुटि",
+    "stockLimit": "स्टॉक सीमा",
+    "onlyLimitedStockAvailable": "सिर्फ़ सीमित स्टॉक उपलब्ध है",
+    "checkout": "चेकआउट",
+    "unableToLoadCheckout": "चेकआउट लोड नहीं हो सका",
+    "cart": "कार्ट",
+    "yourCartIsEmptyAdd": "आपका कार्ट खाली है। आगे बढ़ने के लिए प्रोडक्ट जोड़ें।",
+    "address": "पता",
+    "orderSummary": "ऑर्डर सारांश",
+    "payment": "भुगतान",
+    "removeAll": "सभी हटाएँ",
+    "couponsAndOffers": "कूपन और ऑफ़र",
+    "relatedProducts": "मिलते-जुलते प्रोडक्ट"
+  },
+  "paymentOptionsUI": {
+    "upi": "UPI",
+    "card": "कार्ड",
+    "creditDebitAtmCard": "क्रेडिट / डेबिट / ATM कार्ड",
+    "addAndSecureCardsAs": "RBI दिशानिर्देशों के अनुसार कार्ड जोड़ें और सुरक्षित रखें",
+    "getUpto5Cashback": "5% तक कैशबैक पाएँ"
+  },
+  "homeBanner": {
+    "bigSavingsBiggerSmiles": "बड़ी बचत। बड़ी मुस्कान।",
+    "termsConditionsApply": "*नियम और शर्तें लागू"
+  },
+  "offerHome": {
+    "wishlist": "विशलिस्ट",
+    "invalidProduct": "अमान्य प्रोडक्ट",
+    "productVariantIsMissing": "प्रोडक्ट वेरिएंट नहीं मिला",
+    "msg": {
+      "wishlist": "विशलिस्ट"
+    }
+  },
+  "transactionHistory": {
+    "transactionHistory": "लेन-देन इतिहास",
+    "loading": "लोड हो रहा है..."
+  },
+  "walletHistory": {
+    "rewardWallet": "रिवॉर्ड वॉलेट",
+    "premium": "प्रीमियम",
+    "myBalance": "मेरा बैलेंस",
+    "n1Coin1": "1 कॉइन = ₹1",
+    "transactionHistory": "लेन-देन इतिहास",
+    "wallet": "वॉलेट",
+    "loading": "लोड हो रहा है..."
+  },
+  "categoriessection": {
+    "categories": "कैटेगरी",
+    "viewAll": "सभी देखें"
+  },
+  "featuresProduct": {
+    "featuredThisWeek": "इस हफ़्ते खास",
+    "exploreMore": "और देखें"
+  },
+  "downloadInvoice": {
+    "error": "त्रुटि",
+    "couldNotGeneratePdf": "PDF नहीं बन सका",
+    "orderConfirmed": "ऑर्डर कन्फ़र्म हो गया!",
+    "orderSummary": "ऑर्डर सारांश",
+    "totalPaid": "कुल भुगतान",
+    "downloadPdfReceipt": "PDF रसीद डाउनलोड करें"
+  },
+  "filterBottomSheet": {
+    "filterOrders": "ऑर्डर फ़िल्टर करें",
+    "reset": "रीसेट करें",
+    "orderTime": "ऑर्डर का समय",
+    "orderStatus": "ऑर्डर स्टेटस",
+    "applyFilters": "फ़िल्टर लागू करें"
+  },
+  "myOrder": {
+    "myOrders": "मेरे ऑर्डर",
+    "searchYourOrdersHere": "अपने ऑर्डर यहाँ खोजें",
+    "filters": "फ़िल्टर",
+    "coinsEarnedTillDate": "अब तक कमाए कॉइन:",
+    "totalSavingsTillDate": "अब तक की कुल बचत:",
+    "noOrdersFound": "कोई ऑर्डर नहीं मिला",
+    "viewOrder": "ऑर्डर देखें"
+  },
+  "selectItemCancellationReason": {
+    "reasonRequired": "कारण ज़रूरी है",
+    "pleaseSelectCancellationReason": "कृपया रद्द करने का कारण चुनें",
+    "success": "सफल",
+    "itemCancellationRequestSubmittedSuccessfully": "आइटम रद्द करने का अनुरोध सफलतापूर्वक जमा हुआ",
+    "ok": "ठीक है",
+    "cancellationFailed": "रद्द नहीं हो सका",
+    "error": "त्रुटि",
+    "unableToSubmitCancellationRequest": "रद्द करने का अनुरोध जमा नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "requestItemCancellation": "आइटम रद्द करने का अनुरोध करें",
+    "reasonForCancellation": "रद्द करने का कारण",
+    "noCancellationReasonsAvailable": "रद्द करने के कोई कारण उपलब्ध नहीं हैं।",
+    "comments": "टिप्पणी*",
+    "enterAnySpecificQuestionsOr": "कोई खास सवाल या ज़रूरत हो तो यहाँ लिखें"
+  },
+  "tribal": {
+    "pureTraditionalHandcrafted": "शुद्ध, पारंपरिक और हस्तनिर्मित",
+    "straightFromIndiaSTribal": "सीधे भारत के आदिवासी कारीगरों से",
+    "shopYourFavoritesBeforeThey": "खत्म होने से पहले अपनी पसंदीदा चीज़ें खरीदें!"
+  },
+  "tribalScreen": {
+    "tribal": "आदिवासी",
+    "n4Stars": "4+ स्टार ⭐",
+    "bestOffers": "बेहतरीन ऑफ़र",
+    "newArrivals": "नए प्रोडक्ट",
+    "under999": "₹999 से कम"
+  },
+  "buyAgain": {
+    "buyAgain": "फिर से खरीदें",
+    "sort": "क्रम:"
+  },
+  "categoriesProduct": {
+    "all": "सभी",
+    "noProductsFoundInThis": "इस कैटेगरी में कोई प्रोडक्ट नहीं मिला।"
+  },
+  "customerReviewsView": {
+    "reviews": "रिव्यू",
+    "review": "रिव्यू",
+    "unableToUpdateHelpfulStatus": "अभी 'उपयोगी' स्टेटस अपडेट नहीं हो सका।",
+    "customerReviews": "ग्राहक रिव्यू",
+    "share": "शेयर करें",
+    "noReviewsYet": "अभी तक कोई रिव्यू नहीं।"
+  },
+  "comingSoon": {
+    "comingSoon": "जल्द आ रहा है",
+    "featureUnderDevelopment": "यह सुविधा अभी बन रही है"
+  },
+  "helpForm": {
+    "fileTooLarge": "फ़ाइल बहुत बड़ी है",
+    "pleaseSelectAFileSmaller": "कृपया 25 MB से छोटी फ़ाइल चुनें।",
+    "attachmentError": "अटैचमेंट त्रुटि",
+    "unableToSelectThisDocument": "यह दस्तावेज़ चुना नहीं जा सका।",
+    "validationError": "जाँच त्रुटि",
+    "pleaseSelectCategory": "कृपया कैटेगरी चुनें",
+    "msg": {
+      "validationError": "जाँच त्रुटि",
+      "descriptionMustBeMinimum10": "विवरण कम से कम 10 अक्षरों का होना चाहिए",
+      "ticketCreated": "टिकट बन गया",
+      "ticketError": "टिकट त्रुटि"
+    },
+    "ticketError": "टिकट त्रुटि",
+    "supportTicket": "सपोर्ट टिकट",
+    "history": "इतिहास",
+    "tellUsWhatHappenedWe": "बताएँ कि क्या हुआ। हम सही खाता जानकारी जोड़ देंगे ताकि हमारी टीम जल्दी मदद कर सके",
+    "selectAnOrderIfYour": "अगर आपकी समस्या किसी ऑर्डर से जुड़ी है तो वह ऑर्डर चुनें।",
+    "noRecentOrdersFoundYou": "हाल का कोई ऑर्डर नहीं मिला। आप फिर भी सामान्य टिकट बना सकते हैं।",
+    "category": "कैटेगरी",
+    "description": "विवरण",
+    "describeYourIssue": "अपनी समस्या बताएँ...",
+    "optional": "(वैकल्पिक)",
+    "addAnImageVideoPdf": "इमेज, वीडियो, PDF, Word, Excel या टेक्स्ट फ़ाइल जोड़ें। अधिकतम 25 MB।",
+    "photoVideo": "फ़ोटो / वीडियो",
+    "document": "दस्तावेज़",
+    "removeAttachment": "अटैचमेंट हटाएँ",
+    "createTicket": "टिकट बनाएँ"
+  },
+  "myTickets": {
+    "viewImage": "इमेज देखें",
+    "viewAttachment": "अटैचमेंट देखें",
+    "myTickets": "मेरे टिकट",
+    "allTickets": "सभी टिकट",
+    "open": "खुला",
+    "inProgress": "प्रगति पर",
+    "closed": "बंद",
+    "availableTickets": "उपलब्ध टिकट",
+    "loadingYourTickets": "आपके टिकट लोड हो रहे हैं...",
+    "noTicketsFound": "कोई टिकट नहीं मिला",
+    "onceAUserRaisesA": "सहायता अनुरोध करने पर वह यहाँ दिखेगा।",
+    "closeImagePreview": "इमेज प्रीव्यू बंद करें"
+  },
+  "couponsPage": {
+    "coupons": "कूपन",
+    "typeCouponCodeHere": "कूपन कोड यहाँ लिखें",
+    "apply": "लागू करें"
+  },
+  "couponsSection": {
+    "apply": "लागू करें"
+  },
+  "loginHead": {
+    "searchProducts": "प्रोडक्ट खोजें"
+  },
+  "orderHeading": {
+    "help": "सहायता"
+  },
+  "billDetailsCard": {
+    "billDetails": "बिल विवरण",
+    "useRewardCoins": "रिवॉर्ड कॉइन इस्तेमाल करें",
+    "availableSavingsOnThisOrder": "इस ऑर्डर पर उपलब्ध बचत",
+    "itemTotal": "आइटम कुल",
+    "bagDiscount": "बैग डिस्काउंट",
+    "rewardDiscount": "रिवॉर्ड डिस्काउंट",
+    "handlingFees": "हैंडलिंग शुल्क",
+    "orderTotal": "ऑर्डर कुल",
+    "coinsRedeemable_one": "{{amount}} कॉइन इस्तेमाल कर सकते हैं",
+    "coinsRedeemable_other": "{{amount}} कॉइन इस्तेमाल कर सकते हैं"
+  },
+  "cartItemCard": {
+    "noImage": "कोई इमेज नहीं",
+    "removeItem": "आइटम हटाएँ"
+  },
+  "pointsButton": {
+    "earn": "कमाएँ",
+    "redeem": "रिडीम करें"
+  },
+  "productCard": {
+    "wishlist": "विशलिस्ट",
+    "invalidProduct": "अमान्य प्रोडक्ट",
+    "productVariantIsMissing": "प्रोडक्ट वेरिएंट नहीं मिला"
+  },
+  "useCheckoutFlow": {
+    "loginRequired": "लॉगिन ज़रूरी है",
+    "pleaseLogInToBuy": "प्रोडक्ट खरीदने के लिए कृपया लॉग इन करें।",
+    "unableToContinue": "आगे नहीं बढ़ सकते"
+  },
+  "privacyPolicy": {
+    "msg": {
+      "error": "त्रुटि",
+      "failedToLoadPrivacyPolicy": "गोपनीयता नीति लोड नहीं हो सकी।"
+    },
+    "privacy": "गोपनीयता",
+    "policy": "नीति"
+  },
+  "profile": {
+    "deleteFailed": "हटाया नहीं जा सका",
+    "couldNotDeleteTheAccount": "खाता हटाया नहीं जा सका। कृपया फिर से कोशिश करें।",
+    "myOrders": "मेरे ऑर्डर",
+    "buyAgain": "फिर से खरीदें",
+    "wishlist": "विशलिस्ट",
+    "rewards": "रिवॉर्ड",
+    "yourOrders": "आपके ऑर्डर",
+    "yourNotes": "आपके नोट्स",
+    "addressBook": "पता सूची",
+    "settings": "सेटिंग्स",
+    "languages": "भाषाएँ",
+    "privacyPolicy": "गोपनीयता नीति",
+    "termsConditions": "नियम और शर्तें",
+    "deleteAccount": "खाता हटाएँ",
+    "logout": "लॉग आउट",
+    "areYouSureYouWant": "क्या आप वाकई अपना खाता हमेशा के लिए हटाना चाहते हैं?",
+    "thisActionCannotBeUndone": "यह कार्रवाई वापस नहीं ली जा सकती।",
+    "deleting": "हटाया जा रहा है...",
+    "darkMode": "डार्क मोड"
+  },
+  "termsandCondition": {
+    "error": "त्रुटि",
+    "failedToLoadTermsConditions": "नियम और शर्तें लोड नहीं हो सकीं।",
+    "msg": {
+      "accepted": "स्वीकार किया गया",
+      "termsConditionsAcceptedSuccessfully": "नियम और शर्तें सफलतापूर्वक स्वीकार की गईं।",
+      "updateFailed": "अपडेट विफल",
+      "couldNotSaveYourPreference": "आपकी पसंद सेव नहीं हो सकी। कृपया फिर से कोशिश करें।"
+    },
+    "terms": "नियम और",
+    "conditions": "शर्तें",
+    "loading": "लोड हो रहा है…",
+    "termsConditionsAccepted": "नियम और शर्तें स्वीकार की गईं",
+    "termsConditions": "नियम और शर्तें",
+    "iUnderstandAgree": "मैं समझता/समझती हूँ और सहमत हूँ"
+  },
+  "todoList": {
+    "msg": {
+      "todo": "कार्य सूची",
+      "reminder": "रिमाइंडर"
+    },
+    "todo": "कार्य सूची",
+    "pleaseEnterTaskTitle": "कृपया काम का नाम लिखें",
+    "pleaseSelectStartAndEnd": "कृपया शुरू और खत्म होने का समय चुनें",
+    "deleteTask": "काम हटाएँ",
+    "areYouSureYouWant": "क्या आप वाकई यह काम हटाना चाहते हैं?",
+    "cancel": "रद्द करें",
+    "deleteTasks": "काम हटाएँ",
+    "deleteAllSelectedTasks": "सभी चुने हुए काम हटाने हैं?",
+    "reminder": "रिमाइंडर",
+    "pleaseSelectATaskFirst": "कृपया पहले कोई काम चुनें।",
+    "addNew": "नया जोड़ें",
+    "edit": "बदलें",
+    "share": "शेयर करें",
+    "delete": "हटाएँ",
+    "done": "हो गया",
+    "loadingTasks": "काम लोड हो रहे हैं...",
+    "noTasksFound": "कोई काम नहीं मिला",
+    "addANewTaskFor": "चुनी गई तारीख के लिए नया काम जोड़ें।",
+    "allTasks": "सभी काम",
+    "todayTasks": "आज के काम",
+    "pendingTasks": "बाकी काम",
+    "completedTasks": "पूरे हुए काम",
+    "taskName": "काम का नाम",
+    "taskDescription": "काम का विवरण...",
+    "setAlarmReminder": "अलार्म रिमाइंडर सेट करें",
+    "reminderTimeEG10": "रिमाइंडर का समय, जैसे 10:30 AM",
+    "saveAlarm": "अलार्म सेव करें"
+  },
+  "visitingCardModal": {
+    "permissionRequired": "अनुमति ज़रूरी है",
+    "storageAccessIsNeededTo": "कार्ड सेव करने के लिए स्टोरेज की अनुमति ज़रूरी है।",
+    "cardSaved": "कार्ड सेव हो गया",
+    "yourVisitingCardHasBeen": "आपका विज़िटिंग कार्ड फ़ोटो में सेव हो गया है।",
+    "couldNotSaveCard": "कार्ड सेव नहीं हो सका",
+    "couldNotShareCard": "कार्ड शेयर नहीं हो सका",
+    "closeVisitingCard": "विज़िटिंग कार्ड बंद करें",
+    "scanToConnect": "जुड़ने के लिए स्कैन करें",
+    "saveVisitingCardToPhotos": "विज़िटिंग कार्ड को फ़ोटो में सेव करें",
+    "download": "डाउनलोड करें",
+    "shareVisitingCard": "विज़िटिंग कार्ड शेयर करें",
+    "share": "शेयर करें"
+  },
+  "allCategories": {
+    "categories": "कैटेगरी",
+    "allCategories": "सभी कैटेगरी",
+    "all": "सभी"
+  },
+  "campaignProductsScreen": {
+    "unableToLoadThisCampaign": "यह कैंपेन लोड नहीं हो सका।",
+    "noProductsFoundInThis": "इस कैंपेन में कोई प्रोडक्ट नहीं मिला।"
+  },
+  "categoriesScreen": {
+    "allCategories": "सभी कैटेगरी",
+    "all": "सभी",
+    "noSubcategoriesAvailable": "कोई सब-कैटेगरी उपलब्ध नहीं"
+  },
+  "explore": {
+    "explore": "देखें"
+  },
+  "itemCancellationDetailsScreen": {
+    "cancellationStatus": "रद्द करने का स्टेटस",
+    "loadingCancellationDetails": "रद्द करने का विवरण लोड हो रहा है..."
+  },
+  "orderConfirmedScreen": {
+    "orderConfirmed": "ऑर्डर कन्फ़र्म हुआ",
+    "loadingOrderDetails": "ऑर्डर का विवरण लोड हो रहा है...",
+    "orderItems": "ऑर्डर आइटम",
+    "cancelItem": "आइटम रद्द करें",
+    "writeReview": "रिव्यू लिखें",
+    "reviewed": "रिव्यू किया गया",
+    "youMayAlsoLikeThis": "आपको यह भी पसंद आ सकता है"
+  },
+  "paymentScreen": {
+    "success": "सफल",
+    "paymentVerifiedSuccessfully": "भुगतान की पुष्टि सफलतापूर्वक हुई 🎉",
+    "verificationFailed": "पुष्टि विफल",
+    "pleaseContactSupport": "कृपया सपोर्ट से संपर्क करें",
+    "paymentCancelled": "भुगतान रद्द हुआ",
+    "youExitedThePaymentWindow": "आप भुगतान विंडो से बाहर आ गए।",
+    "msg": {
+      "paymentFailed": "भुगतान विफल",
+      "error": "त्रुटि",
+      "verificationPending": "पुष्टि लंबित",
+      "paymentIsBeingVerifiedPlease": "भुगतान की पुष्टि हो रही है। कृपया ऑर्डर पेज देखें।"
+    }
+  },
+  "productCategoriesScreen": {
+    "noProductsFoundInThis": "इस कैटेगरी में कोई प्रोडक्ट नहीं मिला।"
+  },
+  "reviewScreen": {
+    "camera": "कैमरा",
+    "couldNotCapturePhotoPlease": "फ़ोटो नहीं ली जा सकी। कृपया फिर से कोशिश करें।",
+    "unableToOpenCameraRight": "अभी कैमरा नहीं खुल सका।",
+    "gallery": "गैलरी",
+    "noPhotosSelected": "कोई फ़ोटो नहीं चुनी गई।",
+    "unableToOpenGalleryRight": "अभी गैलरी नहीं खुल सकी।",
+    "ratingRequired": "रेटिंग ज़रूरी है",
+    "pleaseSelectAStarRating": "कृपया स्टार रेटिंग चुनें।",
+    "reviewRequired": "रिव्यू ज़रूरी है",
+    "pleaseWriteYourReview": "कृपया अपना रिव्यू लिखें।",
+    "loginRequired": "लॉगिन ज़रूरी है",
+    "pleaseLoginToSubmitYour": "रिव्यू जमा करने के लिए कृपया लॉग इन करें।",
+    "review": "रिव्यू",
+    "thankYou": "धन्यवाद",
+    "yourReviewHasBeenSubmitted": "आपका रिव्यू जमा हो गया है।",
+    "ok": "ठीक है",
+    "yourExperienceMatters": "आपका अनुभव मायने रखता है",
+    "addPhotos": "फ़ोटो जोड़ें",
+    "addUpTo6Photos": "Amazon रिव्यू की तरह 6 तक फ़ोटो जोड़ें।",
+    "addMorePhotos": "और फ़ोटो जोड़ें",
+    "whatDidYouLoveAbout": "आपको इसमें क्या पसंद आया?",
+    "valueForMoney": "पैसा वसूल",
+    "goodQuality": "अच्छी क्वालिटी",
+    "smoothExperienceDeliveryProductUse": "आसान अनुभव (डिलीवरी + प्रोडक्ट का इस्तेमाल)",
+    "tellUsMore": "हमें और बताएँ",
+    "shareWhatYouLovedAbout": "बताएँ कि आपको इस प्रोडक्ट में क्या पसंद आया",
+    "submit": "जमा करें"
+  },
+  "searchScreen": {
+    "noProductFound": "कोई प्रोडक्ट नहीं मिला",
+    "tryADifferentKeyword": "कोई दूसरा शब्द आज़माएँ",
+    "pastSearches": "पिछली खोजें",
+    "success": "सफल",
+    "searchHistoryCleared": "खोज इतिहास साफ़ हो गया।",
+    "error": "त्रुटि",
+    "unableToClearSearchHistory": "खोज इतिहास साफ़ नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "noRecentSearches": "हाल की कोई खोज नहीं"
+  },
+  "wishlistScreen": {
+    "wishlist": "विशलिस्ट",
+    "cart": "कार्ट",
+    "productInformationIsIncomplete": "प्रोडक्ट की जानकारी अधूरी है।",
+    "productVariantIsMissing": "प्रोडक्ट वेरिएंट नहीं मिला।",
+    "itemAddedToCart": "आइटम कार्ट में जुड़ गया।",
+    "myWishlist": "मेरी विशलिस्ट",
+    "yourWishlistIsEmpty": "आपकी विशलिस्ट खाली है",
+    "saveProductsYouLoveTo": "पसंदीदा प्रोडक्ट सेव करें ताकि उन्हें जल्दी पा सकें।"
+  },
+  "productdescriptionscreen": {
+    "loginRequired": "लॉगिन ज़रूरी है",
+    "pleaseLoginToBuyProducts": "प्रोडक्ट खरीदने के लिए कृपया लॉग इन करें।",
+    "selectionUnavailable": "यह विकल्प उपलब्ध नहीं है",
+    "pleaseChooseAnAvailableProduct": "कृपया उपलब्ध प्रोडक्ट विकल्प चुनें।",
+    "pleaseLoginToAddProducts": "कार्ट में प्रोडक्ट जोड़ने के लिए कृपया लॉग इन करें।",
+    "pleaseChooseAnOptionThat": "कृपया स्टॉक में मौजूद विकल्प चुनें।",
+    "cartUpdated": "कार्ट अपडेट हुआ",
+    "cartQuantityUpdatedSuccessfully": "कार्ट की मात्रा सफलतापूर्वक अपडेट हुई।",
+    "msg": {
+      "addedToCart": "कार्ट में जुड़ गया",
+      "v0AddedToCartSuccessfully": "{{v0}} सफलतापूर्वक कार्ट में जुड़ गया!"
+    },
+    "addToCartFailed": "कार्ट में नहीं जुड़ सका",
+    "wishlist": "विशलिस्ट",
+    "invalidProduct": "अमान्य प्रोडक्ट",
+    "productVariantIsMissing": "प्रोडक्ट वेरिएंट नहीं मिला",
+    "productNotFound": "प्रोडक्ट नहीं मिला",
+    "relatedProducts": "मिलते-जुलते प्रोडक्ट"
+  },
+  "src": {
+    "orderPlaced": "ऑर्डर दिया गया",
+    "orderDetails": "ऑर्डर विवरण",
+    "orderInProgress": "ऑर्डर प्रगति पर है",
+    "inTransit": "रास्ते में",
+    "outForDelivery": "डिलीवरी के लिए निकला",
+    "orderDelivered": "ऑर्डर डिलीवर हुआ",
+    "last30Days": "पिछले 30 दिन",
+    "last3Months": "पिछले 3 महीने",
+    "last6Months": "पिछले 6 महीने",
+    "delivered": "डिलीवर हुआ",
+    "cancelled": "रद्द",
+    "returned": "वापस किया गया",
+    "fourStars": "4+ स्टार",
+    "newArrivals": "नए प्रोडक्ट",
+    "under499": "₹499 से कम",
+    "over3000": "₹3000 से ज़्यादा",
+    "recentlyBought": "हाल में खरीदे",
+    "mostFrequent": "सबसे ज़्यादा खरीदे",
+    "priceLowHigh": "कीमत: कम से ज़्यादा",
+    "priceHighLow": "कीमत: ज़्यादा से कम",
+    "general": "सामान्य",
+    "categoryInfo": "कैटेगरी जानकारी",
+    "features": "विशेषताएँ",
+    "dimensions": "आकार और माप",
+    "variantDetails": "वेरिएंट विवरण",
+    "additionalInfo": "अतिरिक्त जानकारी",
+    "exploreProduct": "प्रोडक्ट",
+    "exploreServices": "सेवाएँ",
+    "explorePayments": "भुगतान",
+    "exploreDineOut": "डाइन आउट",
+    "exploreBus": "बस बुकिंग",
+    "exploreExpense": "खर्च ट्रैकर",
+    "exploreCommunity": "कम्युनिटी",
+    "topCategories": "आपके लिए टॉप कैटेगरी",
+    "newLaunches": "नए और आने वाले प्रोडक्ट",
+    "payAnyUpi": "किसी भी UPI ऐप से भुगतान करें",
+    "upiApps": "Google Pay, Paytm, PhonePe और भी",
+    "allProducts": "सभी प्रोडक्ट",
+    "cancelRequested": "रद्द करने का अनुरोध किया गया",
+    "cancelConfirmed": "रद्द करने की पुष्टि हुई",
+    "refundInitiated": "रिफ़ंड शुरू हुआ",
+    "refundCompleted": "रिफ़ंड पूरा हुआ",
+    "cancelRejected": "रद्द करने का अनुरोध अस्वीकार हुआ",
+    "refundOriginal": "मूल भुगतान माध्यम में रिफ़ंड",
+    "coinsReversed": "रिवॉर्ड कॉइन वापस किए गए",
+    "itemCancelled": "आइटम रद्द हुआ",
+    "spec": {
+      "batteryLife": "बैटरी लाइफ़",
+      "bluetoothVersion": "ब्लूटूथ वर्ज़न",
+      "breadth": "चौड़ाई",
+      "chargingTime": "चार्जिंग समय",
+      "chargingType": "चार्जिंग प्रकार",
+      "colour": "रंग",
+      "connectivity": "कनेक्टिविटी",
+      "countryOfOrigin": "मूल देश",
+      "dimensions": "माप",
+      "driverSize": "ड्राइवर साइज़",
+      "frequencyResponse": "फ़्रीक्वेंसी रिस्पॉन्स",
+      "height": "ऊँचाई",
+      "impedance": "इम्पीडेंस",
+      "length": "लंबाई",
+      "manufacturer": "निर्माता",
+      "micAvailable": "माइक उपलब्ध",
+      "modelName": "मॉडल नाम",
+      "modelNumber": "मॉडल नंबर",
+      "noiseCancellation": "नॉइज़ कैंसलेशन",
+      "playbackTime": "प्लेबैक समय",
+      "productType": "प्रोडक्ट प्रकार",
+      "standbyTime": "स्टैंडबाय समय",
+      "subcategory": "उप-श्रेणी",
+      "touchControl": "टच कंट्रोल",
+      "type": "प्रकार",
+      "vendor": "विक्रेता",
+      "warranty": "वारंटी",
+      "waterResistance": "वॉटर रेज़िस्टेंस",
+      "weight": "वज़न",
+      "brand": "ब्रांड",
+      "category": "श्रेणी"
+    }
+  },
+  "journey": {
+    "statusBy": "स्टेटस: {{date}}",
+    "orderStatus": "ऑर्डर स्टेटस"
+  },
+  "productHeadImg": {
+    "myOrdersFallback": "मेरे ऑर्डर",
+    "searchPlaceholder": "\"TRF Bling\" खोजें"
+  },
+  "review": {
+    "mediaLimitTitle": "मीडिया सीमा",
+    "mediaLimitBody": "आप {{count}} तक फ़ोटो अपलोड कर सकते हैं।"
+  },
+  "address": {
+    "addDetails": "विवरण जोड़ें",
+    "done": "हो गया",
+    "saveFailed": "पता सेव नहीं हो सका। कृपया फिर से कोशिश करें।",
+    "v": {
+      "flatRequired": "फ़्लैट, मकान नंबर या बिल्डिंग का नाम ज़रूरी है",
+      "min2": "कम से कम 2 अक्षर लिखें",
+      "areaRequired": "इलाका या मोहल्ला ज़रूरी है",
+      "pincodeRequired": "पिनकोड ज़रूरी है",
+      "pincodeInvalid": "सही 6 अंकों का पिनकोड लिखें",
+      "cityRequired": "शहर ज़रूरी है",
+      "cityInvalid": "सही शहर का नाम लिखें",
+      "stateRequired": "कृपया राज्य चुनें",
+      "nameRequired": "संपर्क नाम ज़रूरी है",
+      "nameInvalid": "सही संपर्क नाम लिखें",
+      "phoneRequired": "फ़ोन नंबर ज़रूरी है",
+      "phoneInvalid": "सही 10 अंकों का मोबाइल नंबर लिखें"
+    }
+  },
+  "visitingCard": {
+    "permTitle": "विज़िटिंग कार्ड सेव करें",
+    "permBody": "Reward Planners को अपना विज़िटिंग कार्ड फ़ोटो में सेव करने की अनुमति दें।",
+    "allow": "अनुमति दें",
+    "shareTitle": "{{name}} का विज़िटिंग कार्ड"
+  },
+  "todo": {
+    "delete": "हटाएँ",
+    "deleteFailed": "काम हटाया नहीं जा सका"
+  },
+  "invoice": {
+    "notYet": "इस ऑर्डर का इनवॉइस अभी उपलब्ध नहीं है।",
+    "genFailed": "अभी इनवॉइस नहीं बन सका। कृपया बाद में कोशिश करें।",
+    "fetchFailed": "इनवॉइस PDF नहीं मिल सका"
+  },
+  "payment": {
+    "orderDescription": "ऑर्डर भुगतान"
+  },
+  "order": {
+    "refund": {
+      "completed": "पूरा हुआ",
+      "processing": "प्रोसेस हो रहा है",
+      "pending": "लंबित",
+      "failed": "विफल"
+    },
+    "cancelledTitle": "ऑर्डर रद्द हुआ",
+    "reason": "कारण: {{reason}}",
+    "deliveryDetails": "डिलीवरी विवरण",
+    "invoiceFetchFailed": "इनवॉइस PDF नहीं मिल सका",
+    "invoiceDownloadFailed": "इनवॉइस PDF डाउनलोड नहीं हो सका",
+    "downloadFailed": "डाउनलोड विफल",
+    "downloadInvoice": "इनवॉइस डाउनलोड करें",
+    "saveCopy": "अपने ऑर्डर की कॉपी सेव करें",
+    "notFound": "ऑर्डर नहीं मिला",
+    "placedTitle": "ऑर्डर सफलतापूर्वक दिया गया!",
+    "onItsWay": "आपका पैकेज रास्ते में है",
+    "relax": "आराम से बैठिए, आपके दरवाज़े तक पहुँचने तक हम आपको अपडेट करते रहेंगे!",
+    "earnedHeader": "🎉 आपने रिवॉर्ड कॉइन कमाए",
+    "coinsEarnedOnOrder": "इस ऑर्डर पर +{{count}} कॉइन कमाए",
+    "brandFallback": "ब्रांड",
+    "productFallback": "प्रोडक्ट",
+    "bestseller": "बेस्टसेलर",
+    "receiptNotFound": "रसीद नहीं मिली",
+    "billDetails": "बिल विवरण",
+    "priceDetails": "कीमत विवरण",
+    "itemTotal": "आइटम कुल",
+    "deliveryFee": "डिलीवरी शुल्क",
+    "bagDiscount": "बैग डिस्काउंट",
+    "rewardDiscount": "रिवॉर्ड डिस्काउंट",
+    "rewardsUsed": "इस्तेमाल किए रिवॉर्ड",
+    "coinsCount_one": "{{count}} कॉइन",
+    "coinsCount_other": "{{count}} कॉइन",
+    "orderTotal": "ऑर्डर कुल",
+    "paymentMethod": "भुगतान का तरीका",
+    "note": "<b>नोट:</b> ऑर्डर डिलीवर होने के 24 घंटों के अंदर रिवॉर्ड कॉइन आपके वॉलेट में जमा कर दिए जाएँगे।",
+    "coinsEarned": "{{count}} रिवॉर्ड कॉइन कमाए",
+    "coinsOnDelivery": "डिलीवरी पर आपको {{count}} रिवॉर्ड कॉइन मिलेंगे",
+    "cancelOrder": "ऑर्डर रद्द करें"
+  },
+  "wallet": {
+    "filters": {
+      "All": "सभी",
+      "All Transactions": "सभी लेन-देन",
+      "Additions": "जमा",
+      "Deductions": "कटौती",
+      "Expired": "समाप्त"
+    },
+    "expiredOn": "{{date}} को समाप्त हुए",
+    "expiresOn": "{{date}} को समाप्त होंगे",
+    "txnId": "लेन-देन आईडी: {{id}}",
+    "orderNo": "ऑर्डर नं. {{id}}",
+    "coinsExpiring_one": "{{count}} कॉइन समाप्त होने वाला है",
+    "coinsExpiring_other": "{{count}} कॉइन समाप्त होने वाले हैं",
+    "notAvailable": "उपलब्ध नहीं"
+  },
+  "r2": {
+    "addToCartFailed": "कार्ट में नहीं जुड़ सका",
+    "unableToSubmitCancellationRequest": "रद्द करने का अनुरोध जमा नहीं हो सका",
+    "failedToLoadSupportTickets": "सपोर्ट टिकट लोड नहीं हो सके",
+    "couldNotGetYourCurrentLocation": "आपकी मौजूदा लोकेशन नहीं मिल सकी।",
+    "deliverHere": "यहाँ डिलीवर करें?",
+    "deliveringTo": "डिलीवरी पता",
+    "noSavedContact": "कोई सेव किया संपर्क नहीं",
+    "noSavedAddressYet": "अभी कोई सेव किया पता नहीं",
+    "viewAddressOptions": "पते के विकल्प देखें",
+    "viewSelectedAddress": "चुना हुआ पता देखें",
+    "failedToSaveAddress": "पता सेव नहीं हो सका",
+    "loadingStates": "राज्य लोड हो रहे हैं...",
+    "selectState": "राज्य चुनें",
+    "saving": "सेव हो रहा है...",
+    "deliveryAddress": "डिलीवरी पता",
+    "noAddressSelected": "कोई पता नहीं चुना गया",
+    "pleaseWait": "कृपया प्रतीक्षा करें...",
+    "hide": "छिपाएँ",
+    "customersAlsoBought": "ग्राहकों ने यह भी खरीदा",
+    "similarProducts": "मिलते-जुलते प्रोडक्ट",
+    "addAFewFavouritesAndWatch": "कुछ पसंदीदा चीज़ें जोड़ें और इस जगह को चमकते देखें। ✨",
+    "nonReturnable": "वापसी योग्य नहीं",
+    "noReplacement": "बदलाव नहीं",
+    "replacementAvailable": "बदलाव उपलब्ध",
+    "addToCart": "कार्ट में जोड़ें",
+    "buyNow": "अभी खरीदें",
+    "addressNotSet": "पता सेट नहीं है",
+    "pleaseSelectAValidProductOption": "कृपया सही प्रोडक्ट विकल्प चुनें।",
+    "thisProductIsCurrentlyUnavailableFor": "यह प्रोडक्ट अभी चेकआउट के लिए उपलब्ध नहीं है।",
+    "retrying": "फिर से कोशिश हो रही है...",
+    "stepCounter": "स्टेप काउंटर",
+    "failedToLoadSteps": "कदम लोड नहीं हो सके",
+    "failedToLoadRelevantProducts": "संबंधित प्रोडक्ट लोड नहीं हो सके",
+    "failedToLoadProducts": "प्रोडक्ट लोड नहीं हो सके",
+    "submitting": "जमा हो रहा है...",
+    "noComment": "कोई टिप्पणी नहीं",
+    "unableToSelectThisFile": "यह फ़ाइल नहीं चुनी जा सकी।",
+    "supportTicketCreatedSuccessfully": "सपोर्ट टिकट सफलतापूर्वक बना",
+    "failedToCreateSupportTicket": "सपोर्ट टिकट नहीं बन सका",
+    "includeTheBillerTransactionReferenceAnd": "अपने विवरण में बिलर, लेन-देन रेफ़रेंस और भुगतान की तारीख लिखें।",
+    "includeYourDeviceModelStepDate": "अपने डिवाइस का मॉडल, कदमों की तारीख और Health Connect का स्टेटस लिखें।",
+    "chooseACategoryAndDescribeThe": "कैटेगरी चुनें और समस्या बताएँ। हम इसे सही टीम तक पहुँचाएँगे।",
+    "selectCategory": "कैटेगरी चुनें",
+    "readyToUpload": "अपलोड के लिए तैयार",
+    "noDescriptionAddedForThisTicket": "इस टिकट में कोई विवरण नहीं जोड़ा गया।",
+    "shopping": "शॉपिंग",
+    "services": "सेवाएँ",
+    "billsRecharge": "बिल और रिचार्ज",
+    "stepCounter2": "स्टेप काउंटर",
+    "general": "सामान्य",
+    "buyThisNow": "इसे अभी खरीदें",
+    "pleaseTryAgain": "कृपया फिर से कोशिश करें।",
+    "noReminderTime": "कोई रिमाइंडर समय नहीं",
+    "tasks": "काम",
+    "myTasks": "मेरे काम",
+    "selectAll": "सभी चुनें",
+    "unselectAll": "सभी का चुनाव हटाएँ",
+    "createTask": "काम बनाएँ",
+    "editTask": "काम बदलें",
+    "startTime": "शुरू होने का समय",
+    "endTime": "खत्म होने का समय",
+    "updateTask": "काम अपडेट करें",
+    "products": "प्रोडक्ट",
+    "campaignProducts": "कैंपेन प्रोडक्ट",
+    "viewLess": "कम देखें",
+    "unableToLoadCancellationDetails": "रद्द करने का विवरण लोड नहीं हो सका।",
+    "unableToLoadOrderDetails": "ऑर्डर का विवरण लोड नहीं हो सका।",
+    "addressUnavailable": "पता उपलब्ध नहीं है",
+    "failedToSubmitReview": "रिव्यू जमा नहीं हो सका",
+    "anonymous": "अज्ञात",
+    "paymentCancelled": "भुगतान रद्द किया गया",
+    "moreOffers": "{{count}} और ऑफ़र उपलब्ध हैं"
+  }
+}

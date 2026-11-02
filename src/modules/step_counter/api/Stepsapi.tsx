@@ -1,4 +1,5 @@
 import api from "../../common/auth/api/axios";
+import i18n from "../../../i18n";
 
 // ─── Payload ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ export const syncStepsToServer = async (
   } catch (error: any) {
     return {
       success: false,
-      message: error?.response?.data?.message || 'Failed to sync steps',
+      message: error?.response?.data?.message || i18n.t("stepCounter:r2.failedToSyncSteps"),
     };
   }
 };

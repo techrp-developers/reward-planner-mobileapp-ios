@@ -8,6 +8,7 @@ import { NavigationContainer, LinkingOptions, NavigatorScreenParams } from "@rea
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './src/query/queryClient';
 import { AuthProvider } from './src/modules/common/auth/context/AuthContext';
+import { LanguageProvider } from './src/i18n/LanguageContext';
 import { AppThemeProvider } from './src/theme/ThemeContext';
 import { flushPendingNavigation, navigationRef } from './src/navigation/navigationRef';
 import NetworkGuard from './src/modules/common/noInternet/NetworkGuard';
@@ -90,6 +91,7 @@ export default function App() {
             <CmsAppShellProvider>
               <AlertProvider>
                 <AuthProvider>
+                  <LanguageProvider>
                   <CartProvider>
                     <NavigationContainer
                       linking={linking}
@@ -102,6 +104,7 @@ export default function App() {
                       </NetworkGuard>
                     </NavigationContainer>
                   </CartProvider>
+                  </LanguageProvider>
                 </AuthProvider>
               </AlertProvider>
             </CmsAppShellProvider>

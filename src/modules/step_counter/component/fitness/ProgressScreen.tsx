@@ -32,6 +32,8 @@ import StepIcon from "../../assets/StepCount/step_icon.svg";
 import FireIcon from "../../assets/StepCount/lightning.svg";
 import LocationIcon from "../../assets/StepCount/location.svg";
 import ClockIcon from "../../assets/StepCount/clock_icon.svg";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 
 type ProgressNav = NativeStackNavigationProp<FitnessStackParamList, "PlanProcess">;
@@ -136,6 +138,7 @@ const buildCalendarCells = (
 };
 
 const ProgressScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<ProgressNav>();
   const { width } = useWindowDimensions();
   const today = useMemo(() => new Date(), []);
@@ -155,7 +158,7 @@ const ProgressScreen: React.FC = () => {
   const loadingCalendar = calendarQuery.isLoading;
   const errorMessage =
     calendarQuery.data?.message ||
-    (calendarQuery.error ? "Failed to fetch calendar" : "");
+    (calendarQuery.error ? i18n.t("stepCounter:r2.failedToFetchCalendar") : "");
 
   const calendarCells = useMemo(
     () => buildCalendarCells(selectedMonth, calendarData, selectedDate),
@@ -214,7 +217,7 @@ const ProgressScreen: React.FC = () => {
               <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
                 <MaterialCommunityIcons name="chevron-left" size={25} color={VD.accentDark} />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>Your Progress</Text>
+              <Text style={styles.headerTitle}>{tx("stepCounter:progressScreen.yourProgress")}</Text>
               <View style={styles.headerSpacer} />
             </View>
 
@@ -250,13 +253,13 @@ const ProgressScreen: React.FC = () => {
               {loadingCalendar ? (
                 <View style={styles.stateBox}>
                   <ActivityIndicator color={VD.accent} />
-                  <Text style={styles.stateText}>Loading calendar...</Text>
+                  <Text style={styles.stateText}>{tx("stepCounter:progressScreen.loadingCalendar")}</Text>
                 </View>
               ) : errorMessage ? (
                 <View style={styles.stateBox}>
                   <Text style={styles.stateText}>{errorMessage}</Text>
                   <TouchableOpacity style={styles.retryButton} activeOpacity={0.86} onPress={handleRetry}>
-                    <Text style={styles.retryText}>Retry</Text>
+                    <Text style={styles.retryText}>{tx("stepCounter:progressScreen.retry")}</Text>
                   </TouchableOpacity>
                 </View>
               ) : (
@@ -269,23 +272,23 @@ const ProgressScreen: React.FC = () => {
               <View style={styles.statsRow}>
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.steps))}
-                  label="Steps"
+                  label={tx("stepCounter:progressScreen.steps")}
                   Icon={StepIcon}
                 />
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.calories))}
-                  label="Kcal"
+                  label={tx("stepCounter:progressScreen.kcal")}
                   Icon={FireIcon}
                   color={VD.warning}
                 />
                 <Stat
                   value={safeNumber(selectedDayData?.distance_km).toFixed(1)}
-                  label="Km"
+                  label={tx("stepCounter:progressScreen.km")}
                   Icon={LocationIcon}
                 />
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.active_minutes))}
-                  label="Move Min"
+                  label={tx("stepCounter:progressScreen.moveMin")}
                   Icon={ClockIcon}
                 />
               </View>
@@ -298,7 +301,7 @@ const ProgressScreen: React.FC = () => {
                 </View>
                 <View style={styles.highestCopy}>
                   <Text style={styles.highestTitle}>
-                    Your <Text style={styles.highestAccent}>Highest</Text>{"\n"}Step Day
+                    Your <Text style={styles.highestAccent}>{tx("stepCounter:progressScreen.highest")}</Text>{"\n"}Step Day
                   </Text>
                 </View>
                 <View style={styles.highestRight}>

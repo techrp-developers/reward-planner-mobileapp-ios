@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from "react";
 import { Animated, Easing, Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useTranslation } from "react-i18next";
 import Reward from "../../../assets/product/rewards.svg";
 
 type RewardModalProps = {
@@ -14,6 +15,7 @@ const BRAND_GRADIENT: string[] = ["#FC8BAD", "#A654CD"];
 const DARK_GRADIENT: string[] = ["#251126", "#A654CD", "#FC8BAD"];
 
 export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
+  const { t } = useTranslation();
   const cardOpacity = useRef(new Animated.Value(0)).current;
   const cardScale = useRef(new Animated.Value(0.85)).current;
   const badgeScale = useRef(new Animated.Value(0)).current;
@@ -137,10 +139,10 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
           {/* Header */}
           <View style={styles.premiumPill}>
             <MaterialCommunityIcons name="crown-outline" size={15} color="#A654CD" />
-            <Text style={styles.premiumPillText}>Welcome Bonus</Text>
+            <Text style={styles.premiumPillText}>{t('common:reward.welcomeBonus')}</Text>
           </View>
-          <Text style={styles.title}>Welcome to Reward Planners</Text>
-          <Text style={styles.subtitle}>Your account is now active</Text>
+          <Text style={styles.title}>{t('common:reward.welcomeTitle')}</Text>
+          <Text style={styles.subtitle}>{t('common:reward.accountActive')}</Text>
 
           {/* Reward Card — shadow on solid wrapper View */}
           <View style={styles.rewardCardShadow}>
@@ -152,27 +154,27 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
             >
               <View style={styles.rewardBonusRow}>
                 <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
-                <Text style={styles.rewardBonusLabel}>First Login Bonus</Text>
+                <Text style={styles.rewardBonusLabel}>{t('common:reward.firstLoginBonus')}</Text>
                 <MaterialCommunityIcons name="star-four-points" size={13} color="#FFE9F4" />
               </View>
 
               <Text style={styles.rewardAmount}>{points.toLocaleString()}</Text>
-              <Text style={styles.rewardCoinsLabel}>Reward Coins</Text>
+              <Text style={styles.rewardCoinsLabel}>{t('common:reward.rewardCoins')}</Text>
 
               <View style={styles.rewardSuccessPill}>
                 <MaterialCommunityIcons name="check-circle" size={14} color="#FFFFFF" />
-                <Text style={styles.rewardSuccessText}>Successfully Credited</Text>
+                <Text style={styles.rewardSuccessText}>{t('common:reward.credited')}</Text>
               </View>
 
               <View style={styles.rewardMetaRow}>
                 <View style={styles.rewardMetaItem}>
                   <MaterialCommunityIcons name="wallet-giftcard" size={16} color="#FFFFFF" />
-                  <Text style={styles.rewardMetaText}>Reward wallet</Text>
+                  <Text style={styles.rewardMetaText}>{t('common:reward.rewardWallet')}</Text>
                 </View>
                 <View style={styles.rewardMetaDivider} />
                 <View style={styles.rewardMetaItem}>
                   <MaterialCommunityIcons name="lightning-bolt" size={16} color="#FFFFFF" />
-                  <Text style={styles.rewardMetaText}>Ready to use</Text>
+                  <Text style={styles.rewardMetaText}>{t('common:reward.readyToUse')}</Text>
                 </View>
               </View>
             </LinearGradient>
@@ -201,7 +203,7 @@ export const RewardModal = ({ visible, points, onClose }: RewardModalProps) => {
               end={{ x: 1, y: 0 }}
               style={styles.gradientBtn}
             >
-              <Text style={styles.btnText}>Start Exploring</Text>
+              <Text style={styles.btnText}>{t('common:actions.startExploring')}</Text>
               <MaterialCommunityIcons name="arrow-right" size={19} color="#FFFFFF" />
             </LinearGradient>
           </TouchableOpacity>

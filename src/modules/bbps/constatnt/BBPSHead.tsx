@@ -5,6 +5,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
 import { useNavigation } from '@react-navigation/native';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
 
 interface UserInfo {
   name: string;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onChangePress }) => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
   const operatorInitial = user?.operatorInitial?.trim()?.charAt(0)?.toUpperCase() || 'O';
@@ -72,7 +74,7 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
                 <View style={styles.typeRow}>
                   <Text style={[styles.typeText, { color: bbpsTheme.colors.muted }]}>{user.type} - </Text>
                   <TouchableOpacity onPress={onChangePress}>
-                    <Text style={[styles.changeText, { color: bbpsTheme.colors.primary }]}>Change</Text>
+                    <Text style={[styles.changeText, { color: bbpsTheme.colors.primary }]}>{tx("payments:bBPSHead.change")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -98,7 +100,7 @@ const BBPSHead: React.FC<Props> = ({ title, user, onBackPress, onHelpPress, onCh
         >
           <View style={styles.helpInnerContainer}>
             <MaterialIcons name="chat-bubble-outline" size={18} color={bbpsTheme.colors.primary} />
-            <Text style={[styles.helpText, { color: bbpsTheme.colors.primary }]}>Help</Text>
+            <Text style={[styles.helpText, { color: bbpsTheme.colors.primary }]}>{tx("payments:bBPSHead.help")}</Text>
           </View>
         </TouchableOpacity>
       </View>

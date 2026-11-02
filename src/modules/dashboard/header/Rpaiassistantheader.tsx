@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Svg, { Path, Rect, Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from "react-i18next";
 
 // ---------- Sub-components ----------
 
@@ -99,6 +100,7 @@ interface ToggleSwitchProps {
 }
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onToggle }) => {
+  const { t } = useTranslation();
   const translateX = React.useRef(new Animated.Value(value ? 28 : 0)).current;
 
   React.useEffect(() => {
@@ -117,13 +119,13 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onToggle }) => {
       style={[styles.toggleTrack, { backgroundColor: value ? '#7c55e8' : '#c8c4e8' }]}
     >
       {value && (
-        <Text style={styles.toggleLabel}>ON</Text>
+        <Text style={styles.toggleLabel}>{t("dashboard:ai.on")}</Text>
       )}
       <Animated.View
         style={[styles.toggleThumb, { transform: [{ translateX }] }]}
       />
       {!value && (
-        <Text style={[styles.toggleLabel, styles.toggleLabelOff]}>OFF</Text>
+        <Text style={[styles.toggleLabel, styles.toggleLabelOff]}>{t("dashboard:ai.off")}</Text>
       )}
     </TouchableOpacity>
   );
@@ -132,6 +134,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onToggle }) => {
 // ---------- Main Component ----------
 
 const RPAIAssistantHeader: React.FC = () => {
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
   const [isEnabled, setIsEnabled] = useState<boolean>(true);
 
@@ -182,7 +185,7 @@ const RPAIAssistantHeader: React.FC = () => {
       <View style={styles.card}>
         <View style={styles.cardLeft}>
           <SparkleIcon />
-          <Text style={styles.cardLabel}>RP AI Assistant</Text>
+          <Text style={styles.cardLabel}>{t("dashboard:ai.title")}</Text>
         </View>
         <ToggleSwitch value={isEnabled} onToggle={handleToggle} />
       </View>

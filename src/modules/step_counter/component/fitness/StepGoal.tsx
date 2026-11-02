@@ -22,6 +22,8 @@ import StepIcon from "../../assets/StepCount/step_icon.svg";
 import CoinIcon from "../../../../assets/product/rewards.svg";
 import { fetchProfilePlan, selectUserGoal, type ProfilePlanResponse } from "../../api/ProfileAPI";
 import { useInvalidateFitnessQueries } from "../../api/useFitnessQueries";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "StepGoal">;
 const STEP_PROFILE_PLAN_QUERY_KEY = ["fitness", "profile-plan"] as const;
@@ -52,6 +54,7 @@ const fmt = (n: number) => (Number.isFinite(n) ? n.toLocaleString("en-IN") : "0"
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const StepGoal: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation              = useNavigation<Nav>();
   const invalidateFitnessQueries = useInvalidateFitnessQueries();
   const [selected,    setSelected]    = useState<number | null>(null);
@@ -66,7 +69,7 @@ const StepGoal: React.FC = () => {
     queryFn: async () => {
       const res = await fetchProfilePlan();
       if (res.success && res.data) return res.data;
-      throw new Error(res.message || "Failed to load goals");
+      throw new Error(res.message || i18n.t("stepCounter:r2.failedToLoadGoals"));
     },
     staleTime: 30 * 60 * 1000,
     gcTime: 60 * 60 * 1000,
@@ -82,9 +85,9 @@ const StepGoal: React.FC = () => {
     const coins = profilePlan?.daily_reward_coins ?? 0;
     const plan = profilePlan?.weekly_plan || [];
     if (plan.length > 0)
-      return plan.map((item) => ({ id: item.week, dailySteps: item.steps, label: `${fmt(item.steps)} Steps`, coins }));
+      return plan.map((item) => ({ id: item.week, dailySteps: item.steps, label: i18n.t('stepCounter:units.stepsCapN', { value: fmt(item.steps) }), coins }));
     if (profilePlan?.recommended_steps)
-      return [{ id: 1, dailySteps: profilePlan.recommended_steps, label: `${fmt(profilePlan.recommended_steps)} Steps`, coins }];
+      return [{ id: 1, dailySteps: profilePlan.recommended_steps, label: i18n.t('stepCounter:units.stepsCapN', { value: fmt(profilePlan.recommended_steps) }), coins }];
     return [];
   }, [profilePlan]);
 
@@ -102,11 +105,11 @@ const StepGoal: React.FC = () => {
   }, [loadPlan]);
 
   const handleSetGoal = useCallback(async () => {
-    if (!selectedGoal) { Alert.alert("Select goal", "Please select your daily step goal."); return; }
+    if (!selectedGoal) { Alert.alert(i18n.t("stepCounter:stepGoal.selectGoal"), i18n.t("stepCounter:stepGoal.pleaseSelectYourDailyStep")); return; }
     try {
       setSubmitting(true);
       const res = await selectUserGoal({ daily_steps: selectedGoal.dailySteps });
-      if (!res.success) { Alert.alert("Goal update failed", res.message); return; }
+      if (!res.success) { Alert.alert(i18n.t("stepCounter:stepGoal.goalUpdateFailed"), res.message); return; }
       invalidateFitnessQueries();
       navigation.navigate("Dashboard");
     } finally {
@@ -130,28 +133,28 @@ const StepGoal: React.FC = () => {
             <MaterialCommunityIcons name="chevron-left" size={22} color={VD.accentDark} />
           </TouchableOpacity>
 
-          <Text style={ss.eyebrow}>Activity target</Text>
+          <Text style={ss.eyebrow}>{tx("stepCounter:stepGoal.activityTarget")}</Text>
           <Text style={ss.title}>Choose your{"\n"}activity goal</Text>
-          <Text style={ss.subtitle}>Pick the pace that feels realistic. You can adjust it later.</Text>
+          <Text style={ss.subtitle}>{tx("stepCounter:stepGoal.pickThePaceThatFeels")}</Text>
 
           {/* Goal options */}
           {loading ? (
             <View style={ss.stateBox}>
               <ActivityIndicator color={VD.accent} size="large" />
-              <Text style={ss.stateText}>Loading your recommended goals…</Text>
+              <Text style={ss.stateText}>{tx("stepCounter:stepGoal.loadingYourRecommendedGoals")}</Text>
             </View>
           ) : error ? (
             <View style={ss.stateBox}>
               <MaterialCommunityIcons name="alert-circle-outline" size={28} color={VD.warning} />
-              <Text style={ss.stateText}>{(error as Error)?.message || "Failed to load goals"}</Text>
+              <Text style={ss.stateText}>{(error as Error)?.message || i18n.t("stepCounter:r2.failedToLoadGoals")}</Text>
               <TouchableOpacity style={ss.retryBtn} onPress={handleRetry} activeOpacity={0.85}>
-                <Text style={ss.retryText}>Retry</Text>
+                <Text style={ss.retryText}>{tx("stepCounter:stepGoal.retry")}</Text>
               </TouchableOpacity>
             </View>
           ) : goals.length === 0 ? (
             <View style={ss.stateBox}>
               <MaterialCommunityIcons name="walk" size={28} color={VD.whiteLow} />
-              <Text style={ss.stateText}>No step goals available right now.</Text>
+              <Text style={ss.stateText}>{tx("stepCounter:stepGoal.noStepGoalsAvailableRight")}</Text>
             </View>
           ) : (
             goals.map((item) => {
@@ -168,7 +171,7 @@ const StepGoal: React.FC = () => {
                   </View>
                   <View style={ss.goalCopy}>
                     <Text style={ss.goalLabel}>{item.label}</Text>
-                    <Text style={ss.goalMeta}>Daily step target</Text>
+                    <Text style={ss.goalMeta}>{tx("stepCounter:stepGoal.dailyStepTarget")}</Text>
                   </View>
                   <View style={ss.goalRight}>
                     <View style={ss.coinBadge}>
@@ -182,7 +185,7 @@ const StepGoal: React.FC = () => {
             })
           )}
 
-          <Text style={ss.footerText}>The longer you walk, the bigger the reward.</Text>
+          <Text style={ss.footerText}>{tx("stepCounter:stepGoal.theLongerYouWalkThe")}</Text>
 
           {/* CTA */}
           <TouchableOpacity activeOpacity={0.9} onPress={handleSetGoal} disabled={disabled} style={ss.ctaWrap}>
@@ -193,7 +196,7 @@ const StepGoal: React.FC = () => {
             >
               {submitting
                 ? <ActivityIndicator color={VD.accentDark} />
-                : <Text style={[ss.ctaText, disabled && ss.ctaTextDim]}>Set Goal</Text>
+                : <Text style={[ss.ctaText, disabled && ss.ctaTextDim]}>{tx("stepCounter:stepGoal.setGoal")}</Text>
               }
             </LinearGradient>
           </TouchableOpacity>

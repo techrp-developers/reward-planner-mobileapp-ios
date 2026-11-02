@@ -29,6 +29,8 @@ import {
   upsertPassengerProfiles,
   type StoredPassengerProfile,
 } from "../../utils/busBookingStorage";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Gender = "M" | "F" | "O";
 
@@ -164,6 +166,7 @@ const createBlockRefId = () =>
     .padStart(3, "0")}`;
 
 export default function PassengerDetailsScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "PassengerDetailsScreen">>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -299,15 +302,15 @@ export default function PassengerDetailsScreen() {
         setSavedProfiles((current) => current.filter((item) => item.id !== profile.id));
         await deletePassengerProfile(profile.id);
         showPopup({
-          title: "Quick Select",
-          message: "Passenger removed from quick select.",
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.quickSelect"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.passengerRemovedFromQuickSelect"),
           variant: "success",
         });
       } catch (error) {
         setDeletedQuickSelectIds((current) => current.filter((id) => id !== profile.id));
         showPopup({
-          title: "Quick Select",
-          message: "Unable to delete this passenger right now.",
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.quickSelect"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.unableToDeleteThisPassenger"),
           variant: "error",
         });
       }
@@ -323,8 +326,8 @@ export default function PassengerDetailsScreen() {
 
       if (isWomenBooking && passenger.gender !== "F") {
         showPopup({
-          title: "Ladies Booking Preference",
-          message: `Passenger ${index + 1} must be Female when Ladies Booking is active.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.ladiesBookingPreference"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.passengerV0MustBeFemale", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -332,8 +335,8 @@ export default function PassengerDetailsScreen() {
 
       if (!passenger.firstName.trim()) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter first name for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterFirstNameFor", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -341,8 +344,8 @@ export default function PassengerDetailsScreen() {
 
       if (!passenger.lastName.trim()) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter last name for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterLastNameFor", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -350,8 +353,8 @@ export default function PassengerDetailsScreen() {
 
       if (!passenger.age.trim()) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter age for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterAgeForPassenger", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -360,8 +363,8 @@ export default function PassengerDetailsScreen() {
       const ageValue = Number(passenger.age.trim());
       if (!Number.isFinite(ageValue) || ageValue < 1 || ageValue > 120) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter a valid age for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterAValidAge", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -369,8 +372,8 @@ export default function PassengerDetailsScreen() {
 
       if (passenger.email.trim() && !emailPattern.test(passenger.email.trim())) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter a valid email address for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterAValidEmail", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -378,8 +381,8 @@ export default function PassengerDetailsScreen() {
 
       if (!passenger.phone.trim()) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter phone number for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterPhoneNumberFor", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -387,8 +390,8 @@ export default function PassengerDetailsScreen() {
 
       if (!/^\d{10}$/.test(passenger.phone.trim())) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter a valid 10 digit phone number for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterAValid10", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -396,8 +399,8 @@ export default function PassengerDetailsScreen() {
 
       if (!passenger.address.trim()) {
         showPopup({
-          title: "Passenger Details",
-          message: `Please enter address for Passenger ${index + 1}.`,
+          title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+          message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterAddressForPassenger", { v0: index + 1 }),
           variant: "warning",
         });
         return false;
@@ -406,8 +409,8 @@ export default function PassengerDetailsScreen() {
       if (idProofRequired) {
         if (!passenger.idType.trim()) {
           showPopup({
-            title: "Passenger Details",
-            message: `Please enter ID type for Passenger ${index + 1}.`,
+            title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+            message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterIdTypeFor", { v0: index + 1 }),
             variant: "warning",
           });
           return false;
@@ -415,8 +418,8 @@ export default function PassengerDetailsScreen() {
 
         if (!passenger.idNumber.trim()) {
           showPopup({
-            title: "Passenger Details",
-            message: `Please enter ID number for Passenger ${index + 1}.`,
+            title: i18n.t("busBooking:passengerDetailsScreen.msg.passengerDetails"),
+            message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseEnterIdNumberFor", { v0: index + 1 }),
             variant: "warning",
           });
           return false;
@@ -459,8 +462,8 @@ export default function PassengerDetailsScreen() {
 
     if (!traceId || !srdvIndex || !resultIndex) {
       showPopup({
-        title: "Booking Error",
-        message: "Booking information is missing. Please search for the bus again.",
+        title: i18n.t("busBooking:passengerDetailsScreen.msg.bookingError"),
+        message: i18n.t("busBooking:passengerDetailsScreen.msg.bookingInformationIsMissingPlease"),
         variant: "error",
       });
       return;
@@ -468,8 +471,8 @@ export default function PassengerDetailsScreen() {
 
     if (!boardingPoint?.Id) {
       showPopup({
-        title: "Booking Error",
-        message: "Please select a boarding point.",
+        title: i18n.t("busBooking:passengerDetailsScreen.msg.bookingError"),
+        message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseSelectABoardingPoint"),
         variant: "warning",
       });
       return;
@@ -477,8 +480,8 @@ export default function PassengerDetailsScreen() {
 
     if (!droppingPoint?.Id) {
       showPopup({
-        title: "Booking Error",
-        message: "Please select a dropping point.",
+        title: i18n.t("busBooking:passengerDetailsScreen.msg.bookingError"),
+        message: i18n.t("busBooking:passengerDetailsScreen.msg.pleaseSelectADroppingPoint"),
         variant: "warning",
       });
       return;
@@ -544,8 +547,8 @@ export default function PassengerDetailsScreen() {
     } catch (error: any) {
       const message = String(error?.message || "");
       showPopup({
-        title: message.toLowerCase().includes("token") ? "Session Expired" : "Unable to Continue",
-        message: message || "Unable to block selected seat.",
+        title: message.toLowerCase().includes("token") ? "Session Expired" : i18n.t("busBooking:r2.unableToContinue"),
+        message: message || i18n.t("busBooking:r2.unableToBlockSelectedSeat"),
         variant: "error",
       });
     } finally {
@@ -577,7 +580,7 @@ export default function PassengerDetailsScreen() {
           <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Passenger Details</Text>
+        <Text style={styles.headerTitle}>{tx("busBooking:passengerDetailsScreen.passengerDetails")}</Text>
 
         <View style={styles.headerActions} />
       </View>
@@ -591,8 +594,8 @@ export default function PassengerDetailsScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.quickHeaderRow}>
-          <Text style={styles.quickHeaderTitle}>Quick Select</Text>
-          <Text style={styles.quickHeaderMeta}>Recent travellers</Text>
+          <Text style={styles.quickHeaderTitle}>{tx("busBooking:passengerDetailsScreen.quickSelect")}</Text>
+          <Text style={styles.quickHeaderMeta}>{tx("busBooking:passengerDetailsScreen.recentTravellers")}</Text>
         </View>
 
         {quickSelectProfiles.length > 0 ? (
@@ -630,7 +633,7 @@ export default function PassengerDetailsScreen() {
                     style={styles.quickSelectDeleteButton}
                   >
                     <MaterialCommunityIcons name="delete-outline" size={14} color="#D31637" />
-                    <Text style={styles.quickSelectDeleteText}>Delete</Text>
+                    <Text style={styles.quickSelectDeleteText}>{tx("busBooking:passengerDetailsScreen.delete")}</Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
@@ -640,7 +643,7 @@ export default function PassengerDetailsScreen() {
           <View style={styles.quickSelectEmptyCard}>
             <MaterialCommunityIcons name="account-clock-outline" size={18} color="#B45362" />
             <Text style={styles.quickSelectEmptyText}>
-              Travellers you enter in this booking will appear here for quick reuse.
+              {tx("busBooking:passengerDetailsScreen.travellersYouEnterInThis")}
             </Text>
           </View>
         )}
@@ -667,27 +670,27 @@ export default function PassengerDetailsScreen() {
                 <View style={styles.formSectionHeader}>
                   <View style={styles.formSectionTextWrap}>
                     <Text style={styles.formSectionTitle}>
-                      {index === 0 ? "Lead passenger" : "Passenger information"}
+                      {index === 0 ? i18n.t("busBooking:r2.leadPassenger") : i18n.t("busBooking:r2.passengerInformation")}
                     </Text>
                     <Text style={styles.formSectionSubtitle}>
                       {isActivePassenger
-                        ? "Quick Select will update this traveller."
-                        : "Tap this card to use Quick Select here."}
+                        ? i18n.t("busBooking:r2.quickSelectWillUpdateThisTraveller")
+                        : i18n.t("busBooking:r2.tapThisCardToUseQuick")}
                     </Text>
                   </View>
                   {isActivePassenger ? (
                     <View style={styles.activeFormBadge}>
-                      <Text style={styles.activeFormBadgeText}>Active</Text>
+                      <Text style={styles.activeFormBadgeText}>{tx("busBooking:passengerDetailsScreen.active")}</Text>
                     </View>
                   ) : null}
                 </View>
 
-                <Text style={styles.fieldLabel}>*First Name</Text>
+                <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.firstName")}</Text>
                 <View style={styles.inputWrap}>
                   <TextInput
                     value={passenger.firstName}
                     onChangeText={(value) => updatePassenger(index, "firstName", value)}
-                    placeholder="Enter first name"
+                    placeholder={tx("busBooking:passengerDetailsScreen.enterFirstName")}
                     autoCapitalize="words"
                     autoCorrect={false}
                     placeholderTextColor="#B7B0B8"
@@ -696,12 +699,12 @@ export default function PassengerDetailsScreen() {
                   <MaterialCommunityIcons name="account-outline" size={18} color="#A7A0A8" />
                 </View>
 
-                <Text style={styles.fieldLabel}>*Last Name</Text>
+                <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.lastName")}</Text>
                 <View style={styles.inputWrap}>
                   <TextInput
                     value={passenger.lastName}
                     onChangeText={(value) => updatePassenger(index, "lastName", value)}
-                    placeholder="Enter last name"
+                    placeholder={tx("busBooking:passengerDetailsScreen.enterLastName")}
                     autoCapitalize="words"
                     autoCorrect={false}
                     placeholderTextColor="#B7B0B8"
@@ -712,11 +715,11 @@ export default function PassengerDetailsScreen() {
 
                 <View style={styles.rowFields}>
                   <View style={styles.ageField}>
-                    <Text style={styles.fieldLabel}>*Age</Text>
+                    <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.age")}</Text>
                     <TextInput
                       value={passenger.age}
                       onChangeText={(value) => updatePassenger(index, "age", normalizeAge(value))}
-                      placeholder="Enter your age"
+                      placeholder={tx("busBooking:passengerDetailsScreen.enterYourAge")}
                       placeholderTextColor="#B7B0B8"
                       keyboardType="number-pad"
                       maxLength={3}
@@ -725,7 +728,7 @@ export default function PassengerDetailsScreen() {
                   </View>
 
                   <View style={styles.genderField}>
-                    <Text style={styles.fieldLabel}>*Gender</Text>
+                    <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.gender")}</Text>
                     <View style={styles.genderRow}>
                       {(["M", "F", "O"] as Gender[]).map((gender) => {
                         const isActive = passenger.gender === gender;
@@ -753,14 +756,14 @@ export default function PassengerDetailsScreen() {
                 </View>
 
                 <View style={styles.labelRow}>
-                  <Text style={styles.fieldLabel}>Email ID</Text>
-                  <Text style={styles.optionalLabel}>Optional</Text>
+                  <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.emailId")}</Text>
+                  <Text style={styles.optionalLabel}>{tx("busBooking:passengerDetailsScreen.optional")}</Text>
                 </View>
                 <View style={styles.inputWrap}>
                   <TextInput
                     value={passenger.email}
                     onChangeText={(value) => updatePassenger(index, "email", value)}
-                    placeholder="Enter your Email ID here"
+                    placeholder={tx("busBooking:passengerDetailsScreen.enterYourEmailIdHere")}
                     placeholderTextColor="#B7B0B8"
                     keyboardType="email-address"
                     autoCapitalize="none"
@@ -769,14 +772,14 @@ export default function PassengerDetailsScreen() {
                   <MaterialCommunityIcons name="email-outline" size={18} color="#A7A0A8" />
                 </View>
 
-                <Text style={styles.fieldLabel}>*Phone number</Text>
+                <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.phoneNumber")}</Text>
                 <View style={styles.inputWrap}>
                   <TextInput
                     value={passenger.phone}
                     onChangeText={(value) =>
                       updatePassenger(index, "phone", normalizePhoneNumber(value))
                     }
-                    placeholder="Enter your phone number"
+                    placeholder={tx("busBooking:passengerDetailsScreen.enterYourPhoneNumber")}
                     placeholderTextColor="#B7B0B8"
                     keyboardType="phone-pad"
                     maxLength={10}
@@ -786,12 +789,12 @@ export default function PassengerDetailsScreen() {
                   <MaterialCommunityIcons name="phone-outline" size={18} color="#A7A0A8" />
                 </View>
 
-                <Text style={styles.fieldLabel}>*Address</Text>
+                <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.address")}</Text>
                 <View style={[styles.inputWrap, styles.inputWrapMultiline]}>
                   <TextInput
                     value={passenger.address}
                     onChangeText={(value) => updatePassenger(index, "address", value)}
-                    placeholder="Enter your address"
+                    placeholder={tx("busBooking:passengerDetailsScreen.enterYourAddress")}
                     placeholderTextColor="#B7B0B8"
                     multiline
                     style={[styles.input, styles.inputMultiline]}
@@ -802,12 +805,12 @@ export default function PassengerDetailsScreen() {
 
                 {idProofRequired ? (
                   <>
-                    <Text style={styles.fieldLabel}>*ID Type</Text>
+                    <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.idType")}</Text>
                     <View style={styles.inputWrap}>
                       <TextInput
                         value={passenger.idType}
                         onChangeText={(value) => updatePassenger(index, "idType", value)}
-                        placeholder="Enter ID type"
+                        placeholder={tx("busBooking:passengerDetailsScreen.enterIdType")}
                         placeholderTextColor="#B7B0B8"
                         style={styles.input}
                       />
@@ -819,12 +822,12 @@ export default function PassengerDetailsScreen() {
                       />
                     </View>
 
-                    <Text style={styles.fieldLabel}>*ID Number</Text>
+                    <Text style={styles.fieldLabel}>{tx("busBooking:passengerDetailsScreen.idNumber")}</Text>
                     <View style={styles.inputWrap}>
                       <TextInput
                         value={passenger.idNumber}
                         onChangeText={(value) => updatePassenger(index, "idNumber", value)}
-                        placeholder="Enter ID number"
+                        placeholder={tx("busBooking:passengerDetailsScreen.enterIdNumber")}
                         placeholderTextColor="#B7B0B8"
                         style={styles.input}
                       />
@@ -843,7 +846,7 @@ export default function PassengerDetailsScreen() {
                     ios_backgroundColor="#E4DADF"
                   />
                   <Text style={styles.checkboxText}>
-                    Send booking confirmation and trip updates via WhatsApp and Email.
+                    {tx("busBooking:passengerDetailsScreen.sendBookingConfirmationAndTrip")}
                   </Text>
                 </View>
               </View>
@@ -881,10 +884,10 @@ export default function PassengerDetailsScreen() {
             {blockingSeat ? (
               <>
                 <ActivityIndicator size="small" color="#FFFFFF" />
-                <Text style={[styles.continueButtonText, { marginLeft: 8 }]}>Blocking seat...</Text>
+                <Text style={[styles.continueButtonText, { marginLeft: 8 }]}>{tx("busBooking:passengerDetailsScreen.blockingSeat")}</Text>
               </>
             ) : (
-              <Text style={styles.continueButtonText}>Continue</Text>
+              <Text style={styles.continueButtonText}>{tx("busBooking:passengerDetailsScreen.continue")}</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>

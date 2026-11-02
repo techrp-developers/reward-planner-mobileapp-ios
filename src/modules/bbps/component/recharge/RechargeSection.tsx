@@ -25,6 +25,9 @@ import {
 } from '../../api/BillsAPI';
 import { useAlert } from '../../../ecommerce/components/alerts';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 const getPlanId = (plan: RechargePlan) =>
   String(plan.planId || plan.plan_id || plan.id || plan.recharge_plan_id || '');
@@ -52,6 +55,7 @@ const rechargePlansCache = new Map<
 const isFresh = (timestamp: number) => Date.now() - timestamp < TEN_MINUTES;
 
 function RechargeSection({ navigation, route }: any) {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
   const { user } = useAuth();
   const alert = useAlert();
@@ -195,7 +199,7 @@ function RechargeSection({ navigation, route }: any) {
           }
         }
       } catch (error: any) {
-        alertRef.current.error('Error', error?.message || 'Could not load circles.');
+        alertRef.current.error('Error', error?.message || i18n.t("payments:msg.circlesFailed"));
       } finally {
         if (mounted) {
           setLoading(false);
@@ -272,7 +276,7 @@ function RechargeSection({ navigation, route }: any) {
         setPlans([]);
         setPlanGroups([]);
         setActiveGroupLabel('');
-        alertRef.current.error('Error', error?.message || 'Could not load recharge plans.');
+        alertRef.current.error('Error', error?.message || i18n.t("payments:msg.plansFailed"));
       } finally {
         if (mounted) {
           setPlansLoading(false);
@@ -289,7 +293,7 @@ function RechargeSection({ navigation, route }: any) {
 
   const handlePlanPress = (plan: RechargePlan, startPaymentImmediately = false) => {
     if (!selectedLocation) {
-      alert.warning('Select Circle', 'Please select a circle first.');
+      alert.warning(i18n.t("payments:rechargeSection.selectCircle"), i18n.t("payments:rechargeSection.pleaseSelectACircleFirst"));
       return;
     }
 
@@ -353,7 +357,7 @@ function RechargeSection({ navigation, route }: any) {
                     </Text>
                   </View>
                   <View>
-                    <Text style={styles.circleSummaryLabel}>Circle</Text>
+                    <Text style={styles.circleSummaryLabel}>{tx("payments:rechargeSection.circle")}</Text>
                     <Text style={styles.circleSummaryName}>
                       {selectedLocation.operator_location_name}
                     </Text>
@@ -364,13 +368,13 @@ function RechargeSection({ navigation, route }: any) {
                   onPress={() => navigation.goBack()}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.changeCircleText, { color: bbpsTheme.colors.primary }]}>Change</Text>
+                  <Text style={[styles.changeCircleText, { color: bbpsTheme.colors.primary }]}>{tx("payments:rechargeSection.change")}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Select Circle</Text>
+                  <Text style={styles.sectionTitle}>{tx("payments:rechargeSection.selectCircle")}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -398,7 +402,7 @@ function RechargeSection({ navigation, route }: any) {
                     </View>
                   ) : (
                     <Text style={styles.circleDropdownPlaceholder}>
-                      {loading ? 'Loading circles…' : 'Choose your telecom circle'}
+                      {loading ? i18n.t("payments:msg.loadingCircles") : i18n.t("payments:msg.chooseCircle")}
                     </Text>
                   )}
                   <Icon
@@ -410,7 +414,7 @@ function RechargeSection({ navigation, route }: any) {
 
                 {!selectedLocation && (
                   <Text style={styles.circleHintText}>
-                    Select a circle first to see matching recharge plans
+                    {tx("payments:rechargeSection.selectACircleFirstTo")}
                   </Text>
                 )}
               </>
@@ -421,7 +425,7 @@ function RechargeSection({ navigation, route }: any) {
                 <View style={[styles.searchBar, { backgroundColor: bbpsTheme.colors.surfaceAlt, borderColor: bbpsTheme.colors.border }]}>
                   <MaterialIcons name="search" size={24} color={bbpsTheme.colors.muted} />
                   <TextInput
-                    placeholder="Search a Plan, e.g. 299 or 28 days"
+                    placeholder={tx("payments:rechargeSection.searchAPlanEG")}
                     style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
                     placeholderTextColor={bbpsTheme.colors.subtle}
                     value={searchQuery}
@@ -451,7 +455,7 @@ function RechargeSection({ navigation, route }: any) {
                         onPress={() => setActiveGroupLabel(group.label)}
                       >
                         <Text style={[styles.groupTabText, active && styles.activeGroupTabText]}>
-                          {group.label}
+                          {translateSourceText("payments", group.label)}
                         </Text>
                         {active && <View style={styles.activeTabUnderline} />}
                       </TouchableOpacity>
@@ -463,17 +467,17 @@ function RechargeSection({ navigation, route }: any) {
               {!selectedLocation ? (
                 <View style={styles.emptyState}>
                   <Icon name="map-marker-radius-outline" size={40} color="#D8CFFB" />
-                  <Text style={styles.emptyText}>Select a circle to view plans</Text>
+                  <Text style={styles.emptyText}>{tx("payments:rechargeSection.selectACircleToView")}</Text>
                 </View>
               ) : plansLoading ? (
                 <View style={styles.loadingPlans}>
                   <ActivityIndicator color="#8665FF" />
-                  <Text style={styles.loadingText}>Loading plans...</Text>
+                  <Text style={styles.loadingText}>{tx("payments:rechargeSection.loadingPlans")}</Text>
                 </View>
               ) : filteredPlans.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Icon name="package-variant" size={40} color="#D8CFFB" />
-                  <Text style={styles.emptyText}>No recharge plans found</Text>
+                  <Text style={styles.emptyText}>{tx("payments:rechargeSection.noRechargePlansFound")}</Text>
                 </View>
               ) : (
                 filteredPlans.map((plan, index) => (
@@ -492,12 +496,12 @@ function RechargeSection({ navigation, route }: any) {
                       <View style={styles.planFacts}>
                         {getPlanData(plan) !== '-' && (
                           <View style={styles.planFactRow}>
-                            <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>Data</Text>
+                            <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>{tx("payments:rechargeSection.data")}</Text>
                             <Text style={[styles.planFactValue, { color: bbpsTheme.colors.text }]}>{getPlanData(plan)}</Text>
                           </View>
                         )}
                         <View style={styles.planFactRow}>
-                          <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>Validity</Text>
+                          <Text style={[styles.planFactLabel, { color: bbpsTheme.colors.text }]}>{tx("payments:rechargeSection.validity")}</Text>
                           <Text style={[styles.planFactValue, { color: bbpsTheme.colors.text }]}>{getPlanValidity(plan)}</Text>
                         </View>
                       </View>
@@ -505,7 +509,7 @@ function RechargeSection({ navigation, route }: any) {
                         style={[styles.planArrowButton, { backgroundColor: bbpsTheme.colors.iconBg }]}
                         activeOpacity={0.8}
                         accessibilityRole="button"
-                        accessibilityLabel={`Recharge with ₹${getPlanAmount(plan)} plan`}
+                        accessibilityLabel={i18n.t('payments:msg.rechargeWithPlan', { amount: getPlanAmount(plan) })}
                         onPress={(event) => {
                           event.stopPropagation();
                           handlePlanPress(plan, true);
@@ -540,7 +544,7 @@ function RechargeSection({ navigation, route }: any) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Select Circle</Text>
+            <Text style={styles.modalTitle}>{tx("payments:rechargeSection.selectCircle")}</Text>
             <TouchableOpacity onPress={() => setLocationModalVisible(false)}>
               <Icon name="close" size={22} color="#333" />
             </TouchableOpacity>
@@ -550,7 +554,7 @@ function RechargeSection({ navigation, route }: any) {
             <Icon name="magnify" size={20} color="#9CA3AF" />
             <TextInput
               style={styles.modalSearchInput}
-              placeholder="Search circle..."
+              placeholder={tx("payments:rechargeSection.searchCircle")}
               placeholderTextColor="#9CA3AF"
               value={locationSearch}
               onChangeText={setLocationSearch}
@@ -589,7 +593,7 @@ function RechargeSection({ navigation, route }: any) {
                   </TouchableOpacity>
                 );
               }}
-              ListEmptyComponent={<Text style={styles.emptyText}>No circles found</Text>}
+              ListEmptyComponent={<Text style={styles.emptyText}>{tx("payments:rechargeSection.noCirclesFound")}</Text>}
             />
           )}
         </View>

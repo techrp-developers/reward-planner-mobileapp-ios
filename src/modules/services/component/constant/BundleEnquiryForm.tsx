@@ -29,6 +29,8 @@ import {
   type CreateServiceEnquiryPayload,
 } from '../../api/ServiceAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const FolderService = require('../../assete/service/FolderService.png');
 
@@ -43,12 +45,12 @@ const PINCODE_FIELDS = ['pincode', 'zip', 'zipcode'];
 const NOTES_FIELDS = ['additional_notes', 'notes', 'description', 'message', 'remarks'];
 
 const DEFAULT_FIELDS: BundleEnquiryField[] = [
-  { label: 'Full Name', field_name: 'full_name', field_type: 'text', is_required: 1 },
-  { label: 'Mobile Number', field_name: 'mobile_number', field_type: 'text', is_required: 1 },
-  { label: 'Email ID', field_name: 'email_id', field_type: 'text', is_required: 1 },
-  { label: 'City', field_name: 'city', field_type: 'text', is_required: 1 },
-  { label: 'Pincode', field_name: 'pincode', field_type: 'number', is_required: 1 },
-  { label: 'Additional Notes', field_name: 'additional_notes', field_type: 'textarea', is_required: 0 },
+  { label: 'services:enquiry.fields.fullName', field_name: 'full_name', field_type: 'text', is_required: 1 },
+  { label: 'services:enquiry.fields.mobile', field_name: 'mobile_number', field_type: 'text', is_required: 1 },
+  { label: 'services:enquiry.fields.email', field_name: 'email_id', field_type: 'text', is_required: 1 },
+  { label: 'services:enquiry.fields.city', field_name: 'city', field_type: 'text', is_required: 1 },
+  { label: 'services:enquiry.fields.pincode', field_name: 'pincode', field_type: 'number', is_required: 1 },
+  { label: 'services:enquiry.fields.notes', field_name: 'additional_notes', field_type: 'textarea', is_required: 0 },
 ];
 
 const DEFAULT_SAFETY_TEXT =
@@ -57,6 +59,9 @@ const DEFAULT_SAFETY_TEXT =
 const hasAnyValue = (value: string | undefined) => Boolean(value && value.trim());
 
 function BundleEnquiryForm() {
+  const { t: tx } = useTranslation();
+  // Built-in fields carry translation keys; server-provided labels are shown as sent.
+  const fieldLabel = (label: string) => (label.startsWith('services:') ? tx(label) : label);
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RoutePropType>();
   const alert = useAlert();
@@ -229,7 +234,7 @@ function BundleEnquiryForm() {
     });
 
     if (missing.length) {
-      alert.error('Missing Info', 'Please fill all required fields.');
+      alert.error(i18n.t("services:bundleEnquiryForm.missingInfo"), i18n.t("services:bundleEnquiryForm.pleaseFillAllRequiredFields"));
       return false;
     }
 
@@ -238,7 +243,7 @@ function BundleEnquiryForm() {
       const key = String(emailField.field_name || '');
       const emailValue = String(form[key] || '').trim();
       if (emailValue && !/^\S+@\S+\.\S+$/.test(emailValue)) {
-        alert.error('Invalid Email', 'Please enter a valid email address.');
+        alert.error(i18n.t("services:bundleEnquiryForm.invalidEmail"), i18n.t("services:bundleEnquiryForm.pleaseEnterAValidEmail"));
         return false;
       }
     }
@@ -272,7 +277,7 @@ function BundleEnquiryForm() {
 
     // ✅ Validation (important)
     if (!name || !email || !mobile) {
-      alert.error('Error', 'Name, Email and Mobile are required');
+      alert.error(i18n.t("services:bundleEnquiryForm.error"), i18n.t("services:bundleEnquiryForm.nameEmailAndMobileAre"));
       return;
     }
 
@@ -294,7 +299,7 @@ function BundleEnquiryForm() {
     );
 
     if (!bundleId) {
-      alert.error('Error', 'Unable to identify bundle details for this enquiry. Please try again.');
+      alert.error(i18n.t("services:bundleEnquiryForm.error"), i18n.t("services:bundleEnquiryForm.unableToIdentifyBundleDetails"));
       return;
     }
 
@@ -320,17 +325,17 @@ function BundleEnquiryForm() {
     const response = await createServiceEnquiry(payload);
 
     if (!response?.success) {
-      throw new Error(response?.message || 'Failed to submit enquiry');
+      throw new Error(response?.message || i18n.t("services:r2.failedToSubmitEnquiry"));
     }
 
     const enquiryRef = String(response?.data?.enquiry_ref || response?.enquiry_ref || '').trim();
 
-    alert.success('Success', response?.message || 'Enquiry submitted successfully');
+    alert.success(i18n.t("services:bundleEnquiryForm.success"), response?.message || i18n.t("services:r2.enquirySubmittedSuccessfully"));
 
     navigation.navigate('SubmittedSuccessful', {
-      statusText: 'Enquiry Confirmed',
-      title: 'Enquiry Submitted Successfully',
-      description: 'Our team will contact you shortly.',
+      statusText: tx('services:enquiry.confirmed'),
+      title: tx('services:enquiry.submitted'),
+      description: tx('services:enquiry.contactShortly'),
       enquiryId: enquiryRef || '#ENQ',
     });
 
@@ -339,7 +344,7 @@ function BundleEnquiryForm() {
 
     alert.error(
       'Error',
-      error?.response?.data?.message || error?.message || 'Failed to submit enquiry'
+      error?.response?.data?.message || error?.message || i18n.t("services:r2.failedToSubmitEnquiry")
     );
   } finally {
     setIsSubmitting(false);
@@ -367,10 +372,10 @@ function BundleEnquiryForm() {
           isRequired ? styles.label : styles.labelOptional,
           { color: isRequired ? servicesTheme.colors.text : servicesTheme.colors.muted },
         ]}>
-          {field.label || key}
+          {fieldLabel(field.label || key)}
           {isRequired
             ? <Text style={styles.star}> *</Text>
-            : <Text style={styles.optionalTag}> (optional)</Text>
+            : <Text style={styles.optionalTag}>{tx("services:bundleEnquiryForm.optional")}</Text>
           }
         </Text>
 
@@ -380,7 +385,7 @@ function BundleEnquiryForm() {
           { backgroundColor: inputSurface, borderColor: servicesTheme.colors.border },
         ]}>
           <TextInput
-            placeholder={`Enter ${(field.label || key).toLowerCase()} here`}
+            placeholder={tx('services:enquiry.enterFieldHere', { field: fieldLabel(field.label || key) })}
             placeholderTextColor={servicesTheme.colors.subtle}
             value={form[key] || ''}
             onChangeText={(t) => {
@@ -435,9 +440,9 @@ function BundleEnquiryForm() {
               <MaterialIcons name="chat-bubble-outline" size={18} color={servicesTheme.colors.primary} />
             </View>
             <View style={styles.headerTextCol}>
-              <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Enquire Now</Text>
+              <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{tx("services:bundleEnquiryForm.enquireNow")}</Text>
               <Text style={[styles.desc, { color: servicesTheme.colors.muted }]}>
-                Fill out the form below and our team will get in touch with you shortly.
+                {tx("services:bundleEnquiryForm.fillOutTheFormBelow")}
               </Text>
             </View>
           </View>
@@ -454,7 +459,7 @@ function BundleEnquiryForm() {
             ? enquiryFields.map((field, i) => renderField(field, i))
             : (
               <Text style={[styles.noFieldsText, { color: servicesTheme.colors.muted }]}>
-                No form fields available. Please try again.
+                {tx("services:bundleEnquiryForm.noFormFieldsAvailablePlease")}
               </Text>
             )}
 
@@ -470,7 +475,7 @@ function BundleEnquiryForm() {
             >
               {isSubmitting
                 ? <ActivityIndicator size="small" color="#FFFFFF" />
-                : <Text style={styles.submitText}>Submit</Text>
+                : <Text style={styles.submitText}>{tx("services:bundleEnquiryForm.submit")}</Text>
               }
             </LinearGradient>
           </TouchableOpacity>

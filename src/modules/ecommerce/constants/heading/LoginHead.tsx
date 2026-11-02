@@ -12,6 +12,7 @@ import BackgroundImage from "../../../../navbar/assete/Background1.jpeg";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   showSearch?: boolean;
@@ -22,6 +23,7 @@ type Props = {
 };
 
 function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack }: Props) {
+  const { t: tx } = useTranslation();
   const { width } = useWindowDimensions();
   const { isDark, theme } = useAppTheme();
   const insets = useSafeAreaInsets();
@@ -59,7 +61,7 @@ function LoginHead({ showSearch, search, onChangeSearch, onFocusSearch, onBack }
         >
           <MaterialCommunityIcons name="magnify" size={20} color={isDark ? "#FFFFFF" : "#111827"} />
           <TextInput
-            placeholder="Search products"
+            placeholder={tx("products:loginHead.searchProducts")}
             placeholderTextColor={theme.secondaryText}
             style={[styles.searchInput, { color: theme.text }]}
             value={search}

@@ -5,6 +5,7 @@ import LocationIcon from '../../assets/StepCount/location.svg';
 import ClockIcon from '../../assets/StepCount/clock_icon.svg';
 import LightningIcon from '../../assets/StepCount/lightning.svg';
 import Rewards from '../../../../assets/product/rewards.svg'
+import { useTranslation } from "react-i18next";
 
 
 const { width } = Dimensions.get('window');
@@ -75,6 +76,7 @@ const WeeklyHistoryCard = () => {
 
 // --- Main Component ---
 const PlanProgressCard = () => {
+  const { t: tx } = useTranslation();
   const today = new Date();
   const day = today.getDate();
   const monthNames = [
@@ -118,7 +120,7 @@ const PlanProgressCard = () => {
           </Text>
 
           <TouchableOpacity style={styles.viewMoreRow}>
-            <Text style={styles.viewMoreText}>View More</Text>
+            <Text style={styles.viewMoreText}>{tx("stepCounter:bMICard.viewMore")}</Text>
             <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>
         </View>
@@ -159,7 +161,7 @@ const PlanProgressCard = () => {
       {/* 3. STREAK CARD */}
       <View style={styles.cardContainer}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.cardTitle}>Your Active Streak Plan</Text>
+          <Text style={styles.cardTitle}>{tx("stepCounter:bMICard.yourActiveStreakPlan")}</Text>
 
           <View style={styles.row}>
             <Text style={styles.streakDetailsText}>

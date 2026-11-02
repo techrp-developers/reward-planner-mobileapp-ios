@@ -16,6 +16,8 @@ import { HomeStackParamList } from '../../../modules/ecommerce/navigation/types'
 import { fetchNewArrivals } from '../../ecommerce/api/PromotionalApi';
 import SkeletonBox from '../../services/component/constant/SkeletonBox';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const CARD_WIDTH = 160; // Increased width for aesthetic spacing
 
@@ -38,6 +40,7 @@ const GradientText = ({ text, bbpsTheme }: { text: string; bbpsTheme: BbpsTheme 
 );
 
 function RewardProductCard() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const bbpsTheme = useBbpsTheme();
   const [products, setProducts] = useState<any[]>([]);
@@ -84,7 +87,7 @@ function RewardProductCard() {
 
         id: item?.product_id ?? item?.id ?? `reward-${index}`,
 
-        title: item?.product_name ?? item?.title ?? 'Product',
+        title: item?.product_name ?? item?.title ?? i18n.t("payments:msg.product"),
 
         brand: item?.brand_name ?? item?.brand ?? '',
 
@@ -129,7 +132,7 @@ function RewardProductCard() {
   return (
     <View style={[styles.container, { backgroundColor: bbpsTheme.colors.background }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: bbpsTheme.colors.textStrong }]}>Rewards</Text>
+        <Text style={[styles.heading, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:rewardProductCard.rewards")}</Text>
         <TouchableOpacity onPress={() => navigation.navigate('ProductScreen')}>
           <GradientText text="View More" bbpsTheme={bbpsTheme} />
         </TouchableOpacity>

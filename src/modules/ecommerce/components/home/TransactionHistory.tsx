@@ -11,6 +11,9 @@ import {
   fetchWalletTransactions,
   type WalletTransactionType,
 } from "../../api/WalleteAPI";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { formatDate } from "../../../../i18n/format";
 
 type UITransaction = {
   id: string;
@@ -18,8 +21,10 @@ type UITransaction = {
   txnId?: string;
   title: string;
   subtitle?: string;
-  date: string;
-  expiryLabel?: string;
+  /** Raw API timestamps; formatted at render so they follow the app language. */
+  createdAt: string;
+  expiryDate?: string | null;
+  isExpired: boolean;
   coins: number;
   icon: string;
   iconBg: string;
@@ -34,21 +39,15 @@ const getType = (filter: string): WalletTransactionType => {
   return "all";
 };
 
-const formatExpiryLabel = (txn: any) => {
-  if (!txn?.expiry_date) return undefined;
-
-  const formattedDate = new Date(txn.expiry_date).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-
-  return Number(txn.is_expired) === 1
-    ? `Expired on ${formattedDate}`
-    : `Expires on ${formattedDate}`;
+const formatExpiryLabel = (item: UITransaction) => {
+  if (!item.expiryDate) return undefined;
+  const date = formatDate(item.expiryDate, { day: "numeric", month: "short", year: "numeric" });
+  if (!date) return undefined;
+  return i18n.t(item.isExpired ? "products:wallet.expiredOn" : "products:wallet.expiresOn", { date });
 };
 
 export default function TransactionHistory() {
+  const { t: tx } = useTranslation();
   const [active, setActive] = useState("All");
   const [data, setData] = useState<UITransaction[]>([]);
   const [loading, setLoading] = useState(false);
@@ -65,11 +64,9 @@ export default function TransactionHistory() {
         txnId: txn.transaction_id,
         title: txn.title,
         subtitle: txn.description,
-        date: new Date(txn.created_at).toLocaleDateString("en-IN", {
-          day: "2-digit",
-          month: "short",
-        }),
-        expiryLabel: formatExpiryLabel(txn),
+        createdAt: txn.created_at,
+        expiryDate: txn.expiry_date ?? null,
+        isExpired: Number(txn.is_expired) === 1,
         coins:
           txn.transaction_type === "credit"
             ? txn.coins
@@ -98,7 +95,7 @@ export default function TransactionHistory() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Transaction History</Text>
+      <Text style={styles.heading}>{tx("products:transactionHistory.transactionHistory")}</Text>
 
       {/* FILTERS */}
       <View style={styles.filters}>
@@ -120,7 +117,7 @@ export default function TransactionHistory() {
                 active === f && styles.filterTextActive,
               ]}
             >
-              {f}
+              {tx(`products:wallet.filters.${f}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -128,7 +125,7 @@ export default function TransactionHistory() {
 
       {/* LOADING */}
       {loading ? (
-        <Text style={styles.loading}>Loading...</Text>
+        <Text style={styles.loading}>{tx("products:transactionHistory.loading")}</Text>
       ) : (
         <FlatList
           data={data}
@@ -142,7 +139,9 @@ export default function TransactionHistory() {
 }
 
 function TransactionCard({ item }: { item: UITransaction }) {
+  useTranslation(); // re-render dates and labels on language change
   const isPositive = item.coins > 0;
+  const expiryLabel = formatExpiryLabel(item);
 
   return (
     <View style={styles.card}>
@@ -155,7 +154,7 @@ function TransactionCard({ item }: { item: UITransaction }) {
           <Text style={styles.orderText}>{item.title}</Text>
 
           {item.txnId && (
-            <Text style={styles.subText}>Txn Id: {item.txnId}</Text>
+            <Text style={styles.subText}>{i18n.t("products:wallet.txnId", { id: item.txnId })}</Text>
           )}
 
           {item.subtitle && (
@@ -163,8 +162,8 @@ function TransactionCard({ item }: { item: UITransaction }) {
           )}
 
           <Text style={styles.category}>{item.title}</Text>
-          {item.expiryLabel && (
-            <Text style={styles.expiryText}>{item.expiryLabel}</Text>
+          {expiryLabel && (
+            <Text style={styles.expiryText}>{expiryLabel}</Text>
           )}
         </View>
       </View>
@@ -178,7 +177,7 @@ function TransactionCard({ item }: { item: UITransaction }) {
         >
           {isPositive ? `+${item.coins}` : item.coins}
         </Text>
-        <Text style={styles.date}>{item.date}</Text>
+        <Text style={styles.date}>{formatDate(item.createdAt, { day: "2-digit", month: "short" })}</Text>
       </View>
     </View>
   );

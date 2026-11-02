@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet } from 'react-native'
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons'
 import LinearGradient from 'react-native-linear-gradient'
+import { useTranslation } from "react-i18next";
 
 type Coupon = {
   id: number
@@ -15,6 +16,7 @@ type Props = {
 }
 
 export default function CouponsSection({ coupons }: Props) {
+  const { t: tx } = useTranslation();
   return (
     <View style={styles.wrapper}>
       {coupons.map(coupon => (
@@ -30,7 +32,7 @@ export default function CouponsSection({ coupons }: Props) {
               color="#A654CD"
             />
             <Text style={styles.code}>{coupon.code}</Text>
-            <Text style={styles.apply}>APPLY</Text>
+            <Text style={styles.apply}>{tx("products:couponsSection.apply")}</Text>
           </View>
 
           <View style={styles.dashedLine} />

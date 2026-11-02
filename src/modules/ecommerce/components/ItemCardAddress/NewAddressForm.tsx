@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { addressesQueryKey } from '../../navigation/navigationPerformance';
 import { useAlert } from '../alerts';
 import { useAppTheme } from '../../../../theme/ThemeContext';
+import i18n from "../../../../i18n";
 
 export default function AddressDetailsSheetWrapper() {
   const [open, setOpen] = useState(true);
@@ -48,13 +49,13 @@ export default function AddressDetailsSheetWrapper() {
       }
 
       queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => {});
-      alert.success("Success", mode === "edit" ? "Address updated successfully" : "Address added successfully");
+      alert.success(i18n.t("products:newAddressForm.success"), mode === "edit" ? "Address updated successfully" : "Address added successfully");
       setOpen(false);
       navigation.goBack();
     } catch (err: any) {
       console.error("Save address failed:", err);
       const fallback = mode === "edit" ? "Failed to update address. Please try again." : "Failed to add address. Please try again.";
-      alert.error("Error", err?.response?.data?.message || fallback);
+      alert.error(i18n.t("products:newAddressForm.error"), err?.response?.data?.message || fallback);
     }
   };
 

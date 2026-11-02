@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
 import { BASE_API_URL } from "./api";
+import i18n from "../../../i18n";
 
 /* =========================================================
    TYPES
@@ -593,7 +594,7 @@ export const getServiceInvoiceDetails = async (
     const fileName = extractFileName(contentDisposition, `service_invoice_${parent_order_id}.pdf`);
 
     if (!base64) {
-      return { success: false, message: "Invoice PDF is empty" };
+      return { success: false, message: i18n.t("services:errors.invoiceEmpty") };
     }
 
     return {
@@ -610,7 +611,7 @@ export const getServiceInvoiceDetails = async (
     const status = Number(error?.response?.status || 0);
     const message =
       status === 400
-        ? "Invoice is available after payment."
+        ? i18n.t("services:r2.invoiceIsAvailableAfterPayment")
         : status === 404
           ? "Invoice is not available for this order yet."
           : error?.message || "Could not fetch invoice PDF";

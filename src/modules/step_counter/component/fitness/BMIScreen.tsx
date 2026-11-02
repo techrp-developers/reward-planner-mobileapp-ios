@@ -30,6 +30,9 @@ import {
   type ProfilePlanResponse,
   type WeeklyPlanItem,
 } from "../../api/ProfileAPI";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 // ─── Measurement picker constants ─────────────────────────────────────────────
 
@@ -112,42 +115,52 @@ const MetricTag = React.memo(({ Icon, label }: { Icon: any; label: string }) => 
   </View>
 ));
 
-const WeeklyPlanCard = React.memo(({ item }: { item: WeeklyPlanItem }) => (
+const WeeklyPlanCard = React.memo(({ item }: { item: WeeklyPlanItem }) => {
+  const { t: tx } = useTranslation();
+  return (
   <View style={ss.weekBox}>
-    <Text style={ss.weekBoxTitle}>Week {item.week}</Text>
+    <Text style={ss.weekBoxTitle}>{tx('stepCounter:units.weekN', { n: item.week })}</Text>
     <Text style={ss.weekBoxSteps}>{fmt(item.steps)}</Text>
-    <Text style={ss.weekBoxLabel}>steps / day</Text>
+    <Text style={ss.weekBoxLabel}>{tx("stepCounter:bMIScreen.stepsDay")}</Text>
   </View>
-));
+);
+});
 
-const LoadingState = React.memo(() => (
+const LoadingState = React.memo(() => {
+  const { t: tx } = useTranslation();
+  return (
   <View style={ss.stateBox}>
     <ActivityIndicator color={VD.accent} size="large" />
-    <Text style={ss.stateTitle}>Building your BMI plan</Text>
-    <Text style={ss.stateText}>Fetching your profile recommendations…</Text>
+    <Text style={ss.stateTitle}>{tx("stepCounter:bMIScreen.buildingYourBmiPlan")}</Text>
+    <Text style={ss.stateText}>{tx("stepCounter:bMIScreen.fetchingYourProfileRecommendations")}</Text>
   </View>
-));
+);
+});
 
 const ErrorState = React.memo(({
   message, onRetry, onSetupProfile,
-}: { message: string; onRetry: () => void; onSetupProfile?: () => void }) => (
+}: { message: string; onRetry: () => void; onSetupProfile?: () => void }) => {
+  useTranslation();
+  return (
   <View style={ss.stateBox}>
     <View style={ss.errorIcon}>
       <MaterialCommunityIcons name="alert-circle-outline" size={28} color={VD.error} />
     </View>
-    <Text style={ss.stateTitle}>{onSetupProfile ? "Let's set up your plan" : "Plan unavailable"}</Text>
+    <Text style={ss.stateTitle}>{onSetupProfile ? i18n.t("stepCounter:r2.setUpPlan") : i18n.t("stepCounter:r2.planUnavailable")}</Text>
     <Text style={ss.stateText}>
-      {onSetupProfile ? "Add your body details so we can build your personalized step plan." : message}
+      {onSetupProfile ? i18n.t("stepCounter:r2.addBodyDetails") : message}
     </Text>
     <TouchableOpacity activeOpacity={0.9} onPress={onSetupProfile || onRetry} style={ss.retryBtn}>
-      <Text style={ss.retryText}>{onSetupProfile ? "Set Up My Profile" : "Retry"}</Text>
+      <Text style={ss.retryText}>{onSetupProfile ? i18n.t("stepCounter:r2.setUpProfile") : i18n.t("common:actions.retry")}</Text>
     </TouchableOpacity>
   </View>
-));
+  );
+});
 
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 const BMIScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation    = useNavigation<Nav>();
   const { width, height } = useWindowDimensions();
   const indicatorAnim = useRef(new Animated.Value(0)).current;
@@ -175,7 +188,7 @@ const BMIScreen: React.FC = () => {
     setLoading(true); setErrorMessage("");
     const res = await fetchProfilePlan();
     if (res.success && res.data) setProfilePlan(res.data);
-    else setErrorMessage(res.message || "Failed to fetch profile plan");
+    else setErrorMessage(res.message || i18n.t("stepCounter:r2.failedToFetchProfilePlan"));
     setLoading(false);
   }, []);
 
@@ -270,7 +283,7 @@ const BMIScreen: React.FC = () => {
 
             {/* Step & time tags */}
             <View style={ss.tagsRow}>
-              <MetricTag Icon={StepIcon}  label={`${fmt(bmi.steps)} Steps`} />
+              <MetricTag Icon={StepIcon}  label={tx('stepCounter:units.stepsCapN', { value: fmt(bmi.steps) })} />
               <MetricTag Icon={ClockIcon} label={fmtMinutes(bmi.minutes)} />
             </View>
           </View>
@@ -293,7 +306,7 @@ const BMIScreen: React.FC = () => {
                       <StepIcon width={20} height={20} />
                     </View>
                     <View style={ss.currentGoalCopy}>
-                      <Text style={ss.currentGoalLabel}>Your current plan</Text>
+                      <Text style={ss.currentGoalLabel}>{tx("stepCounter:bMIScreen.yourCurrentPlan")}</Text>
                       <Text style={ss.currentGoalValue}>{fmt(bmi.currentGoal.daily_steps)} steps / day</Text>
                       {!!goalSetDateLabel && <Text style={ss.currentGoalMeta}>Set on {goalSetDateLabel}</Text>}
                     </View>
@@ -303,7 +316,7 @@ const BMIScreen: React.FC = () => {
                 {/* BMI value */}
                 <Text style={ss.bmiTitle}>
                   Your BMI is{" "}
-                  <Text style={[ss.bmiValue, { color: bmi.color }]}>{bmi.label}</Text>
+                  <Text style={[ss.bmiValue, { color: bmi.color }]}>{translateSourceText("stepCounter", bmi.label)}</Text>
                 </Text>
 
                 {/* BMI bar */}
@@ -327,14 +340,14 @@ const BMIScreen: React.FC = () => {
                 {/* BMI labels */}
                 <View style={ss.bmiLabelRow}>
                   {BMI_SEGMENTS.map(seg => (
-                    <Text key={seg.label} style={[ss.bmiLbl, { flex: seg.max - seg.min }]}>{seg.label}</Text>
+                    <Text key={seg.label} style={[ss.bmiLbl, { flex: seg.max - seg.min }]}>{translateSourceText("stepCounter", seg.label)}</Text>
                   ))}
                 </View>
 
                 {/* Category */}
                 <Text style={[ss.bmiCategory, { color: bmi.color }]}>{bmi.category}</Text>
                 <Text style={ss.guidance}>
-                  We have put together a plan that gently guides you toward your goal at a pace that feels doable.
+                  {tx("stepCounter:bMIScreen.weHavePutTogetherA")}
                 </Text>
 
                 <View style={ss.divider} />
@@ -346,7 +359,7 @@ const BMIScreen: React.FC = () => {
                 {/* Weekly plan card */}
                 <View style={ss.weekCard}>
                   <LinearGradient colors={["#27305F", "#1B2148", "#2A1E50"]} style={ss.weekHeader}>
-                    <Text style={ss.weekHeading}>Weekly Breakdown</Text>
+                    <Text style={ss.weekHeading}>{tx("stepCounter:bMIScreen.weeklyBreakdown")}</Text>
                   </LinearGradient>
 
                   <View style={ss.weekGrid}>
@@ -355,7 +368,7 @@ const BMIScreen: React.FC = () => {
                         <WeeklyPlanCard key={`${item.week}-${item.steps}`} item={item} />
                       ))
                     ) : (
-                      <Text style={ss.weekEmpty}>Your weekly plan will appear here soon.</Text>
+                      <Text style={ss.weekEmpty}>{tx("stepCounter:bMIScreen.yourWeeklyPlanWillAppear")}</Text>
                     )}
                   </View>
 
@@ -375,15 +388,15 @@ const BMIScreen: React.FC = () => {
                     <RewardIcon width={36} height={36} />
                   </View>
                   <View style={ss.rewardText}>
-                    <Text style={ss.rewardTitle}>Coins for consistency</Text>
-                    <Text style={ss.rewardSub}>Stay consistent and earn coins every week</Text>
+                    <Text style={ss.rewardTitle}>{tx("stepCounter:bMIScreen.coinsForConsistency")}</Text>
+                    <Text style={ss.rewardSub}>{tx("stepCounter:bMIScreen.stayConsistentAndEarnCoins")}</Text>
                   </View>
                 </View>
 
                 {/* Primary CTA */}
                 <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate("StepGoal")} style={ss.ctaWrap}>
                   <LinearGradient colors={["#8EA2FF", "#B9C4FF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
-                    <Text style={ss.ctaText}>{bmi.currentGoal ? "Choose a New Plan" : "Make This My Goal"}</Text>
+                    <Text style={ss.ctaText}>{bmi.currentGoal ? i18n.t("stepCounter:r2.chooseANewPlan") : i18n.t("stepCounter:r2.makeThisMyGoal")}</Text>
                     <MaterialCommunityIcons name="arrow-right" size={18} color="#070A16" />
                   </LinearGradient>
                 </TouchableOpacity>
@@ -395,7 +408,7 @@ const BMIScreen: React.FC = () => {
                   style={ss.recalcBtn}
                 >
                   <MaterialCommunityIcons name="pencil-ruler" size={15} color={VD.accentDark} />
-                  <Text style={ss.recalcBtnText}>Update Measurements &amp; Recalculate BMI</Text>
+                  <Text style={ss.recalcBtnText}>{tx("stepCounter:bMIScreen.updateMeasurementsAmpRecalculateBmi")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -413,14 +426,14 @@ const BMIScreen: React.FC = () => {
         <View style={ss.updateSheet}>
           <View style={ss.sheetHandle} />
 
-          <Text style={ss.sheetTitle}>Update Measurements</Text>
-          <Text style={ss.sheetSubtitle}>Enter your current height and weight to recalculate your BMI.</Text>
+          <Text style={ss.sheetTitle}>{tx("stepCounter:bMIScreen.updateMeasurements")}</Text>
+          <Text style={ss.sheetSubtitle}>{tx("stepCounter:bMIScreen.enterYourCurrentHeightAnd")}</Text>
 
           {/* Height row */}
           <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("height")} activeOpacity={0.84}>
             <View style={ss.sheetRowLeft}>
               <MaterialCommunityIcons name="human-male-height" size={18} color={VD.accentDark} />
-              <Text style={ss.sheetRowLabel}>Height</Text>
+              <Text style={ss.sheetRowLabel}>{tx("stepCounter:bMIScreen.height")}</Text>
             </View>
             <View style={ss.sheetRowRight}>
               <Text style={ss.sheetRowValue}>{heightValue}</Text>
@@ -432,7 +445,7 @@ const BMIScreen: React.FC = () => {
           <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("weight")} activeOpacity={0.84}>
             <View style={ss.sheetRowLeft}>
               <MaterialCommunityIcons name="scale-bathroom" size={18} color={VD.accentDark} />
-              <Text style={ss.sheetRowLabel}>Weight</Text>
+              <Text style={ss.sheetRowLabel}>{tx("stepCounter:bMIScreen.weight")}</Text>
             </View>
             <View style={ss.sheetRowRight}>
               <Text style={ss.sheetRowValue}>{weightValue}</Text>
@@ -460,7 +473,7 @@ const BMIScreen: React.FC = () => {
             >
               {updating
                 ? <ActivityIndicator color="#070A16" />
-                : <Text style={ss.sheetCtaText}>Recalculate BMI</Text>}
+                : <Text style={ss.sheetCtaText}>{tx("stepCounter:bMIScreen.recalculateBmi")}</Text>}
             </LinearGradient>
           </TouchableOpacity>
         </View>

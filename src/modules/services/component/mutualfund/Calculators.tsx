@@ -16,6 +16,7 @@ import {
   calculateSWP,
   formatCurrency,
 } from '../utils/calculations';
+import { useTranslation } from "react-i18next";
 
 // ─── Shared Card ──────────────────────────────────────────────────
 const Card: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -92,6 +93,7 @@ const bannerStyle = StyleSheet.create({
 // 1. SIP CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const SIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [monthly, setMonthly] = useState(5000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
@@ -100,27 +102,27 @@ export const SIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => 
 
   return (
     <CalculatorScreen
-      title="SIP Calculator"
-      subtitle="Estimate future value of your monthly SIP"
+      title={tx("services:calculators.sipCalculator")}
+      subtitle={tx("services:calculators.estimateFutureValueOfYour")}
       icon="📅"
       navigation={navigation}
     >
-      <MaturityBanner label="Estimated Maturity Value" value={formatCurrency(result.maturity)} />
+      <MaturityBanner label={tx("services:calculators.estimatedMaturityValue")} value={formatCurrency(result.maturity)} />
       <Card>
-        <SectionHeader title="Parameters" subtitle="Adjust to see projections" />
-        <SliderRow label="Monthly Investment" value={monthly} min={500} max={100000} step={500}
+        <SectionHeader title={tx("services:calculators.parameters")} subtitle={tx("services:calculators.adjustToSeeProjections")} />
+        <SliderRow label={tx("services:calculators.monthlyInvestment")} value={monthly} min={500} max={100000} step={500}
           onChange={setMonthly} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Investment Duration" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.investmentDuration")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Breakdown" />
+        <SectionHeader title={tx("services:calculators.breakdown")} />
         <ResultCard items={[
-          { label: 'Total Invested', value: formatCurrency(result.invested) },
-          { label: 'Estimated Returns', value: formatCurrency(result.returns) },
-          { label: 'Maturity Value', value: formatCurrency(result.maturity), highlight: true },
+          { label: tx('services:calcResults.totalInvested'), value: formatCurrency(result.invested) },
+          { label: tx('services:calcResults.estimatedReturns'), value: formatCurrency(result.returns) },
+          { label: tx('services:calcResults.maturityValue'), value: formatCurrency(result.maturity), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -131,6 +133,7 @@ export const SIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => 
 // 2. GOAL SIP CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const GoalSIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [goal, setGoal] = useState(1000000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
@@ -139,28 +142,28 @@ export const GoalSIPCalculator: React.FC<{ navigation: any }> = ({ navigation })
 
   return (
     <CalculatorScreen
-      title="Goal SIP Calculator"
-      subtitle="Monthly investment needed to reach your goal"
+      title={tx("services:calculators.goalSipCalculator")}
+      subtitle={tx("services:calculators.monthlyInvestmentNeededToReach")}
       icon="🎯"
       navigation={navigation}
     >
-      <MaturityBanner label="Monthly SIP Required" value={formatCurrency(result.monthlyRequired)} />
+      <MaturityBanner label={tx("services:calculators.monthlySipRequired")} value={formatCurrency(result.monthlyRequired)} />
       <Card>
-        <SectionHeader title="Goal Details" />
-        <SliderRow label="Target Goal Amount" value={goal} min={10000} max={50000000} step={10000}
+        <SectionHeader title={tx("services:calculators.goalDetails")} />
+        <SliderRow label={tx("services:calculators.targetGoalAmount")} value={goal} min={10000} max={50000000} step={10000}
           onChange={setGoal} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Time to Achieve Goal" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.timeToAchieveGoal")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Summary" />
+        <SectionHeader title={tx("services:calculators.summary")} />
         <ResultCard items={[
-          { label: 'Monthly SIP Required', value: formatCurrency(result.monthlyRequired), highlight: true },
-          { label: 'Total Amount Invested', value: formatCurrency(result.invested) },
-          { label: 'Wealth Gained', value: formatCurrency(result.returns) },
-          { label: 'Target Amount', value: formatCurrency(goal) },
+          { label: tx('services:calcResults.monthlySipRequired'), value: formatCurrency(result.monthlyRequired), highlight: true },
+          { label: tx('services:calcResults.totalAmountInvested'), value: formatCurrency(result.invested) },
+          { label: tx('services:calcResults.wealthGained'), value: formatCurrency(result.returns) },
+          { label: tx('services:calcResults.targetAmount'), value: formatCurrency(goal) },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -171,6 +174,7 @@ export const GoalSIPCalculator: React.FC<{ navigation: any }> = ({ navigation })
 // 3. SMART GOAL CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const SmartGoalCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [goal, setGoal] = useState(2000000);
   const [currentSavings, setCurrentSavings] = useState(200000);
   const [rate, setRate] = useState(12);
@@ -183,30 +187,30 @@ export const SmartGoalCalculator: React.FC<{ navigation: any }> = ({ navigation 
 
   return (
     <CalculatorScreen
-      title="Smart Goal Calculator"
-      subtitle="Plan goals considering existing investments"
+      title={tx("services:calculators.smartGoalCalculator")}
+      subtitle={tx("services:calculators.planGoalsConsideringExistingInvestments")}
       icon="🧠"
       navigation={navigation}
     >
-      <MaturityBanner label="Additional Monthly SIP Needed" value={formatCurrency(result.monthlyRequired)} />
+      <MaturityBanner label={tx("services:calculators.additionalMonthlySipNeeded")} value={formatCurrency(result.monthlyRequired)} />
       <Card>
-        <SectionHeader title="Your Goal" />
-        <SliderRow label="Goal Amount" value={goal} min={50000} max={100000000} step={50000}
+        <SectionHeader title={tx("services:calculators.yourGoal")} />
+        <SliderRow label={tx("services:calculators.goalAmount")} value={goal} min={50000} max={100000000} step={50000}
           onChange={setGoal} prefix="₹" />
-        <SliderRow label="Current Savings / Investments" value={currentSavings} min={0} max={5000000} step={10000}
+        <SliderRow label={tx("services:calculators.currentSavingsInvestments")} value={currentSavings} min={0} max={5000000} step={10000}
           onChange={setCurrentSavings} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Time Horizon" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.timeHorizon")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Analysis" />
+        <SectionHeader title={tx("services:calculators.analysis")} />
         <ResultCard items={[
-          { label: 'Goal Amount', value: formatCurrency(goal) },
-          { label: 'Existing Savings Growth', value: formatCurrency(result.existingGrowth) },
-          { label: 'Remaining to Fund', value: formatCurrency(result.remaining) },
-          { label: 'Monthly SIP Needed', value: formatCurrency(result.monthlyRequired), highlight: true },
+          { label: tx('services:calcResults.goalAmount'), value: formatCurrency(goal) },
+          { label: tx('services:calcResults.existingSavingsGrowth'), value: formatCurrency(result.existingGrowth) },
+          { label: tx('services:calcResults.remainingToFund'), value: formatCurrency(result.remaining) },
+          { label: tx('services:calcResults.monthlySipNeeded'), value: formatCurrency(result.monthlyRequired), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -217,6 +221,7 @@ export const SmartGoalCalculator: React.FC<{ navigation: any }> = ({ navigation 
 // 4. INFLATION CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const InflationCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [expense, setExpense] = useState(50000);
   const [inflation, setInflation] = useState(6);
   const [years, setYears] = useState(10);
@@ -228,27 +233,27 @@ export const InflationCalculator: React.FC<{ navigation: any }> = ({ navigation 
 
   return (
     <CalculatorScreen
-      title="Inflation Calculator"
-      subtitle="Impact of inflation on your expenses"
+      title={tx("services:calculators.inflationCalculator")}
+      subtitle={tx("services:calculators.impactOfInflationOnYour")}
       icon="📈"
       navigation={navigation}
     >
-      <MaturityBanner label="Future Value of Expenses" value={formatCurrency(result.futureValue)} />
+      <MaturityBanner label={tx("services:calculators.futureValueOfExpenses")} value={formatCurrency(result.futureValue)} />
       <Card>
-        <SectionHeader title="Parameters" />
-        <SliderRow label="Current Monthly Expense" value={expense} min={1000} max={500000} step={1000}
+        <SectionHeader title={tx("services:calculators.parameters")} />
+        <SliderRow label={tx("services:calculators.currentMonthlyExpense")} value={expense} min={1000} max={500000} step={1000}
           onChange={setExpense} prefix="₹" />
-        <SliderRow label="Expected Inflation Rate" value={inflation} min={1} max={20} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedInflationRate")} value={inflation} min={1} max={20} step={0.5}
           onChange={setInflation} suffix="%" />
-        <SliderRow label="Time Period" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.timePeriod")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Impact Analysis" />
+        <SectionHeader title={tx("services:calculators.impactAnalysis")} />
         <ResultCard items={[
-          { label: 'Current Monthly Expense', value: formatCurrency(expense) },
-          { label: 'Inflation Impact', value: formatCurrency(result.increase) },
-          { label: `Expense After ${years} Years`, value: formatCurrency(result.futureValue), highlight: true },
+          { label: tx('services:calcResults.currentMonthlyExpense'), value: formatCurrency(expense) },
+          { label: tx('services:calcResults.inflationImpact'), value: formatCurrency(result.increase) },
+          { label: tx('services:calcResults.expenseAfterYears', { years }), value: formatCurrency(result.futureValue), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -259,6 +264,7 @@ export const InflationCalculator: React.FC<{ navigation: any }> = ({ navigation 
 // 5. COST OF DELAY CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const CostOfDelayCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [monthly, setMonthly] = useState(5000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(15);
@@ -271,29 +277,29 @@ export const CostOfDelayCalculator: React.FC<{ navigation: any }> = ({ navigatio
 
   return (
     <CalculatorScreen
-      title="Cost of Delay"
-      subtitle="Impact of delaying your investments"
+      title={tx("services:calculators.costOfDelay")}
+      subtitle={tx("services:calculators.impactOfDelayingYourInvestments")}
       icon="⏳"
       navigation={navigation}
     >
-      <MaturityBanner label="Wealth Lost Due to Delay" value={formatCurrency(result.loss)} />
+      <MaturityBanner label={tx("services:calculators.wealthLostDueToDelay")} value={formatCurrency(result.loss)} />
       <Card>
-        <SectionHeader title="Parameters" />
-        <SliderRow label="Monthly Investment" value={monthly} min={500} max={100000} step={500}
+        <SectionHeader title={tx("services:calculators.parameters")} />
+        <SliderRow label={tx("services:calculators.monthlyInvestment")} value={monthly} min={500} max={100000} step={500}
           onChange={setMonthly} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Investment Duration" value={years} min={5} max={40} step={1}
+        <SliderRow label={tx("services:calculators.investmentDuration")} value={years} min={5} max={40} step={1}
           onChange={setYears} suffix=" yr" />
-        <SliderRow label="Delay Period" value={delay} min={1} max={60} step={1}
+        <SliderRow label={tx("services:calculators.delayPeriod")} value={delay} min={1} max={60} step={1}
           onChange={setDelay} suffix=" mo" />
       </Card>
       <Card>
-        <SectionHeader title="Comparison" />
+        <SectionHeader title={tx("services:calculators.comparison")} />
         <ResultCard items={[
-          { label: 'Without Delay', value: formatCurrency(result.withoutDelay) },
-          { label: `With ${delay} Month Delay`, value: formatCurrency(result.withDelay) },
-          { label: 'Wealth Lost', value: formatCurrency(result.loss), highlight: true },
+          { label: tx('services:calcResults.withoutDelay'), value: formatCurrency(result.withoutDelay) },
+          { label: tx('services:calcResults.withMonthDelay', { months: delay }), value: formatCurrency(result.withDelay) },
+          { label: tx('services:calcResults.wealthLost'), value: formatCurrency(result.loss), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -304,6 +310,7 @@ export const CostOfDelayCalculator: React.FC<{ navigation: any }> = ({ navigatio
 // 6. LUMPSUM CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const LumpsumCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [principal, setPrincipal] = useState(100000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
@@ -315,27 +322,27 @@ export const LumpsumCalculator: React.FC<{ navigation: any }> = ({ navigation })
 
   return (
     <CalculatorScreen
-      title="Lumpsum Calculator"
-      subtitle="Calculate returns on one-time investment"
+      title={tx("services:calculators.lumpsumCalculator")}
+      subtitle={tx("services:calculators.calculateReturnsOnOneTime")}
       icon="💰"
       navigation={navigation}
     >
-      <MaturityBanner label="Estimated Maturity Value" value={formatCurrency(result.maturity)} />
+      <MaturityBanner label={tx("services:calculators.estimatedMaturityValue")} value={formatCurrency(result.maturity)} />
       <Card>
-        <SectionHeader title="Investment Details" />
-        <SliderRow label="One-Time Investment Amount" value={principal} min={1000} max={10000000} step={1000}
+        <SectionHeader title={tx("services:calculators.investmentDetails")} />
+        <SliderRow label={tx("services:calculators.oneTimeInvestmentAmount")} value={principal} min={1000} max={10000000} step={1000}
           onChange={setPrincipal} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Investment Duration" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.investmentDuration")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Breakdown" />
+        <SectionHeader title={tx("services:calculators.breakdown")} />
         <ResultCard items={[
-          { label: 'Amount Invested', value: formatCurrency(principal) },
-          { label: 'Estimated Returns', value: formatCurrency(result.returns) },
-          { label: 'Total Value', value: formatCurrency(result.maturity), highlight: true },
+          { label: tx('services:calcResults.amountInvested'), value: formatCurrency(principal) },
+          { label: tx('services:calcResults.estimatedReturns'), value: formatCurrency(result.returns) },
+          { label: tx('services:calcResults.totalValue'), value: formatCurrency(result.maturity), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -346,6 +353,7 @@ export const LumpsumCalculator: React.FC<{ navigation: any }> = ({ navigation })
 // 7. RETIREMENT PLANNING CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const RetirementCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [currentAge, setCurrentAge] = useState(30);
   const [retirementAge, setRetirementAge] = useState(60);
   const [monthlyExpense, setMonthlyExpense] = useState(50000);
@@ -370,40 +378,40 @@ export const RetirementCalculator: React.FC<{ navigation: any }> = ({ navigation
 
   return (
     <CalculatorScreen
-      title="Retirement Planning"
-      subtitle="Estimate your retirement corpus"
+      title={tx("services:calculators.retirementPlanning")}
+      subtitle={tx("services:calculators.estimateYourRetirementCorpus")}
       icon="🏖️"
       navigation={navigation}
     >
-      <MaturityBanner label="Monthly SIP Required" value={formatCurrency(result.monthlyRequired)} />
+      <MaturityBanner label={tx("services:calculators.monthlySipRequired")} value={formatCurrency(result.monthlyRequired)} />
       <Card>
-        <SectionHeader title="Your Details" />
-        <SliderRow label="Current Age" value={currentAge} min={18} max={55} step={1}
+        <SectionHeader title={tx("services:calculators.yourDetails")} />
+        <SliderRow label={tx("services:calculators.currentAge")} value={currentAge} min={18} max={55} step={1}
           onChange={setCurrentAge} suffix=" yr" />
-        <SliderRow label="Retirement Age" value={retirementAge} min={40} max={70} step={1}
+        <SliderRow label={tx("services:calculators.retirementAge")} value={retirementAge} min={40} max={70} step={1}
           onChange={setRetirementAge} suffix=" yr" />
-        <SliderRow label="Life Expectancy" value={lifeExpectancy} min={60} max={100} step={1}
+        <SliderRow label={tx("services:calculators.lifeExpectancy")} value={lifeExpectancy} min={60} max={100} step={1}
           onChange={setLifeExpectancy} suffix=" yr" />
-        <SliderRow label="Monthly Expenses (Today)" value={monthlyExpense} min={10000} max={500000} step={5000}
+        <SliderRow label={tx("services:calculators.monthlyExpensesToday")} value={monthlyExpense} min={10000} max={500000} step={5000}
           onChange={setMonthlyExpense} prefix="₹" />
       </Card>
       <Card>
-        <SectionHeader title="Return Assumptions" />
-        <SliderRow label="Expected Return (Pre-Retirement)" value={expectedReturn} min={1} max={30} step={0.5}
+        <SectionHeader title={tx("services:calculators.returnAssumptions")} />
+        <SliderRow label={tx("services:calculators.expectedReturnPreRetirement")} value={expectedReturn} min={1} max={30} step={0.5}
           onChange={setExpectedReturn} suffix="%" />
-        <SliderRow label="Return (Post-Retirement)" value={postReturn} min={1} max={15} step={0.5}
+        <SliderRow label={tx("services:calculators.returnPostRetirement")} value={postReturn} min={1} max={15} step={0.5}
           onChange={setPostReturn} suffix="%" />
-        <SliderRow label="Inflation Rate" value={inflationRate} min={1} max={15} step={0.5}
+        <SliderRow label={tx("services:calculators.inflationRate")} value={inflationRate} min={1} max={15} step={0.5}
           onChange={setInflationRate} suffix="%" />
       </Card>
       <Card>
-        <SectionHeader title="Retirement Plan" />
+        <SectionHeader title={tx("services:calculators.retirementPlan")} />
         <ResultCard items={[
-          { label: 'Years to Retirement', value: `${retirementAge - currentAge} years` },
-          { label: 'Monthly Expense at Retirement', value: formatCurrency(result.inflatedExpense) },
-          { label: 'Retirement Duration', value: `${result.retirementYears} years` },
-          { label: 'Corpus Required', value: formatCurrency(result.corpusRequired) },
-          { label: 'Monthly SIP Required', value: formatCurrency(result.monthlyRequired), highlight: true },
+          { label: tx('services:calcResults.yearsToRetirement'), value: `${retirementAge - currentAge} years` },
+          { label: tx('services:calcResults.monthlyExpenseAtRetirement'), value: formatCurrency(result.inflatedExpense) },
+          { label: tx('services:calcResults.retirementDuration'), value: `${result.retirementYears} years` },
+          { label: tx('services:calcResults.corpusRequired'), value: formatCurrency(result.corpusRequired) },
+          { label: tx('services:calcResults.monthlySipRequired'), value: formatCurrency(result.monthlyRequired), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -414,6 +422,7 @@ export const RetirementCalculator: React.FC<{ navigation: any }> = ({ navigation
 // 8. STEP-UP SIP CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const StepUpSIPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [monthly, setMonthly] = useState(5000);
   const [rate, setRate] = useState(12);
   const [years, setYears] = useState(10);
@@ -427,31 +436,31 @@ export const StepUpSIPCalculator: React.FC<{ navigation: any }> = ({ navigation 
 
   return (
     <CalculatorScreen
-      title="Step-Up SIP Calculator"
-      subtitle="Future value with annual SIP increase"
+      title={tx("services:calculators.stepUpSipCalculator")}
+      subtitle={tx("services:calculators.futureValueWithAnnualSip")}
       icon="🚀"
       navigation={navigation}
     >
-      <MaturityBanner label="Maturity with Step-Up" value={formatCurrency(result.maturity)} />
+      <MaturityBanner label={tx("services:calculators.maturityWithStepUp")} value={formatCurrency(result.maturity)} />
       <Card>
-        <SectionHeader title="Parameters" />
-        <SliderRow label="Initial Monthly SIP" value={monthly} min={500} max={100000} step={500}
+        <SectionHeader title={tx("services:calculators.parameters")} />
+        <SliderRow label={tx("services:calculators.initialMonthlySip")} value={monthly} min={500} max={100000} step={500}
           onChange={setMonthly} prefix="₹" />
-        <SliderRow label="Annual Step-Up Percentage" value={stepUp} min={1} max={50} step={1}
+        <SliderRow label={tx("services:calculators.annualStepUpPercentage")} value={stepUp} min={1} max={50} step={1}
           onChange={setStepUp} suffix="%" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Investment Duration" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.investmentDuration")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Step-Up Advantage" />
+        <SectionHeader title={tx("services:calculators.stepUpAdvantage")} />
         <ResultCard items={[
-          { label: 'Total Invested (Step-Up)', value: formatCurrency(result.invested) },
-          { label: 'Returns (Step-Up)', value: formatCurrency(result.returns) },
-          { label: 'Maturity (Step-Up)', value: formatCurrency(result.maturity), highlight: true },
-          { label: 'Without Step-Up', value: formatCurrency(baseline.maturity) },
-          { label: 'Extra Wealth Gained', value: formatCurrency(result.maturity - baseline.maturity) },
+          { label: tx('services:calcResults.totalInvestedStepUp'), value: formatCurrency(result.invested) },
+          { label: tx('services:calcResults.returnsStepUp'), value: formatCurrency(result.returns) },
+          { label: tx('services:calcResults.maturityStepUp'), value: formatCurrency(result.maturity), highlight: true },
+          { label: tx('services:calcResults.withoutStepUp'), value: formatCurrency(baseline.maturity) },
+          { label: tx('services:calcResults.extraWealthGained'), value: formatCurrency(result.maturity - baseline.maturity) },
         ]} />
       </Card>
     </CalculatorScreen>
@@ -462,6 +471,7 @@ export const StepUpSIPCalculator: React.FC<{ navigation: any }> = ({ navigation 
 // 9. SWP CALCULATOR
 // ═══════════════════════════════════════════════════════════════════
 export const SWPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const [principal, setPrincipal] = useState(1000000);
   const [withdrawal, setWithdrawal] = useState(10000);
   const [rate, setRate] = useState(10);
@@ -474,29 +484,29 @@ export const SWPCalculator: React.FC<{ navigation: any }> = ({ navigation }) => 
 
   return (
     <CalculatorScreen
-      title="SWP Calculator"
-      subtitle="Systematic Withdrawal Plan projections"
+      title={tx("services:calculators.swpCalculator")}
+      subtitle={tx("services:calculators.systematicWithdrawalPlanProjections")}
       icon="💸"
       navigation={navigation}
     >
-      <MaturityBanner label="Remaining Balance" value={formatCurrency(result.finalBalance)} />
+      <MaturityBanner label={tx("services:calculators.remainingBalance")} value={formatCurrency(result.finalBalance)} />
       <Card>
-        <SectionHeader title="Parameters" />
-        <SliderRow label="Total Investment" value={principal} min={10000} max={50000000} step={10000}
+        <SectionHeader title={tx("services:calculators.parameters")} />
+        <SliderRow label={tx("services:calculators.totalInvestment")} value={principal} min={10000} max={50000000} step={10000}
           onChange={setPrincipal} prefix="₹" />
-        <SliderRow label="Monthly Withdrawal" value={withdrawal} min={1000} max={500000} step={1000}
+        <SliderRow label={tx("services:calculators.monthlyWithdrawal")} value={withdrawal} min={1000} max={500000} step={1000}
           onChange={setWithdrawal} prefix="₹" />
-        <SliderRow label="Expected Annual Return" value={rate} min={1} max={30} step={0.5}
+        <SliderRow label={tx("services:calculators.expectedAnnualReturn")} value={rate} min={1} max={30} step={0.5}
           onChange={setRate} suffix="%" />
-        <SliderRow label="Withdrawal Duration" value={years} min={1} max={40} step={1}
+        <SliderRow label={tx("services:calculators.withdrawalDuration")} value={years} min={1} max={40} step={1}
           onChange={setYears} suffix=" yr" />
       </Card>
       <Card>
-        <SectionHeader title="Withdrawal Plan" />
+        <SectionHeader title={tx("services:calculators.withdrawalPlan")} />
         <ResultCard items={[
-          { label: 'Total Invested', value: formatCurrency(principal) },
-          { label: 'Total Withdrawn', value: formatCurrency(result.totalWithdrawn) },
-          { label: `Balance After ${years} Years`, value: formatCurrency(result.finalBalance), highlight: true },
+          { label: tx('services:calcResults.totalInvested'), value: formatCurrency(principal) },
+          { label: tx('services:calcResults.totalWithdrawn'), value: formatCurrency(result.totalWithdrawn) },
+          { label: tx('services:calcResults.balanceAfterYears', { years }), value: formatCurrency(result.finalBalance), highlight: true },
         ]} />
       </Card>
     </CalculatorScreen>

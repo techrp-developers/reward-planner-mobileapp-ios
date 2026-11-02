@@ -89,6 +89,9 @@ import { chatSocket } from "../services/chatSocket";
 import { notifyChatReadConfirmed } from "../chatUnreadEvents";
 import { getChatTheme } from "../theme/chatThemes";
 import type { ChatMessage, ChatStackParamList, ChatThemeKey } from "../types";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
+import { formatDateTime } from "../../../i18n/format";
 
 type Route = NativeStackScreenProps<
   ChatStackParamList,
@@ -104,6 +107,7 @@ export default function ChatConversationScreen() {
   const { user } = useAuth();
   const currentUserId = getChatUserId(user);
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const [conversation, setConversation] = useState(params.conversation);
@@ -316,7 +320,7 @@ export default function ChatConversationScreen() {
     } catch (error) {
       if (focused.current)
         setLoadError(
-          chatError(error, "Unable to load messages. Pull to try again.")
+          chatError(error, i18n.t("chat:conv.loadError"))
         );
     } finally {
       syncing.current = false;
@@ -558,8 +562,8 @@ export default function ChatConversationScreen() {
     } catch (error) {
       if (mounted.current)
         Alert.alert(
-          "History unavailable",
-          chatError(error, "Scroll up to try again.")
+          i18n.t("chat:conv.historyUnavailable"),
+          chatError(error, i18n.t("chat:conv.scrollToRetry"))
         );
     } finally {
       historyBusy.current = false;
@@ -676,8 +680,8 @@ export default function ChatConversationScreen() {
           merge([{ ...message, local_status: "failed" }]);
         if (mounted.current)
           Alert.alert(
-            "Message not sent",
-            chatError(error, "Tap Retry on the message to try again.")
+            i18n.t("chat:conv.notSent"),
+            chatError(error, i18n.t("chat:conv.tapRetry"))
           );
       } finally {
         sendBusy.current = false;
@@ -691,8 +695,8 @@ export default function ChatConversationScreen() {
     if (!body || sendBusy.current) return;
     if (currentUserId === undefined) {
       Alert.alert(
-        "Account unavailable",
-        "Your sign-in identity could not be verified. Please sign in again."
+        i18n.t("chat:conv.accountUnavailable"),
+        i18n.t("chat:conv.identityFailed")
       );
       return;
     }
@@ -700,7 +704,7 @@ export default function ChatConversationScreen() {
       message_id: optimisticId.current--,
       conversation_id: id,
       sender_id: Number(currentUserId),
-      sender_name: user?.name || "You",
+      sender_name: user?.name || i18n.t("chat:conv.you"),
       client_message_id: clientId(currentUserId),
       message_type: "text",
       body,
@@ -723,12 +727,12 @@ export default function ChatConversationScreen() {
   const confirmDelete = useCallback(
     (message: ChatMessage) => {
       Alert.alert(
-        "Delete message?",
-        "This message will be deleted for everyone in this chat.",
+        i18n.t("chat:conv.deleteTitle"),
+        i18n.t("chat:conv.deleteBody"),
         [
-          { text: "Cancel", style: "cancel" },
+          { text: i18n.t("common:actions.cancel"), style: "cancel" },
           {
-            text: "Delete",
+            text: i18n.t("common:actions.delete"),
             style: "destructive",
             onPress: async () => {
               try {
@@ -741,8 +745,8 @@ export default function ChatConversationScreen() {
               } catch (error) {
                 if (mounted.current)
                   Alert.alert(
-                    "Message not deleted",
-                    chatError(error, "Please try again.")
+                    i18n.t("chat:conv.notDeleted"),
+                    chatError(error, i18n.t("common:errors.generic"))
                   );
               }
             },
@@ -761,10 +765,10 @@ export default function ChatConversationScreen() {
         style?: "destructive";
       }> = [];
       if (message.message_id > 0)
-        options.push({ text: "Reply", onPress: () => selectReply(message) });
+        options.push({ text: i18n.t("common:actions.reply"), onPress: () => selectReply(message) });
       if (message.body)
         options.push({
-          text: "Copy text",
+          text: i18n.t("chat:conv.copyText"),
           onPress: () => Clipboard.setString(message.body!),
         });
       if (
@@ -772,13 +776,13 @@ export default function ChatConversationScreen() {
         sameChatId(message.sender_id, currentUserId)
       )
         options.push({
-          text: "Delete",
+          text: i18n.t("common:actions.delete"),
           style: "destructive",
           onPress: () => confirmDelete(message),
         });
       if (message.local_status === "failed")
         options.push({
-          text: "Retry",
+          text: i18n.t("common:actions.retry"),
           onPress: () => {
             void sendText(message);
           },
@@ -791,13 +795,13 @@ export default function ChatConversationScreen() {
   const openFile = useCallback(async (message: ChatMessage) => {
     try {
       const url = safeChatAttachmentUrl(message.attachment_url);
-      if (!url) throw new Error("This attachment has an invalid URL.");
+      if (!url) throw new Error(i18n.t("chat:conv.invalidAttachment"));
       await Linking.openURL(url);
     } catch (error) {
       if (mounted.current)
         Alert.alert(
-          "Unable to open document",
-          chatError(error, "No compatible app is available.")
+          i18n.t("chat:conv.openDocFailed"),
+          chatError(error, i18n.t("chat:conv.noCompatibleApp"))
         );
     }
   }, []);
@@ -857,7 +861,7 @@ export default function ChatConversationScreen() {
       });
       if (result.didCancel) return;
       if (result.errorCode)
-        throw new Error(result.errorMessage || "Photo library is unavailable.");
+        throw new Error(result.errorMessage || i18n.t("chat:conv.libraryUnavailable"));
       const asset = result.assets?.[0];
       if (mounted.current && asset?.uri) {
         photoDraft.current = { uri: asset.uri, key: clientId(currentUserId) };
@@ -865,7 +869,7 @@ export default function ChatConversationScreen() {
       }
     } catch (error) {
       if (mounted.current)
-        Alert.alert("Photo unavailable", chatError(error, "Please try again."));
+        Alert.alert(i18n.t("chat:conv.photoUnavailable"), chatError(error, i18n.t("common:errors.generic")));
     } finally {
       sendBusy.current = false;
     }
@@ -894,7 +898,7 @@ export default function ChatConversationScreen() {
       scrollLatest();
     } catch (error) {
       if (mounted.current)
-        Alert.alert("Photo not sent", chatError(error, "Please try again."));
+        Alert.alert(i18n.t("chat:conv.photoNotSent"), chatError(error, i18n.t("common:errors.generic")));
     } finally {
       sendBusy.current = false;
       if (mounted.current) setSending(false);
@@ -926,7 +930,7 @@ export default function ChatConversationScreen() {
       });
       if (copy.status !== "success")
         throw new Error(
-          "The selected file could not be accessed. Download it to your device and try again."
+          i18n.t("chat:conv.fileNotAccessible")
         );
       if (!mounted.current) return;
       setSending(true);
@@ -939,7 +943,7 @@ export default function ChatConversationScreen() {
       scrollLatest();
     } catch (error: any) {
       if (mounted.current && error?.code !== "OPERATION_CANCELED")
-        Alert.alert("Document not sent", chatError(error, "Please try again."));
+        Alert.alert(i18n.t("chat:conv.docNotSent"), chatError(error, i18n.t("common:errors.generic")));
     } finally {
       sendBusy.current = false;
       if (mounted.current) setSending(false);
@@ -972,7 +976,7 @@ export default function ChatConversationScreen() {
       if (mounted.current) {
         if (themeRevision.current === revision) setThemeKey(previous);
         if ((error as any)?.code === "CHAT_THEME_UNAVAILABLE") setThemeUnavailable((error as Error).message);
-        else Alert.alert("Theme not changed", chatError(error, "Please try again."));
+        else Alert.alert(i18n.t("chat:conv.themeNotChanged"), chatError(error, i18n.t("common:errors.generic")));
       }
     } finally {
       themeBusy.current = false;
@@ -980,21 +984,18 @@ export default function ChatConversationScreen() {
     }
   };
   const status = typers.length
-    ? "Typing…"
+    ? t("chat:conv.typing")
     : conversation.type === "group"
-    ? `${conversation.members.length} members`
+    ? t("chat:conv.members", { count: conversation.members.length })
     : !presenceKnown
-    ? socketConnected ? "Checking status…" : "Connecting…"
+    ? socketConnected ? t("chat:conv.checkingStatus") : t("chat:conv.connecting")
     : online
-    ? "Online"
+    ? t("chat:conv.online")
     : lastSeen && Number.isFinite(new Date(lastSeen).getTime())
-    ? `Last seen ${new Date(lastSeen).toLocaleString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        day: "numeric",
-        month: "short",
-      })}`
-    : "Offline";
+    ? t("chat:conv.lastSeen", {
+        time: formatDateTime(lastSeen, { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }),
+      })
+    : t("chat:conv.offline");
 
   return (
     <KeyboardAvoidingView
@@ -1022,7 +1023,7 @@ export default function ChatConversationScreen() {
       >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Back to chats"
+          accessibilityLabel={t("chat:conv.backToChats")}
           onPress={() => navigation.goBack()}
           style={styles.icon}
         >
@@ -1036,8 +1037,8 @@ export default function ChatConversationScreen() {
           accessibilityRole="button"
           accessibilityLabel={
             conversation.type === "group"
-              ? "View group info"
-              : "View member profile"
+              ? t("chat:conv.viewGroupInfo")
+              : t("chat:conv.viewMemberProfile")
           }
           disabled={conversation.type === "direct" && !peer}
           onPress={() =>
@@ -1082,7 +1083,7 @@ export default function ChatConversationScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Chat appearance"
+          accessibilityLabel={t("chat:appearance.title")}
           onPress={() => {
             Keyboard.dismiss();
             setSettingsOpen(true);
@@ -1200,7 +1201,7 @@ export default function ChatConversationScreen() {
                 color={theme.primary}
               />
               <Text style={{ color: theme.secondaryText, marginTop: 12 }}>
-                Say hello to start the conversation
+                {i18n.t("chat:r2.sayHelloToStartTheConversation")}
               </Text>
             </View>
           }
@@ -1209,13 +1210,13 @@ export default function ChatConversationScreen() {
       {unseen > 0 && (
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel={`Show ${unseen} new ${unseen === 1 ? "message" : "messages"}`}
+          accessibilityLabel={t("chat:conv.showNewMessages", { count: unseen })}
           onPress={scrollLatest}
           style={[styles.newMessages, { backgroundColor: selectedTheme.accent }]}
         >
           <MaterialCommunityIcons name="arrow-down" size={16} color="#FFF" />
           <Text style={styles.newMessagesText}>
-            {unseen === 1 ? "1 new message" : `${unseen} new messages`}
+            {t("chat:conv.newMessages", { count: unseen })}
           </Text>
         </TouchableOpacity>
       )}
@@ -1263,7 +1264,7 @@ export default function ChatConversationScreen() {
             </View>
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Cancel reply"
+              accessibilityLabel={t("chat:conv.cancelReply")}
               onPress={() => setReply(null)}
               style={styles.icon}
             >
@@ -1278,7 +1279,7 @@ export default function ChatConversationScreen() {
         <View style={styles.composerRow}>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Share attachment"
+            accessibilityLabel={t("chat:conv.shareAttachment")}
             disabled={sending}
             onPress={() => {
               Keyboard.dismiss();
@@ -1301,7 +1302,7 @@ export default function ChatConversationScreen() {
           >
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel={emojiOpen ? "Show keyboard" : "Show emojis"}
+              accessibilityLabel={emojiOpen ? t("chat:conv.showKeyboard") : t("chat:conv.showEmojis")}
               onPress={toggleEmoji}
               style={styles.icon}
             >
@@ -1319,9 +1320,9 @@ export default function ChatConversationScreen() {
                 selection.current = event.nativeEvent.selection;
               }}
               onFocus={() => setEmojiOpen(false)}
-              placeholder="Message"
+              placeholder={t("chat:conv.messagePlaceholder")}
               placeholderTextColor={theme.secondaryText}
-              accessibilityLabel="Message"
+              accessibilityLabel={t("chat:conv.messagePlaceholder")}
               multiline
               maxLength={5000}
               style={[styles.input, { color: theme.text }]}
@@ -1329,7 +1330,7 @@ export default function ChatConversationScreen() {
           </View>
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel="Send message"
+            accessibilityLabel={t("chat:conv.sendMessage")}
             accessibilityState={{
               disabled: !text.trim() || sending,
               busy: sending,
@@ -1407,11 +1408,11 @@ export default function ChatConversationScreen() {
         >
           <View style={styles.viewerHeader}>
             <Text style={styles.viewerTitle}>
-              {media?.asset ? "Send photo" : "Photo"}
+              {media?.asset ? t("chat:conv.sendPhoto") : t("chat:conv.photo")}
             </Text>
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Close photo"
+              accessibilityLabel={t("chat:conv.closePhoto")}
               disabled={sending}
               onPress={() => setMedia(null)}
               style={styles.icon}
@@ -1435,8 +1436,8 @@ export default function ChatConversationScreen() {
               }}
               onError={() =>
                 Alert.alert(
-                  "Photo unavailable",
-                  "This photo could not be loaded."
+                  t("chat:conv.photoUnavailable"),
+                  t("chat:conv.photoLoadFailed")
                 )
               }
             />
@@ -1445,7 +1446,7 @@ export default function ChatConversationScreen() {
             <TouchableOpacity
               accessibilityRole="button"
               disabled={sending}
-              accessibilityLabel="Send photo"
+              accessibilityLabel={t("chat:conv.sendPhoto")}
               onPress={() => void sendImage()}
               style={[
                 styles.photoSend,
@@ -1458,7 +1459,7 @@ export default function ChatConversationScreen() {
                 <Text
                   style={{ color: "#FFF", fontSize: 16, fontWeight: "600" }}
                 >
-                  Send photo
+                  {t("chat:conv.sendPhoto")}
                 </Text>
               )}
             </TouchableOpacity>

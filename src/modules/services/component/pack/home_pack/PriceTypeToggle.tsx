@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 interface Props {
   value: 'bundle' | 'individual';
@@ -8,6 +9,7 @@ interface Props {
 }
 
 const PriceTypeToggle: React.FC<Props> = ({ value, onChange }) => {
+  const { t: tx } = useTranslation();
   return (
     <View style={styles.container}>
       {value === 'bundle' ? (
@@ -17,14 +19,14 @@ const PriceTypeToggle: React.FC<Props> = ({ value, onChange }) => {
           end={{ x: 1, y: 0.5 }}
           style={styles.activeBtn}
         >
-          <Text style={styles.activeText}>Bundle Price</Text>
+          <Text style={styles.activeText}>{tx("services:priceTypeToggle.bundlePrice")}</Text>
         </LinearGradient>
       ) : (
         <TouchableOpacity
           style={styles.inactiveBtn}
           onPress={() => onChange('bundle')}
         >
-          <Text style={styles.inactiveText}>Bundle Price</Text>
+          <Text style={styles.inactiveText}>{tx("services:priceTypeToggle.bundlePrice")}</Text>
         </TouchableOpacity>
       )}
 
@@ -35,14 +37,14 @@ const PriceTypeToggle: React.FC<Props> = ({ value, onChange }) => {
           end={{ x: 1, y: 0.5 }}
           style={styles.activeBtn}
         >
-          <Text style={styles.activeText}>Individual Price</Text>
+          <Text style={styles.activeText}>{tx("services:priceTypeToggle.individualPrice")}</Text>
         </LinearGradient>
       ) : (
         <TouchableOpacity
           style={styles.inactiveBtn}
           onPress={() => onChange('individual')}
         >
-          <Text style={styles.inactiveText}>Individual Price</Text>
+          <Text style={styles.inactiveText}>{tx("services:priceTypeToggle.individualPrice")}</Text>
         </TouchableOpacity>
       )}
     </View>

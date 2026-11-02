@@ -24,6 +24,8 @@ import {
 } from '../../api/OrderAPI';
 import type { HomeStackParamList } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceCancellationRequest'>;
@@ -31,6 +33,7 @@ type RouteT = RouteProp<HomeStackParamList, 'ServiceCancellationRequest'>;
 const PURPLE = '#7C3AED';
 
 export default function ServiceCancellationRequest() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
@@ -58,7 +61,7 @@ export default function ServiceCancellationRequest() {
     } catch (err: any) {
       Alert.alert(
         'Unable to load reasons',
-        err?.message || 'Please try again in a moment.'
+        err?.message || i18n.t("services:r2.pleaseTryAgainInAMoment")
       );
       setReasons([]);
     } finally {
@@ -78,7 +81,7 @@ export default function ServiceCancellationRequest() {
 
   const submitCancellation = async () => {
     if (!selectedReason) {
-      Alert.alert('Reason required', 'Please select a cancellation reason.');
+      Alert.alert(i18n.t("services:serviceCancellationRequest.reasonRequired"), i18n.t("services:serviceCancellationRequest.pleaseSelectACancellationReason"));
       return;
     }
 
@@ -95,11 +98,11 @@ export default function ServiceCancellationRequest() {
         return;
       }
 
-      Alert.alert('Request failed', res?.message || 'Unable to submit cancellation request.');
+      Alert.alert(i18n.t("services:serviceCancellationRequest.requestFailed"), res?.message || i18n.t("services:r2.unableToSubmitCancellationRequest"));
     } catch (err: any) {
       Alert.alert(
         'Request failed',
-        err?.message || 'Unable to submit cancellation request.'
+        err?.message || i18n.t("services:r2.unableToSubmitCancellationRequest")
       );
     } finally {
       setSubmitting(false);
@@ -120,16 +123,16 @@ export default function ServiceCancellationRequest() {
 
           <View style={styles.confirmCard}>
             <View style={styles.confirmCopy}>
-              <Text style={[styles.confirmTitle, { color: servicesTheme.colors.textStrong }]}>Order Cancellation Requested</Text>
+              <Text style={[styles.confirmTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceCancellationRequest.orderCancellationRequested")}</Text>
               <Text style={[styles.confirmSubtitle, { color: servicesTheme.colors.muted }]}>
-                We've received your request and our team will review it shortly.
+                {tx("services:serviceCancellationRequest.weVeReceivedYourRequest")}
               </Text>
               <TouchableOpacity
                 style={styles.confirmLink}
                 activeOpacity={0.75}
                 onPress={() => navigation.navigate('ServiceOrderDetail', { parent_order_id })}
               >
-                <Text style={[styles.confirmLinkText, { color: servicesTheme.colors.primary }]}>View Cancellation Details</Text>
+                <Text style={[styles.confirmLinkText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceCancellationRequest.viewCancellationDetails")}</Text>
                 <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
               </TouchableOpacity>
             </View>
@@ -163,7 +166,7 @@ export default function ServiceCancellationRequest() {
                 )
               }
               title={service_name || 'Service'}
-              weight={variant_name || 'Cancellation requested'}
+              weight={variant_name || i18n.t("services:r2.cancellationRequested")}
               orderId={order_ref}
             />
           </View>
@@ -174,7 +177,7 @@ export default function ServiceCancellationRequest() {
               onPress={() => navigation.navigate('Home')}
               activeOpacity={0.75}
             >
-              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>Keep Shopping</Text>
+              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>{tx("services:serviceCancellationRequest.keepShopping")}</Text>
               <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
             </TouchableOpacity>
 
@@ -185,7 +188,7 @@ export default function ServiceCancellationRequest() {
               onPress={() => navigation.navigate('MyOrder')}
               activeOpacity={0.75}
             >
-              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>View All Orders</Text>
+              <Text style={[styles.confirmActionText, { color: servicesTheme.colors.text }]}>{tx("services:serviceCancellationRequest.viewAllOrders")}</Text>
               <MaterialCommunityIcons name="chevron-right" size={22} color={servicesTheme.colors.subtle} />
             </TouchableOpacity>
           </View>
@@ -196,7 +199,7 @@ export default function ServiceCancellationRequest() {
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: servicesTheme.colors.background }]}>
-      <Header title="Request Cancellation" onBack={() => navigation.goBack()} />
+      <Header title={tx("services:serviceCancellationRequest.requestCancellation")} onBack={() => navigation.goBack()} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -211,19 +214,19 @@ export default function ServiceCancellationRequest() {
             )
           }
           title={service_name || 'Service'}
-          weight={variant_name || 'Service cancellation request'}
+          weight={variant_name || i18n.t("services:r2.serviceCancellationRequest")}
           orderId={order_ref}
         />
 
         <View style={[styles.reasonCard, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
           <View style={styles.reasonHeader}>
-            <Text style={[styles.reasonTitle, { color: servicesTheme.colors.textStrong }]}>Reason For Cancellation</Text>
+            <Text style={[styles.reasonTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceCancellationRequest.reasonForCancellation")}</Text>
           </View>
 
           {loadingReasons ? (
             <View style={styles.loadingReasons}>
               <ActivityIndicator color={servicesTheme.colors.primary} />
-              <Text style={[styles.loadingReasonText, { color: servicesTheme.colors.muted }]}>Loading reasons...</Text>
+              <Text style={[styles.loadingReasonText, { color: servicesTheme.colors.muted }]}>{tx("services:serviceCancellationRequest.loadingReasons")}</Text>
             </View>
           ) : null}
 
@@ -242,10 +245,10 @@ export default function ServiceCancellationRequest() {
           {!loadingReasons && !selectedReason && reasons.length === 0 ? (
             <View style={[styles.emptyReasonBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
               <Text style={[styles.emptyReasonText, { color: servicesTheme.colors.muted }]}>
-                No cancellation reasons are available right now.
+                {tx("services:serviceCancellationRequest.noCancellationReasonsAreAvailable")}
               </Text>
               <TouchableOpacity onPress={loadReasons} style={styles.retryReasonsButton}>
-                <Text style={[styles.retryReasonsText, { color: servicesTheme.colors.primary }]}>Retry</Text>
+                <Text style={[styles.retryReasonsText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceCancellationRequest.retry")}</Text>
               </TouchableOpacity>
             </View>
           ) : null}
@@ -272,7 +275,7 @@ export default function ServiceCancellationRequest() {
               Comments{isReasonOther ? '*' : ''}
             </Text>
             <TextInput
-              placeholder="Enter any specific questions or requirements you'd like to share"
+              placeholder={tx("services:serviceCancellationRequest.enterAnySpecificQuestionsOr")}
               placeholderTextColor={servicesTheme.colors.subtle}
               value={comment}
               onChangeText={setComment}
@@ -297,7 +300,7 @@ export default function ServiceCancellationRequest() {
             {submitting ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.submitText}>Submit Request</Text>
+              <Text style={styles.submitText}>{tx("services:serviceCancellationRequest.submitRequest")}</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>

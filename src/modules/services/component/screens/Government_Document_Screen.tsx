@@ -23,6 +23,7 @@ import { getCachedService, prefetchServiceDetails } from '../../utils/serviceCac
 import type { CategoryServiceItem } from '../../services/categoryServices';
 import CartHead from '../constant/navbar/CartHead';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type RouteProps = RouteProp<
   HomeStackParamList,
@@ -92,6 +93,7 @@ function GovernmentDocumentSkeleton() {
 }
 
 export default function Government_Document_Screen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteProps>();
@@ -185,7 +187,7 @@ export default function Government_Document_Screen() {
     return (
       <View style={[styles.root, { backgroundColor: servicesTheme.colors.background }]}>
         <View style={styles.centeredState}>
-          <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>Unable to open this category.</Text>
+          <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>{tx("services:governmentDocumentScreen.unableToOpenThisCategory")}</Text>
         </View>
       </View>
     );
@@ -228,7 +230,7 @@ export default function Government_Document_Screen() {
           ListFooterComponent={<NeedHelpBanner />}
           ListEmptyComponent={
             <View style={styles.centeredState}>
-              <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>No services found in this category.</Text>
+              <Text style={[styles.stateText, { color: servicesTheme.colors.muted }]}>{tx("services:governmentDocumentScreen.noServicesFoundInThis")}</Text>
             </View>
           }
         />

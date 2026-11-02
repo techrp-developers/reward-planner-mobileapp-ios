@@ -19,6 +19,9 @@ import { compareRechargePayloads } from '../utils/rechargeDebug';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useAlert } from '../../ecommerce/components/alerts';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 // Last successful create-order payload, kept in memory for this session so
 // a failing payload (e.g. a different operator) can be diffed against it —
@@ -49,6 +52,7 @@ const getPlanData = (plan: any) =>
   String(plan?.data || plan?.dataBenefit || plan?.benefits || '');
 
 const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
+  const { t: tx } = useTranslation();
   const { user } = useAuth();
   const alert = useAlert();
   const bbpsTheme = useBbpsTheme();
@@ -83,7 +87,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
   const handleCreateOrder = useCallback(async () => {
     if (paymentFlowInProgress.current) return;
     if (!params.operatorId || !mobile || !params.circleId || !planId) {
-      alert.warning('Missing Details', 'Recharge details are incomplete.');
+      alert.warning(i18n.t("payments:rechargeConfirmationScreen.missingDetails"), i18n.t("payments:rechargeConfirmationScreen.rechargeDetailsAreIncomplete"));
       return;
     }
 
@@ -119,7 +123,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
         setOrderFailure({
           status: response.status,
           kind: response.kind,
-          message: response.message || 'Unable to create recharge order.',
+          message: response.message || i18n.t("payments:msg.rechargeOrderFailed"),
           error: response.error,
           payload,
         });
@@ -136,7 +140,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
         setOrderFailure({
           status: null,
           kind: 'BAD_RESPONSE',
-          message: 'Payment order details (key/orderId) are missing from the response.',
+          message: i18n.t("payments:msg.orderDetailsMissing"),
           error: order,
           payload,
         });
@@ -149,7 +153,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'RewardsPlanners',
-        description: `${params.operatorName || 'Recharge'} payment`,
+        description: i18n.t('payments:msg.operatorPayment', { operator: params.operatorName || i18n.t('payments:msg.recharge') }),
         prefill: {
           name: user?.name || 'Customer',
           contact: user?.phone || String(mobile),
@@ -179,7 +183,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
       if (verifyResponse?.success === false && !transactionId) {
         alert.warning(
           'Payment Verification Failed',
-          verifyResponse?.message || 'Unable to verify payment.',
+          verifyResponse?.message || i18n.t("payments:msg.verifyFailed"),
           PAYMENT_MESSAGE_DURATION_MS
         );
         return;
@@ -210,7 +214,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
       }
 
       // Razorpay checkout cancellation/failure or verify-payment network error.
-      alert.error('Error', error?.message || 'Could not create recharge order.', PAYMENT_MESSAGE_DURATION_MS);
+      alert.error(i18n.t("payments:rechargeConfirmationScreen.error"), error?.message || i18n.t("payments:msg.rechargeOrderFailed2"), PAYMENT_MESSAGE_DURATION_MS);
     } finally {
       setLoading(false);
       paymentFlowInProgress.current = false;
@@ -239,7 +243,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
     ].join('\n');
 
     try {
-      await Share.share({ message: details, title: 'Recharge order error details' });
+      await Share.share({ message: details, title: i18n.t("payments:msg.errorDetailsTitle") });
     } catch {
       // user dismissed the share sheet — nothing to do
     }
@@ -248,7 +252,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
       <BBPSHead
-        title="Plan details"
+        title={tx("payments:rechargeConfirmationScreen.planDetails")}
         onBackPress={() => navigation.goBack()}
       />
 
@@ -263,45 +267,45 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
                 source={{ uri: params.operatorLogoUrl }}
                 style={[styles.detailsOperatorLogo, { borderColor: bbpsTheme.colors.border }]}
                 resizeMode="contain"
-                accessibilityLabel={params.operatorLogoAlt || `${params.operatorName || 'Operator'} logo`}
+                accessibilityLabel={params.operatorLogoAlt || i18n.t('payments:msg.operatorLogo', { operator: params.operatorName || i18n.t('payments:msg.operator') })}
                 onError={() => setLogoFailed(true)}
               />
             ) : null}
             <Text style={[styles.planGroupTitle, { color: bbpsTheme.colors.textStrong }]}>
-              {params.planGroupLabel || 'Plan details'}
+              {translateSourceText('payments', params.planGroupLabel) || i18n.t('payments:rechargeConfirmationScreen.planDetails')}
             </Text>
           </View>
 
           <View style={[styles.planSummaryCard, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
             <View style={styles.planPriceRow}>
-              <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Plan price</Text>
+              <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>{tx("payments:rechargeConfirmationScreen.planPrice")}</Text>
               <Text style={[styles.summaryPrice, { color: bbpsTheme.colors.textStrong }]}>₹{amount || '-'}</Text>
             </View>
             <View style={[styles.summaryDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
             <View style={styles.summaryFactsRow}>
               <View style={styles.summaryFact}>
-                <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Validity</Text>
+                <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>{tx("payments:rechargeConfirmationScreen.validity")}</Text>
                 <Text style={[styles.summaryValue, { color: bbpsTheme.colors.textStrong }]}>{getPlanValidity(plan)}</Text>
               </View>
               {getPlanData(plan) && (
                 <View style={styles.summaryFact}>
-                  <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>Data</Text>
+                  <Text style={[styles.summaryLabel, { color: bbpsTheme.colors.muted }]}>{tx("payments:rechargeConfirmationScreen.data")}</Text>
                   <Text style={[styles.summaryValue, { color: bbpsTheme.colors.textStrong }]}>{getPlanData(plan)}</Text>
                 </View>
               )}
             </View>
           </View>
 
-          <Text style={[styles.detailsTitle, { color: bbpsTheme.colors.textStrong }]}>Details</Text>
+          <Text style={[styles.detailsTitle, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:rechargeConfirmationScreen.details")}</Text>
           <Text style={[styles.detailsText, { color: bbpsTheme.colors.text }]}>
-            {plan?.description || 'No description available'}
+            {plan?.description || i18n.t("payments:msg.noDescription")}
           </Text>
 
           {orderFailure && (
             <View style={styles.errorCard}>
               <View style={styles.errorCardHeader}>
                 <MaterialIcons name="error-outline" size={20} color="#DC2626" />
-                <Text style={styles.errorCardTitle}>Order Creation Failed</Text>
+                <Text style={styles.errorCardTitle}>{tx("payments:rechargeConfirmationScreen.orderCreationFailed")}</Text>
               </View>
               <Text style={styles.errorCardMessage}>{orderFailure.message}</Text>
               {orderFailure.status !== null && (
@@ -316,7 +320,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
                   onPress={handleCreateOrder}
                 >
                   <MaterialIcons name="refresh" size={16} color="#FFFFFF" />
-                  <Text style={styles.errorRetryText}>Retry</Text>
+                  <Text style={styles.errorRetryText}>{tx("payments:rechargeConfirmationScreen.retry")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.errorCopyBtn}
@@ -324,7 +328,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
                   onPress={handleCopyErrorDetails}
                 >
                   <MaterialIcons name="content-copy" size={16} color="#5B47A3" />
-                  <Text style={styles.errorCopyText}>Copy Error Details</Text>
+                  <Text style={styles.errorCopyText}>{tx("payments:rechargeConfirmationScreen.copyErrorDetails")}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -345,7 +349,7 @@ const RechargeConfirmationScreenComponent = ({ navigation, route }: any) => {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.buttonText}>Proceed to recharge</Text>
+                <Text style={styles.buttonText}>{tx("payments:rechargeConfirmationScreen.proceedToRecharge")}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>

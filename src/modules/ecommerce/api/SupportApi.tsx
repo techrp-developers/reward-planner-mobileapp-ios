@@ -2,6 +2,7 @@
 
 import api from "../../common/auth/api/axios";
 import { SERVER_URL } from '../../../config/apiConfig'
+import i18n from "../../../i18n";
 
 export type SupportCategory = {
   category_id: number;
@@ -204,7 +205,7 @@ export const fetchSupportTickets =
       return {
         success: false,
         message:
-          error?.response?.data?.message || "Failed to load support tickets",
+          error?.response?.data?.message || i18n.t("products:r2.failedToLoadSupportTickets"),
         data: [],
       };
     }

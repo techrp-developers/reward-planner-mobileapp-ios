@@ -18,6 +18,8 @@ import {
   fetchWalletTransactions,
   WalletTransaction,
 } from "../../ecommerce/api/WalleteAPI";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 interface RewardsState {
   balance: number;
@@ -93,6 +95,7 @@ const StatColumn: React.FC<{ label: string; value: string }> = ({ label, value }
 };
 
 const RewardsOverview: React.FC = () => {
+  const { t: tr } = useTranslation();
   const { isDark, theme } = useAppTheme();
   const navigation = useNavigation();
   const {
@@ -116,7 +119,7 @@ const RewardsOverview: React.FC = () => {
     totalRedeemed: data?.totalRedeemed ?? 0,
     transactions: data?.transactions ?? [],
     loading: isLoading && !data,
-    error: error instanceof Error ? error.message : error ? "Something went wrong" : null,
+    error: error instanceof Error ? error.message : error ? i18n.t("common:errors.generic") : null,
   };
 
   const t = useMemo(() => ({
@@ -139,7 +142,7 @@ const RewardsOverview: React.FC = () => {
     return (
       <View style={[styles.centered, t.centered]}>
         <ActivityIndicator size="small" color={PURPLE} />
-        <Text style={[styles.loadingText, t.loadingText]}>Loading rewards...</Text>
+        <Text style={[styles.loadingText, t.loadingText]}>{tr("dashboard:rewards.loading")}</Text>
       </View>
     );
   }
@@ -157,10 +160,10 @@ const RewardsOverview: React.FC = () => {
       <View style={[styles.card, t.card]}>
         <View style={styles.headerRow}>
           <View style={styles.titleWrap}>
-            <Text style={styles.eyebrow}>REWARDS</Text>
-            <Text style={[styles.title, t.title]}>Overview</Text>
+            <Text style={styles.eyebrow}>{tr("dashboard:rewards.eyebrow")}</Text>
+            <Text style={[styles.title, t.title]}>{tr("dashboard:rewards.title")}</Text>
             <Text style={[styles.subtitle, t.subtitle]} numberOfLines={1}>
-              Track your reward points
+              {tr("dashboard:rewards.subtitle")}
             </Text>
           </View>
 
@@ -170,7 +173,7 @@ const RewardsOverview: React.FC = () => {
         </View>
 
         <View style={styles.balanceRow}>
-          <StatColumn label="Available" value={formatPts(state.balance)} />
+          <StatColumn label={tr("dashboard:rewards.available")} value={formatPts(state.balance)} />
 
           <LinearGradient
             colors={[PURPLE, PURPLE_DARK]}
@@ -183,17 +186,17 @@ const RewardsOverview: React.FC = () => {
               activeOpacity={0.85}
               onPress={() => { navigation.navigate("WalletHistory" as never); }}
             >
-              <Text style={styles.primaryBtnText}>View Rewards</Text>
+              <Text style={styles.primaryBtnText}>{tr("dashboard:rewards.view")}</Text>
             </TouchableOpacity>
           </LinearGradient>
         </View>
 
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, t.statCard]}>
-            <StatColumn label="Earned" value={formatPts(state.totalSpent)} />
+            <StatColumn label={tr("dashboard:rewards.earned")} value={formatPts(state.totalSpent)} />
           </View>
           <View style={[styles.statCard, t.statCard]}>
-            <StatColumn label="Redeemed" value={formatPts(state.totalRedeemed)} />
+            <StatColumn label={tr("dashboard:rewards.redeemed")} value={formatPts(state.totalRedeemed)} />
           </View>
         </View>
       </View>

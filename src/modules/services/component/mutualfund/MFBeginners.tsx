@@ -17,6 +17,7 @@ import {
     type MFArticleSummary,
 } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -34,6 +35,7 @@ interface Props {
 const ArticleSeparator = () => <View style={styles.separator} />;
 
 const MFBeginners: React.FC<Props> = ({ navigation }) => {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
     const [articles, setArticles] = useState<SliderArticle[]>([]);
     const [loading, setLoading] = useState(true);
@@ -83,8 +85,8 @@ const MFBeginners: React.FC<Props> = ({ navigation }) => {
                 <View style={styles.thumbOverlay} />
                 <View style={styles.tagRow}>
                     <View style={styles.tagBadge}>
-                        <Text style={styles.tagText}>MUTUAL FUNDS</Text>
-                        <Text style={styles.tagBrand}> For Beginners</Text>
+                        <Text style={styles.tagText}>{tx("services:mFBeginners.mutualFunds")}</Text>
+                        <Text style={styles.tagBrand}>{tx("services:mFBeginners.forBeginners")}</Text>
                     </View>
                 </View>
             </View>
@@ -98,7 +100,7 @@ const MFBeginners: React.FC<Props> = ({ navigation }) => {
                         sectionId: item.sectionId,
                     })}
                 >
-                    <Text style={styles.readMore}>Read More</Text>
+                    <Text style={styles.readMore}>{tx("services:mFBeginners.readMore")}</Text>
                     <Text style={styles.readMoreArrow}> ›</Text>
                 </TouchableOpacity>
             </View>
@@ -118,7 +120,7 @@ const MFBeginners: React.FC<Props> = ({ navigation }) => {
     return (
         <View style={styles.section}>
             <View style={styles.header}>
-                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Start Your Mutual Fund Journey</Text>
+                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:mFBeginners.startYourMutualFundJourney")}</Text>
                 <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>
                     New to mutual funds? Explore simple guides and expert insights to begin
                     investing with confidence.
@@ -154,7 +156,7 @@ const MFBeginners: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.navigate('MFInvestorsDetail', { categoryId: BEGINNERS_CATEGORY_ID })}
                 activeOpacity={0.8}
             >
-                <Text style={styles.viewAllText}>View All</Text>
+                <Text style={styles.viewAllText}>{tx("services:mFBeginners.viewAll")}</Text>
             </TouchableOpacity>
         </View>
     );

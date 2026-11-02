@@ -26,6 +26,8 @@ import {
   type SubmitDocumentPayload,
 } from '../../api/DocumentAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 type NavProps = NativeStackNavigationProp<HomeStackParamList>;
@@ -64,6 +66,7 @@ type DocCardProps = {
 };
 
 const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(20)).current;
@@ -151,7 +154,7 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
           </Text>
           {doc.is_mandatory && (
             <View style={styles.mandatoryBadge}>
-              <Text style={styles.mandatoryText}>Required</Text>
+              <Text style={styles.mandatoryText}>{tx("services:documentUpload.required")}</Text>
             </View>
           )}
         </View>
@@ -161,7 +164,7 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
           <Text style={styles.expiryHint}>
             {doc.expiry_date
               ? `Expires: ${new Date(doc.expiry_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`
-              : 'Expiry date required'}
+              : i18n.t("services:r2.expiryDateRequired")}
           </Text>
         )}
 
@@ -176,13 +179,13 @@ const DocCard = ({ doc, index, onPick, onRemove, disabled }: DocCardProps) => {
             {displayName || 'Uploaded'}
           </Text>
         ) : hasError ? (
-          <Text style={styles.errorLabel}>Upload failed — tap to retry</Text>
+          <Text style={styles.errorLabel}>{tx("services:documentUpload.uploadFailedTapToRetry")}</Text>
         ) : doc.localName ? (
           <Text style={styles.selectedLabel} numberOfLines={1}>
             {doc.localName}
           </Text>
         ) : (
-          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>Image · Video · PDF · Office · max 10 MB</Text>
+          <Text style={[styles.hintText, { color: servicesTheme.colors.subtle }]}>{tx("services:documentUpload.imageVideoPdfOfficeMax")}</Text>
         )}
       </View>
 
@@ -255,7 +258,7 @@ const ProgressBar = ({
     <View style={[styles.progressWrap, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
       <View style={styles.progressRow}>
         <Text style={[styles.progressLabel, { color: servicesTheme.colors.text }]}>
-          {isUploading ? 'Uploading documents…' : `${done} of ${total} selected`}
+          {isUploading ? i18n.t("services:r2.uploadingDocuments") : `${done} of ${total} selected`}
         </Text>
         <Text style={[styles.progressPct, { color: servicesTheme.colors.primary }]}>{pct}%</Text>
       </View>
@@ -285,6 +288,7 @@ const ProgressBar = ({
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const DocumentUpload = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavProps>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
@@ -370,7 +374,7 @@ const DocumentUpload = () => {
     }
 
     if (result.errorMessage) {
-      Alert.alert('Picker Error', result.errorMessage);
+      Alert.alert(i18n.t("services:documentUpload.pickerError"), result.errorMessage);
       setDocs(prev =>
         prev.map(d =>
           d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
@@ -382,7 +386,7 @@ const DocumentUpload = () => {
     const file = result.assets[0] as PickerAsset;
 
     if (!file.uri) {
-      Alert.alert('Selection Failed', 'Could not read the selected file. Please try again.');
+      Alert.alert(i18n.t("services:documentUpload.selectionFailed"), i18n.t("services:documentUpload.couldNotReadTheSelected"));
       setDocs(prev =>
         prev.map(d =>
           d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
@@ -392,7 +396,7 @@ const DocumentUpload = () => {
     }
 
     if (file.fileSize && file.fileSize > MAX_FILE_SIZE_BYTES) {
-      Alert.alert('File Too Large', 'Maximum allowed size is 10 MB. Please choose a smaller file.');
+      Alert.alert(i18n.t("services:documentUpload.fileTooLarge"), i18n.t("services:documentUpload.maximumAllowedSizeIs10"));
       setDocs(prev =>
         prev.map(d =>
           d.document_key === doc.document_key ? { ...d, uploadState: 'idle' } : d
@@ -446,7 +450,7 @@ const DocumentUpload = () => {
         return;
       }
       if (file.size && file.size > MAX_FILE_SIZE_BYTES) {
-        Alert.alert('File Too Large', 'Maximum allowed size is 10 MB. Please choose a smaller file.');
+        Alert.alert(i18n.t("services:documentUpload.fileTooLarge"), i18n.t("services:documentUpload.maximumAllowedSizeIs10"));
         resetPicking();
         return;
       }
@@ -465,7 +469,7 @@ const DocumentUpload = () => {
     } catch (error: any) {
       resetPicking();
       if (error?.code !== 'OPERATION_CANCELED') {
-        Alert.alert('Picker Error', 'Could not select this document. Please try again.');
+        Alert.alert(i18n.t("services:documentUpload.pickerError"), i18n.t("services:documentUpload.couldNotSelectThisDocument"));
       }
     }
   }, []);
@@ -530,7 +534,7 @@ const DocumentUpload = () => {
       }));
 
     if (toUpload.length === 0 && !canSubmit) {
-      Alert.alert('Nothing to Submit', 'Please select at least one document to upload.');
+      Alert.alert(i18n.t("services:documentUpload.nothingToSubmit"), i18n.t("services:documentUpload.pleaseSelectAtLeastOne"));
       return;
     }
 
@@ -556,9 +560,9 @@ const DocumentUpload = () => {
       );
 
       navigation.navigate('SubmittedSuccessful', {
-        statusText: 'Documents Submitted',
-        title: 'Documents Uploaded Successfully',
-        description: 'Our team will verify your documents and process your service order shortly.',
+        statusText: i18n.t('services:docs.submitted'),
+        title: i18n.t('services:docs.uploadedTitle'),
+        description: i18n.t('services:docs.uploadedBody'),
         enquiryId: parentOrderId,
         redirectToHome: true,
         redirectDelayMs: 3000,
@@ -570,7 +574,7 @@ const DocumentUpload = () => {
           d.uploadState === 'uploading' ? { ...d, uploadState: 'error' } : d
         )
       );
-      Alert.alert('Submission Failed', getReadableError(err, 'Could not submit documents. Please try again.'));
+      Alert.alert(i18n.t("services:documentUpload.submissionFailed"), getReadableError(err, 'Could not submit documents. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -585,19 +589,19 @@ const DocumentUpload = () => {
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-      <ScreenHeader title="Documents Required" onBackPress={() => navigation.goBack()} />
+      <ScreenHeader title={tx("services:documentUpload.documentsRequired")} onBackPress={() => navigation.goBack()} />
 
       {loading ? (
         <View style={styles.centeredWrap}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>Loading documents…</Text>
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>{tx("services:documentUpload.loadingDocuments")}</Text>
         </View>
       ) : error ? (
         <View style={styles.centeredWrap}>
           <MaterialCommunityIcons name="alert-circle-outline" size={48} color="#DC2626" />
           <Text style={[styles.errorText, { color: '#F87171' }]}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={loadDocs}>
-            <Text style={styles.retryBtnText}>Try Again</Text>
+            <Text style={styles.retryBtnText}>{tx("services:documentUpload.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -622,7 +626,7 @@ const DocumentUpload = () => {
               <>
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionDot} />
-                  <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Required Documents</Text>
+                  <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:documentUpload.requiredDocuments")}</Text>
                 </View>
                 {mandatoryDocs.map((doc, i) => (
                   <DocCard
@@ -642,7 +646,7 @@ const DocumentUpload = () => {
               <>
                 <View style={[styles.sectionHeader, { marginTop: 20 }]}>
                   <View style={[styles.sectionDot, { backgroundColor: '#9CA3AF' }]} />
-                  <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>Optional Documents</Text>
+                  <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:documentUpload.optionalDocuments")}</Text>
                 </View>
                 {optionalDocs.map((doc, i) => (
                   <DocCard
@@ -684,7 +688,7 @@ const DocumentUpload = () => {
                   <Text style={styles.submitBtnText}>
                     {pendingMandatory > 0
                       ? `${pendingMandatory} Document${pendingMandatory > 1 ? 's' : ''} Pending`
-                      : 'Submit Documents'}
+                      : i18n.t("services:r2.submitDocuments")}
                   </Text>
                 </>
               )}
@@ -704,7 +708,7 @@ const DocumentUpload = () => {
           <TouchableOpacity
             style={StyleSheet.absoluteFill}
             activeOpacity={1}
-            accessibilityLabel="Close file options"
+            accessibilityLabel={tx("services:documentUpload.closeFileOptions")}
             onPress={() => setFilePickerDoc(null)}
           />
           <View style={[styles.pickerSheet, { backgroundColor: servicesTheme.colors.surface }]}>
@@ -714,9 +718,9 @@ const DocumentUpload = () => {
                 <MaterialCommunityIcons name="cloud-upload-outline" size={25} color="#7C3AED" />
               </View>
               <View style={styles.pickerHeaderCopy}>
-                <Text style={[styles.pickerTitle, { color: servicesTheme.colors.textStrong }]}>Upload document</Text>
+                <Text style={[styles.pickerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:documentUpload.uploadDocument")}</Text>
                 <Text style={[styles.pickerSubtitle, { color: servicesTheme.colors.muted }]} numberOfLines={1}>
-                  {filePickerDoc?.document_name || 'Choose a file source'}
+                  {filePickerDoc?.document_name || i18n.t("services:r2.chooseAFileSource")}
                 </Text>
               </View>
               <TouchableOpacity style={styles.pickerClose} onPress={() => setFilePickerDoc(null)}>
@@ -733,8 +737,8 @@ const DocumentUpload = () => {
                 <Ionicons name="images-outline" size={24} color="#7C3AED" />
               </View>
               <View style={styles.pickerOptionCopy}>
-                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>Photo or video</Text>
-                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>JPG, PNG, WebP, HEIC, MP4, MOV or WebM</Text>
+                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:documentUpload.photoOrVideo")}</Text>
+                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>{tx("services:documentUpload.jpgPngWebpHeicMp4")}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#A78BFA" />
             </TouchableOpacity>
@@ -748,15 +752,15 @@ const DocumentUpload = () => {
                 <Ionicons name="document-text-outline" size={24} color="#0284C7" />
               </View>
               <View style={styles.pickerOptionCopy}>
-                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>Browse documents</Text>
-                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>PDF, Word, Excel, PowerPoint, CSV or text</Text>
+                <Text style={[styles.pickerOptionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:documentUpload.browseDocuments")}</Text>
+                <Text style={[styles.pickerOptionText, { color: servicesTheme.colors.muted }]}>{tx("services:documentUpload.pdfWordExcelPowerpointCsv")}</Text>
               </View>
               <Ionicons name="chevron-forward" size={20} color="#38BDF8" />
             </TouchableOpacity>
 
             <View style={[styles.pickerSecurity, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F8F7FF' }]}>
               <MaterialCommunityIcons name="shield-check-outline" size={17} color="#7C3AED" />
-              <Text style={[styles.pickerSecurityText, { color: servicesTheme.colors.muted }]}>Secure upload · Maximum file size 10 MB</Text>
+              <Text style={[styles.pickerSecurityText, { color: servicesTheme.colors.muted }]}>{tx("services:documentUpload.secureUploadMaximumFileSize")}</Text>
             </View>
           </View>
         </View>

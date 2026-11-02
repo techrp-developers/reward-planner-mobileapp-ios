@@ -16,6 +16,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { fetchOrderReceipt } from "../../ecommerce/api/OrderApi";
 import { getProductImageUrl } from "../../ecommerce/api/ProductApi";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { Trans, useTranslation } from "react-i18next";
 
 interface OrderReceiptProps {
   orderId: number;
@@ -26,6 +27,7 @@ export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps
   const [receipt, setReceipt] = useState<any>(receiptData ?? null);
   const [loading, setLoading] = useState(!receiptData);
   const { isDark, theme } = useAppTheme();
+  const { t: tx } = useTranslation();
 
   const loadReceipt = useCallback(async () => {
     if (receiptData) {
@@ -64,7 +66,7 @@ export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps
     return (
       <SafeAreaView style={[styles.safe, { backgroundColor: theme.background }]}>
         <View style={styles.loaderWrap}>
-          <Text style={[styles.errorText, { color: theme.secondaryText }]}>Receipt not found</Text>
+          <Text style={[styles.errorText, { color: theme.secondaryText }]}>{tx("products:order.receiptNotFound")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -145,30 +147,29 @@ export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps
               </View>
 
               <View style={styles.billContent}>
-                <Text style={[styles.billTitle, { color: theme.text }]}>Bill Details</Text>
+                <Text style={[styles.billTitle, { color: theme.text }]}>{tx("products:order.billDetails")}</Text>
 
-                <Row label="Item Total" value={`₹${Number(bill.item_total || 0)}`} />
-                <Row label="Delivery Fee" value={`₹${Number(bill.delivery_fee || 0)}`} />
+                <Row label={tx("products:order.itemTotal")} value={`₹${Number(bill.item_total || 0)}`} />
+                <Row label={tx("products:order.deliveryFee")} value={`₹${Number(bill.delivery_fee || 0)}`} />
                 {Number(bill.bag_discount || 0) > 0 && (
-                  <Row label="Bag Discount" value={`-₹${Number(bill.bag_discount)}`} color="#22C55E" />
+                  <Row label={tx("products:order.bagDiscount")} value={`-₹${Number(bill.bag_discount)}`} color="#22C55E" />
                 )}
-                <Row label="Reward Discount" value={`-₹${Number(bill.reward_discount || 0)}`} color="#22C55E" />
+                <Row label={tx("products:order.rewardDiscount")} value={`-₹${Number(bill.reward_discount || 0)}`} color="#22C55E" />
                 {rewardsUsed > 0 && (
-                  <Row label="Rewards Used" value={`${rewardsUsed} coins`} color="#7A63FF" />
+                  <Row label={tx("products:order.rewardsUsed")} value={tx("products:order.coinsCount", { count: rewardsUsed })} color="#7A63FF" />
                 )}
 
                 <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
                 <View style={styles.totalRow}>
-                  <Text style={[styles.totalLabel, { color: theme.text }]}>Order Total</Text>
+                  <Text style={[styles.totalLabel, { color: theme.text }]}>{tx("products:order.orderTotal")}</Text>
                   <Text style={[styles.totalValue, { color: theme.text }]}>₹{Number(bill.order_total || 0)}</Text>
                 </View>
               </View>
             </View>
 
             <Text style={[styles.noteText, { color: theme.secondaryText }]}>
-              <Text style={[styles.noteBold, { color: theme.text }]}>Note:</Text> Reward coins will be credited to your wallet
-              within 24 hours after your order is delivered.
+              <Trans i18nKey="products:order.note" components={{ b: <Text style={[styles.noteBold, { color: theme.text }]} /> }} />
             </Text>
           </ScrollView>
         </View>

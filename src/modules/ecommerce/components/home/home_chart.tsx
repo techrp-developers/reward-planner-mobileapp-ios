@@ -9,6 +9,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { RootStackParamList } from "@/navigation/types";
 import { fetchUserInfo, isAuthenticated } from "../../../common/auth/api/AuthAPI";
+import i18n from "../../../../i18n";
 
 const HOME_CHART_STEP_PROGRESS_QUERY_KEY = ["ecommerce", "home-chart", "step-progress"] as const;
 
@@ -83,7 +84,7 @@ export default function Home_Chart() {
       | undefined;
 
     parentNavigation?.navigate("RewardStack", {
-      moduleName: "Step Counter",
+      moduleName: i18n.t("products:r2.stepCounter"),
     });
   }, [navigation]);
 
@@ -122,7 +123,7 @@ export default function Home_Chart() {
             onPress={goToRewards}
             cardWidth={layout.cardWidth}
             loading={stepProgressQuery.isLoading}
-            errorMessage={stepProgressQuery.error ? "Failed to load steps" : ""}
+            errorMessage={stepProgressQuery.error ? i18n.t("products:r2.failedToLoadSteps") : ""}
             onRetry={() => stepProgressQuery.refetch()}
           />
         </View>

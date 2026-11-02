@@ -1,0 +1,10 @@
+{
+  "welcomeTitle": "Reward Planners मध्ये तुमचे स्वागत आहे",
+  "chooseTitle": "तुमची पसंतीची भाषा निवडा",
+  "chooseBody": "Reward Planners मध्ये वापरायची भाषा निवडा. तुम्ही ती कधीही तुमच्या प्रोफाइल सेटिंग्जमधून बदलू शकता.",
+  "settingsTitle": "ॲपची भाषा",
+  "settingsBody": "संपूर्ण Reward Planners मध्ये वापरण्यासाठी तुमची पसंतीची भाषा निवडा.",
+  "selected": "निवडलेली",
+  "optionLabel": "{{nativeName}}, {{englishName}}",
+  "saveFailed": "तुमची भाषा सेव्ह करता आली नाही. कृपया पुन्हा प्रयत्न करा."
+}

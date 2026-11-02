@@ -13,8 +13,10 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
 
 const FindHospitalScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
 
@@ -61,7 +63,7 @@ const FindHospitalScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Cashless Claim</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:findHospitalScreen.cashlessClaim")}</Text>
         </View>
 
         <TouchableOpacity style={[styles.backBtn, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]} activeOpacity={0.7}>
@@ -75,7 +77,7 @@ const FindHospitalScreen: React.FC = () => {
           <View style={[styles.stepCircleDone, { backgroundColor: '#10B981' }]}>
             <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" />
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Member</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.member")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: '#10B981' }]} />
@@ -84,7 +86,7 @@ const FindHospitalScreen: React.FC = () => {
           <View style={[styles.stepCircleActive, { borderColor: '#005b7f', backgroundColor: '#005b7f' }]}>
             <Text style={styles.stepCircleActiveText}>2</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>Hospital</Text>
+          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:findHospitalScreen.hospital")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: isDark ? '#27272A' : '#E2E8F0' }]} />
@@ -93,7 +95,7 @@ const FindHospitalScreen: React.FC = () => {
           <View style={[styles.stepCirclePending, { borderColor: isDark ? '#52525B' : '#CBD5E1' }]}>
             <Text style={[styles.stepCirclePendingText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>3</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Documents</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.documents")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: isDark ? '#27272A' : '#E2E8F0' }]} />
@@ -102,7 +104,7 @@ const FindHospitalScreen: React.FC = () => {
           <View style={[styles.stepCirclePending, { borderColor: isDark ? '#52525B' : '#CBD5E1' }]}>
             <Text style={[styles.stepCirclePendingText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>4</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Review</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.review")}</Text>
         </View>
       </View>
 
@@ -110,13 +112,13 @@ const FindHospitalScreen: React.FC = () => {
         
         {/* Find Network Hospital Section */}
         <View style={styles.searchBlock}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Find Network Hospital</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:findHospitalScreen.findNetworkHospital")}</Text>
           <View style={styles.inputsRow}>
             {/* Search Input */}
             <View style={[styles.searchBox, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
               <MaterialCommunityIcons name="magnify" size={18} color={isDark ? '#71717A' : '#94A3B8'} style={{ marginRight: 6 }} />
               <TextInput 
-                placeholder="Search hospital name, city or locality" 
+                placeholder={tx("insurance:findHospitalScreen.searchHospitalNameCityOr")} 
                 placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                 style={[styles.searchInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
               />
@@ -133,19 +135,19 @@ const FindHospitalScreen: React.FC = () => {
           <View style={styles.chipsRow}>
             <TouchableOpacity style={styles.chipActive}>
               <MaterialCommunityIcons name="compass-outline" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
-              <Text style={styles.chipActiveText}>Nearby</Text>
+              <Text style={styles.chipActiveText}>{tx("insurance:findHospitalScreen.nearby")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.chip, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
-              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Specialty</Text>
+              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.specialty")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.chip, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
               <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>24x7</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.chip, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
-              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Network</Text>
+              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.network")}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.chip, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', borderColor: isDark ? '#27272A' : '#E2E8F0' }]}>
-              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Cashless</Text>
+              <Text style={[styles.chipText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.cashless")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -180,7 +182,7 @@ const FindHospitalScreen: React.FC = () => {
                   <View style={styles.hospActionCol}>
                     <View style={styles.hospBadge}>
                       <MaterialCommunityIcons name="shield-check" size={10} color="#10B981" style={{ marginRight: 2 }} />
-                      <Text style={styles.hospBadgeText}>Cashless Eligible</Text>
+                      <Text style={styles.hospBadgeText}>{tx("insurance:findHospitalScreen.cashlessEligible")}</Text>
                     </View>
                     <TouchableOpacity 
                       style={[
@@ -190,7 +192,7 @@ const FindHospitalScreen: React.FC = () => {
                       activeOpacity={0.8}
                       onPress={() => setSelectedHospital(hospital.id)}
                     >
-                      <Text style={styles.selectBtnText}>{isSelected ? 'Selected' : 'Select'}</Text>
+                      <Text style={styles.selectBtnText}>{isSelected ? tx('insurance:hospitals.selected') : tx('insurance:hospitals.select')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -201,15 +203,15 @@ const FindHospitalScreen: React.FC = () => {
 
         {/* How Cashless Works Timeline */}
         <View style={styles.howWorksBlock}>
-          <Text style={[styles.howWorksTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>How Cashless Claim Works</Text>
+          <Text style={[styles.howWorksTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:findHospitalScreen.howCashlessClaimWorks")}</Text>
           <View style={[styles.howWorksCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <View style={styles.worksGrid}>
               <View style={styles.worksCol}>
                 <View style={[styles.worksIconBox, { backgroundColor: '#e5f6fd' }]}>
                   <MaterialCommunityIcons name="hospital-building" size={20} color="#005b7f" />
                 </View>
-                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>1. Select Hospital</Text>
-                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Choose network hospital</Text>
+                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:findHospitalScreen.n1SelectHospital")}</Text>
+                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.chooseNetworkHospital")}</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={14} color="#CBD5E1" style={{ alignSelf: 'center' }} />
               
@@ -217,8 +219,8 @@ const FindHospitalScreen: React.FC = () => {
                 <View style={[styles.worksIconBox, { backgroundColor: '#F3E8FF' }]}>
                   <MaterialCommunityIcons name="file-document-edit" size={20} color="#7C3AED" />
                 </View>
-                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>2. Raise Pre-auth</Text>
-                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Submit requests & details</Text>
+                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:findHospitalScreen.n2RaisePreAuth")}</Text>
+                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.submitRequestsDetails")}</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={14} color="#CBD5E1" style={{ alignSelf: 'center' }} />
 
@@ -226,8 +228,8 @@ const FindHospitalScreen: React.FC = () => {
                 <View style={[styles.worksIconBox, { backgroundColor: '#ECFDF5' }]}>
                   <MaterialCommunityIcons name="check-decagram" size={20} color="#10B981" />
                 </View>
-                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>3. Approval</Text>
-                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Insurer reviews request</Text>
+                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:findHospitalScreen.n3Approval")}</Text>
+                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.insurerReviewsRequest")}</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={14} color="#CBD5E1" style={{ alignSelf: 'center' }} />
 
@@ -235,8 +237,8 @@ const FindHospitalScreen: React.FC = () => {
                 <View style={[styles.worksIconBox, { backgroundColor: '#d0f0fd' }]}>
                   <MaterialCommunityIcons name="account-heart" size={20} color="#007ca5" />
                 </View>
-                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>4. Treatment</Text>
-                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Get cashless treatment</Text>
+                <Text style={[styles.worksLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:findHospitalScreen.n4Treatment")}</Text>
+                <Text style={[styles.worksSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:findHospitalScreen.getCashlessTreatment")}</Text>
               </View>
             </View>
           </View>
@@ -244,23 +246,23 @@ const FindHospitalScreen: React.FC = () => {
 
         {/* Required Documents Bar */}
         <View style={[styles.reqDocsBlock, { backgroundColor: isDark ? '#1E1E24' : '#e5f6fd' }]}>
-          <Text style={[styles.reqDocsTitle, { color: '#005b7f' }]}>Required Documents</Text>
+          <Text style={[styles.reqDocsTitle, { color: '#005b7f' }]}>{tx("insurance:findHospitalScreen.requiredDocuments")}</Text>
           <View style={styles.reqDocsRow}>
             <View style={styles.reqDocItem}>
               <MaterialCommunityIcons name="card-bulleted" size={18} color="#005b7f" />
-              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Health E-Card</Text>
+              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:findHospitalScreen.healthECard")}</Text>
             </View>
             <View style={styles.reqDocItem}>
               <MaterialCommunityIcons name="account-box" size={18} color="#10B981" />
-              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>ID Proof</Text>
+              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:findHospitalScreen.idProof")}</Text>
             </View>
             <View style={styles.reqDocItem}>
               <MaterialCommunityIcons name="file-document-outline" size={18} color="#EA580C" />
-              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Prescription</Text>
+              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:findHospitalScreen.prescription")}</Text>
             </View>
             <View style={styles.reqDocItem}>
               <MaterialCommunityIcons name="hospital-marker" size={18} color="#7C3AED" />
-              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Admission Advice</Text>
+              <Text style={[styles.reqDocText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:findHospitalScreen.admissionAdvice")}</Text>
             </View>
           </View>
         </View>
@@ -272,7 +274,7 @@ const FindHospitalScreen: React.FC = () => {
           activeOpacity={0.85}
           onPress={() => navigation.navigate('CashlessReviewScreen')}
         >
-          <Text style={styles.continueBtnText}>Continue</Text>
+          <Text style={styles.continueBtnText}>{tx("insurance:findHospitalScreen.continue")}</Text>
         </TouchableOpacity>
 
       </ScrollView>

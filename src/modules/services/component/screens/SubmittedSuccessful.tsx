@@ -6,12 +6,14 @@ import type { HomeStackParamList } from '../../navigation/type';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Successfully from '../constant/Successfully';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type SubmittedSuccessfulRoute = RouteProp<HomeStackParamList, 'SubmittedSuccessful'>;
 
 const DEFAULT_REDIRECT_DELAY_MS = 3000;
 
 function SubmittedSuccessful({ navigation }: any) {
+  const { t: tx } = useTranslation();
   const route = useRoute<SubmittedSuccessfulRoute>();
   const servicesTheme = useServicesTheme();
 
@@ -74,9 +76,9 @@ function SubmittedSuccessful({ navigation }: any) {
 
           <View style={styles.textWrap}>
             <Text style={[styles.title, { color: servicesTheme.colors.textStrong }]}>
-              Are you loving your experience with our app so far?
+              {tx("services:submittedSuccessful.areYouLovingYourExperience")}
             </Text>
-            <Text style={[styles.link, { color: servicesTheme.colors.primary }]}>Give us a rating</Text>
+            <Text style={[styles.link, { color: servicesTheme.colors.primary }]}>{tx("services:submittedSuccessful.giveUsARating")}</Text>
           </View>
         </View>
       </View>

@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const topNavImage = require('../../../../assets/homepage/service_top_nav.png');
 
@@ -24,6 +25,7 @@ export default function ServiceHeader({
   onFocusSearch,
   autoFocus = false,
 }: ServiceHeaderProps) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
@@ -43,7 +45,7 @@ export default function ServiceHeader({
 
         <TextInput
           style={[styles.input, { color: servicesTheme.colors.text }]}
-          placeholder="Search services..."
+          placeholder={tx("services:serviceHeader.searchServices")}
           placeholderTextColor={servicesTheme.colors.subtle}
           value={search}
           onChangeText={onChangeSearch}

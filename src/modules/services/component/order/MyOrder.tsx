@@ -29,6 +29,9 @@ import {
   type ServiceOrder,
 } from "../../api/OrderAPI";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -106,7 +109,7 @@ function getServiceTitle(order: ServiceOrder) {
   if (previewName) return previewName;
 
   const firstItem = order.items?.[0] || order.bundles?.[0]?.items?.[0];
-  return firstItem?.service_name || "Service Order";
+  return firstItem?.service_name || i18n.t("services:r2.serviceOrder");
 }
 
 function getServiceSubtitle(order: ServiceOrder) {
@@ -207,6 +210,7 @@ function ServiceOrderRow({
   onPress: () => void;
   servicesTheme: ServicesTheme;
 }) {
+  const { t: tx } = useTranslation();
   const meta = STATUS_META[order.status] || {
     color: "#6B7280",
     label: toTitleCase(order.status),
@@ -235,11 +239,11 @@ function ServiceOrderRow({
 
         <View style={styles.orderCenter}>
           <Text style={[styles.statusText, { color: meta.color }]} numberOfLines={1}>
-            {meta.label.toUpperCase()}
+            {translateSourceText("services", meta.label).toUpperCase()}
           </Text>
           <View style={styles.titleRow}>
             <Text style={[styles.brandText, { color: servicesTheme.colors.textStrong }]} numberOfLines={1}>
-              Service
+              {tx("services:myOrder.service")}
             </Text>
             <Text style={[styles.productText, { color: servicesTheme.colors.muted }]} numberOfLines={1}>
               {title}
@@ -254,7 +258,7 @@ function ServiceOrderRow({
             </Text>
           </View>
           <Text style={styles.actionText}>
-            View Order
+            {tx("services:myOrder.viewOrder")}
           </Text>
         </View>
 
@@ -291,6 +295,7 @@ function FilterBottomSheet({
   onApply: (time: string, status: string) => void;
   servicesTheme: ServicesTheme;
 }) {
+  const { t: tx } = useTranslation();
   const [selectedTime, setSelectedTime] = useState(currentTime);
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
 
@@ -308,18 +313,18 @@ function FilterBottomSheet({
         <View style={[styles.handle, { backgroundColor: servicesTheme.colors.divider }]} />
 
         <View style={styles.sheetHeader}>
-          <Text style={[styles.sheetTitle, { color: servicesTheme.colors.textStrong }]}>Filter Orders</Text>
+          <Text style={[styles.sheetTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:myOrder.filterOrders")}</Text>
           <TouchableOpacity
             onPress={() => {
               setSelectedTime("");
               setSelectedStatus("");
             }}
           >
-            <Text style={styles.resetText}>Reset</Text>
+            <Text style={styles.resetText}>{tx("services:myOrder.reset")}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Order Time</Text>
+        <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>{tx("services:myOrder.orderTime")}</Text>
         <View style={styles.chipGrid}>
           {TIME_FILTERS.map(item => (
             <TouchableOpacity
@@ -334,18 +339,18 @@ function FilterBottomSheet({
                   end={{ x: 1, y: 0 }}
                   style={styles.activeSheetChip}
                 >
-                  <Text style={styles.activeSheetChipText}>{item.label}</Text>
+                  <Text style={styles.activeSheetChipText}>{translateSourceText("services", item.label)}</Text>
                 </LinearGradient>
               ) : (
                 <View style={[styles.sheetChip, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
-                  <Text style={[styles.sheetChipText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                  <Text style={[styles.sheetChipText, { color: servicesTheme.colors.text }]}>{translateSourceText("services", item.label)}</Text>
                 </View>
               )}
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Order Status</Text>
+        <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>{tx("services:myOrder.orderStatus")}</Text>
         <View style={styles.chipGrid}>
           {STATUS_FILTERS.map(item => (
             <TouchableOpacity
@@ -360,11 +365,11 @@ function FilterBottomSheet({
                   end={{ x: 1, y: 0 }}
                   style={styles.activeSheetChip}
                 >
-                  <Text style={styles.activeSheetChipText}>{item.label}</Text>
+                  <Text style={styles.activeSheetChipText}>{translateSourceText("services", item.label)}</Text>
                 </LinearGradient>
               ) : (
                 <View style={[styles.sheetChip, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
-                  <Text style={[styles.sheetChipText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                  <Text style={[styles.sheetChipText, { color: servicesTheme.colors.text }]}>{translateSourceText("services", item.label)}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -382,7 +387,7 @@ function FilterBottomSheet({
             end={{ x: 1, y: 0 }}
             style={styles.applyBtn}
           >
-            <Text style={styles.applyBtnText}>Apply Filters</Text>
+            <Text style={styles.applyBtnText}>{tx("services:myOrder.applyFilters")}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -391,6 +396,7 @@ function FilterBottomSheet({
 }
 
 export default function MyOrder() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const servicesTheme = useServicesTheme();
   const { isAuthenticated } = useAuth();
@@ -441,7 +447,7 @@ export default function MyOrder() {
           setSummaryData(null);
         }
       } catch (err: any) {
-        setError(err?.message || "Failed to load orders");
+        setError(err?.message || i18n.t("services:r2.failedToLoadOrders"));
         if (!append) setOrders([]);
       } finally {
         setLoading(false);
@@ -497,7 +503,7 @@ export default function MyOrder() {
         <View style={[styles.searchBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
           <MaterialCommunityIcons name="magnify" size={20} color={servicesTheme.colors.muted} />
           <TextInput
-            placeholder="Search your orders here"
+            placeholder={tx("services:myOrder.searchYourOrdersHere")}
             placeholderTextColor={servicesTheme.colors.subtle}
             style={[styles.searchInput, { color: servicesTheme.colors.text }]}
             value={searchQuery}
@@ -516,13 +522,13 @@ export default function MyOrder() {
           activeOpacity={0.78}
         >
           <MaterialCommunityIcons name="tune-variant" size={20} color={servicesTheme.colors.muted} />
-          <Text style={[styles.filterText, { color: servicesTheme.colors.muted }]}>Filters</Text>
+          <Text style={[styles.filterText, { color: servicesTheme.colors.muted }]}>{tx("services:myOrder.filters")}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.statsRow}>
         <LinearGradient colors={servicesTheme.isDark ? ["#132016", "#111113"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: servicesTheme.colors.border }]}>
-          <Text style={styles.statLabel}>Coins Earned Till Date:</Text>
+          <Text style={styles.statLabel}>{tx("services:myOrder.coinsEarnedTillDate")}</Text>
           <View style={styles.statValueRow}>
             <Coin width={22} height={22} />
             <Text style={styles.statValue}>
@@ -532,7 +538,7 @@ export default function MyOrder() {
         </LinearGradient>
 
         <LinearGradient colors={servicesTheme.isDark ? ["#132016", "#111113"] : ["#EFFFF4", "#DDFFE8"]} style={[styles.statCard, { borderColor: servicesTheme.colors.border }]}>
-          <Text style={styles.statLabel}>Total Savings Till Date:</Text>
+          <Text style={styles.statLabel}>{tx("services:myOrder.totalSavingsTillDate")}</Text>
           <Text style={[styles.statValue, styles.savingsText]}>
             {"\u20B9"}{summary.totalSavings.toLocaleString("en-IN")}
           </Text>
@@ -553,13 +559,13 @@ export default function MyOrder() {
         <View style={styles.stateWrap}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => loadOrders(1)}>
-            <Text style={styles.retryText}>Try Again</Text>
+            <Text style={styles.retryText}>{tx("services:myOrder.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
-    return <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No orders found</Text>;
+    return <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>{tx("services:myOrder.noOrdersFound")}</Text>;
   };
 
   return (
@@ -572,7 +578,7 @@ export default function MyOrder() {
         >
           <MaterialCommunityIcons name="chevron-left" size={28} color={servicesTheme.colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headingTitle, { color: servicesTheme.colors.textStrong }]}>My Orders</Text>
+        <Text style={[styles.headingTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:myOrder.myOrders")}</Text>
         <TouchableOpacity
           activeOpacity={0.85}
           style={[styles.helpBtn, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}
@@ -584,7 +590,7 @@ export default function MyOrder() {
             color="#EC4899"
             style={styles.helpIcon}
           />
-          <Text style={styles.helpText}>Help</Text>
+          <Text style={styles.helpText}>{tx("services:myOrder.help")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -612,7 +618,7 @@ export default function MyOrder() {
           loadingMore ? (
             <ActivityIndicator size="small" color={GREEN} style={styles.footerLoader} />
           ) : orders.length > 0 && page >= totalPages ? (
-            <Text style={[styles.noMoreText, { color: servicesTheme.colors.muted }]}>No More Orders</Text>
+            <Text style={[styles.noMoreText, { color: servicesTheme.colors.muted }]}>{tx("services:myOrder.noMoreOrders")}</Text>
           ) : null
         }
       />

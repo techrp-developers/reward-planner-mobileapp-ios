@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useChatColors } from "./chatUiTokens";
 import type { ChatThemeKey } from "../types";
 import { CHAT_THEMES } from "../theme/chatThemes";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   visible: boolean;
@@ -32,6 +33,7 @@ export default function ChatSettingsSheet({
   onChange,
 }: Props) {
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   return (
     <Modal
@@ -68,15 +70,15 @@ export default function ChatSettingsSheet({
             </View>
             <View style={styles.headingText}>
               <Text style={[styles.title, { color: theme.text }]}>
-                Chat appearance
+                {t("chat:appearance.title")}
               </Text>
               <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-                Changes are visible to everyone in this chat
+                {t("chat:appearance.subtitle")}
               </Text>
             </View>
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Close appearance"
+              accessibilityLabel={t("chat:appearance.close")}
               onPress={onClose}
               style={[styles.close, { backgroundColor: theme.background }]}
             >
@@ -94,11 +96,11 @@ export default function ChatSettingsSheet({
               color={theme.primary}
             />
             <Text style={[styles.sectionTitle, { color: theme.text }]}>
-              Theme
+              {t("chat:appearance.theme")}
             </Text>
           </View>
           <Text style={[styles.sectionHint, { color: theme.secondaryText }]}>
-            Choose the colors for this conversation
+            {t("chat:appearance.themeHint")}
           </Text>
           <View style={styles.themeGrid}>
             {CHAT_THEMES.map((option) => {
@@ -107,7 +109,7 @@ export default function ChatSettingsSheet({
                 <TouchableOpacity
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selected, disabled: saving || Boolean(unavailable) }}
-                  accessibilityLabel={option.name}
+                  accessibilityLabel={t(`chat:themes.${option.key}`)}
                   key={option.key}
                   disabled={saving || Boolean(unavailable)}
                   activeOpacity={0.75}
@@ -163,7 +165,7 @@ export default function ChatSettingsSheet({
                     ) : null}
                   </View>
                   <Text style={[styles.themeName, { color: theme.text }]}>
-                    {option.name}
+                    {t(`chat:themes.${option.key}`)}
                   </Text>
                 </TouchableOpacity>
               );
@@ -174,7 +176,7 @@ export default function ChatSettingsSheet({
             <View style={styles.saving}>
               <ActivityIndicator size="small" color={theme.primary} />
               <Text style={[styles.savingText, { color: theme.secondaryText }]}>
-                Updating for everyone…
+                {t("chat:appearance.updating")}
               </Text>
             </View>
           ) : null}

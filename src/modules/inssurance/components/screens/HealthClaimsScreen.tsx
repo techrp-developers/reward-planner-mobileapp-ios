@@ -17,6 +17,8 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
 import { fetchClaimHistory } from '../../services/inssuranceApi';
+import { useTranslation } from "react-i18next";
+import { claimStatusLabel } from "../../i18nLabels";
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +30,7 @@ interface StepData {
 }
 
 const HealthClaimsScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark, theme } = useAppTheme();
 
@@ -113,7 +116,7 @@ const HealthClaimsScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>My Claims</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthClaimsScreen.myClaims")}</Text>
         </View>
       </View>
 
@@ -131,8 +134,8 @@ const HealthClaimsScreen: React.FC = () => {
             <View style={[styles.quickClaimIconBox, { backgroundColor: '#e5f6fd' }]}>
               <MaterialCommunityIcons name="file-document-outline" size={24} color="#005b7f" />
             </View>
-            <Text style={[styles.quickClaimBtnTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Cashless Claim</Text>
-            <Text style={[styles.quickClaimBtnSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>At network hospital</Text>
+            <Text style={[styles.quickClaimBtnTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthClaimsScreen.cashlessClaim")}</Text>
+            <Text style={[styles.quickClaimBtnSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthClaimsScreen.atNetworkHospital")}</Text>
           </TouchableOpacity>
 
           {/* Button 2: Reimbursement Claim */}
@@ -144,30 +147,30 @@ const HealthClaimsScreen: React.FC = () => {
             <View style={[styles.quickClaimIconBox, { backgroundColor: '#FDF2F8' }]}>
               <MaterialCommunityIcons name="credit-card-outline" size={24} color="#DB2777" />
             </View>
-            <Text style={[styles.quickClaimBtnTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Reimbursement Claim</Text>
-            <Text style={[styles.quickClaimBtnSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Submit bills post treatment</Text>
+            <Text style={[styles.quickClaimBtnTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthClaimsScreen.reimbursementClaim")}</Text>
+            <Text style={[styles.quickClaimBtnSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthClaimsScreen.submitBillsPostTreatment")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* How Claim Works Header */}
         <View style={{ marginTop: rs(24) }}>
           <Text style={[styles.headerTitle, { fontSize: fs(14), color: isDark ? '#FFFFFF' : '#0F172A', marginBottom: rs(6) }]}>
-            How Claim Works
+            {tx("insurance:healthClaimsScreen.howClaimWorks")}
           </Text>
         </View>
 
         <TimelineTracker 
           steps={[
-            { label: 'Raise Claim', sub: 'Submit enquiry details', status: 'active' },
-            { label: 'Review', sub: 'We verify documents', status: 'pending' },
-            { label: 'Settlement', sub: 'Claim amount settled', status: 'pending' },
+            { label: tx('insurance:claims.raise'), sub: tx('insurance:claims.raiseSub'), status: 'active' },
+            { label: tx('insurance:claims.review'), sub: tx('insurance:claims.reviewSub'), status: 'pending' },
+            { label: tx('insurance:claims.settlement'), sub: tx('insurance:claims.settlementSub'), status: 'pending' },
           ]}
         />
 
         {/* Enquiry History Header */}
         <View style={{ marginTop: rs(24), marginBottom: rs(6) }}>
           <Text style={[styles.headerTitle, { fontSize: fs(14), color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            Enquiry History
+            {tx("insurance:healthClaimsScreen.enquiryHistory")}
           </Text>
         </View>
 
@@ -179,7 +182,7 @@ const HealthClaimsScreen: React.FC = () => {
             <View style={{ alignItems: 'center', paddingVertical: rs(40) }}>
               <MaterialCommunityIcons name="file-document-outline" size={48} color={isDark ? '#3F3F46' : '#CBD5E1'} />
               <Text style={{ marginTop: rs(12), color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(12), fontWeight: '600' }}>
-                No claim enquiries found
+                {tx("insurance:healthClaimsScreen.noClaimEnquiriesFound")}
               </Text>
             </View>
           ) : (
@@ -203,20 +206,20 @@ const HealthClaimsScreen: React.FC = () => {
 
               // Build timeline steps based on status
               const timelineSteps: StepData[] = [
-                { label: 'Submitted', sub: item.admission_date || '', status: 'done' },
+                { label: tx('insurance:status.submitted'), sub: item.admission_date || '', status: 'done' },
                 { 
-                  label: 'Document Verification', 
-                  sub: item.status === 'Submitted' ? 'Pending' : 'Completed', 
+                  label: tx('insurance:claims.docVerification'), 
+                  sub: item.status === 'Submitted' ? tx('insurance:status.pending') : tx('insurance:status.completed'), 
                   status: item.status === 'Submitted' ? 'active' : 'done' 
                 },
                 { 
-                  label: 'Pre-Authorization', 
-                  sub: item.status === 'Submitted' || item.status === 'Under Review' ? 'Pending' : 'Completed', 
+                  label: tx('insurance:claims.preAuth'), 
+                  sub: item.status === 'Submitted' || item.status === 'Under Review' ? tx('insurance:status.pending') : tx('insurance:status.completed'), 
                   status: item.status === 'Under Review' ? 'active' : item.status === 'Submitted' ? 'pending' : 'done' 
                 },
                 { 
-                  label: 'Approval', 
-                  sub: item.status, 
+                  label: tx('insurance:claims.approval'), 
+                  sub: claimStatusLabel(item.status), 
                   status: item.status === 'Approved' ? 'done' : item.status === 'Rejected' ? 'pending' : 'pending' 
                 },
               ];
@@ -227,13 +230,13 @@ const HealthClaimsScreen: React.FC = () => {
                     {/* Type pill */}
                     <View style={[styles.typeBadge, { backgroundColor: isItemCashless ? '#ECFDF5' : '#F3E8FF' }]}>
                       <Text style={[styles.typeText, { color: isItemCashless ? '#047857' : '#6D28D9' }]}>
-                        {isItemCashless ? 'Cashless Claim' : 'Reimbursement Claim'}
+                        {isItemCashless ? tx('insurance:healthClaimsScreen.cashlessClaim') : tx('insurance:healthClaimsScreen.reimbursementClaim')}
                       </Text>
                     </View>
                     {/* Status pill + chevron */}
                     <View style={styles.statusCol}>
                       <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-                        <Text style={[styles.statusText, { color: statusText }]}>{item.status}</Text>
+                        <Text style={[styles.statusText, { color: statusText }]}>{claimStatusLabel(item.status)}</Text>
                       </View>
                       <MaterialCommunityIcons name="chevron-right" size={16} color={isDark ? '#71717A' : '#94A3B8'} style={{ marginLeft: 4 }} />
                     </View>
@@ -255,7 +258,7 @@ const HealthClaimsScreen: React.FC = () => {
                           CLM{String(item.id).padStart(8, '0')}
                         </Text>
                         <Text style={[styles.claimantText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-                          {isItemCashless ? (item.doctor_name || 'Assigned Assessor') : 'Self Reimbursement'}
+                          {isItemCashless ? (item.doctor_name || tx('insurance:claims.assignedAssessor')) : tx('insurance:claims.selfReimbursement')}
                         </Text>
                         <Text style={[styles.hospitalText, { color: isDark ? '#71717A' : '#64748B' }]} numberOfLines={1}>
                           {item.hospital_name} ({item.diagnosis})
@@ -263,7 +266,7 @@ const HealthClaimsScreen: React.FC = () => {
                       </View>
                     </View>
                     <View style={styles.cardDetailsRight}>
-                      <Text style={[styles.amtLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Amount</Text>
+                      <Text style={[styles.amtLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthClaimsScreen.amount")}</Text>
                       <Text style={[styles.amtVal, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
                         ₹{displayAmt ? Number(displayAmt).toLocaleString('en-IN') : '—'}
                       </Text>
@@ -284,17 +287,17 @@ const HealthClaimsScreen: React.FC = () => {
       <View style={[styles.tabBar, { backgroundColor: isDark ? '#18181B' : '#FFFFFF', borderTopColor: isDark ? '#27272A' : '#E4E4E7' }]}>
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('HealthDashboard')}>
           <MaterialCommunityIcons name="home-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthClaimsScreen.home")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6}>
           <MaterialCommunityIcons name="file-document" size={24} color="#005b7f" />
-          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>Claims</Text>
+          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:healthClaimsScreen.claims")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('Profile')}>
           <MaterialCommunityIcons name="account-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthClaimsScreen.profile")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

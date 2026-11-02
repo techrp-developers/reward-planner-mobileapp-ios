@@ -17,6 +17,7 @@ import {
     type MFArticleSummary,
 } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 48;
@@ -34,6 +35,7 @@ interface Props {
 const ArticleSeparator = () => <View style={styles.separator} />;
 
 const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
     const [articles, setArticles] = useState<SliderArticle[]>([]);
     const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
                 <View style={styles.thumbOverlay} />
                 <View style={styles.tagRow}>
                     <View style={styles.tagBadge}>
-                        <Text style={styles.tagText}>INFORMED INVESTING</Text>
+                        <Text style={styles.tagText}>{tx("services:mFInformedInvestors.informedInvesting")}</Text>
                         <Text style={styles.tagSep}> · </Text>
                         <Text style={styles.tagSection} numberOfLines={1}>{item.sectionTitle}</Text>
                     </View>
@@ -99,7 +101,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
                         sectionId: item.sectionId,
                     })}
                 >
-                    <Text style={styles.readMore}>Read More</Text>
+                    <Text style={styles.readMore}>{tx("services:mFInformedInvestors.readMore")}</Text>
                     <Text style={styles.readMoreArrow}> ›</Text>
                 </TouchableOpacity>
             </View>
@@ -119,7 +121,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
     return (
         <View style={styles.section}>
             <View style={styles.header}>
-                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>For the Informed Investor</Text>
+                <Text style={[styles.sectionTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:mFInformedInvestors.forTheInformedInvestor")}</Text>
                 <Text style={[styles.sectionSubtitle, { color: servicesTheme.colors.muted }]}>
                     Explore fund types, goal planning, and retirement strategies to
                     make smarter investment decisions.
@@ -155,7 +157,7 @@ const MFInformedInvestors: React.FC<Props> = ({ navigation }) => {
                 onPress={() => navigation.navigate('MFInvestorsDetail', { categoryId: INFORMED_CATEGORY_ID })}
                 activeOpacity={0.8}
             >
-                <Text style={styles.viewAllText}>View All</Text>
+                <Text style={styles.viewAllText}>{tx("services:mFInformedInvestors.viewAll")}</Text>
             </TouchableOpacity>
         </View>
     );

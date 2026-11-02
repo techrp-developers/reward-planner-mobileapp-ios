@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useAppTheme } from "../../../../../theme/ThemeContext";
+import { translateSourceText } from "../../../../../i18n/sourceText";
 
 type Chip = {
   id: string;
@@ -67,7 +68,7 @@ export default function FilterChipsRow({
               )}
 
               {item.label !== "" && (
-                <Text style={[styles.chipText, { color: theme.text }]}>{item.label}</Text>
+                <Text style={[styles.chipText, { color: theme.text }]}>{translateSourceText("products", item.label)}</Text>
               )}
 
               {item.id === "rating" && (

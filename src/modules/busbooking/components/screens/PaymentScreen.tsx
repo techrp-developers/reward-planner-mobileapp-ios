@@ -49,6 +49,8 @@ import {
   getBusCheckoutErrorResult,
   runBusCheckout,
 } from "../../utils/busCheckout";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 
 /*
@@ -58,6 +60,7 @@ import {
 */
 
 export default function PaymentScreen() {
+  const { t: tx } = useTranslation();
   const {
     popup,
     showPopup,
@@ -345,8 +348,8 @@ export default function PaymentScreen() {
         ) {
 
           showPopup({
-            title: "Payment Error",
-            message: "Seat block information is missing. Please select your seat again.",
+            title: i18n.t("busBooking:paymentScreen.msg.paymentError"),
+            message: i18n.t("busBooking:paymentScreen.msg.seatBlockInformationIsMissing"),
             variant: "error",
           });
 
@@ -366,8 +369,8 @@ export default function PaymentScreen() {
         ) {
 
           showPopup({
-            title: "Payment Error",
-            message: "Bus booking order reference is missing. Please select your seat again.",
+            title: i18n.t("busBooking:paymentScreen.msg.paymentError"),
+            message: i18n.t("busBooking:paymentScreen.msg.busBookingOrderReferenceIs"),
             variant: "error",
           });
 
@@ -381,8 +384,8 @@ export default function PaymentScreen() {
         ) {
 
           showPopup({
-            title: "Payment Error",
-            message: "Local bus booking order is missing.",
+            title: i18n.t("busBooking:paymentScreen.msg.paymentError"),
+            message: i18n.t("busBooking:paymentScreen.msg.localBusBookingOrderIs"),
             variant: "error",
           });
 
@@ -405,8 +408,8 @@ export default function PaymentScreen() {
         ) {
 
           showPopup({
-            title: "Payment Error",
-            message: "Invalid payment amount.",
+            title: i18n.t("busBooking:paymentScreen.msg.paymentError"),
+            message: i18n.t("busBooking:paymentScreen.msg.invalidPaymentAmount"),
             variant: "error",
           });
 
@@ -644,7 +647,7 @@ export default function PaymentScreen() {
             styles.headerTitle
           }
         >
-          Payment
+          {tx("busBooking:paymentScreen.payment")}
         </Text>
 
 
@@ -700,7 +703,7 @@ export default function PaymentScreen() {
               styles.smallLabel
             }
           >
-            TOTAL PAYABLE
+            {tx("busBooking:paymentScreen.totalPayable")}
           </Text>
 
 
@@ -761,8 +764,8 @@ export default function PaymentScreen() {
 
             {selectedSeats.length ===
             1
-              ? "Seat"
-              : "Seats"}
+              ? i18n.t("busBooking:r2.seat")
+              : i18n.t("busBooking:r2.seats")}
 
             {selectedSeats.length >
             0
@@ -798,7 +801,7 @@ export default function PaymentScreen() {
               styles.sectionTitle
             }
           >
-            Trip Details
+            {tx("busBooking:paymentScreen.tripDetails")}
           </Text>
 
 
@@ -834,7 +837,7 @@ export default function PaymentScreen() {
                   styles.detailLabel
                 }
               >
-                Boarding
+                {tx("busBooking:paymentScreen.boarding")}
               </Text>
 
 
@@ -890,7 +893,7 @@ export default function PaymentScreen() {
                   styles.detailLabel
                 }
               >
-                Dropping
+                {tx("busBooking:paymentScreen.dropping")}
               </Text>
 
 
@@ -946,7 +949,7 @@ export default function PaymentScreen() {
                   styles.detailLabel
                 }
               >
-                Passengers
+                {tx("busBooking:paymentScreen.passengers")}
               </Text>
 
 
@@ -982,7 +985,7 @@ export default function PaymentScreen() {
             styles.sectionHeading
           }
         >
-          Secure Payment
+          {tx("busBooking:paymentScreen.securePayment")}
         </Text>
 
 
@@ -1024,7 +1027,7 @@ export default function PaymentScreen() {
                   styles.methodTitle
                 }
               >
-                UPI
+                {tx("busBooking:paymentScreen.upi")}
               </Text>
 
 
@@ -1033,7 +1036,7 @@ export default function PaymentScreen() {
                   styles.methodSub
                 }
               >
-                Google Pay, PhonePe and supported UPI apps
+                {tx("busBooking:paymentScreen.googlePayPhonepeAndSupported")}
               </Text>
 
             </View>
@@ -1080,7 +1083,7 @@ export default function PaymentScreen() {
                   styles.methodTitle
                 }
               >
-                Debit / Credit Card
+                {tx("busBooking:paymentScreen.debitCreditCard")}
               </Text>
 
 
@@ -1089,7 +1092,7 @@ export default function PaymentScreen() {
                   styles.methodSub
                 }
               >
-                Cards supported by Razorpay Checkout
+                {tx("busBooking:paymentScreen.cardsSupportedByRazorpayCheckout")}
               </Text>
 
             </View>
@@ -1136,7 +1139,7 @@ export default function PaymentScreen() {
                   styles.methodTitle
                 }
               >
-                Net Banking
+                {tx("busBooking:paymentScreen.netBanking")}
               </Text>
 
 
@@ -1145,7 +1148,7 @@ export default function PaymentScreen() {
                   styles.methodSub
                 }
               >
-                Choose bank in secure checkout
+                {tx("busBooking:paymentScreen.chooseBankInSecureCheckout")}
               </Text>
 
             </View>
@@ -1185,7 +1188,7 @@ export default function PaymentScreen() {
                 styles.secureTitle
               }
             >
-              Secure Payment
+              {tx("busBooking:paymentScreen.securePayment")}
             </Text>
 
 
@@ -1194,7 +1197,7 @@ export default function PaymentScreen() {
                 styles.secureText
               }
             >
-              Payment will be processed through your existing Razorpay integration.
+              {tx("busBooking:paymentScreen.paymentWillBeProcessedThrough")}
             </Text>
 
           </View>
@@ -1238,7 +1241,7 @@ export default function PaymentScreen() {
                   styles.successTitle
                 }
               >
-                Razorpay Order Created
+                {tx("busBooking:paymentScreen.razorpayOrderCreated")}
               </Text>
 
 
@@ -1287,7 +1290,7 @@ export default function PaymentScreen() {
               styles.referenceLabel
             }
           >
-            Booking Reference
+            {tx("busBooking:paymentScreen.bookingReference")}
           </Text>
 
 
@@ -1373,7 +1376,7 @@ export default function PaymentScreen() {
                 >
                   {processingPayment
                     ? "Processing Payment..."
-                    : "Creating Payment..."}
+                    : i18n.t("busBooking:r2.creatingPayment")}
                 </Text>
               </>
 
@@ -1393,7 +1396,7 @@ export default function PaymentScreen() {
                     styles.payButtonText
                   }
                 >
-                  Payment Order Ready
+                  {tx("busBooking:paymentScreen.paymentOrderReady")}
                 </Text>
               </>
 
@@ -1447,7 +1450,7 @@ export default function PaymentScreen() {
               styles.poweredText
             }
           >
-            Secure payment powered by Razorpay
+            {tx("busBooking:paymentScreen.securePaymentPoweredByRazorpay")}
           </Text>
 
         </View>

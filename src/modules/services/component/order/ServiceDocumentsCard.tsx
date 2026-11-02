@@ -9,12 +9,14 @@ import {
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { ServiceDocument } from '../../api/OrderAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type Props = {
   documents: ServiceDocument[];
 };
 
 export default function ServiceDocumentsCard({ documents }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   if (documents.length === 0) return null;
@@ -30,7 +32,7 @@ export default function ServiceDocumentsCard({ documents }: Props) {
       {/* Header row */}
       <View style={styles.header}>
         <MaterialCommunityIcons name="file-multiple-outline" size={16} color={servicesTheme.colors.primary} />
-        <Text style={[styles.title, { color: servicesTheme.colors.text }]}>Documents</Text>
+        <Text style={[styles.title, { color: servicesTheme.colors.text }]}>{tx("services:serviceDocumentsCard.documents")}</Text>
         <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#EDE9FE' }]}>
           <Text style={[styles.countText, { color: servicesTheme.colors.primary }]}>{uploadedCount}/{documents.length}</Text>
         </View>
@@ -53,16 +55,16 @@ export default function ServiceDocumentsCard({ documents }: Props) {
             <View style={styles.badges}>
               {doc.is_mandatory && (
                 <View style={styles.mandatoryBadge}>
-                  <Text style={styles.mandatoryText}>Required</Text>
+                  <Text style={styles.mandatoryText}>{tx("services:serviceDocumentsCard.required")}</Text>
                 </View>
               )}
               {doc.uploaded ? (
                 <View style={styles.uploadedBadge}>
-                  <Text style={styles.uploadedText}>Uploaded</Text>
+                  <Text style={styles.uploadedText}>{tx("services:serviceDocumentsCard.uploaded")}</Text>
                 </View>
               ) : (
                 <View style={styles.pendingBadge}>
-                  <Text style={styles.pendingText}>Pending</Text>
+                  <Text style={styles.pendingText}>{tx("services:serviceDocumentsCard.pending")}</Text>
                 </View>
               )}
               {doc.expiry_date && (

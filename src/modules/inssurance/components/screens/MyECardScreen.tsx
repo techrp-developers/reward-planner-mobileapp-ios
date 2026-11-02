@@ -22,6 +22,10 @@ import { generatePDF } from 'react-native-html-to-pdf';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
 import { fetchGmcDetails, fetchClaimHistory, INSURANCE_BASE_URL } from '../../services/inssuranceApi';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { claimStatusLabel, relationLabel } from "../../i18nLabels";
+import { formatINR } from "../../../../i18n/format";
 
 const isValidMemberName = (name: any) => {
   if (!name) return false;
@@ -68,6 +72,7 @@ const CardPattern: React.FC = () => {
 };
 
 const MyECardScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
 
@@ -520,12 +525,12 @@ const MyECardScreen: React.FC = () => {
               message: shareMessage,
             });
           } catch (textShareError: any) {
-            Alert.alert('Share Failed', textShareError.message || 'Unable to share E-Card details.');
+            Alert.alert(i18n.t("insurance:myECardScreen.shareFailed"), textShareError.message || i18n.t('insurance:card.shareUnavailable'));
           }
         }
       }, 150);
     } catch (error: any) {
-      Alert.alert('Share Failed', error.message || 'Unable to generate E-Card PDF.');
+      Alert.alert(i18n.t("insurance:myECardScreen.shareFailed"), error.message || i18n.t('insurance:card.pdfFailed'));
     }
   };
 
@@ -535,7 +540,7 @@ const MyECardScreen: React.FC = () => {
       const downloadUrl = `${INSURANCE_BASE_URL}/v1/gmc/download-pdf?userId=${gmcDetails.user_id || 37}`;
       await Linking.openURL(downloadUrl);
     } catch (err: any) {
-      Alert.alert('Download Failed', 'Could not open the download link: ' + err.message);
+      Alert.alert(i18n.t("insurance:myECardScreen.downloadFailed"), i18n.t("insurance:myECardScreen.couldNotOpenTheDownload") + err.message);
     }
   };
 
@@ -553,12 +558,12 @@ const MyECardScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>My E-Card</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:myECardScreen.myECard")}</Text>
         </View>
 
         <TouchableOpacity style={styles.helpBtn} activeOpacity={0.7}>
           <MaterialCommunityIcons name="help-circle-outline" size={14} color="#005b7f" style={{ marginRight: 3 }} />
-          <Text style={styles.helpText}>Help</Text>
+          <Text style={styles.helpText}>{tx("insurance:myECardScreen.help")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -588,8 +593,8 @@ const MyECardScreen: React.FC = () => {
                       <Text style={styles.careLogoText}>care</Text>
                     </View>
                     <View style={styles.careLogoSubBox}>
-                      <Text style={styles.careLogoSubText}>HEALTH</Text>
-                      <Text style={styles.careLogoSubTextMin}>INSURANCE</Text>
+                      <Text style={styles.careLogoSubText}>{tx("insurance:myECardScreen.health")}</Text>
+                      <Text style={styles.careLogoSubTextMin}>{tx("insurance:myECardScreen.insurance")}</Text>
                     </View>
                   </View>
                   
@@ -602,15 +607,15 @@ const MyECardScreen: React.FC = () => {
 
                 {/* Policy type & company row */}
                 <View style={{ marginTop: rs(6) }}>
-                  <Text style={styles.groupPolicyText}>Policy Type : {gmcDetails.policy_type || 'Group Health Insurance'}</Text>
+                  <Text style={styles.groupPolicyText}>{tx('insurance:card.policyType', { type: gmcDetails.policy_type || tx('insurance:card.groupHealthInsurance') })}</Text>
                   <Text style={styles.groupCompanyText}>{gmcDetails.policy_company_name || gmcDetails.company_name || '—'}</Text>
 
                   {/* Members Table - Spanning 100% full width */}
                   <View style={styles.groupTableContainer}>
                     <View style={styles.groupTableHeader}>
-                      <Text style={[styles.groupColHeader, { width: '50%' }]}>Name</Text>
-                      <Text style={[styles.groupColHeader, { width: '27%' }]}>Client Id</Text>
-                      <Text style={[styles.groupColHeader, { width: '23%' }]}>Dob</Text>
+                      <Text style={[styles.groupColHeader, { width: '50%' }]}>{tx("insurance:myECardScreen.name")}</Text>
+                      <Text style={[styles.groupColHeader, { width: '27%' }]}>{tx("insurance:myECardScreen.clientId")}</Text>
+                      <Text style={[styles.groupColHeader, { width: '23%' }]}>{tx("insurance:myECardScreen.dob")}</Text>
                     </View>
                     
                     {members.map((m: any, idx) => (
@@ -638,42 +643,42 @@ const MyECardScreen: React.FC = () => {
                       <Text style={styles.careLogoText}>care</Text>
                     </View>
                     <View style={styles.careLogoSubBox}>
-                      <Text style={styles.careLogoSubText}>HEALTH</Text>
-                      <Text style={styles.careLogoSubTextMin}>INSURANCE</Text>
+                      <Text style={styles.careLogoSubText}>{tx("insurance:myECardScreen.health")}</Text>
+                      <Text style={styles.careLogoSubTextMin}>{tx("insurance:myECardScreen.insurance")}</Text>
                     </View>
                   </View>
 
                   <View style={styles.activeBadge}>
                     <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" style={{ marginRight: 2 }} />
-                    <Text style={styles.activeText}>Active</Text>
+                    <Text style={styles.activeText}>{tx("insurance:myECardScreen.active")}</Text>
                   </View>
                 </View>
 
                 <View style={styles.cardInfoGrid}>
                   <View style={styles.cardInfoCol}>
-                    <Text style={styles.cardLabel}>Policy Type</Text>
-                    <Text style={styles.cardValue} numberOfLines={1}>{gmcDetails.policy_type || 'Personal Health Card'}</Text>
+                    <Text style={styles.cardLabel}>{tx("insurance:myECardScreen.policyType")}</Text>
+                    <Text style={styles.cardValue} numberOfLines={1}>{gmcDetails.policy_type || tx('insurance:card.personalHealthCard')}</Text>
                   </View>
                   <View style={styles.cardInfoCol}>
-                    <Text style={styles.cardLabel}>Policy Number</Text>
+                    <Text style={styles.cardLabel}>{tx("insurance:myECardScreen.policyNumber")}</Text>
                     <Text style={styles.cardValue}>{gmcDetails.policy_number || '—'}</Text>
                   </View>
                 </View>
 
                 <View style={[styles.cardInfoGrid, { marginTop: rs(10) }]}>
                   <View style={styles.cardInfoCol}>
-                    <Text style={styles.cardLabel}>Member ID</Text>
+                    <Text style={styles.cardLabel}>{tx("insurance:myECardScreen.memberId")}</Text>
                     <Text style={styles.cardValue}>{gmcDetails.member_id || '—'}</Text>
                   </View>
                   <View style={styles.cardInfoCol}>
-                    <Text style={styles.cardLabel}>Valid Till</Text>
+                    <Text style={styles.cardLabel}>{tx("insurance:myECardScreen.validTill")}</Text>
                     <View style={styles.dateRow}>
                       <MaterialCommunityIcons name="calendar" size={11} color="rgba(255,255,255,0.7)" style={{ marginRight: 3 }} />
                       <Text style={styles.cardValue}>{gmcDetails.valid_till || '—'}</Text>
                     </View>
                   </View>
                   <View style={styles.cardInfoCol}>
-                    <Text style={styles.cardLabel}>Employee ID</Text>
+                    <Text style={styles.cardLabel}>{tx("insurance:myECardScreen.employeeId")}</Text>
                     <Text style={styles.cardValue}>{gmcDetails.employee_id || '—'}</Text>
                   </View>
                 </View>
@@ -717,7 +722,7 @@ const MyECardScreen: React.FC = () => {
                     {/* Col 2 */}
                     <View style={styles.backMiddleCol}>
                       <MaterialCommunityIcons name="whatsapp" size={18} color="#25D366" />
-                      <Text style={styles.backMiddleColLabel}>WhatsApp</Text>
+                      <Text style={styles.backMiddleColLabel}>{tx("insurance:myECardScreen.whatsapp")}</Text>
                       <Text style={styles.backMiddleColVal}>8860402452</Text>
                     </View>
 
@@ -727,14 +732,14 @@ const MyECardScreen: React.FC = () => {
                     {/* Col 3 */}
                     <View style={styles.backMiddleCol}>
                       <MaterialCommunityIcons name="flash" size={18} color="#EAB308" />
-                      <Text style={styles.backSelfHelpLabel}>SELF HELP</Text>
+                      <Text style={styles.backSelfHelpLabel}>{tx("insurance:myECardScreen.selfHelp2")}</Text>
                     </View>
                   </View>
 
                   {/* Bottom queries line */}
                   <View style={styles.backMiddleBottomBar}>
                     <Text style={styles.backMiddleBottomText} numberOfLines={1}>
-                      Submit Your Queries/Request: www.careinsurance.com/contact-us.html
+                      {tx("insurance:myECardScreen.submitYourQueriesRequestWww")}
                     </Text>
                   </View>
                 </View>
@@ -742,15 +747,15 @@ const MyECardScreen: React.FC = () => {
                 {/* Back Card Footer Disclaimer and IRDA */}
                 <View style={styles.backFooterRow}>
                   <View style={{ flex: 1.8 }}>
-                    <Text style={styles.backDisclaimerHeader}>Disclaimer</Text>
-                    <Text style={styles.backDisclaimerText}>1. This Card is not transferable.</Text>
-                    <Text style={styles.backDisclaimerText}>2. Use of this Card is governed by the Policy Terms and Conditions.</Text>
-                    <Text style={styles.backDisclaimerText}>3. To avail cashless facility, this Card needs to be produced along with photo ID proof.</Text>
-                    <Text style={styles.backDisclaimerText}>4. Valid upto Policy Period End Date or cancellation date, whichever is earlier.</Text>
+                    <Text style={styles.backDisclaimerHeader}>{tx("insurance:myECardScreen.disclaimer")}</Text>
+                    <Text style={styles.backDisclaimerText}>{tx("insurance:myECardScreen.n1ThisCardIsNot")}</Text>
+                    <Text style={styles.backDisclaimerText}>{tx("insurance:myECardScreen.n2UseOfThisCard")}</Text>
+                    <Text style={styles.backDisclaimerText}>{tx("insurance:myECardScreen.n3ToAvailCashlessFacility")}</Text>
+                    <Text style={styles.backDisclaimerText}>{tx("insurance:myECardScreen.n4ValidUptoPolicyPeriod")}</Text>
                   </View>
 
                   <View style={styles.backIrdaCol}>
-                    <Text style={styles.backIrdaText}>IRDA Registration No. 148</Text>
+                    <Text style={styles.backIrdaText}>{tx("insurance:myECardScreen.irdaRegistrationNo148")}</Text>
                   </View>
                 </View>
               </LinearGradient>
@@ -758,7 +763,7 @@ const MyECardScreen: React.FC = () => {
           </View>
         ) : (
           <View style={[styles.eCard, { justifyContent: 'center', alignItems: 'center', minHeight: rs(140), backgroundColor: '#E2E8F0' }]}>
-            <Text style={{ color: '#64748B' }}>No active health card available</Text>
+            <Text style={{ color: '#64748B' }}>{tx("insurance:myECardScreen.noActiveHealthCardAvailable")}</Text>
           </View>
         )}
 
@@ -770,7 +775,7 @@ const MyECardScreen: React.FC = () => {
             onPress={handleDownloadPdf}
           >
             <MaterialCommunityIcons name="download" size={16} color="#005b7f" />
-            <Text style={[styles.actionBtnText, { color: isDark ? '#E4E4E7' : '#334155' }]}>Download PDF</Text>
+            <Text style={[styles.actionBtnText, { color: isDark ? '#E4E4E7' : '#334155' }]}>{tx("insurance:myECardScreen.downloadPdf")}</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.actionBtn, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]} 
@@ -778,14 +783,14 @@ const MyECardScreen: React.FC = () => {
             onPress={handleShareCard}
           >
             <MaterialCommunityIcons name="share-variant" size={15} color="#005b7f" />
-            <Text style={[styles.actionBtnText, { color: isDark ? '#E4E4E7' : '#334155' }]}>Share Card</Text>
+            <Text style={[styles.actionBtnText, { color: isDark ? '#E4E4E7' : '#334155' }]}>{tx("insurance:myECardScreen.shareCard")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Covered Members List */}
         <View style={styles.sectionBlock}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Covered Members</Text>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:myECardScreen.coveredMembers")}</Text>
           </View>
  
           <View style={[styles.listContainer, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
@@ -804,7 +809,7 @@ const MyECardScreen: React.FC = () => {
                   <View style={{ marginLeft: rs(10), flex: 1 }}>
                     <Text style={[styles.memberNameText, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{member.name}</Text>
                     <Text style={[styles.memberRelationText, { color: isDark ? '#A1A1AA' : '#64748B' }]} numberOfLines={2}>
-                      {member.relation} • Client ID: {member.clientId} • DOB: {member.dob}
+                      {tx('insurance:members.line', { relation: relationLabel(member.relation), clientId: member.clientId, dob: member.dob })}
                     </Text>
                   </View>
                 </View>
@@ -819,10 +824,10 @@ const MyECardScreen: React.FC = () => {
         {/* Recent Claim Status list */}
         <View style={[styles.sectionBlock, { marginTop: rs(16) }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Recent Claim Status</Text>
+            <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:myECardScreen.recentClaimStatus")}</Text>
             {claims.length > 0 && (
               <TouchableOpacity activeOpacity={0.6}>
-                <Text style={styles.viewAllText}>View All</Text>
+                <Text style={styles.viewAllText}>{tx("insurance:myECardScreen.viewAll")}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -830,7 +835,7 @@ const MyECardScreen: React.FC = () => {
           <View style={[styles.listContainer, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             {claims.length === 0 ? (
               <View style={{ padding: rs(20), alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(11) }}>No recent claims found</Text>
+                <Text style={{ color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(11) }}>{tx("insurance:myECardScreen.noRecentClaimsFound")}</Text>
               </View>
             ) : (
               claims.map((claim, index) => {
@@ -870,17 +875,17 @@ const MyECardScreen: React.FC = () => {
                       </View>
                       <View style={{ marginLeft: rs(10) }}>
                         <Text style={[styles.claimIdLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>
-                          {claim.claim_type || 'Claim'}
+                          {claim.claim_type || tx('insurance:claims.claim')}
                         </Text>
                         <Text style={[styles.claimIdSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>
-                          {isReimbursement ? `Amount Settled: ₹${claim.actual_cost || claim.estimated_cost || 0}` : `Claim ID: CLM${claim.id}`}
+                          {isReimbursement ? tx('insurance:claims.amountSettled', { amount: formatINR(Number(claim.actual_cost || claim.estimated_cost || 0)) }) : tx('insurance:claims.claimId', { id: `CLM${claim.id}` })}
                         </Text>
                       </View>
                     </View>
                     <View style={styles.listItemRight}>
                       <View style={[styles.statusBadge, { backgroundColor: statusBgColor }]}>
                         <Text style={[styles.statusText, { color: statusTextColor }]}>
-                          {claim.status || 'Under Review'}
+                          {claimStatusLabel(claim.status)}
                         </Text>
                       </View>
                       <MaterialCommunityIcons name="chevron-right" size={16} color={isDark ? '#71717A' : '#94A3B8'} style={{ marginLeft: 4 }} />
@@ -894,52 +899,52 @@ const MyECardScreen: React.FC = () => {
 
         {/* Need Help link buttons */}
         <View style={[styles.needHelpBox, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
-          <Text style={[styles.helpSectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Need Help?</Text>
+          <Text style={[styles.helpSectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:myECardScreen.needHelp")}</Text>
           <View style={styles.helpButtonsGrid}>
             <TouchableOpacity style={styles.helpButton} activeOpacity={0.7}>
               <View style={[styles.helpIconCircle, { backgroundColor: '#e5f6fd' }]}>
                 <MaterialCommunityIcons name="help-circle-outline" size={20} color="#005b7f" />
               </View>
-              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>FAQ</Text>
-              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>View answers</Text>
+              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:myECardScreen.faq")}</Text>
+              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>{tx("insurance:myECardScreen.viewAnswers")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.helpButton} activeOpacity={0.7}>
               <View style={[styles.helpIconCircle, { backgroundColor: '#d0f0fd' }]}>
                 <MaterialCommunityIcons name="phone-outline" size={20} color="#007ca5" />
               </View>
-              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Call Support</Text>
-              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>Talk to our team</Text>
+              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:myECardScreen.callSupport")}</Text>
+              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>{tx("insurance:myECardScreen.talkToOurTeam")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.helpButton} activeOpacity={0.7}>
               <View style={[styles.helpIconCircle, { backgroundColor: '#ECFDF5' }]}>
                 <MaterialCommunityIcons name="whatsapp" size={20} color="#10B981" />
               </View>
-              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>WhatsApp</Text>
-              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>Chat with us</Text>
+              <Text style={[styles.helpBtnTitle, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:myECardScreen.whatsapp")}</Text>
+              <Text style={[styles.helpBtnSub, { color: isDark ? '#71717A' : '#94A3B8' }]}>{tx("insurance:myECardScreen.chatWithUs")}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Benefits horizontal row */}
         <View style={[styles.sectionBlock, { marginTop: rs(16), marginBottom: rs(10) }]}>
-          <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Benefits at a glance</Text>
+          <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:myECardScreen.benefitsAtAGlance")}</Text>
           <View style={styles.benefitsContainer}>
             <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
               <MaterialCommunityIcons name="shield-outline" size={22} color="#005b7f" style={styles.benefitIcon} />
-              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Sum Insured</Text>
+              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:myECardScreen.sumInsured")}</Text>
               <Text style={[styles.benefitVal, { color: '#005b7f' }]}>₹10,00,000</Text>
             </View>
             <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
               <MaterialCommunityIcons name="hospital-building" size={22} color="#10B981" style={styles.benefitIcon} />
-              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Network Hospitals</Text>
+              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:myECardScreen.networkHospitals")}</Text>
               <Text style={[styles.benefitVal, { color: '#10B981' }]}>6200+</Text>
             </View>
             <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
               <MaterialCommunityIcons name="account-group-outline" size={22} color="#7C3AED" style={styles.benefitIcon} />
-              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Family Members</Text>
-              <Text style={[styles.benefitVal, { color: '#7C3AED' }]}>4 Members</Text>
+              <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:myECardScreen.familyMembers")}</Text>
+              <Text style={[styles.benefitVal, { color: '#7C3AED' }]}>{tx("insurance:myECardScreen.n4Members")}</Text>
             </View>
           </View>
         </View>

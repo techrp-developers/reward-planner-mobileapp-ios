@@ -40,6 +40,7 @@ const ServiceInterestForm: React.FC<Props> = ({
   onSubmit,
   canSubmit,
 }) => {
+  const { t: tx } = useTranslation();
   const [showReasonModal, setShowReasonModal] = useState(false);
 
   return (
@@ -55,7 +56,7 @@ const ServiceInterestForm: React.FC<Props> = ({
         <TextInput
           value={values.name}
           onChangeText={(t) => onChange('name', t)}
-          placeholder="Enter your name here"
+          placeholder={tx("services:serviceInterestForm.enterYourNameHere")}
           placeholderTextColor="#A3A3A3"
           style={[styles.input, { paddingRight: 42 }]}
         />
@@ -70,7 +71,7 @@ const ServiceInterestForm: React.FC<Props> = ({
       </Text>
       <Pressable style={styles.inputWrap} onPress={() => setShowReasonModal(true)}>
         <Text style={[styles.input, !values.reason && { color: '#A3A3A3' }]}>
-          {values.reason || 'Select an option'}
+          {values.reason || i18n.t("services:r2.selectAnOption")}
         </Text>
         <View style={styles.rightIcon}>
           <MaterialIcons name="keyboard-arrow-down" size={22} color="#8A8A8A" />
@@ -85,7 +86,7 @@ const ServiceInterestForm: React.FC<Props> = ({
         <TextInput
           value={values.mobile}
           onChangeText={(t) => onChange('mobile', t.replace(/[^0-9]/g, ''))}
-          placeholder="Enter your Mobile Number here"
+          placeholder={tx("services:serviceInterestForm.enterYourMobileNumberHere")}
           placeholderTextColor="#A3A3A3"
           style={[styles.input, { paddingRight: 42 }]}
           keyboardType="number-pad"
@@ -104,7 +105,7 @@ const ServiceInterestForm: React.FC<Props> = ({
         <TextInput
           value={values.email}
           onChangeText={(t) => onChange('email', t)}
-          placeholder="Enter your Email ID here"
+          placeholder={tx("services:serviceInterestForm.enterYourEmailIdHere")}
           placeholderTextColor="#A3A3A3"
           style={[styles.input, { paddingRight: 42 }]}
           keyboardType="email-address"
@@ -116,12 +117,12 @@ const ServiceInterestForm: React.FC<Props> = ({
       </View>
 
       {/* NOTES */}
-      <Text style={styles.optionalLabel}>Additional Notes (optional)</Text>
+      <Text style={styles.optionalLabel}>{tx("services:serviceInterestForm.additionalNotesOptional")}</Text>
       <View style={[styles.inputWrap, styles.textAreaWrap]}>
         <TextInput
           value={values.notes}
           onChangeText={(t) => onChange('notes', t)}
-          placeholder="Enter any specific questions or requirements you'd like to share"
+          placeholder={tx("services:serviceInterestForm.enterAnySpecificQuestionsOr")}
           placeholderTextColor="#A3A3A3"
           style={[styles.input, styles.textArea]}
           multiline
@@ -136,7 +137,7 @@ const ServiceInterestForm: React.FC<Props> = ({
         style={!canSubmit ? styles.submitBtnDisabled : undefined}
       >
         <LinearGradient colors={['#8665FF', '#5B47A3']} style={styles.submitBtn}>
-          <Text style={styles.submitText}>Submit</Text>
+          <Text style={styles.submitText}>{tx("services:serviceInterestForm.submit")}</Text>
         </LinearGradient>
       </TouchableOpacity>
 
@@ -171,6 +172,8 @@ const ServiceInterestForm: React.FC<Props> = ({
 
 export default ServiceInterestForm;
 import { StyleSheet } from 'react-native';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 export const styles = StyleSheet.create({
   /* ================= CARD ================= */

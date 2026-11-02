@@ -14,6 +14,7 @@ import { HomeStackParamList } from '../../navigation/type';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import { useServicesTheme } from '../../utils/useServicesTheme';
 import Reward from '../../../../assets/product/rewards.svg';
+import i18n from "../../../../i18n";
 
 type VerticalServiceCardProps = {
   serviceId: number;
@@ -67,7 +68,7 @@ function CategoryCard({
   const hasPositivePrice = Number.isFinite(parsedPriceValue) && parsedPriceValue > 0;
   const primaryButtonText = hasPositivePrice
     ? `${priceText} + Get Start`
-    : 'Get Started';
+    : i18n.t("services:r2.getStarted");
 
   const parsedRating = Number(rating);
   const hasRating = rating !== undefined && rating !== null && Number.isFinite(parsedRating);

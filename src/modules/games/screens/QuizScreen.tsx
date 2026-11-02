@@ -5,17 +5,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { answerQuiz, getQuiz, getQuizLeaderboard, nextQuizQuestion, startQuiz, type QuizLeader, type QuizRules, type QuizSession } from '../api/quizApi';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Page = 'leaderboard' | 'question' | 'result';
 const defaultRules: QuizRules = { questionCount: 5, secondsPerQuestion: 15, correctPoints: 2, wrongPenalty: 1, timeoutPenalty: 1 };
-const errorMessage = (error: any) => error?.response?.data?.message || 'Could not connect. Check your connection and try again.';
+const errorMessage = (error: any) => error?.response?.data?.message || i18n.t('games:quizScreen.connectError');
 const quizInfoCards = [
-  { source: require('../assets/quiz-questions.png'), aspectRatio: 424 / 268, label: '5 Questions. Each quiz has 5 exciting questions.' },
-  { source: require('../assets/quiz-timer.png'), aspectRatio: 420 / 264, label: 'Time Limit. You have 15 seconds to answer each question.' },
-  { source: require('../assets/quiz-rewards.png'), aspectRatio: 420 / 264, label: '2 Rewards Each. Earn 2 rewards for every question you answer.' },
+  { source: require('../assets/quiz-questions.png'), aspectRatio: 424 / 268, labelKey: 'games:quizScreen.infoQuestions' },
+  { source: require('../assets/quiz-timer.png'), aspectRatio: 420 / 264, labelKey: 'games:quizScreen.infoTime' },
+  { source: require('../assets/quiz-rewards.png'), aspectRatio: 420 / 264, labelKey: 'games:quizScreen.infoRewards' },
 ];
 
 export default function QuizScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const { width } = useWindowDimensions();
   const cardWidth = Math.min(160, (Math.min(width, 540) - 40) * 0.5);
@@ -126,16 +129,16 @@ export default function QuizScreen() {
             <Text style={styles.brand}>Quivio <Text style={styles.gold}>🏆</Text></Text>
           </View>
           <View style={[styles.hero, { height: heroHeight }]}>
-            <Image source={require('../assets/quiz-host.png')} style={styles.host} resizeMode="contain" accessibilityLabel="Quivio host in a purple suit" />
+            <Image source={require('../assets/quiz-host.png')} style={styles.host} resizeMode="contain" accessibilityLabel={tx("games:quizScreen.quivioHostInAPurple")} />
             <View style={styles.facts}>
               {quizInfoCards.map(card => (
                   <Image
-                    key={card.label}
+                    key={card.labelKey}
                     source={card.source}
                     style={[styles.factImage, { width: cardWidth, height: cardWidth / card.aspectRatio }]}
                     resizeMode="contain"
                     accessible
-                    accessibilityLabel={card.label}
+                    accessibilityLabel={tx(card.labelKey, { count: rules.questionCount, seconds: rules.secondsPerQuestion, points: rules.correctPoints })}
                   />
               ))}
             </View>
@@ -143,21 +146,21 @@ export default function QuizScreen() {
           <View style={styles.arena}>
             <LinearGradient pointerEvents="none" colors={['#071A32', '#030812']} style={[StyleSheet.absoluteFillObject, styles.arenaBackground]} />
             <View style={styles.trophy}><Icon name="trophy" size={40} color="#FFCB42" /></View>
-            <Text style={styles.playTitle}>Play Smart Quiz Every Day</Text>
+            <Text style={styles.playTitle}>{tx("games:quizScreen.playSmartQuizEveryDay")}</Text>
             <Text style={styles.tagline}>Boost knowledge daily, win challenges,{ '\n' }become smarter every day.</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Start quiz" disabled={busy || loadingLeaders} onPress={start} style={styles.startWrap}>
+            <Pressable accessibilityRole="button" accessibilityLabel={tx("games:quizScreen.startQuiz")} disabled={busy || loadingLeaders} onPress={start} style={styles.startWrap}>
               <View style={styles.start}>
                 <LinearGradient pointerEvents="none" colors={['#FFE363', '#FFB800', '#FF9C00']} style={StyleSheet.absoluteFillObject} />
-                {busy || loadingLeaders ? <ActivityIndicator color="#121212" /> : <><Text style={styles.startText}>{session?.status === 'playing' ? 'Resume' : 'Start'}</Text><Icon name="play-outline" size={25} color="#121212" /></>}
+                {busy || loadingLeaders ? <ActivityIndicator color="#121212" /> : <><Text style={styles.startText}>{session?.status === 'playing' ? tx('games:quizScreen.resume') : tx('games:quizScreen.start')}</Text><Icon name="play-outline" size={25} color="#121212" /></>}
               </View>
             </Pressable>
             <View style={styles.leaderboard}>
-              <Text accessibilityRole="header" style={styles.leaderTitle}>Leaderboard 🏆</Text>
+              <Text accessibilityRole="header" style={styles.leaderTitle}>{tx("games:quizScreen.leaderboard")}</Text>
               <View style={styles.table}>
                 <View style={styles.tableRow}>
-                  <Text style={[styles.tableHeading, styles.rank]}>Rank</Text>
-                  <Text style={[styles.tableHeading, styles.player]}>Player</Text>
-                  <Text style={[styles.tableHeading, styles.score]}>Score</Text>
+                  <Text style={[styles.tableHeading, styles.rank]}>{tx("games:quizScreen.rank")}</Text>
+                  <Text style={[styles.tableHeading, styles.player]}>{tx("games:quizScreen.player")}</Text>
+                  <Text style={[styles.tableHeading, styles.score]}>{tx("games:quizScreen.score")}</Text>
                 </View>
                 {leaders.map((player, index) => (
                   <View key={player.user_id} style={styles.tableRow}>
@@ -173,9 +176,9 @@ export default function QuizScreen() {
                 ))}
               </View>
               {loadingLeaders && <ActivityIndicator color="#00DFED" />}
-              {!loadingLeaders && !error && leaders.length === 0 && <Text style={styles.previewNote}>Be the first to complete a quiz!</Text>}
+              {!loadingLeaders && !error && leaders.length === 0 && <Text style={styles.previewNote}>{tx("games:quizScreen.beTheFirstToComplete")}</Text>}
             </View>
-            <Text style={styles.previewNote}>Best completed score · Quiz points are separate from wallet rewards</Text>
+            <Text style={styles.previewNote}>{tx("games:quizScreen.bestCompletedScoreQuizPoints")}</Text>
             {!!error && <Pressable accessibilityRole="button" onPress={loadLeaders}><Text style={styles.error}>{error} Tap to retry.</Text></Pressable>}
           </View>
         </ScrollView>
@@ -183,16 +186,16 @@ export default function QuizScreen() {
         <View style={styles.questionContainer}>
         <ScrollView key={questionIndex} style={styles.scroll} contentContainerStyle={styles.questionPage} showsVerticalScrollIndicator={false}>
           <View style={styles.questionHeader}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Back to leaderboard" onPress={goBack} style={styles.back}><Icon name="chevron-left" color="#FFFFFF" size={28} /></Pressable>
+            <Pressable accessibilityRole="button" accessibilityLabel={tx("games:quizScreen.backToLeaderboard")} onPress={goBack} style={styles.back}><Icon name="chevron-left" color="#FFFFFF" size={28} /></Pressable>
             <Text accessibilityRole="header" style={styles.questionCount}>Question {questionIndex + 1} of {session.total}</Text>
           </View>
-          <View style={styles.progress} accessibilityLabel={`Question ${questionIndex + 1} of ${session.total}`}>
+          <View style={styles.progress} accessibilityLabel={tx('games:quizScreen.questionOf', { current: questionIndex + 1, total: session.total })}>
             {Array.from({ length: session.total }, (_, index) => <View key={index} style={[styles.segment, index <= questionIndex && styles.segmentActive]} />)}
           </View>
           <Text style={styles.points}>Score: {session.score} · Wrong attempt −{rules.wrongPenalty}</Text>
           <View style={styles.timerSpace}>
-            <View style={[styles.timer, seconds <= 5 && !correct && styles.timerUrgent]} accessibilityLabel={`${seconds} seconds remaining`}>
-              <Text style={styles.timerValue}>00:{String(seconds).padStart(2, '0')}</Text><Text style={styles.seconds}>Seconds</Text>
+            <View style={[styles.timer, seconds <= 5 && !correct && styles.timerUrgent]} accessibilityLabel={tx('games:quizScreen.secondsRemaining', { count: seconds })}>
+              <Text style={styles.timerValue}>00:{String(seconds).padStart(2, '0')}</Text><Text style={styles.seconds}>{tx("games:quizScreen.seconds")}</Text>
             </View>
           </View>
           <Text accessibilityRole="header" style={styles.question}>{question.question}</Text>
@@ -205,7 +208,7 @@ export default function QuizScreen() {
                 <Pressable
                   key={option}
                   accessibilityRole="button"
-                  accessibilityLabel={`${String.fromCharCode(65 + index)}. ${option}${isSelected ? (correct ? ', correct' : ', incorrect') : ''}`}
+                  accessibilityLabel={tx(isSelected ? (correct ? 'games:quizScreen.optionCorrect' : 'games:quizScreen.optionIncorrect') : 'games:quizScreen.optionA11y', { letter: String.fromCharCode(65 + index), option })}
                   accessibilityState={{ selected: isSelected, disabled: selected !== null || busy || seconds === 0 || timedOut || session.attempts.includes(index) }}
                   disabled={selected !== null || busy || seconds === 0 || timedOut || session.attempts.includes(index)}
                   onPress={() => request(() => answerQuiz(session.id, questionIndex, index))}
@@ -220,23 +223,23 @@ export default function QuizScreen() {
           </View>
         </ScrollView>
         <View style={styles.questionFooter}>
-          <Text accessibilityLiveRegion="polite" style={styles.feedback}>{timedOut ? `Time’s up! −${rules.timeoutPenalty} point` : selected === null ? ' ' : correct ? `Correct! +${rules.correctPoints} points` : `Incorrect. −${rules.wrongPenalty} point. Try another answer.`}</Text>
+          <Text accessibilityLiveRegion="polite" style={styles.feedback}>{timedOut ? tx('games:quizScreen.timesUp', { points: rules.timeoutPenalty }) : selected === null ? ' ' : correct ? tx('games:quizScreen.correct', { points: rules.correctPoints }) : tx('games:quizScreen.incorrect', { points: rules.wrongPenalty })}</Text>
           {!!error && <Text style={styles.error}>{error}</Text>}
           <Pressable accessibilityRole="button" accessibilityState={{ disabled: busy || (!error && selected === null && !timedOut) }} disabled={busy || (!error && selected === null && !timedOut)} onPress={advance} style={[styles.action, styles.questionAction, !error && selected === null && !timedOut && styles.disabledAction, wrong && styles.retryAction]}>
-            {busy ? <ActivityIndicator color="#030B12" /> : <Text style={[styles.actionText, styles.questionActionText]}>{error ? 'Reconnect' : wrong ? 'Try Again' : questionIndex === session.total - 1 ? 'Finish' : 'Continue'}</Text>}
+            {busy ? <ActivityIndicator color="#030B12" /> : <Text style={[styles.actionText, styles.questionActionText]}>{error ? tx('games:quizScreen.reconnect') : wrong ? tx('games:quizScreen.tryAgain') : questionIndex === session.total - 1 ? tx('games:quizScreen.finish') : tx('common:actions.continue')}</Text>}
           </Pressable>
         </View>
         </View>
       ) : (
         <View style={styles.result}>
           <Icon name="trophy" size={88} color="#FFCB42" />
-          <Text accessibilityRole="header" style={styles.resultTitle}>Quiz complete!</Text>
+          <Text accessibilityRole="header" style={styles.resultTitle}>{tx("games:quizScreen.quizComplete")}</Text>
           <Text style={styles.resultScore}>{session?.score ?? 0} pts</Text>
           <Text style={styles.resultCopy}>Correct: {session?.correctCount ?? 0} / {session?.total ?? 5} · Wrong attempts: {session?.wrongCount ?? 0}{'\n'}Timed out: {(session?.total ?? 5) - (session?.correctCount ?? 0)}</Text>
-          <Text style={styles.previewNote}>Score saved · Your best round counts on the leaderboard</Text>
+          <Text style={styles.previewNote}>{tx("games:quizScreen.scoreSavedYourBestRound")}</Text>
           {!!error && <Text style={styles.error}>{error}</Text>}
-          <Pressable accessibilityRole="button" disabled={busy} onPress={start} style={styles.action}>{busy ? <ActivityIndicator color="#030B12" /> : <Text style={styles.actionText}>Play Again</Text>}</Pressable>
-          <Pressable accessibilityRole="button" onPress={goBack} style={styles.touchTarget}><Text style={styles.skip}>Back to Leaderboard</Text></Pressable>
+          <Pressable accessibilityRole="button" disabled={busy} onPress={start} style={styles.action}>{busy ? <ActivityIndicator color="#030B12" /> : <Text style={styles.actionText}>{tx("games:quizScreen.playAgain")}</Text>}</Pressable>
+          <Pressable accessibilityRole="button" onPress={goBack} style={styles.touchTarget}><Text style={styles.skip}>{tx("games:quizScreen.backToLeaderboard2")}</Text></Pressable>
         </View>
       )}
     </SafeAreaView>

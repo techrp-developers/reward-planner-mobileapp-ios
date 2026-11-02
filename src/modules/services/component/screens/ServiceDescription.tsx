@@ -1,4 +1,6 @@
     import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18n from "../../../../i18n";
+import { useTranslation } from "react-i18next";
     import { View, ScrollView, StyleSheet, Text, Alert, unstable_batchedUpdates } from 'react-native';
     import { useRoute, useNavigation } from '@react-navigation/native';
     import type { RouteProp } from '@react-navigation/native';
@@ -56,7 +58,7 @@
         const title = String(v?.title || '').trim();
 
         if (!name || name.toLowerCase() === 'default') {
-            return { label: title || 'Plan' };
+            return { label: title || i18n.t("services:r2.plan") };
         }
 
         return { label: name, planTitle: title || undefined };
@@ -80,6 +82,7 @@
     }
 
     function ServiceDescription() {
+        useTranslation(); // re-render on language change
         const route = useRoute<CartRouteProps>();
         const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
         const servicesTheme = useServicesTheme();
@@ -200,7 +203,7 @@
             const resolvedVariantId = Number(activeVariant?.id || serviceData?.variants?.[0]?.id || 0);
 
             if (!currentServiceId || !resolvedVariantId) {
-                Alert.alert('Unable to proceed', 'Service or variant details are missing.');
+                Alert.alert(i18n.t("services:serviceDescription.unableToProceed"), i18n.t("services:serviceDescription.serviceOrVariantDetailsAre"));
                 return;
             }
 
@@ -218,8 +221,8 @@
                     previewData,
                 });
             } catch (err) {
-                const message = err instanceof Error ? err.message : 'Unable to proceed to checkout.';
-                Alert.alert('Buy Now Failed', message);
+                const message = err instanceof Error ? err.message : i18n.t('services:errors.checkoutFailed');
+                Alert.alert(i18n.t("services:serviceDescription.buyNowFailed"), message);
             } finally {
                 setBuyingNow(false);
             }
@@ -232,7 +235,7 @@
         const resolvedVariantId = Number(activeVariant?.id || serviceData?.variants?.[0]?.id || 0);
 
         if (!resolvedServiceId || !resolvedVariantId) {
-            Alert.alert('Unable to add item', 'Service or variant details are missing.');
+            Alert.alert(i18n.t("services:serviceDescription.unableToAddItem"), i18n.t("services:serviceDescription.serviceOrVariantDetailsAre"));
             return;
         }
 
@@ -244,7 +247,7 @@
             });
 
             if (!response?.success) {
-                throw new Error(response?.message || 'Could not add this service to cart.');
+                throw new Error(response?.message || i18n.t("services:r2.couldNotAddThisServiceTo"));
             }
 
             // ✅ ONLY THIS IS NEEDED
@@ -258,8 +261,8 @@
         } catch (addErr) {
             const message = addErr instanceof Error
                 ? addErr.message
-                : 'Something went wrong while adding to cart.';
-            Alert.alert('Add To Cart Failed', message);
+                : i18n.t("services:r2.somethingWentWrongWhileAddingTo");
+            Alert.alert(i18n.t("services:serviceDescription.addToCartFailed"), message);
         } finally {
             setAddingToCart(false);
         }
@@ -280,7 +283,7 @@
             const city = findFieldValue(formValues, CITY_FIELDS);
 
             if (!email || !mobile) {
-                Alert.alert('Missing Info', 'Please fill in all required fields.');
+                Alert.alert(i18n.t("services:serviceDescription.missingInfo"), i18n.t("services:serviceDescription.pleaseFillInAllRequired"));
                 return;
             }
 
@@ -311,16 +314,16 @@
                 const response = await createServiceEnquiry(payload);
 
                 if (!response?.success) {
-                    throw new Error(response?.message || 'Unable to submit enquiry right now.');
+                    throw new Error(response?.message || i18n.t("services:r2.unableToSubmitEnquiryRightNow"));
                 }
 
                 setFormValues({});
 
                 const enquiryRef = String(response?.data?.enquiry_ref || '').trim();
                 navigation.navigate('SubmittedSuccessful', {
-                    statusText: 'Enquiry Confirmed',
-                    title: 'Enquiry Submitted Successfully',
-                    description: 'Our team will review the details and get back to you shortly.',
+                    statusText: i18n.t('services:enquiry.confirmed'),
+                    title: i18n.t('services:enquiry.submitted'),
+                    description: i18n.t('services:enquiry.reviewShortly'),
                     enquiryId: enquiryRef || '#RP-ENQ-19472',
                 });
             } catch (submitErr) {
@@ -328,7 +331,7 @@
                 const message = submitErr instanceof Error
                     ? submitErr.message
                     : 'Something went wrong. Please try again.';
-                Alert.alert('Submission Failed', message);
+                Alert.alert(i18n.t("services:serviceDescription.submissionFailed"), message);
             } finally {
                 setSubmitting(false);
             }
@@ -402,7 +405,7 @@
         const requiredDocuments = useMemo(() => serviceData?.documents ?? [], [serviceData]);
         const faqData = useMemo(() => serviceData?.faqData ?? [], [serviceData]);
         const faqTitle = useMemo(
-            () => serviceData?.faqTitle ?? 'Everything You Need to Know',
+            () => serviceData?.faqTitle ?? i18n.t("services:r2.everythingYouNeedToKnow"),
             [serviceData],
         );
 
@@ -416,7 +419,7 @@
                     <CartHead />
                     <View style={styles.errorWrap}>
                         <Text style={[styles.errorText, { color: servicesTheme.colors.muted }]}>
-                            {error ?? 'Unable to load service details.'}
+                            {error ?? i18n.t("services:r2.unableToLoadServiceDetails")}
                         </Text>
                     </View>
                 </View>
@@ -475,7 +478,7 @@
                     {/* 4. Required documents */}
                     {requiredDocuments.length > 0 && (
                         <View style={[styles.documentsCard, { backgroundColor: servicesTheme.colors.surface, shadowColor: servicesTheme.colors.shadow }]}>
-                            <Text style={[styles.documentsTitle, { color: servicesTheme.colors.textStrong }]}>Required Documents</Text>
+                            <Text style={[styles.documentsTitle, { color: servicesTheme.colors.textStrong }]}>{i18n.t("services:serviceDescription.requiredDocuments")}</Text>
                             {requiredDocuments.map((doc) => (
                                 <View key={String(doc.id) + doc.name} style={styles.documentRow}>
                                     <View
@@ -496,7 +499,7 @@
                                     </Text>
                                     {doc.mandatory && (
                                         <View style={styles.mandatoryBadge}>
-                                            <Text style={styles.mandatoryText}>Required</Text>
+                                            <Text style={styles.mandatoryText}>{i18n.t("services:serviceDescription.required")}</Text>
                                         </View>
                                     )}
                                 </View>
@@ -512,8 +515,8 @@
                             }}
                         >
                             <DynamicEnquiryForm
-                                title="Interested in this Service?"
-                                description="Fill in the details below and our team will reach out to you shortly."
+                                title={i18n.t("services:serviceDescription.interestedInThisService")}
+                                description={i18n.t("services:serviceDescription.fillInTheDetailsBelow")}
                                 fields={serviceData.enquiry_fields}
                                 values={formValues}
                                 onChange={handleFieldChange}

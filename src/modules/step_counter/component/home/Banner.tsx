@@ -12,10 +12,12 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
 export default function Banner() {
+  const { t: tx } = useTranslation();
   return (
     <View>
       {/* Banner Image */}
@@ -62,7 +64,7 @@ export default function Banner() {
         />
 
         <View style={styles.balanceTextBox}>
-          <Text style={styles.balanceTitle}>My Balance</Text>
+          <Text style={styles.balanceTitle}>{tx("stepCounter:banner.myBalance")}</Text>
           <Text style={styles.balanceValue}>1500 Coins</Text>
         </View>
       </LinearGradient>

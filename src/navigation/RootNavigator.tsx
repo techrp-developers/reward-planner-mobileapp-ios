@@ -7,6 +7,9 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { RESULTS } from "react-native-permissions";
 
 import { useAuth } from "../modules/common/auth/context/AuthContext";
+import { useAppLanguage } from "../i18n/LanguageContext";
+import i18n from "../i18n";
+import LanguageSelectScreen from "../modules/common/language/LanguageSelectScreen";
 import {
   setupFCM,
   getNotificationPermissionStatus,
@@ -64,6 +67,7 @@ export type AppStackParamList = {
   TodoList: undefined;
   Quiz: undefined;
   ChatStack: NavigatorScreenParams<ChatStackParamList> | undefined;
+  LanguageSettings: undefined;
 };
 
 export type RootStackParamList = {
@@ -71,6 +75,7 @@ export type RootStackParamList = {
   Auth: undefined;
   App: undefined;
   TermsGate: undefined;
+  LanguageSelect: undefined;
 };
 
 // ─── Navigators ───────────────────────────────────────────────────────────────
@@ -114,6 +119,10 @@ function AppNavigator() {
         <AppStack.Screen
           name="ChatStack"
           getComponent={() => require("../modules/chat/navigation/ChatStack").default}
+        />
+        <AppStack.Screen
+          name="LanguageSettings"
+          getComponent={() => require("../modules/common/language/LanguageSettingsScreen").default}
         />
         <AppStack.Screen
           name="Quiz"
@@ -325,6 +334,7 @@ function AppNavigator() {
 
 export default function RootNavigator() {
   const { isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
+  const { status: languageStatus } = useAppLanguage();
   const { storeUpdate, onStoreUpdateLater, otaPrompt, onOtaUpdate, onOtaLater } = useUpdateGates();
   const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
   const deniedAlertShownRef = useRef(false);
@@ -338,12 +348,12 @@ export default function RootNavigator() {
           if (status === RESULTS.BLOCKED) {
             deniedAlertShownRef.current = true;
             Alert.alert(
-              'Notifications Disabled',
-              'Turn on notifications to receive order updates, delivery alerts, and reward credits.',
+              i18n.t('common:notifications.disabledTitle'),
+              i18n.t('common:notifications.disabledMessage'),
               [
-                { text: 'Not Now', style: 'cancel' },
+                { text: i18n.t('common:actions.notNow'), style: 'cancel' },
                 {
-                  text: 'Open Settings',
+                  text: i18n.t('common:actions.openSettings'),
                   onPress: openNotificationSettings,
                 },
               ],
@@ -363,13 +373,17 @@ export default function RootNavigator() {
   // Show Splash while: (a) session is hydrating, OR (b) authenticated but
   // terms status API call hasn't resolved yet (termsAccepted is still null).
   const isCheckingTerms = isAuthenticated && termsAccepted === null;
-  const showSplash = isInitializing || isCheckingTerms;
+  // The signed-in user's saved language is read from local storage before
+  // any app screen renders, so screens never flash in the wrong language.
+  const isLoadingLanguage = isAuthenticated && (languageStatus === "loading" || languageStatus === "signed-out");
+  const showSplash = isInitializing || isCheckingTerms || isLoadingLanguage;
+  const needsLanguage = isAuthenticated && languageStatus === "needs-selection";
 
   // Only surface the first-login reward popup once the user has actually
   // reached the authenticated app (past Splash/TermsGate), so it doesn't
   // stack on top of those gates.
   const showRewardModal =
-    !showSplash && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
+    !showSplash && !needsLanguage && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
 
   // Auth state changes replace whole stacks. Do not animate or freeze an
   // outgoing auth screen while Fabric removes its nested views.
@@ -381,6 +395,12 @@ export default function RootNavigator() {
         <RootStack.Screen name="Splash" component={SplashScreen} />
       ) : !isAuthenticated ? (
         <RootStack.Screen name="Auth" component={AuthNavigator} />
+      ) : needsLanguage ? (
+        <RootStack.Screen
+          name="LanguageSelect"
+          component={LanguageSelectScreen}
+          options={{ gestureEnabled: false }}
+        />
       ) : termsAccepted ? (
         <RootStack.Screen name="App" component={AppNavigator} />
       ) : (

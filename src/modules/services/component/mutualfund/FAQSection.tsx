@@ -13,12 +13,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '../../navigation/type';
 import { getMutualFundCategories, type MFCategory } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 interface Props {
     navigation: NativeStackNavigationProp<HomeStackParamList>;
 }
 
 const FAQSection: React.FC<Props> = ({ navigation }) => {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
     const [categories, setCategories] = useState<MFCategory[]>([]);
     const [loading, setLoading] = useState(true);
@@ -69,8 +71,8 @@ const FAQSection: React.FC<Props> = ({ navigation }) => {
         <View style={styles.container}>
             <View style={styles.headingRow}>
                 <View>
-                    <Text style={[styles.eyebrow, { color: servicesTheme.colors.primary }]}>QUICK CLARITY</Text>
-                    <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Commonly Asked Questions</Text>
+                    <Text style={[styles.eyebrow, { color: servicesTheme.colors.primary }]}>{tx("services:fAQSection.quickClarity")}</Text>
+                    <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{tx("services:fAQSection.commonlyAskedQuestions")}</Text>
                 </View>
                 <View style={[styles.headingIcon, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
                     <MaterialCommunityIcons name="lightbulb-on-outline" size={18} color="#3545A3" />

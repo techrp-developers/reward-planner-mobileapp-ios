@@ -15,6 +15,8 @@ import LinearGradient from "react-native-linear-gradient";
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from "react-native-svg";
 import { rs, fs } from "../../../utils/responsive";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { formatNumber } from "../../../i18n/format";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 interface StepsCounterCardProps {
@@ -49,6 +51,7 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
     cardWidth,
 }) => {
     const { isDark, theme } = useAppTheme();
+    const { t: tr } = useTranslation();
 
     const screenWidth = Dimensions.get("window").width;
     const cWidth = cardWidth ?? (screenWidth - rs(32)) / 2;
@@ -118,8 +121,8 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
                             <Text style={styles.iconEmoji}>👣</Text>
                         </View>
                         <View style={styles.headerText}>
-                            <Text style={[styles.title, t.title]} numberOfLines={1}>Steps Counter</Text>
-                            <Text style={[styles.subtitle, t.subtitle]}>Today's Progress</Text>
+                            <Text style={[styles.title, t.title]} numberOfLines={1}>{tr("dashboard:steps.counterTitle")}</Text>
+                            <Text style={[styles.subtitle, t.subtitle]}>{tr("dashboard:steps.todayProgress")}</Text>
                         </View>
                     </View>
 
@@ -147,10 +150,10 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
                             </Svg>
                             <View style={styles.ringCenter}>
                                 <Text style={[styles.stepsValue, t.stepsValue, { fontSize: ringSize * 0.18 }]}>
-                                    {steps.toLocaleString("en-IN")}
+                                    {formatNumber(steps)}
                                 </Text>
-                                <Text style={[styles.goalLabel, t.goalLabel]}>/ {goalSteps.toLocaleString("en-IN")}</Text>
-                                <Text style={styles.stepsWord}>Steps</Text>
+                                <Text style={[styles.goalLabel, t.goalLabel]}>/ {formatNumber(goalSteps)}</Text>
+                                <Text style={styles.stepsWord}>{tr("dashboard:steps.stepsCapital")}</Text>
                             </View>
                         </View>
 
@@ -161,7 +164,7 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
                                 </View>
                                 <View>
                                     <Text style={styles.stepsUpValue}>+{stepsToday}</Text>
-                                    <Text style={[styles.stepsUpSub, t.stepsUpSub]}>steps today</Text>
+                                    <Text style={[styles.stepsUpSub, t.stepsUpSub]}>{tr("dashboard:steps.stepsToday")}</Text>
                                 </View>
                             </View>
                             <View style={[styles.statItem, styles.goalStatItem]}>
@@ -170,7 +173,7 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
                                 </View>
                                 <View>
                                     <Text style={styles.goalValue}>{goalPercent}%</Text>
-                                    <Text style={[styles.stepsUpSub, t.stepsUpSub]}>of goal</Text>
+                                    <Text style={[styles.stepsUpSub, t.stepsUpSub]}>{tr("dashboard:steps.ofGoal")}</Text>
                                 </View>
                             </View>
                         </View>
@@ -188,7 +191,7 @@ const StepsCounterCard: React.FC<StepsCounterCardProps> = ({
                             />
                         ))}
                     </View>
-                    <Text style={[styles.barsLabel, t.barsLabel]}>Daily Activity</Text>
+                    <Text style={[styles.barsLabel, t.barsLabel]}>{tr("dashboard:steps.dailyActivity")}</Text>
                 </View>
             </TouchableOpacity>
         </Animated.View>

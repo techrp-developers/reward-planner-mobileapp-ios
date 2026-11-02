@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { fetchAllAddress } from "../../api/AddressApi";
 import { useAlert } from "../alerts";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type ApiAddress = {
   address_id: number;
@@ -28,6 +30,7 @@ type AddressItem = {
 };
 
 export default function AddressPage() {
+  const { t: tx } = useTranslation();
   const [addresses, setAddresses] = useState<AddressItem[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -51,7 +54,7 @@ export default function AddressPage() {
       const def = mapped.find(x => x.isDefault);
       if (def) setSelectedId(def.id);
     } catch {
-      alert.error("Error", "Failed to load addresses");
+      alert.error(i18n.t("products:addressPage.error"), i18n.t("products:addressPage.failedToLoadAddresses"));
     }
   }, [alert]);
 
@@ -67,10 +70,10 @@ export default function AddressPage() {
         onPress={() => setShowForm(!showForm)}
       >
         <Text style={styles.plus}>＋</Text>
-        <Text style={styles.addText}>Add New Address</Text>
+        <Text style={styles.addText}>{tx("products:addressPage.addNewAddress")}</Text>
       </TouchableOpacity>
 
-      <Text style={styles.section}>Saved Addresses</Text>
+      <Text style={styles.section}>{tx("products:addressPage.savedAddresses")}</Text>
 
       {addresses.map(item => (
         <TouchableOpacity
@@ -80,7 +83,7 @@ export default function AddressPage() {
         >
           <View style={styles.cardContent}>
             <Text style={styles.name}>{item.name}</Text>
-            {item.isDefault && <Text style={styles.default}>Default</Text>}
+            {item.isDefault && <Text style={styles.default}>{tx("products:addressPage.default")}</Text>}
             <Text style={styles.address}>{item.address}</Text>
           </View>
 
@@ -98,9 +101,9 @@ export default function AddressPage() {
 
           <TouchableOpacity
             style={styles.saveBtn}
-            onPress={() => alert.info("Info", "Form submission coming soon")}
+            onPress={() => alert.info(i18n.t("products:addressPage.info"), i18n.t("products:addressPage.formSubmissionComingSoon"))}
           >
-            <Text style={styles.saveText}>Save Address</Text>
+            <Text style={styles.saveText}>{tx("products:addressPage.saveAddress")}</Text>
           </TouchableOpacity>
         </View>
       )}

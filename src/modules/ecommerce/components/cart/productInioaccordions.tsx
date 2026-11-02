@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -167,9 +169,11 @@ const buildSpecs = (product: any, selectedVariant: any): SpecGroup[] => {
 
 // ─── SpecGroupView ────────────────────────────────────────────────────────────
 
-const SpecGroupView = memo(({ group, theme }: { group: SpecGroup; theme: ReturnType<typeof useAppTheme>["theme"] }) => (
+const SpecGroupView = memo(({ group, theme }: { group: SpecGroup; theme: ReturnType<typeof useAppTheme>["theme"] }) => {
+  useTranslation();
+  return (
   <View style={styles.specGroup}>
-    <Text style={[styles.specGroupTitle, { borderBottomColor: theme.border }]}>{group.title}</Text>
+    <Text style={[styles.specGroupTitle, { borderBottomColor: theme.border }]}>{translateSourceText("products", group.title)}</Text>
     {group.rows.map((row, i) => (
       <View
         key={`${row.label}-${i}`}
@@ -178,12 +182,13 @@ const SpecGroupView = memo(({ group, theme }: { group: SpecGroup; theme: ReturnT
           i % 2 === 1 && { backgroundColor: theme.background },
         ]}
       >
-        <Text style={[styles.specLabel, { color: theme.secondaryText }]}>{row.label}</Text>
+        <Text style={[styles.specLabel, { color: theme.secondaryText }]}>{translateSourceText("products", row.label)}</Text>
         <Text style={[styles.specValue, { color: theme.text }]}>{row.value}</Text>
       </View>
     ))}
   </View>
-));
+);
+});
 
 // ─── Tab definitions ──────────────────────────────────────────────────────────
 
@@ -198,6 +203,7 @@ export default function ProductInfoAccordions({
   product,
   selectedVariant,
 }: Props) {
+  const { t: tx } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>("Product Details");
   const { theme } = useAppTheme();
 
@@ -262,7 +268,7 @@ export default function ProductInfoAccordions({
               ))}
             </View>
           ) : (
-            <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No specifications available</Text>
+            <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:productInioaccordions.noSpecificationsAvailable")}</Text>
           )
         )}
 

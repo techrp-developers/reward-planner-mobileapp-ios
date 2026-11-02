@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import RewardCoin from "../../../assets/product/rewards.svg";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 type TimelineItem = {
   label: string;
@@ -21,25 +23,26 @@ type Props = {
 };
 
 const REFUND_STATUS_LABELS: Record<string, string> = {
-  completed: "Completed",
-  processing: "Processing",
-  pending: "Pending",
-  failed: "Failed",
+  completed: "products:order.refund.completed",
+  processing: "products:order.refund.processing",
+  pending: "products:order.refund.pending",
+  failed: "products:order.refund.failed",
 };
 
 export default function CancellationAndRefundCard({
-  title = "Order Cancelled",
+  title,
   reasonText,
   timeline,
   refunds,
 }: Props) {
+  const { t: tx } = useTranslation();
   const totalRefund = refunds.reduce((sum, refund) => sum + Number(refund.amount || 0), 0);
 
   return (
     <View style={styles.card}>
       {/* Title */}
-      <Text style={styles.title}>{title}</Text>
-      {reasonText ? <Text style={styles.reasonText}>Reason: {reasonText}</Text> : null}
+      <Text style={styles.title}>{title ?? tx("products:order.cancelledTitle")}</Text>
+      {reasonText ? <Text style={styles.reasonText}>{tx("products:order.reason", { reason: reasonText })}</Text> : null}
 
       {/* Timeline */}
       {timeline.map((item, index) => (
@@ -51,7 +54,7 @@ export default function CancellationAndRefundCard({
           />
 
           <View style={styles.timelineText}>
-            <Text style={styles.label}>{item.label}</Text>
+            <Text style={styles.label}>{translateSourceText("products", item.label)}</Text>
             <Text style={styles.date}>{item.date}</Text>
           </View>
         </View>
@@ -85,7 +88,7 @@ export default function CancellationAndRefundCard({
 
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>
-                  {REFUND_STATUS_LABELS[refund.status] || refund.status}
+                  {REFUND_STATUS_LABELS[refund.status] ? tx(REFUND_STATUS_LABELS[refund.status]) : refund.status}
                 </Text>
               </View>
             </View>

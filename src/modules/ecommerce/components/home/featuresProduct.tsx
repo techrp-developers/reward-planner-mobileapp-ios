@@ -18,6 +18,7 @@ import {
 import HomeSectionSkeleton from "./HomeSectionSkeleton";
 import { queryClient } from "../../../../query/queryClient";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -51,6 +52,7 @@ const getProductList = (payload: any) => {
 };
 
 export default function FeaturesProduct() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
 
@@ -98,7 +100,7 @@ export default function FeaturesProduct() {
       <View style={styles.contentWrap}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={[styles.heading, { color: isDark ? "#FFFFFF" : "#111827" }]}>Featured This Week</Text>
+            <Text style={[styles.heading, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:featuresProduct.featuredThisWeek")}</Text>
           </View>
           <TouchableOpacity
             style={[
@@ -108,7 +110,7 @@ export default function FeaturesProduct() {
             activeOpacity={0.85}
             onPress={handleExplore}
           >
-            <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>Explore More</Text>
+            <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:featuresProduct.exploreMore")}</Text>
             <MaterialIcons name="arrow-forward-ios" size={14} color={isDark ? "#FFFFFF" : "#111827"} />
           </TouchableOpacity>
         </View>

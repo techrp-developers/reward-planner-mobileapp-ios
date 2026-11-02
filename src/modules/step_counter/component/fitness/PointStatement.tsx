@@ -29,6 +29,8 @@ import {
 } from '../../utils/theme';
 
 import Coin from '../../../../assets/product/rewards.svg';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type PointsNavProp = NativeStackNavigationProp<FitnessStackParamList, 'CoinHistory'>;
 
@@ -85,6 +87,7 @@ const formatFullDate = (value: string | null) => {
 };
 
 const PointsStatementScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<PointsNavProp>();
   const { width } = useWindowDimensions();
   const contentMaxWidth = Math.min(width - RESPONSIVE.horizontalPadding * 2, 560);
@@ -116,7 +119,7 @@ const PointsStatementScreen: React.FC = () => {
 
     if (!historyRes.success || !summaryRes.success) {
       setErrorMessage(
-        historyRes.message || summaryRes.message || 'Failed to fetch coin history'
+        historyRes.message || summaryRes.message || i18n.t("stepCounter:r2.failedToFetchCoinHistory")
       );
     }
 
@@ -161,7 +164,7 @@ const PointsStatementScreen: React.FC = () => {
               >
                 <Icon name="chevron-left" size={24} color={VD.accentDark} />
               </TouchableOpacity>
-              <Text style={styles.headerTitle}>Points Statement</Text>
+              <Text style={styles.headerTitle}>{tx("stepCounter:pointStatement.pointsStatement")}</Text>
               <View style={styles.headerPlaceholder} />
             </View>
 
@@ -176,7 +179,7 @@ const PointsStatementScreen: React.FC = () => {
                   <Coin width={40} height={40} />
                 </View>
                 <View style={styles.balanceTextContainer}>
-                  <Text style={styles.balanceTitle}>My Balance</Text>
+                  <Text style={styles.balanceTitle}>{tx("stepCounter:pointStatement.myBalance")}</Text>
                   <Text style={styles.balanceValue}>
                     {formatNumber(summary?.balance || 0)} Coins
                   </Text>
@@ -185,11 +188,11 @@ const PointsStatementScreen: React.FC = () => {
 
               <View style={styles.balanceMetaRow}>
                 <View style={styles.balanceMiniCard}>
-                  <Text style={styles.balanceMiniLabel}>Credited</Text>
+                  <Text style={styles.balanceMiniLabel}>{tx("stepCounter:pointStatement.credited")}</Text>
                   <Text style={styles.balanceMiniValue}>+{formatNumber(totals.credited)}</Text>
                 </View>
                 <View style={styles.balanceMiniCard}>
-                  <Text style={styles.balanceMiniLabel}>Used</Text>
+                  <Text style={styles.balanceMiniLabel}>{tx("stepCounter:pointStatement.used")}</Text>
                   <Text style={styles.balanceMiniValue}>-{formatNumber(totals.debited)}</Text>
                 </View>
               </View>
@@ -212,17 +215,17 @@ const PointsStatementScreen: React.FC = () => {
             </View>
 
             <View style={styles.tableHeader}>
-              <Text style={[styles.tableHeaderText, styles.dateColumn]}>Date</Text>
-              <Text style={[styles.tableHeaderText, styles.activityColumn]}>Activity</Text>
-              <Text style={[styles.tableHeaderText, styles.amountColumn]}>Amount</Text>
+              <Text style={[styles.tableHeaderText, styles.dateColumn]}>{tx("stepCounter:pointStatement.date")}</Text>
+              <Text style={[styles.tableHeaderText, styles.activityColumn]}>{tx("stepCounter:pointStatement.activity")}</Text>
+              <Text style={[styles.tableHeaderText, styles.amountColumn]}>{tx("stepCounter:pointStatement.amount")}</Text>
             </View>
 
             {loading ? (
-              <StateBox loading message="Loading your coin history..." />
+              <StateBox loading message={tx("stepCounter:pointStatement.loadingYourCoinHistory")} />
             ) : errorMessage ? (
               <StateBox message={errorMessage} onRetry={loadWallet} />
             ) : history.length === 0 ? (
-              <StateBox message="No coin activity yet." />
+              <StateBox message={tx("stepCounter:pointStatement.noCoinActivityYet")} />
             ) : (
               <View style={styles.transactionsContainer}>
                 {history.map((item) => (
@@ -238,6 +241,7 @@ const PointsStatementScreen: React.FC = () => {
 };
 
 const TransactionRow = React.memo(({ item }: { item: StepHistoryItem }) => {
+  useTranslation(); // re-render memoized content on language change
   const isDebit = item.type === 'debit';
   const dateParts = formatDateParts(item.date);
 
@@ -250,10 +254,10 @@ const TransactionRow = React.memo(({ item }: { item: StepHistoryItem }) => {
 
       <View style={styles.activityContainer}>
         <Text numberOfLines={1} style={styles.activityTitle}>
-          {item.title || (isDebit ? 'Coins Used' : 'Coins Credited')}
+          {item.title || (isDebit ? i18n.t("stepCounter:r2.coinsUsed") : i18n.t("stepCounter:r2.coinsCredited"))}
         </Text>
         <Text numberOfLines={2} style={styles.activityDesc}>
-          {item.description || item.category || 'Step wallet activity'}
+          {item.description || item.category || i18n.t("stepCounter:r2.stepWalletActivity")}
         </Text>
       </View>
 
@@ -277,7 +281,9 @@ const StateBox = React.memo(({
   loading?: boolean;
   message: string;
   onRetry?: () => void;
-}) => (
+}) => {
+  const { t: tx } = useTranslation();
+  return (
   <View style={styles.stateBox}>
     {loading ? (
       <ActivityIndicator color={VD.accent} />
@@ -287,11 +293,12 @@ const StateBox = React.memo(({
     <Text style={styles.stateText}>{message}</Text>
     {onRetry ? (
       <TouchableOpacity activeOpacity={0.86} style={styles.retryButton} onPress={onRetry}>
-        <Text style={styles.retryText}>Retry</Text>
+        <Text style={styles.retryText}>{tx("stepCounter:pointStatement.retry")}</Text>
       </TouchableOpacity>
     ) : null}
   </View>
-));
+);
+});
 
 const styles = StyleSheet.create({
   safe: {

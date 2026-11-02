@@ -7,6 +7,7 @@ import type {
   TrustStat,
   EnquiryField,
 } from '../types/ServiceTypes';
+import i18n from "../../../i18n";
 
 // ─── Fallbacks ────────────────────────────────────────────────
 const FALLBACK_FEATURES = [
@@ -249,6 +250,6 @@ export function normalizeServiceData(apiResponse: any): NormalizedServiceData | 
     documents,
     enquiry_fields: normalizeEnquiryFields(data.enquiry_fields),
     faqData,
-    faqTitle: faqSection?.title || 'Everything You Need to Know',
+    faqTitle: faqSection?.title || i18n.t("services:r2.everythingYouNeedToKnow"),
   };
 }

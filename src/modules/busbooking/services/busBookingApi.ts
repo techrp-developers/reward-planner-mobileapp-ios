@@ -1,6 +1,7 @@
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import api from "../../common/auth/api/axios";
 import { API_BASE_URL } from "../../../config/apiConfig";
+import i18n from "../../../i18n";
 
 const BUS_REQUEST_TIMEOUT_MS = 20_000;
 // /book waits on the provider (up to 30s) or on another request that already
@@ -541,7 +542,7 @@ export const getBusBalanceApi = async (): Promise<BusProviderBalanceResponse> =>
       message: error?.message || error,
     });
     throw new Error(
-      "Unable to reach the bus booking service. Please try again."
+      i18n.t("busBooking:r2.unableToReachTheBusBooking")
     );
   }
 
@@ -610,7 +611,7 @@ export const searchCitiesApi = async (
     });
 
     throw new Error(
-      "Unable to reach the bus booking service. Please try again."
+      i18n.t("busBooking:r2.unableToReachTheBusBooking")
     );
   }
 
@@ -627,7 +628,7 @@ export const searchCitiesApi = async (
       message: result.message,
     });
     throw new Error(
-      result.message || "Unable to search cities"
+      result.message || i18n.t("busBooking:r2.unableToSearchCities")
     );
   }
 
@@ -681,7 +682,7 @@ export const searchBusesApi = async (
     });
 
     throw new Error(
-      "Unable to reach the bus booking service. Please try again."
+      i18n.t("busBooking:r2.unableToReachTheBusBooking")
     );
   }
 
@@ -1134,7 +1135,7 @@ export const blockSeatApi =
 
       throw new Error(
         result?.message ||
-        "Your login session has expired. Please login again."
+        i18n.t("busBooking:r2.yourLoginSessionHasExpiredPlease")
       );
     }
 
@@ -1252,8 +1253,8 @@ export const verifyBusPaymentApi = async (
     if (isDefinitive) {
       throw new BusBookingApiError(
         status === 401
-          ? "Your login session has expired. Please login again."
-          : result?.message || "Payment could not be verified",
+          ? i18n.t("busBooking:r2.yourLoginSessionHasExpiredPlease")
+          : result?.message || i18n.t("busBooking:r2.paymentCouldNotBeVerified"),
         status,
         result?.code
       );
@@ -1353,8 +1354,8 @@ export const bookBusTicketApi = async (
   if ([400, 401, 403, 404, 409].includes(status)) {
     throw new BusBookingApiError(
       status === 401
-        ? "Your login session has expired. Please login again."
-        : result?.message || "Unable to book bus ticket",
+        ? i18n.t("busBooking:r2.yourLoginSessionHasExpiredPlease")
+        : result?.message || i18n.t("busBooking:r2.unableToBookBusTicket"),
       status,
       result?.code
     );
@@ -1545,8 +1546,8 @@ export const createBusPaymentOrderApi =
           ?.data
           ?.message ||
         (error?.response
-          ? "Unable to create payment order"
-          : "Unable to reach the bus booking service. Please try again."),
+          ? i18n.t("busBooking:r2.unableToCreatePaymentOrder")
+          : i18n.t("busBooking:r2.unableToReachTheBusBooking")),
         error?.response
           ?.status,
         error?.response
@@ -1602,7 +1603,7 @@ export const createBusPaymentOrderApi =
 
       throw new Error(
         result?.message ||
-        "Your login session has expired. Please login again."
+        i18n.t("busBooking:r2.yourLoginSessionHasExpiredPlease")
       );
     }
 
@@ -1759,11 +1760,11 @@ export type CancelBusSeatResult = {
 const toBusApiError = (error: any, fallback: string) =>
   new BusBookingApiError(
     Number(error?.response?.status) === 401
-      ? "Your login session has expired. Please login again."
+      ? i18n.t("busBooking:r2.sessionExpired")
       : error?.response?.data?.message ||
         (error?.response
           ? fallback
-          : "Unable to reach the bus booking service. Please try again."),
+          : i18n.t("busBooking:r2.serviceUnreachable")),
     error?.response?.status,
     error?.response?.data?.code
   );

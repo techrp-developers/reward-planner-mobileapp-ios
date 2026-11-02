@@ -7,6 +7,8 @@ import Electricity from '../../assets/BBPS_Service/Electricity.svg';
 import Recharge from '../../assets/BBPS_Service/Recharge.svg';
 import Credit from '../../assets/BBPS_Service/Creadit.svg';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type Service = {
   id: string;
@@ -46,11 +48,12 @@ const ServiceItem = ({ icon, iconName, label, onPress, bbpsTheme }: ServiceItemP
         <MaterialIcons name={iconName || 'add'} size={30} color="#FFFFFF" />
       )}
     </LinearGradient>
-    <Text style={[styles.itemLabel, { color: bbpsTheme.colors.text }]}>{label}</Text>
+    <Text style={[styles.itemLabel, { color: bbpsTheme.colors.text }]}>{translateSourceText("payments", label)}</Text>
   </TouchableOpacity>
 );
 
 function RecommendedServices() {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
 
   return (
@@ -63,7 +66,7 @@ function RecommendedServices() {
         },
       ]}
     >
-      <Text style={[styles.mainTitle, { color: bbpsTheme.colors.textStrong }]}>Recommended Services</Text>
+      <Text style={[styles.mainTitle, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:recommendedServices.recommendedServices")}</Text>
       <View style={styles.grid}>
         {SERVICES.map((service) => (
           <ServiceItem

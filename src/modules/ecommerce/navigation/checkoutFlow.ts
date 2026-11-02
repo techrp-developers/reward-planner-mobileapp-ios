@@ -2,6 +2,7 @@ import type { CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../../../navigation/RootNavigator';
 import type { HomeStackParamList } from './types';
+import i18n from "../../../i18n";
 
 export type ShoppingNavigation = CompositeNavigationProp<
   NativeStackNavigationProp<HomeStackParamList>,
@@ -33,7 +34,7 @@ export function validateBuyNowPreview(response: any) {
     ? response.items : data?.items;
   if (response?.success === false || data?.success === false ||
       !(Array.isArray(items) && items.length > 0) && !response?.item && !data?.item) {
-    throw new Error(response?.message || data?.message || 'This product is currently unavailable for checkout.');
+    throw new Error(response?.message || data?.message || i18n.t("products:r2.thisProductIsCurrentlyUnavailableFor"));
   }
   return response;
 }

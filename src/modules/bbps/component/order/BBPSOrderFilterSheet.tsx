@@ -12,6 +12,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 export type BBPSOrderStatus = '' | 'successful' | 'pending' | 'failed' | 'refunded';
 export type BBPSOrderTime = '' | '30days' | '3months' | '6months' | 'currentYear' | string;
@@ -54,6 +56,7 @@ export default function BBPSOrderFilterSheet({
   onApply,
   bbpsTheme: providedTheme,
 }: Props) {
+  const { t: tx } = useTranslation();
   const insets = useSafeAreaInsets();
   const fallbackTheme = useBbpsTheme();
   const bbpsTheme = providedTheme || fallbackTheme;
@@ -84,14 +87,14 @@ export default function BBPSOrderFilterSheet({
           ]}
         >
           <View style={styles.header}>
-            <Text style={[styles.title, { color: bbpsTheme.colors.textStrong }]}>Filter</Text>
+            <Text style={[styles.title, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:bBPSOrderFilterSheet.filter")}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
               <MaterialCommunityIcons name="close" size={30} color={bbpsTheme.colors.text} />
             </TouchableOpacity>
           </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-            <Text style={[styles.sectionTitle, { color: bbpsTheme.colors.muted }]}>SORT BY</Text>
+            <Text style={[styles.sectionTitle, { color: bbpsTheme.colors.muted }]}>{tx("payments:bBPSOrderFilterSheet.sortBy")}</Text>
             <View style={styles.statusRow}>
               {STATUS_OPTIONS.map((option) => {
                 const selected = status === option.value;
@@ -110,14 +113,14 @@ export default function BBPSOrderFilterSheet({
                     ]}
                   >
                     <Text style={[styles.statusText, { color: bbpsTheme.colors.muted }, selected && styles.statusTextSelected, selected && { color: bbpsTheme.colors.primary }]}>
-                      {option.label}
+                      {translateSourceText("payments", option.label)}
                     </Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            <Text style={[styles.sectionTitle, { color: bbpsTheme.colors.muted }]}>SORT BY TIME</Text>
+            <Text style={[styles.sectionTitle, { color: bbpsTheme.colors.muted }]}>{tx("payments:bBPSOrderFilterSheet.sortByTime")}</Text>
             {[
               ['30days', 'Last 30 days'],
               ['3months', 'Last 3 months'],
@@ -137,7 +140,7 @@ export default function BBPSOrderFilterSheet({
                     size={27}
                     color={selected ? bbpsTheme.colors.primary : bbpsTheme.colors.subtle}
                   />
-                  <Text style={[styles.radioLabel, { color: bbpsTheme.colors.text }]}>{label}</Text>
+                  <Text style={[styles.radioLabel, { color: bbpsTheme.colors.text }]}>{translateSourceText("payments", label)}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -150,7 +153,7 @@ export default function BBPSOrderFilterSheet({
               end={{ x: 1, y: 0 }}
               style={styles.applyButton}
             >
-              <Text style={styles.applyText}>Apply</Text>
+              <Text style={styles.applyText}>{tx("payments:bBPSOrderFilterSheet.apply")}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>

@@ -9,6 +9,8 @@ import {
 } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Props = {
   title: string
@@ -45,6 +47,7 @@ export default function CartItemCard({
   isBuyingNow = false,
   onPress,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme()
 
   return (
@@ -58,7 +61,7 @@ export default function CartItemCard({
             </View>
           ) : (
             <View style={[styles.imageWrap, { backgroundColor: isDark ? '#18181B' : '#E6E6E6' }]}>
-              <Text style={{ fontSize: 12, color: theme.secondaryText }}>No Image</Text>
+              <Text style={{ fontSize: 12, color: theme.secondaryText }}>{tx("products:cartItemCard.noImage")}</Text>
             </View>
           )}
 
@@ -107,14 +110,14 @@ export default function CartItemCard({
       <View style={styles.actions}>
         <TouchableOpacity style={styles.actionBtn} onPress={onRemove}>
           <MaterialIcons name="delete-outline" size={18} color={theme.secondaryText} />
-          <Text style={[styles.actionText, { color: theme.text }]}>Remove Item</Text>
+          <Text style={[styles.actionText, { color: theme.text }]}>{tx("products:cartItemCard.removeItem")}</Text>
         </TouchableOpacity>
 
         <View style={[styles.verticalDivider, { backgroundColor: theme.border }]} />
 
         <TouchableOpacity style={[styles.actionBtn, { opacity: isBuyingNow ? 0.5 : 1 }]} disabled={isBuyingNow} onPress={onBuyNow}>
           <MaterialIcons name="auto-awesome" size={18} color={theme.secondaryText} />
-          <Text style={[styles.actionText, { color: theme.text }]}>{isBuyingNow ? 'Please wait...' : 'Buy this Now'}</Text>
+          <Text style={[styles.actionText, { color: theme.text }]}>{isBuyingNow ? i18n.t("products:r2.pleaseWait") : i18n.t("products:r2.buyThisNow")}</Text>
         </TouchableOpacity>
       </View>
     </View>

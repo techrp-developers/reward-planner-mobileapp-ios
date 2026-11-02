@@ -28,6 +28,7 @@ import Municipal from '../../assets/BBPS_Service/Munsiple_taxes.svg';
 import Education from '../../assets/BBPS_Service/Education.svg';
 import Hospital from '../../assets/BBPS_Service/Hospital_bill.svg';
 import { BillCategory, fetchBillsCategories } from '../../api/BillsAPI';
+import { useTranslation } from "react-i18next";
 
 type RasterIcon = number;
 type SvgIconComponent = React.FC<SvgProps>;
@@ -281,6 +282,7 @@ const RechargeBillSkeleton = ({ bbpsTheme }: { bbpsTheme: BbpsTheme }) => {
 };
 
 function RechargeBill() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const bbpsTheme = useBbpsTheme();
   const ui = bbpsTheme.isDark
@@ -386,8 +388,8 @@ function RechargeBill() {
         ]}
       >
         <View style={styles.heroContent}>
-          <Text style={[styles.mainTitle, { color: '#FFFFFF', textShadowColor: bbpsTheme.isDark ? 'rgba(0,0,0,0.24)' : 'rgba(59,29,84,0.28)' }]}>Everything due,</Text>
-          <Text style={[styles.heroScript, { color: '#FFFFFF' }]}>all in one place.</Text>
+          <Text style={[styles.mainTitle, { color: '#FFFFFF', textShadowColor: bbpsTheme.isDark ? 'rgba(0,0,0,0.24)' : 'rgba(59,29,84,0.28)' }]}>{tx("payments:reachargeBill.everythingDue")}</Text>
+          <Text style={[styles.heroScript, { color: '#FFFFFF' }]}>{tx("payments:reachargeBill.allInOnePlace")}</Text>
         </View>
 
         <View style={[styles.heroReceipt, { backgroundColor: bbpsTheme.isDark ? 'rgba(255,255,255,0.12)' : '#E8D8F4' }]}>
@@ -404,7 +406,7 @@ function RechargeBill() {
           <View style={styles.quickHeader}>
             <View style={styles.headingWithAccent}>
               <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
-              <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>Quick pay</Text>
+              <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>{tx("payments:reachargeBill.quickPay")}</Text>
             </View>
           </View>
           <View style={styles.featuredGrid}>
@@ -446,8 +448,8 @@ function RechargeBill() {
           <View style={styles.headingWithAccent}>
             <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
             <View>
-              <Text style={[styles.directoryTitle, { color: ui.text }]}>All bill payments</Text>
-              <Text style={[styles.directorySubtitle, { color: ui.muted }]}>Choose a category to continue</Text>
+              <Text style={[styles.directoryTitle, { color: ui.text }]}>{tx("payments:reachargeBill.allBillPayments")}</Text>
+              <Text style={[styles.directorySubtitle, { color: ui.muted }]}>{tx("payments:reachargeBill.chooseACategoryToContinue")}</Text>
             </View>
           </View>
         </View>
@@ -469,8 +471,8 @@ function RechargeBill() {
         {allCategories.length === 0 && (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="magnify-close" size={32} color={ui.subtle} />
-            <Text style={[styles.emptyTitle, { color: ui.text }]}>No service found</Text>
-            <Text style={[styles.emptyText, { color: ui.muted }]}>Try a different category or service name.</Text>
+            <Text style={[styles.emptyTitle, { color: ui.text }]}>{tx("payments:reachargeBill.noServiceFound")}</Text>
+            <Text style={[styles.emptyText, { color: ui.muted }]}>{tx("payments:reachargeBill.tryADifferentCategoryOr")}</Text>
           </View>
         )}
       </View>
@@ -478,7 +480,7 @@ function RechargeBill() {
       <View style={styles.benefitsSection}>
         <View style={[styles.headingWithAccent, { marginBottom: 14 }]}>
           <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
-          <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>Payment benefits</Text>
+          <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>{tx("payments:reachargeBill.paymentBenefits")}</Text>
         </View>
 
         <View
@@ -502,8 +504,8 @@ function RechargeBill() {
               </View>
             </View>
             <View style={styles.benefitContent}>
-              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>Earn RP points</Text>
-              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>RP points are credited after every successful transaction.</Text>
+              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>{tx("payments:reachargeBill.earnRpPoints")}</Text>
+              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>{tx("payments:reachargeBill.rpPointsAreCreditedAfter")}</Text>
             </View>
           </View>
 
@@ -521,8 +523,8 @@ function RechargeBill() {
               </View>
             </View>
             <View style={styles.benefitContent}>
-              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>No extra charges</Text>
-              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>Pay only the bill amount with no additional fee.</Text>
+              <Text style={[styles.benefitTitle, { color: bbpsTheme.isDark ? '#FFFFFF' : '#2D1B39' }]}>{tx("payments:reachargeBill.noExtraCharges")}</Text>
+              <Text style={[styles.benefitDescription, { color: bbpsTheme.isDark ? '#CDBED5' : '#675A7A' }]}>{tx("payments:reachargeBill.payOnlyTheBillAmount")}</Text>
             </View>
           </View>
         </View>
@@ -531,7 +533,7 @@ function RechargeBill() {
       <View style={styles.othersSection}>
         <View style={[styles.headingWithAccent, { marginBottom: 12 }]}>
           <View style={[styles.headingAccent, { backgroundColor: bbpsTheme.colors.primary }]} />
-          <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>Others</Text>
+          <Text style={[styles.sectionDisplayTitle, { color: ui.text, marginBottom: 0 }]}>{tx("payments:reachargeBill.others")}</Text>
         </View>
 
         <TouchableOpacity
@@ -552,7 +554,7 @@ function RechargeBill() {
           >
             <MaterialCommunityIcons name="history" size={20} color={ui.text} />
           </View>
-          <Text style={[styles.otherLabel, { color: ui.text }]}>Recharges & bill payment history</Text>
+          <Text style={[styles.otherLabel, { color: ui.text }]}>{tx("payments:reachargeBill.rechargesBillPaymentHistory")}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={ui.arrow} />
         </TouchableOpacity>
 
@@ -574,7 +576,7 @@ function RechargeBill() {
           >
             <MaterialCommunityIcons name="headset" size={20} color={ui.text} />
           </View>
-          <Text style={[styles.otherLabel, { color: ui.text }]}>Help and support</Text>
+          <Text style={[styles.otherLabel, { color: ui.text }]}>{tx("payments:reachargeBill.helpAndSupport")}</Text>
           <MaterialCommunityIcons name="chevron-right" size={22} color={ui.arrow} />
         </TouchableOpacity>
       </View>

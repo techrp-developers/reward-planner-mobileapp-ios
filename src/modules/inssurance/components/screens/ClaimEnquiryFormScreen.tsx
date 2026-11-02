@@ -19,14 +19,13 @@ import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
 import LinearGradient from 'react-native-linear-gradient';
 import { submitClaimEnquiry } from '../../services/inssuranceApi';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { monthName, weekdayNames } from "../../../../i18n/format";
 
-const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-];
-const WEEK_DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
 const ClaimEnquiryFormScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { isDark } = useAppTheme();
@@ -177,11 +176,11 @@ const ClaimEnquiryFormScreen: React.FC = () => {
       if (result.success) {
         setIsSuccess(true);
       } else {
-        alert(result.message || 'Submission failed. Please try again.');
+        alert(result.message || i18n.t('insurance:enquiry.submitFailed'));
       }
     } catch (err) {
       setIsSubmitting(false);
-      alert('An unexpected error occurred. Please try again.');
+      alert(i18n.t('insurance:enquiry.unexpected'));
     }
   };
 
@@ -202,16 +201,16 @@ const ClaimEnquiryFormScreen: React.FC = () => {
           </LinearGradient>
           
           <Text style={[styles.successTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            Enquiry Submitted!
+            {tx("insurance:claimEnquiryFormScreen.enquirySubmitted")}
           </Text>
           <Text style={[styles.successSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-            Your {isCashless ? 'Cashless' : 'Reimbursement'} enquiry request was raised successfully.
+            {isCashless ? tx('insurance:enquiry.successCashless') : tx('insurance:enquiry.successReimbursement')}
           </Text>
 
           <View style={[styles.infoSuccessCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <MaterialCommunityIcons name="clock-outline" size={20} color="#005b7f" style={{ marginRight: rs(8) }} />
             <Text style={[styles.infoSuccessText, { color: isDark ? '#D4D4D8' : '#003950' }]}>
-              Our medical claims assessor team is verifying details and will contact you as soon as possible.
+              {tx("insurance:claimEnquiryFormScreen.ourMedicalClaimsAssessorTeam")}
             </Text>
           </View>
 
@@ -226,7 +225,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
               end={{ x: 1, y: 0 }}
               style={styles.btnGradient}
             >
-              <Text style={styles.btnText}>Back to Dashboard</Text>
+              <Text style={styles.btnText}>{tx("insurance:claimEnquiryFormScreen.backToDashboard")}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -276,7 +275,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
                 <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
               </TouchableOpacity>
               <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-                {isCashless ? 'Cashless Claim Form' : 'Reimbursement Form'}
+                {isCashless ? tx('insurance:enquiry.cashlessForm') : tx('insurance:enquiry.reimbursementForm')}
               </Text>
             </View>
 
@@ -291,12 +290,12 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             
             {/* Field: Hospital Name */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Hospital Name</Text>
+              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.hospitalName")}</Text>
               <View style={getInputWrapperStyle(!!errors.hospitalName)}>
                 <MaterialCommunityIcons name="hospital-building" size={20} color="#005b7f" style={styles.inputIcon} />
                 <TextInput
                   style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                  placeholder="e.g. Apollo Hospital"
+                  placeholder={tx("insurance:claimEnquiryFormScreen.eGApolloHospital")}
                   placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                   value={hospitalName}
                   onChangeText={(val) => {
@@ -310,12 +309,12 @@ const ClaimEnquiryFormScreen: React.FC = () => {
 
             {/* Field: Diagnosis */}
             <View style={styles.inputGroup}>
-              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Diagnosis / Treatment Name</Text>
+              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.diagnosisTreatmentName")}</Text>
               <View style={getInputWrapperStyle(!!errors.diagnosis)}>
                 <MaterialCommunityIcons name="medical-bag" size={20} color="#005b7f" style={styles.inputIcon} />
                 <TextInput
                   style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                  placeholder="e.g. Cataract Surgery, Malaria"
+                  placeholder={tx("insurance:claimEnquiryFormScreen.eGCataractSurgeryMalaria")}
                   placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                   value={diagnosis}
                   onChangeText={(val) => {
@@ -330,7 +329,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             {/* Field: Admission Date & Discharge Date */}
             <View style={styles.flexRow}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: rs(8) }]}>
-                <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Admission Date</Text>
+                <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.admissionDate")}</Text>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => openCalendar('admission')}
@@ -354,7 +353,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
 
               {!isCashless && (
                 <View style={[styles.inputGroup, { flex: 1, marginLeft: rs(8) }]}>
-                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Discharge Date</Text>
+                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.dischargeDate")}</Text>
                   <TouchableOpacity
                     activeOpacity={0.7}
                     onPress={() => openCalendar('discharge')}
@@ -381,12 +380,12 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             {/* Field: Doctor Name (Cashless Only) */}
             {isCashless && (
               <View style={styles.inputGroup}>
-                <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Treating Doctor Name</Text>
+                <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.treatingDoctorName")}</Text>
                 <View style={getInputWrapperStyle(!!errors.doctorName)}>
                   <MaterialCommunityIcons name="doctor" size={20} color="#005b7f" style={styles.inputIcon} />
                   <TextInput
                     style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                    placeholder="e.g. Dr. Ravi Verma"
+                    placeholder={tx("insurance:claimEnquiryFormScreen.eGDrRaviVerma")}
                     placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                     value={doctorName}
                     onChangeText={(val) => {
@@ -402,13 +401,13 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             {/* Field: Cost (Estimated vs Actual Bill amount) */}
             <View style={styles.inputGroup}>
               <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>
-                {isCashless ? 'Estimated Treatment Cost (INR)' : 'Actual Claim Bill Amount (INR)'}
+                {isCashless ? tx('insurance:enquiry.estimatedCost') : tx('insurance:enquiry.actualBill')}
               </Text>
               <View style={getInputWrapperStyle(!!(errors.estimatedCost || errors.actualCost))}>
                 <MaterialCommunityIcons name="currency-inr" size={18} color="#005b7f" style={styles.inputIcon} />
                 <TextInput
                   style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                  placeholder="e.g. 75000"
+                  placeholder={tx("insurance:claimEnquiryFormScreen.eG75000")}
                   placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                   keyboardType="numeric"
                   value={isCashless ? estimatedCost : actualCost}
@@ -434,16 +433,16 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             {!isCashless && (
               <View style={styles.bankingSection}>
                 <Text style={[styles.bankingTitle, { color: isDark ? '#FFFFFF' : '#003950' }]}>
-                  Refund Bank Details
+                  {tx("insurance:claimEnquiryFormScreen.refundBankDetails")}
                 </Text>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Bank Account Number</Text>
+                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.bankAccountNumber")}</Text>
                   <View style={getInputWrapperStyle(!!errors.accNumber)}>
                     <MaterialCommunityIcons name="bank" size={18} color="#005b7f" style={styles.inputIcon} />
                     <TextInput
                       style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                      placeholder="e.g. 100234567890"
+                      placeholder={tx("insurance:claimEnquiryFormScreen.eG100234567890")}
                       placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                       keyboardType="numeric"
                       value={accNumber}
@@ -457,12 +456,12 @@ const ClaimEnquiryFormScreen: React.FC = () => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>IFSC Code</Text>
+                  <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.ifscCode")}</Text>
                   <View style={getInputWrapperStyle(!!errors.ifscCode)}>
                     <MaterialCommunityIcons name="bank-outline" size={18} color="#005b7f" style={styles.inputIcon} />
                     <TextInput
                       style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                      placeholder="e.g. SBIN0004561"
+                      placeholder={tx("insurance:claimEnquiryFormScreen.eGSbin0004561")}
                       placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                       autoCapitalize="characters"
                       value={ifscCode}
@@ -479,12 +478,12 @@ const ClaimEnquiryFormScreen: React.FC = () => {
 
             {/* Field: Contact Number */}
             <View style={[styles.inputGroup, { marginBottom: rs(10) }]}>
-              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>Patient Contact Number</Text>
+              <Text style={[styles.inputLabel, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:claimEnquiryFormScreen.patientContactNumber")}</Text>
               <View style={getInputWrapperStyle(!!errors.contactNo)}>
                 <MaterialCommunityIcons name="phone" size={18} color="#005b7f" style={styles.inputIcon} />
                 <TextInput
                   style={[styles.textInput, { color: isDark ? '#FFFFFF' : '#0F172A' }]}
-                  placeholder="e.g. 9876543210"
+                  placeholder={tx("insurance:claimEnquiryFormScreen.eG9876543210")}
                   placeholderTextColor={isDark ? '#52525B' : '#94A3B8'}
                   keyboardType="phone-pad"
                   value={contactNo}
@@ -513,7 +512,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
-                <Text style={styles.btnText}>Submit Enquiry</Text>
+                <Text style={styles.btnText}>{tx("insurance:claimEnquiryFormScreen.submitEnquiry")}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
@@ -542,10 +541,10 @@ const ClaimEnquiryFormScreen: React.FC = () => {
           <View style={styles.calendarModalHeader}>
             <View>
               <Text style={[styles.calendarModalTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-                Select {calendarTarget === 'admission' ? 'Admission' : 'Discharge'} Date
+                {calendarTarget === 'admission' ? tx('insurance:enquiry.selectAdmissionDate') : tx('insurance:enquiry.selectDischargeDate')}
               </Text>
               <Text style={[styles.calendarModalSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-                {MONTH_NAMES[calendarMonth]} {calendarYear}
+                {monthName(calendarMonth)} {calendarYear}
               </Text>
             </View>
             <TouchableOpacity
@@ -568,7 +567,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
             </TouchableOpacity>
 
             <Text style={[styles.monthNavLabel, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-              {MONTH_NAMES[calendarMonth]} {calendarYear}
+              {monthName(calendarMonth)} {calendarYear}
             </Text>
 
             <TouchableOpacity
@@ -582,7 +581,7 @@ const ClaimEnquiryFormScreen: React.FC = () => {
 
           {/* Weekdays Row */}
           <View style={styles.weekDaysRow}>
-            {WEEK_DAYS.map((w, idx) => (
+            {weekdayNames().map((w, idx) => (
               <View key={idx} style={styles.weekDayCol}>
                 <Text style={[styles.weekDayText, { color: isDark ? '#94A3B8' : '#64748B' }]}>{w}</Text>
               </View>
@@ -634,14 +633,14 @@ const ClaimEnquiryFormScreen: React.FC = () => {
               activeOpacity={0.7}
             >
               <MaterialCommunityIcons name="calendar-today" size={16} color="#005b7f" style={{ marginRight: 6 }} />
-              <Text style={styles.calendarTodayText}>Select Today</Text>
+              <Text style={styles.calendarTodayText}>{tx("insurance:claimEnquiryFormScreen.selectToday")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.calendarCancelBtn}
               onPress={() => setCalendarVisible(false)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.calendarCancelText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Cancel</Text>
+              <Text style={[styles.calendarCancelText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:claimEnquiryFormScreen.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

@@ -18,6 +18,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HomeStackParamList } from "../navigation/types";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type SearchSuggestion = {
     id: number;
@@ -42,6 +44,7 @@ const BRAND_PURPLE = "#852BAF";
 const BRAND_PURPLE_LIGHT = "#A654CD";
 
 function SearchScreen() {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
     const { isDark, theme } = useAppTheme();
     const [search, setSearch] = useState("");
@@ -202,8 +205,8 @@ function SearchScreen() {
                                 <View style={[styles.emptyIconCircle, { backgroundColor: isDark ? "#2D2148" : "#F3E9FB" }]}>
                                     <MaterialCommunityIcons name="text-search" size={26} color={BRAND_PURPLE_LIGHT} />
                                 </View>
-                                <Text style={[styles.noResultText, { color: theme.text }]}>No product found</Text>
-                                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>Try a different keyword</Text>
+                                <Text style={[styles.noResultText, { color: theme.text }]}>{tx("products:searchScreen.noProductFound")}</Text>
+                                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>{tx("products:searchScreen.tryADifferentKeyword")}</Text>
                             </View>
                         ) : (
                             suggestions.map((item) => {
@@ -245,7 +248,7 @@ function SearchScreen() {
             ) : (
                 <View style={styles.content}>
                     <View style={styles.historyHeader}>
-                        <Text style={[styles.historyTitle, { color: theme.text }]}>Past Searches</Text>
+                        <Text style={[styles.historyTitle, { color: theme.text }]}>{tx("products:searchScreen.pastSearches")}</Text>
                         <View style={styles.historyActions}>
                             <TouchableOpacity onPress={loadHistory} style={styles.actionButton} activeOpacity={0.75}>
                                 <MaterialCommunityIcons name="refresh" size={17} color={BRAND_PURPLE_LIGHT} />
@@ -256,13 +259,13 @@ function SearchScreen() {
                                         const res = await clearSearchHistory();
                                         if (res?.success) {
                                             await loadHistory();
-                                            Alert.alert("Success", "Search history cleared.");
+                                            Alert.alert(i18n.t("products:searchScreen.success"), i18n.t("products:searchScreen.searchHistoryCleared"));
                                         } else {
                                             throw new Error("Failed to clear history");
                                         }
                                     } catch (error) {
                                         console.error("clearSearchHistory", error);
-                                        Alert.alert("Error", "Unable to clear search history. Please try again.");
+                                        Alert.alert(i18n.t("products:searchScreen.error"), i18n.t("products:searchScreen.unableToClearSearchHistory"));
                                     }
                                 }}
                                 style={[styles.actionButton, styles.actionButtonDanger]}
@@ -303,7 +306,7 @@ function SearchScreen() {
                                     <View style={[styles.emptyIconCircle, { backgroundColor: isDark ? "#2D2148" : "#F3E9FB" }]}>
                                         <MaterialCommunityIcons name="clock-outline" size={26} color={BRAND_PURPLE_LIGHT} />
                                     </View>
-                                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No recent searches</Text>
+                                    <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:searchScreen.noRecentSearches")}</Text>
                                 </View>
                             )}
                         </View>

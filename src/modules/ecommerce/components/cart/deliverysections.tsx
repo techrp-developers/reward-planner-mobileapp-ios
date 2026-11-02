@@ -10,6 +10,9 @@ import { addressesQueryKey } from "../../navigation/navigationPerformance";
 import type { HomeStackParamList } from "../../navigation/types";
 import { useAuth } from "../../../common/auth/context/AuthContext";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { formatDate } from "../../../../i18n/format";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -34,6 +37,7 @@ type DeliverySectionProps = {
 };
 
 export default function DeliverySection(props: DeliverySectionProps) {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { isAuthenticated, user } = useAuth();
   const { isDark, theme } = useAppTheme();
@@ -54,8 +58,8 @@ export default function DeliverySection(props: DeliverySectionProps) {
     ? [selected.address1, selected.address2, selected.city, selected.state, selected.zipcode]
         .map((p) => String(p || "").trim())
         .filter(Boolean)
-        .join(", ") || "Address not set"
-    : "Address not set";
+        .join(", ") || i18n.t("products:r2.addressNotSet")
+    : i18n.t("products:r2.addressNotSet");
 
   // ── Computed display values ──────────────────────────────────────────────────
   const today = new Date();
@@ -65,7 +69,7 @@ export default function DeliverySection(props: DeliverySectionProps) {
   maxDate.setDate(today.getDate() + (props.delivery_sla_max_days ?? 7));
 
   const fmt = (d: Date) =>
-    d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+    formatDate(d, { weekday: "short", day: "numeric", month: "short" });
   const deliveryText = `${fmt(minDate)} – ${fmt(maxDate)}`;
 
 
@@ -87,7 +91,7 @@ export default function DeliverySection(props: DeliverySectionProps) {
         </View>
 
         <View style={styles.mid}>
-          <Text style={[styles.label, { color: theme.secondaryText }]}>Deliver to</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>{tx("products:deliverysections.deliverTo")}</Text>
           <Text style={[styles.bold, { color: theme.text }]} numberOfLines={1}>{displayName}</Text>
           <Text style={[styles.sub, { color: theme.secondaryText }]} numberOfLines={1}>{displayAddress}</Text>
         </View>
@@ -104,7 +108,7 @@ export default function DeliverySection(props: DeliverySectionProps) {
         </View>
 
         <View style={styles.mid}>
-          <Text style={[styles.label, { color: theme.secondaryText }]}>Estimated Delivery</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>{tx("products:deliverysections.estimatedDelivery")}</Text>
           <Text style={[styles.bold, { color: theme.text }]}>{deliveryText}</Text>
         </View>
 

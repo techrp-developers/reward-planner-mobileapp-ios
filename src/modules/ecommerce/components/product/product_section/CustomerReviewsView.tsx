@@ -18,6 +18,8 @@ import {
 } from "../../../api/ReviewApi";
 import { useAppTheme } from "../../../../../theme/ThemeContext";
 import { UPLOADS_URL as REVIEW_UPLOADS_BASE } from "../../../../../config/apiConfig";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../../i18n";
 
 type CustomerReviewsViewProps = {
   productId: number | string;
@@ -110,7 +112,7 @@ const toReviewItem = (raw: any): ReviewItem => ({
   rating: toNumber(raw?.rating, 0),
   text: String(raw?.review_text || raw?.comment || "").trim(),
   title: raw?.headline || raw?.title,
-  author: String(raw?.user_name || raw?.customer_name || raw?.name || "Anonymous"),
+  author: String(raw?.user_name || raw?.customer_name || raw?.name || i18n.t("products:r2.anonymous")),
   createdAt: raw?.created_at || raw?.createdAt || raw?.date,
   media: normalizeMedia(raw),
   helpfulCount: toNumber(raw?.helpful_count ?? raw?.helpfuls ?? raw?.helpful, 0),
@@ -133,6 +135,7 @@ const extractReviews = (response: any): ReviewItem[] => {
 export default function CustomerReviewsView({
   productId,
 }: CustomerReviewsViewProps) {
+  const { t: tx } = useTranslation();
   const { theme } = useAppTheme();
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
@@ -148,7 +151,7 @@ export default function CustomerReviewsView({
         error?.response?.data?.error ||
         error?.message ||
         "Failed to load reviews";
-      Alert.alert("Reviews", String(message));
+      Alert.alert(i18n.t("products:customerReviewsView.reviews"), String(message));
       setReviews([]);
     } finally {
       setLoading(false);
@@ -200,7 +203,7 @@ export default function CustomerReviewsView({
       }
     } catch {
       setReviews(previous);
-      Alert.alert("Review", "Unable to update helpful status right now.");
+      Alert.alert(i18n.t("products:customerReviewsView.review"), i18n.t("products:customerReviewsView.unableToUpdateHelpfulStatus"));
     }
   };
 
@@ -216,7 +219,7 @@ export default function CustomerReviewsView({
 
   return (
     <View style={[styles.container, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[styles.mainTitle, { color: theme.text }]}>Customer Reviews</Text>
+      <Text style={[styles.mainTitle, { color: theme.text }]}>{tx("products:customerReviewsView.customerReviews")}</Text>
 
       {loading ? (
         <ActivityIndicator style={styles.loader} />
@@ -271,7 +274,7 @@ export default function CustomerReviewsView({
               </View>
 
               {Boolean(review.title) && <Text style={[styles.reviewHeadline, { color: theme.text }]}>{review.title}</Text>}
-              <Text style={[styles.reviewBody, { color: theme.secondaryText }]}>{review.text || "No comment"}</Text>
+              <Text style={[styles.reviewBody, { color: theme.secondaryText }]}>{review.text || i18n.t("products:r2.noComment")}</Text>
 
               {review.media.length > 0 && (
                 <View style={styles.imageGrid}>
@@ -293,7 +296,7 @@ export default function CustomerReviewsView({
 
                 <TouchableOpacity style={styles.shareBtn} onPress={() => handleShare(review)}>
                   <MaterialCommunityIcons name="share-variant-outline" size={16} color={theme.text} />
-                  <Text style={[styles.btnText, { color: theme.text }]}>Share</Text>
+                  <Text style={[styles.btnText, { color: theme.text }]}>{tx("products:customerReviewsView.share")}</Text>
                 </TouchableOpacity>
               </View>
 
@@ -301,7 +304,7 @@ export default function CustomerReviewsView({
             </View>
           ))}
 
-          {!reviews.length && <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No reviews yet.</Text>}
+          {!reviews.length && <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:customerReviewsView.noReviewsYet")}</Text>}
         </>
       )}
     </View>

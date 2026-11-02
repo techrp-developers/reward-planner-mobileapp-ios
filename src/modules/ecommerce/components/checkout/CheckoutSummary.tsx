@@ -4,8 +4,10 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { RootStackParamList } from '@/navigation/types'
+import { useTranslation } from "react-i18next";
 
 export default function CheckoutSummary() {
+    const { t: tx } = useTranslation();
     useNavigation<NativeStackNavigationProp<RootStackParamList>>()
 
   return (
@@ -26,7 +28,7 @@ export default function CheckoutSummary() {
             end={{ x: 1, y: 0 }}
             style={styles.button}
           >
-            <Text style={styles.buttonText}>Proceed To Buy</Text>
+            <Text style={styles.buttonText}>{tx("products:checkoutSummary.proceedToBuy")}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

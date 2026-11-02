@@ -25,6 +25,9 @@ import {
   markNotificationAsRead,
   type NotificationItem,
 } from "./NotificationAPI";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
+import { formatRelativeTime } from "../../../i18n/format";
 
 type Nav = NativeStackNavigationProp<any>;
 
@@ -53,7 +56,7 @@ function getIconName(icon?: string | null, module?: string) {
 function getModuleMeta(module?: string, highPriority = false) {
   if (highPriority) {
     return {
-      label: "Urgent",
+      label: i18n.t("dashboard:notifications.modules.urgent"),
       color: "#DC2626",
       bg: "#FEF2F2",
       border: "#FECACA",
@@ -62,41 +65,22 @@ function getModuleMeta(module?: string, highPriority = false) {
 
   switch (module) {
     case "ecommerce":
-      return { label: "Order", color: "#7C3AED", bg: "#F4F0FF", border: "#DDD6FE" };
+      return { label: i18n.t("dashboard:notifications.modules.order"), color: "#7C3AED", bg: "#F4F0FF", border: "#DDD6FE" };
     case "service":
-      return { label: "Service", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE" };
+      return { label: i18n.t("dashboard:notifications.modules.service"), color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE" };
     case "wallet":
-      return { label: "Wallet", color: "#0F766E", bg: "#ECFDF5", border: "#99F6E4" };
+      return { label: i18n.t("dashboard:notifications.modules.wallet"), color: "#0F766E", bg: "#ECFDF5", border: "#99F6E4" };
     case "fitness":
-      return { label: "Fitness", color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0" };
+      return { label: i18n.t("dashboard:notifications.modules.fitness"), color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0" };
     case "bbps":
-      return { label: "Payment", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A" };
+      return { label: i18n.t("dashboard:notifications.modules.payment"), color: "#D97706", bg: "#FFFBEB", border: "#FDE68A" };
     default:
-      return { label: "Update", color: "#6D5AE6", bg: "#F4F0FF", border: "#E9D5FF" };
+      return { label: i18n.t("dashboard:notifications.modules.update"), color: "#6D5AE6", bg: "#F4F0FF", border: "#E9D5FF" };
   }
 }
 
 function formatNotificationTime(value: string) {
-  const normalized = value?.includes("T") ? value : value?.replace(" ", "T");
-  const date = new Date(normalized);
-  const time = date.getTime();
-
-  if (!Number.isFinite(time)) return value;
-
-  const diffMs = Date.now() - time;
-  const minute = 60 * 1000;
-  const hour = 60 * minute;
-  const day = 24 * hour;
-
-  if (diffMs < minute) return "Just now";
-  if (diffMs < hour) return `${Math.floor(diffMs / minute)}m ago`;
-  if (diffMs < day) return `${Math.floor(diffMs / hour)}h ago`;
-  if (diffMs < 2 * day) return "Yesterday";
-
-  return date.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-  });
+  return formatRelativeTime(value);
 }
 
 function isUnread(item: NotificationItem) {
@@ -106,6 +90,7 @@ function isUnread(item: NotificationItem) {
 function Notification() {
   const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -151,7 +136,7 @@ function Notification() {
         badgeRes.success ? badgeRes.count : fetched.filter(isUnread).length
       );
     } catch (err: any) {
-      setError(err?.message || "Failed to load notifications");
+      setError(err?.message || i18n.t("dashboard:notifications.loadFailed"));
       setNotifications([]);
       setBadgeCount(0);
     } finally {
@@ -235,12 +220,12 @@ function Notification() {
 
   const handleDeleteNotification = (item: NotificationItem) => {
     Alert.alert(
-      "Delete notification",
-      "Remove this notification from your list?",
+      t("dashboard:notifications.deleteTitle"),
+      t("dashboard:notifications.deleteBody"),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t("common:actions.cancel"), style: "cancel" },
         {
-          text: "Delete",
+          text: t("common:actions.delete"),
           style: "destructive",
           onPress: async () => {
             const previousNotifications = notifications;
@@ -334,7 +319,7 @@ function Notification() {
   return (
     <SafeAreaView style={[styles.safe, themed.screen]}>
       <OrderHeading
-        title="Notifications"
+        title={t("dashboard:notifications.title")}
         onBackPress={() => navigation.goBack()}
         showHelp={false}
         isDark={isDark}
@@ -343,14 +328,14 @@ function Notification() {
       {loading ? (
         <View style={styles.centered}>
           <ActivityIndicator size="large" color="#6D5AE6" />
-          <Text style={[styles.loadingText, themed.mutedText]}>Loading notifications...</Text>
+          <Text style={[styles.loadingText, themed.mutedText]}>{t("dashboard:notifications.loading")}</Text>
         </View>
       ) : error ? (
         <View style={styles.centered}>
           <MaterialCommunityIcons name="alert-circle-outline" size={42} color="#DC2626" />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={() => loadNotifications()}>
-            <Text style={styles.retryText}>Try Again</Text>
+            <Text style={styles.retryText}>{t("common:actions.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -386,17 +371,17 @@ function Notification() {
                   />
                 </View>
                 <View style={styles.summaryCopy}>
-                  <Text style={styles.summaryKicker}>NOTIFICATION CENTER</Text>
+                  <Text style={styles.summaryKicker}>{t("dashboard:notifications.center")}</Text>
                   <Text style={styles.summaryText}>
                     {badgeCount > 0
-                      ? `${badgeCount} new notification${badgeCount > 1 ? "s" : ""}`
-                      : "You are all caught up"}
+                      ? t("dashboard:notifications.newCount", { count: badgeCount })
+                      : t("dashboard:notifications.caughtUp")}
                   </Text>
                 </View>
               </LinearGradient>
               {notifications.length > 0 ? (
                 <View style={styles.sectionHeader}>
-                  <Text style={[styles.sectionTitle, themed.mutedText]}>Recent updates</Text>
+                  <Text style={[styles.sectionTitle, themed.mutedText]}>{t("dashboard:notifications.recent")}</Text>
                   <TouchableOpacity
                     activeOpacity={0.78}
                     disabled={badgeCount <= 0}
@@ -416,7 +401,7 @@ function Notification() {
                         badgeCount <= 0 && themed.disabledText,
                       ]}
                     >
-                      Mark all read
+                      {t("dashboard:notifications.markAllRead")}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -428,9 +413,9 @@ function Notification() {
               <View style={[styles.emptyIconWrap, themed.emptyIcon]}>
                 <MaterialCommunityIcons name="bell-sleep-outline" size={34} color="#7C3AED" />
               </View>
-              <Text style={[styles.emptyTitle, themed.text]}>No notifications yet</Text>
+              <Text style={[styles.emptyTitle, themed.text]}>{t("dashboard:notifications.emptyTitle")}</Text>
               <Text style={[styles.emptyText, themed.mutedText]}>
-                Important order, wallet, and service updates will appear here.
+                {t("dashboard:notifications.emptyBody")}
               </Text>
             </View>
           }

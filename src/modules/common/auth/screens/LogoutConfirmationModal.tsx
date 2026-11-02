@@ -2,6 +2,7 @@ import React, { useCallback, memo } from "react";
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useTranslation } from "react-i18next";
 
 type LogoutConfirmationModalProps = {
   visible: boolean;
@@ -25,15 +26,22 @@ const LogoutConfirmationModalComponent = ({
   onCancel,
   isLoading = false,
   isDark = false,
-  title = "Confirm Logout",
-  description = "Are you sure you want to logout?",
-  subText = "You will need to login again to access your account.",
+  title,
+  description,
+  subText,
   icon = "logout",
-  confirmText = "Yes, Logout",
-  loadingText = "Logging out...",
+  confirmText,
+  loadingText,
   danger = false,
   showCancel = true,
 }: LogoutConfirmationModalProps) => {
+  const { t } = useTranslation();
+  // Defaults describe logout; callers pass their own copy for other actions.
+  title ??= t("auth:logout.title");
+  description ??= t("auth:logout.description");
+  subText ??= t("auth:logout.subText");
+  confirmText ??= t("auth:logout.confirm");
+  loadingText ??= t("auth:logout.loading");
   const handleConfirm = useCallback(() => {
     onConfirm();
   }, [onConfirm]);
@@ -104,7 +112,7 @@ const LogoutConfirmationModalComponent = ({
                     },
                   ]}
                 >
-                  <Text style={[styles.cancelBtnText, { color: isDark ? "#E5E7EB" : "#666666" }]}>Cancel</Text>
+                  <Text style={[styles.cancelBtnText, { color: isDark ? "#E5E7EB" : "#666666" }]}>{t("common:actions.cancel")}</Text>
                 </View>
               </TouchableOpacity>
             ) : null}

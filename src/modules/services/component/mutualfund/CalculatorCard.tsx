@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 export interface CalculatorItem {
   id: string;
@@ -42,19 +44,19 @@ const CalculatorCard: React.FC<Props> = ({ item, onPress }) => (
         </View>
         <View style={styles.quickBadge}>
           <MaterialCommunityIcons name="flash" size={10} color="#7C3AED" />
-          <Text style={styles.quickBadgeText}>Tool</Text>
+          <Text style={styles.quickBadgeText}>{i18n.t("services:calculatorCard.tool")}</Text>
         </View>
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
-        {item.title}
+        {translateSourceText("services", item.title)}
       </Text>
       <Text style={styles.description} numberOfLines={3}>
-        {item.subtitle}
+        {translateSourceText("services", item.subtitle)}
       </Text>
 
       <View style={styles.calcRow}>
-        <Text style={styles.calcText}>Calculate Now</Text>
+        <Text style={styles.calcText}>{i18n.t("services:calculatorCard.calculateNow")}</Text>
         <View style={styles.arrowCircle}>
           <MaterialCommunityIcons name="arrow-right" size={14} color="#FFFFFF" />
         </View>

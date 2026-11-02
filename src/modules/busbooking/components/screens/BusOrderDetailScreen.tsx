@@ -35,6 +35,9 @@ import {
   getBusOrderStatus,
   parseBusDateTime,
 } from "../../utils/busOrderFormat";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 const MAX_REMARKS_LENGTH = 500;
 
@@ -60,6 +63,7 @@ const getSeatCancellationLabel = (passenger: BusOrderPassenger) => {
 };
 
 export default function BusOrderDetailScreen() {
+  const { t: tx } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route =
@@ -80,7 +84,7 @@ export default function BusOrderDetailScreen() {
       setOrder(await getBusOrderDetailApi(orderRef));
       setError(null);
     } catch (loadError: any) {
-      setError(loadError?.message || "Unable to load this bus booking");
+      setError(loadError?.message || i18n.t("busBooking:r2.unableToLoadThisBusBooking"));
     }
   }, [orderRef]);
 
@@ -132,18 +136,18 @@ export default function BusOrderDetailScreen() {
       setRemarks("");
 
       showPopup({
-        title: result.completed ? "Seat Cancelled" : "Cancellation In Progress",
+        title: result.completed ? i18n.t("busBooking:cancel.seatCancelled") : i18n.t("busBooking:cancel.inProgress"),
         message: result.completed
           ? result.refundAmount > 0
-            ? `Seat ${seatName} is cancelled. ${formatBusAmount(result.refundAmount)} will be refunded to your original payment method.`
-            : `Seat ${seatName} is cancelled. No refund is due under the operator's cancellation policy.`
-          : `We are confirming the cancellation of seat ${seatName} with the operator. Check this booking again shortly.`,
+            ? i18n.t("busBooking:cancel.refundBody", { seat: seatName, amount: formatBusAmount(result.refundAmount) })
+            : i18n.t("busBooking:cancel.noRefundBody", { seat: seatName })
+          : i18n.t("busBooking:cancel.confirmingBody", { seat: seatName }),
         variant: result.completed ? "success" : "info",
       });
     } catch (cancelError: any) {
       showPopup({
-        title: "Cancellation Failed",
-        message: cancelError?.message || "Unable to cancel bus seat",
+        title: i18n.t("busBooking:busOrderDetailScreen.msg.cancellationFailed"),
+        message: cancelError?.message || i18n.t("busBooking:cancel.failedBody"),
         variant: "error",
       });
     } finally {
@@ -178,7 +182,7 @@ export default function BusOrderDetailScreen() {
         >
           <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Booking Details</Text>
+        <Text style={styles.headerTitle}>{tx("busBooking:busOrderDetailScreen.bookingDetails")}</Text>
       </View>
 
       {loading ? (
@@ -188,14 +192,14 @@ export default function BusOrderDetailScreen() {
       ) : !order ? (
         <View style={styles.centerState}>
           <MaterialCommunityIcons name="alert-circle-outline" size={34} color="#C81E3A" />
-          <Text style={styles.stateTitle}>Could not load booking</Text>
+          <Text style={styles.stateTitle}>{tx("busBooking:busOrderDetailScreen.couldNotLoadBooking")}</Text>
           <Text style={styles.stateMessage}>{error}</Text>
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.retryButton}
             onPress={handleRefresh}
           >
-            <Text style={styles.retryButtonText}>Try again</Text>
+            <Text style={styles.retryButtonText}>{tx("busBooking:busOrderDetailScreen.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -227,7 +231,7 @@ export default function BusOrderDetailScreen() {
                   ]}
                 >
                   <Text style={[styles.statusText, { color: statusColors.text }]}>
-                    {status.label}
+                    {translateSourceText("busBooking", status.label)}
                   </Text>
                 </View>
               ) : null}
@@ -268,20 +272,20 @@ export default function BusOrderDetailScreen() {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Ticket</Text>
-            <DetailRow label="Booking Ref" value={order.orderRef} />
+            <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.ticket")}</Text>
+            <DetailRow label={tx("busBooking:busOrderDetailScreen.bookingRef")} value={order.orderRef} />
             {order.ticketNo ? (
-              <DetailRow label="Ticket No" value={order.ticketNo} />
+              <DetailRow label={tx("busBooking:busOrderDetailScreen.ticketNo")} value={order.ticketNo} />
             ) : null}
             {order.travelOperatorPNR ? (
-              <DetailRow label="Operator PNR" value={order.travelOperatorPNR} />
+              <DetailRow label={tx("busBooking:busOrderDetailScreen.operatorPnr")} value={order.travelOperatorPNR} />
             ) : null}
-            <DetailRow label="Amount Paid" value={formatBusAmount(order.amountPaid)} />
-            <DetailRow label="Booked On" value={formatBusDate(order.bookedAt)} />
+            <DetailRow label={tx("busBooking:busOrderDetailScreen.amountPaid")} value={formatBusAmount(order.amountPaid)} />
+            <DetailRow label={tx("busBooking:busOrderDetailScreen.bookedOn")} value={formatBusDate(order.bookedAt)} />
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Passengers</Text>
+            <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.passengers")}</Text>
 
             {order.passengers.map((passenger) => {
               const cancellationLabel = getSeatCancellationLabel(passenger);
@@ -296,7 +300,7 @@ export default function BusOrderDetailScreen() {
                 <View key={passenger.seatName} style={styles.passengerRow}>
                   <View style={styles.passengerTextWrap}>
                     <Text style={styles.passengerName}>
-                      {passenger.name || "Passenger"}
+                      {passenger.name || i18n.t("busBooking:r2.passenger")}
                     </Text>
                     <Text style={styles.passengerMeta}>
                       Seat {passenger.seatName}
@@ -313,7 +317,7 @@ export default function BusOrderDetailScreen() {
                       style={styles.cancelSeatButton}
                       onPress={() => setCancelSeat(passenger.seatName)}
                     >
-                      <Text style={styles.cancelSeatButtonText}>Cancel seat</Text>
+                      <Text style={styles.cancelSeatButtonText}>{tx("busBooking:busOrderDetailScreen.cancelSeat")}</Text>
                     </TouchableOpacity>
                   ) : null}
                 </View>
@@ -323,14 +327,14 @@ export default function BusOrderDetailScreen() {
 
           {order.refunds.length > 0 ? (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Refunds</Text>
+              <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.refunds")}</Text>
               {order.refunds.map((refund, index) => (
                 <DetailRow
                   key={`${refund.reason}-${index}`}
                   label={
                     refund.reason === "booking_failed"
-                      ? "Booking not completed"
-                      : "Seat cancellation"
+                      ? i18n.t("busBooking:r2.bookingNotCompleted")
+                      : i18n.t("busBooking:r2.seatCancellation")
                   }
                   value={`${formatBusAmount(refund.amount)} - ${
                     refund.status === "processed" ? "Refunded" : "In progress"
@@ -342,7 +346,7 @@ export default function BusOrderDetailScreen() {
 
           {policyLines.length > 0 ? (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Cancellation Policy</Text>
+              <Text style={styles.cardTitle}>{tx("busBooking:busOrderDetailScreen.cancellationPolicy")}</Text>
               {policyLines.map((line, index) => (
                 <Text key={`${line}-${index}`} style={styles.policyText}>
                   {line}
@@ -373,7 +377,7 @@ export default function BusOrderDetailScreen() {
             <TextInput
               value={remarks}
               onChangeText={setRemarks}
-              placeholder="Reason for cancellation"
+              placeholder={tx("busBooking:busOrderDetailScreen.reasonForCancellation")}
               placeholderTextColor="#B0AAB3"
               maxLength={MAX_REMARKS_LENGTH}
               multiline
@@ -388,7 +392,7 @@ export default function BusOrderDetailScreen() {
                 style={styles.modalSecondaryButton}
                 onPress={closeCancelModal}
               >
-                <Text style={styles.modalSecondaryText}>Keep seat</Text>
+                <Text style={styles.modalSecondaryText}>{tx("busBooking:busOrderDetailScreen.keepSeat")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -403,7 +407,7 @@ export default function BusOrderDetailScreen() {
                 {cancelling ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
-                  <Text style={styles.modalPrimaryText}>Cancel seat</Text>
+                  <Text style={styles.modalPrimaryText}>{tx("busBooking:busOrderDetailScreen.cancelSeat")}</Text>
                 )}
               </TouchableOpacity>
             </View>

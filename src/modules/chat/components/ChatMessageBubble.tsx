@@ -19,6 +19,7 @@ import { messagePreview } from "../messageState";
 import type { ChatMessage } from "../types";
 import type { ChatThemePreset } from "../theme/chatThemes";
 import { useChatColors } from "./chatUiTokens";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   message: ChatMessage;
@@ -53,6 +54,7 @@ function ChatMessageBubble({
   onVote,
 }: Props) {
   const theme = useChatColors();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const [ratio, setRatio] = React.useState(1);
   const [imageState, setImageState] = React.useState<"loading" | "ready" | "failed">("loading");
@@ -129,7 +131,7 @@ function ChatMessageBubble({
         <Pressable
           onLongPress={() => !item.deleted_at && onActions(item)}
           delayLongPress={350}
-          accessibilityHint="Long press for message actions; swipe to reply"
+          accessibilityHint={t("chat:bubble.hint")}
           style={[
             styles.bubble,
             media
@@ -147,7 +149,7 @@ function ChatMessageBubble({
           {!item.deleted_at && item.reply_to_message_id && (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="Go to original message"
+              accessibilityLabel={t("chat:bubble.goToOriginal")}
               onPress={() => quoted && onQuote(quoted)}
               disabled={!quoted}
               style={[
@@ -166,12 +168,12 @@ function ChatMessageBubble({
                 style={[styles.quoteName, { color: foreground }]}
                 numberOfLines={1}
               >
-                {quoted?.sender_name || "Original message"}
+                {quoted?.sender_name || t("chat:bubble.original")}
               </Text>
               <Text style={{ color: muted, fontSize: 13 }} numberOfLines={2}>
                 {quoted
                   ? messagePreview(quoted)
-                  : "Original message is not loaded"}
+                  : t("chat:bubble.originalNotLoaded")}
               </Text>
             </TouchableOpacity>
           )}
@@ -182,7 +184,7 @@ function ChatMessageBubble({
           ) : media ? (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel="View shared photo"
+              accessibilityLabel={t("chat:bubble.viewPhoto")}
               activeOpacity={0.85}
               disabled={imageState === "failed"}
               onPress={() => onImage(item)}
@@ -216,7 +218,7 @@ function ChatMessageBubble({
                 <View style={styles.mediaFailed}>
                   <MaterialCommunityIcons name="image-broken-variant" size={28} color={muted} />
                   <Text style={{ color: muted, fontSize: 12, marginTop: 6 }}>
-                    Photo unavailable
+                    {t("chat:bubble.photoUnavailable")}
                   </Text>
                 </View>
               )}
@@ -224,7 +226,7 @@ function ChatMessageBubble({
           ) : item.message_type === "file" ? (
             <TouchableOpacity
               accessibilityRole="button"
-              accessibilityLabel={`Open ${item.attachment_name || "document"}`}
+              accessibilityLabel={t("chat:bubble.openFile", { name: item.attachment_name || t("chat:bubble.document") })}
               onPress={() => onFile(item)}
               onLongPress={() => onActions(item)}
               style={[styles.file, { width: mediaWidth }]}
@@ -250,15 +252,15 @@ function ChatMessageBubble({
                   numberOfLines={2}
                   style={[styles.fileName, { color: foreground }]}
                 >
-                  {item.attachment_name || "Document"}
+                  {item.attachment_name || t("chat:preview.document")}
                 </Text>
                 <Text
                   numberOfLines={1}
                   style={{ color: muted, fontSize: 11, marginTop: 4 }}
                 >
-                  {item.attachment_mime_type || "File"}
+                  {item.attachment_mime_type || t("chat:preview.file")}
                   {item.attachment_size
-                    ? ` · ${Math.ceil(item.attachment_size / 1024)} KB`
+                    ? ` · ${t("chat:bubble.sizeKb", { size: Math.ceil(item.attachment_size / 1024) })}`
                     : ""}
                 </Text>
               </View>
@@ -278,7 +280,7 @@ function ChatMessageBubble({
           ) : (
             <Text selectable style={[styles.body, { color: foreground }]}>
               {item.body ||
-                (item.message_type === "image" ? "Photo unavailable" : "")}
+                (item.message_type === "image" ? t("chat:bubble.photoUnavailable") : "")}
             </Text>
           )}
           <View style={[styles.meta, media && styles.mediaMeta]}>
@@ -292,7 +294,7 @@ function ChatMessageBubble({
               ) : item.local_status === "failed" ? (
                 <TouchableOpacity
                   accessibilityRole="button"
-                  accessibilityLabel="Retry failed message"
+                  accessibilityLabel={t("chat:bubble.retryFailed")}
                   onPress={() => onRetry(item)}
                   style={styles.retry}
                 >
@@ -301,7 +303,7 @@ function ChatMessageBubble({
                     size={17}
                     color="#FECACA"
                   />
-                  <Text style={{ color: "#FECACA", fontSize: 11 }}>Retry</Text>
+                  <Text style={{ color: "#FECACA", fontSize: 11 }}>{t("common:actions.retry")}</Text>
                 </TouchableOpacity>
               ) : (
                 <MaterialCommunityIcons

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from 'react-i18next';
 import NetInfo from '@react-native-community/netinfo';
 import NoInternetBackground from '../../../assets/homepage/NoInternetBG.svg';
 import NoInternetStatus from '../../../assets/homepage/NoInternetStatus.svg';
@@ -33,6 +34,7 @@ const TREES = [
 ];
 
 export default function NoInternetScreen({ onRetry }: Props) {
+  const { t } = useTranslation();
   const [retrying, setRetrying] = useState(false);
 
   const handleRetry = async () => {
@@ -70,7 +72,7 @@ export default function NoInternetScreen({ onRetry }: Props) {
           </View>
         </View>
 
-        <Text style={styles.title}>No Internet Connection</Text>
+        <Text style={styles.title}>{t('common:offline.title')}</Text>
         <Text style={styles.message}>
           Wi-Fi is on a space adventure 🚀{`\n`}
           Rewards are safe at mission control ✨{`\n`}
@@ -79,7 +81,7 @@ export default function NoInternetScreen({ onRetry }: Props) {
 
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Try reconnecting"
+          accessibilityLabel={t('common:offline.tryReconnecting')}
           activeOpacity={0.86}
           disabled={retrying}
           onPress={handleRetry}
@@ -92,7 +94,7 @@ export default function NoInternetScreen({ onRetry }: Props) {
             style={styles.button}
           >
             {retrying ? <ActivityIndicator color="#FFFFFF" /> : null}
-            <Text style={styles.buttonText}>{retrying ? 'Checking connection…' : 'Try Again'}</Text>
+            <Text style={styles.buttonText}>{retrying ? t('common:offline.checkingConnection') : t('common:actions.tryAgain')}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

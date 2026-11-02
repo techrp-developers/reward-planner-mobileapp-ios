@@ -68,6 +68,8 @@ import {
 import RecommendedProducts from '../Promotion/RecommendedProducts';
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA';
 import { useAppTheme } from '../../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type RouteT = RouteProp<HomeStackParamList, 'OrderStepUI'>;
 type StepStatus = 'done' | 'current' | 'upcoming';
@@ -172,6 +174,7 @@ const pollForFinalPaymentStatus = async (orderId: number) => {
 };
 
 export default function OrderStepUI() {
+  const { t: tx } = useTranslation();
   const { isAuthenticated, logout, user } = useAuth();
   const { isDark, theme } = useAppTheme();
   const stickyCTA = useStickyBottomCTA({ tabBarAware: false });
@@ -196,8 +199,8 @@ export default function OrderStepUI() {
     useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const handleUnauthorized = useCallback(async () => {
     Alert.alert(
-      'Session expired',
-      'Your session has expired. Please log in again.',
+      i18n.t("products:orderStepUI.msg.sessionExpired"),
+      i18n.t("products:orderStepUI.msg.yourSessionHasExpiredPlease"),
     );
     try {
       await logout();
@@ -753,7 +756,7 @@ export default function OrderStepUI() {
       if (!selectedAddressId) {
         isCreatingOrder.current = false;
         setPlacing(false);
-        Alert.alert('Select Address', 'Please select an address.');
+        Alert.alert(i18n.t("products:orderStepUI.selectAddress"), i18n.t("products:orderStepUI.pleaseSelectAnAddress"));
         return;
       }
 
@@ -836,7 +839,7 @@ export default function OrderStepUI() {
           serverMessage,
           orderRes,
         );
-        alert.error('Checkout Failed', String(serverMessage));
+        alert.error(i18n.t("products:orderStepUI.checkoutFailed"), String(serverMessage));
         return;
       }
 
@@ -852,7 +855,7 @@ export default function OrderStepUI() {
         isCreatingOrder.current = false;
         setPlacing(false);
         __DEV__ && console.log('Order ID missing');
-        alert.error('Order Error', 'Order ID missing. Please try again.');
+        alert.error(i18n.t("products:orderStepUI.orderError"), i18n.t("products:orderStepUI.orderIdMissingPleaseTry"));
         return;
       }
 
@@ -882,7 +885,7 @@ export default function OrderStepUI() {
         currency: paymentData.currency || 'INR',
         order_id: paymentData.orderId,
         name: 'Reward Planners',
-        description: 'Order Payment',
+        description: i18n.t("products:payment.orderDescription"),
         prefill: {
           name: user?.name || '',
           email: user?.email || '',
@@ -961,8 +964,8 @@ export default function OrderStepUI() {
 
             if (statusResult.outcome === 'pending') {
               alert.info(
-                'Payment Processing',
-                'Do not pay again; check this order shortly.',
+                i18n.t("products:orderStepUI.msg.paymentProcessing"),
+                i18n.t("products:orderStepUI.msg.doNotPayAgainCheck"),
               );
               navigateToOrderConfirm(orderId);
               return;
@@ -971,13 +974,13 @@ export default function OrderStepUI() {
             const released = await cancelOrderAndRestoreCart(orderId);
             if (released) {
               alert.error(
-                'Payment Failed',
-                'The payment was not completed. Your cart has been restored.',
+                i18n.t("products:orderStepUI.msg.paymentFailed"),
+                i18n.t("products:orderStepUI.msg.thePaymentWasNotCompleted"),
               );
             } else {
               alert.info(
-                'Payment Status Pending',
-                'Check your order before trying another payment.',
+                i18n.t("products:orderStepUI.msg.paymentStatusPending"),
+                i18n.t("products:orderStepUI.msg.checkYourOrderBeforeTrying"),
               );
               navigateToOrderConfirm(orderId);
             }
@@ -992,21 +995,21 @@ export default function OrderStepUI() {
                 navigateToOrderConfirm(orderId);
               } else if (statusResult.outcome === 'pending') {
                 alert.info(
-                  'Payment Processing',
-                  'Do not pay again; check this order shortly.',
+                  i18n.t("products:orderStepUI.msg.paymentProcessing"),
+                  i18n.t("products:orderStepUI.msg.doNotPayAgainCheck"),
                 );
                 navigateToOrderConfirm(orderId);
               } else {
                 const released = await cancelOrderAndRestoreCart(orderId);
                 if (released) {
                   alert.error(
-                    'Payment Failed',
-                    'The payment was not completed. Your cart has been restored.',
+                    i18n.t("products:orderStepUI.msg.paymentFailed"),
+                    i18n.t("products:orderStepUI.msg.thePaymentWasNotCompleted"),
                   );
                 } else {
                   alert.info(
-                    'Payment Status Pending',
-                    'Check your order before trying another payment.',
+                    i18n.t("products:orderStepUI.msg.paymentStatusPending"),
+                    i18n.t("products:orderStepUI.msg.checkYourOrderBeforeTrying"),
                   );
                   navigateToOrderConfirm(orderId);
                 }
@@ -1016,8 +1019,8 @@ export default function OrderStepUI() {
               setPlacing(false);
               console.error('Payment status unavailable:', statusError);
               alert.info(
-                'Payment Status Unavailable',
-                'Do not pay again yet. Please check your order after a few minutes.',
+                i18n.t("products:orderStepUI.msg.paymentStatusUnavailable"),
+                i18n.t("products:orderStepUI.msg.doNotPayAgainYet"),
               );
               navigateToOrderConfirm(orderId);
             }
@@ -1065,13 +1068,13 @@ export default function OrderStepUI() {
             const released = await cancelOrderAndRestoreCart(orderId);
             if (released) {
               alert.warning(
-                'Payment Cancelled',
-                'You cancelled the payment. Your cart has been restored.',
+                i18n.t("products:orderStepUI.msg.paymentCancelled"),
+                i18n.t("products:orderStepUI.msg.youCancelledThePaymentYour"),
               );
             } else {
               alert.info(
-                'Payment Status Pending',
-                'Check your order before paying again.',
+                i18n.t("products:orderStepUI.msg.paymentStatusPending"),
+                i18n.t("products:orderStepUI.msg.checkYourOrderBeforePaying"),
               );
               navigateToOrderConfirm(orderId);
             }
@@ -1081,11 +1084,11 @@ export default function OrderStepUI() {
           // Payment failed
           const released = await cancelOrderAndRestoreCart(orderId);
           if (released) {
-            alert.error('Payment Failed', String(errorText));
+            alert.error(i18n.t("products:orderStepUI.paymentFailed"), String(errorText));
           } else {
             alert.info(
-              'Payment Status Pending',
-              'Check your order before trying another payment.',
+              i18n.t("products:orderStepUI.msg.paymentStatusPending"),
+              i18n.t("products:orderStepUI.msg.checkYourOrderBeforeTrying"),
             );
             navigateToOrderConfirm(orderId);
           }
@@ -1113,7 +1116,7 @@ export default function OrderStepUI() {
         e?.response?.data?.error ||
         e?.response?.data?.details ||
         'Failed to place order';
-      alert.error('Error', String(serverMessage));
+      alert.error(i18n.t("products:orderStepUI.error"), String(serverMessage));
     }
   };
 
@@ -1132,7 +1135,7 @@ export default function OrderStepUI() {
     const newQty = item.quantity + 1;
 
     if (Number.isFinite(Number(item?.stock)) && newQty > Number(item.stock)) {
-      alert.warning('Stock Limit', 'Only limited stock available');
+      alert.warning(i18n.t("products:orderStepUI.stockLimit"), i18n.t("products:orderStepUI.onlyLimitedStockAvailable"));
       return;
     }
 
@@ -1162,8 +1165,8 @@ export default function OrderStepUI() {
         ),
       );
       alert.error(
-        'Update Failed',
-        'Could not update quantity. Please try again.',
+        i18n.t("products:orderStepUI.msg.updateFailed"),
+        i18n.t("products:orderStepUI.msg.couldNotUpdateQuantityPlease"),
       );
     }
   };
@@ -1200,8 +1203,8 @@ export default function OrderStepUI() {
         ),
       );
       alert.error(
-        'Update Failed',
-        'Could not update quantity. Please try again.',
+        i18n.t("products:orderStepUI.msg.updateFailed"),
+        i18n.t("products:orderStepUI.msg.couldNotUpdateQuantityPlease"),
       );
     }
   };
@@ -1295,16 +1298,16 @@ export default function OrderStepUI() {
   if (!isBuyNowValid || checkoutError || emptyBuyNowPreview) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
-        <ProductHeadColor title="Checkout" onBackPress={() => navigation.goBack()} showSearch={false} isDark={isDark} />
+        <ProductHeadColor title={tx("products:orderStepUI.checkout")} onBackPress={() => navigation.goBack()} showSearch={false} isDark={isDark} />
         <View style={{ padding: 24 }}>
-          <Text style={{ color: theme.text }}>Unable to load checkout</Text>
+          <Text style={{ color: theme.text }}>{tx("products:orderStepUI.unableToLoadCheckout")}</Text>
           <Text style={{ color: theme.secondaryText, marginVertical: 12 }}>
-            {!isBuyNowValid ? 'Please select a valid product option.' :
-              emptyBuyNowPreview ? 'This product is currently unavailable for checkout.' :
+            {!isBuyNowValid ? i18n.t("products:r2.pleaseSelectAValidProductOption") :
+              emptyBuyNowPreview ? i18n.t("products:r2.thisProductIsCurrentlyUnavailableFor") :
               'We could not load your order preview. Please try again.'}
           </Text>
           {isBuyNowValid && <TouchableOpacity disabled={isCheckoutFetching} onPress={() => { void retryCheckout(); }}>
-            <Text style={{ color: theme.text }}>{isCheckoutFetching ? 'Retrying...' : 'Try again'}</Text>
+            <Text style={{ color: theme.text }}>{isCheckoutFetching ? i18n.t("products:r2.retrying") : 'Try again'}</Text>
           </TouchableOpacity>}
         </View>
       </View>
@@ -1360,13 +1363,13 @@ export default function OrderStepUI() {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         <ProductHeadColor
-          title="Cart"
+          title={tx("products:orderStepUI.cart")}
           onBackPress={handleEmptyCheckoutBack}
           showSearch={false}
           isDark={isDark}
         />
         <EmptyCart
-          message="Your cart is empty. Add products to continue."
+          message={tx("products:orderStepUI.yourCartIsEmptyAdd")}
           onBrowse={() => navigation.navigate('Home')}
         />
       </View>
@@ -1376,7 +1379,7 @@ export default function OrderStepUI() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ProductHeadColor
-        title="Checkout"
+        title={tx("products:orderStepUI.checkout")}
         onBackPress={() => navigation.goBack()}
         showSearch={false}
         isDark={isDark}
@@ -1391,11 +1394,11 @@ export default function OrderStepUI() {
         <View style={styles.scrollPadding}>
           {/* Step Counter */}
           <View style={styles.stepRow}>
-            <Step status="done" label="Address" />
+            <Step status="done" label={tx("products:orderStepUI.address")} />
             <Line />
-            <Step status="current" label="Order Summary" />
+            <Step status="current" label={tx("products:orderStepUI.orderSummary")} />
             <Line />
-            <Step status="upcoming" label="Payment" />
+            <Step status="upcoming" label={tx("products:orderStepUI.payment")} />
           </View>
 
           {/* Address Card */}
@@ -1418,7 +1421,7 @@ export default function OrderStepUI() {
                   <Text style={[styles.title, { color: theme.text }]}>
                     {address
                       ? `Delivering to ${address.contact_name || 'User'}`
-                      : 'Delivery address'}
+                      : i18n.t("products:r2.deliveryAddress")}
                   </Text>
                   <TouchableOpacity
                     activeOpacity={0.7}
@@ -1432,8 +1435,8 @@ export default function OrderStepUI() {
 
                 <Text style={[styles.address, { color: theme.secondaryText }]}>
                   {address
-                    ? addressLine || 'No address selected'
-                    : 'No address selected'}
+                    ? addressLine || i18n.t("products:r2.noAddressSelected")
+                    : i18n.t("products:r2.noAddressSelected")}
                 </Text>
               </View>
             </View>
@@ -1443,7 +1446,7 @@ export default function OrderStepUI() {
           {mode !== 'buy_now' && items.length > 0 && (
             <View style={styles.actionsRow}>
               <TouchableOpacity onPress={removeAll}>
-                <Text style={styles.actionDanger}>Remove all</Text>
+                <Text style={styles.actionDanger}>{tx("products:orderStepUI.removeAll")}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1473,9 +1476,9 @@ export default function OrderStepUI() {
           {/* Coupons */}
           {/* <View style={styles.wrapper}>
             <View style={styles.headerRow}>
-              <Text style={styles.headerText}>Coupons and Offers</Text>
+              <Text style={styles.headerText}>{tx("products:orderStepUI.couponsAndOffers")}</Text>
               <TouchableOpacity onPress={() => setShowAllCoupons((p) => !p)}>
-                <Text style={styles.viewAllText}>{showAllCoupons ? "Hide" : "View All"}</Text>
+                <Text style={styles.viewAllText}>{showAllCoupons ? i18n.t("products:r2.hide") : "View All"}</Text>
               </TouchableOpacity>
             </View>
 
@@ -1506,7 +1509,7 @@ export default function OrderStepUI() {
             {relatedProductId ? (
               <View style={styles.relatedSection}>
                 <Text style={[styles.relatedTitle, { color: theme.text }]}>
-                  Related Products
+                  {tx("products:orderStepUI.relatedProducts")}
                 </Text>
                 <ProductGrid
                   key={`related-${relatedProductId}`}

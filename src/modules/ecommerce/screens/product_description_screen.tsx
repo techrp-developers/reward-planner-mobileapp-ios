@@ -28,6 +28,8 @@ import {
 } from "../navigation/navigationPerformance";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import i18n from "../../../i18n";
+import { useTranslation } from "react-i18next";
 
 type RouteT = RouteProp<HomeStackParamList, "ProductDescription">;
 
@@ -57,6 +59,8 @@ const isVariantAvailable = (variant: any) =>
 
 export default function
   ProductDescriptionScreen() {
+  // Re-render on language change; labels below use i18n.t.
+  useTranslation();
   const route = useRoute<RouteT>();
   const { productId, variantId: requestedVariantId, campaignId } = route.params;
   const { isAuthenticated } = useAuth();
@@ -119,7 +123,7 @@ export default function
 
   const handleBuyNow = useCallback(() => {
     if (!isAuthenticated) {
-      Alert.alert("Login Required", "Please login to buy products.");
+      Alert.alert(i18n.t("products:productdescriptionscreen.loginRequired"), i18n.t("products:productdescriptionscreen.pleaseLoginToBuyProducts"));
       const parent = (navigation as any)?.getParent?.();
       if (parent && typeof parent.navigate === "function") {
         parent.navigate("AuthStack");
@@ -132,7 +136,7 @@ export default function
       !selectedVariant?.variant_id ||
       !isVariantAvailable(selectedVariant)
     ) {
-      Alert.alert("Selection unavailable", "Please choose an available product option.");
+      Alert.alert(i18n.t("products:productdescriptionscreen.selectionUnavailable"), i18n.t("products:productdescriptionscreen.pleaseChooseAnAvailableProduct"));
       return;
     }
 
@@ -418,12 +422,12 @@ export default function
     if (adding) return;
 
     if (!isAuthenticated) {
-      Alert.alert("Login Required", "Please login to add products to cart.");
+      Alert.alert(i18n.t("products:productdescriptionscreen.loginRequired"), i18n.t("products:productdescriptionscreen.pleaseLoginToAddProducts"));
       return;
     }
 
     if (!product?.product_id || !selectedVariant?.variant_id || !inStock || !isVariantAvailable(selectedVariant)) {
-      alert.error("Selection unavailable", "Please choose an option that is in stock.", 3000);
+      alert.error(i18n.t("products:productdescriptionscreen.selectionUnavailable"), i18n.t("products:productdescriptionscreen.pleaseChooseAnOptionThat"), 3000);
       return;
     }
 
@@ -438,7 +442,7 @@ export default function
       if (selectedCartItem?.id && Number(selectedCartItem.quantity) !== Number(qty)) {
         await updateQuantity(selectedCartItem.id, qty);
         setSheetVisible(true);
-        alert.success("Cart Updated", "Cart quantity updated successfully.", 2500);
+        alert.success(i18n.t("products:productdescriptionscreen.cartUpdated"), i18n.t("products:productdescriptionscreen.cartQuantityUpdatedSuccessfully"), 2500);
         return;
       }
 
@@ -449,8 +453,8 @@ export default function
 
       InteractionManager.runAfterInteractions(() => {
         alert.success(
-          "Added to Cart",
-          `${product.product_name} added to cart successfully!`,
+          i18n.t("products:productdescriptionscreen.msg.addedToCart"),
+          i18n.t("products:productdescriptionscreen.msg.v0AddedToCartSuccessfully", { v0: product.product_name }),
           2500
         );
       });
@@ -461,7 +465,7 @@ export default function
         err?.response?.data?.error ||
         err?.message ||
         "Unable to add item to cart";
-      alert.error("Add to Cart Failed", String(message), 3500);
+      alert.error(i18n.t("products:productdescriptionscreen.addToCartFailed"), String(message), 3500);
     } finally {
       setAdding(false);
     }
@@ -491,12 +495,12 @@ export default function
     );
 
     if (!parsedProductId || Number.isNaN(parsedProductId)) {
-      Alert.alert("Wishlist", "Invalid product");
+      Alert.alert(i18n.t("products:productdescriptionscreen.wishlist"), i18n.t("products:productdescriptionscreen.invalidProduct"));
       return;
     }
 
     if (!parsedVariantId || Number.isNaN(parsedVariantId)) {
-      Alert.alert("Wishlist", "Product variant is missing");
+      Alert.alert(i18n.t("products:productdescriptionscreen.wishlist"), i18n.t("products:productdescriptionscreen.productVariantIsMissing"));
       return;
     }
 
@@ -510,7 +514,7 @@ export default function
         error?.response?.data?.error ||
         error?.message ||
         "Failed to update wishlist";
-      Alert.alert("Wishlist", String(message));
+      Alert.alert(i18n.t("products:productdescriptionscreen.wishlist"), String(message));
     } finally {
       setWishLoading(false);
     }
@@ -531,7 +535,7 @@ export default function
       </View>
     );
   }
-  if (!product) return <Text style={[styles.notFoundText, { color: theme.text, backgroundColor: theme.background }]}>Product not found</Text>;
+  if (!product) return <Text style={[styles.notFoundText, { color: theme.text, backgroundColor: theme.background }]}>{i18n.t("products:productdescriptionscreen.productNotFound")}</Text>;
   const variant = selectedVariant;
 
   const salePrice = variant ? `₹${variant.sale_price}` : "₹0";
@@ -653,7 +657,7 @@ export default function
         </View>
 
         <View style={styles.relatedSection}>
-          <Text style={[styles.relatedTitle, { color: theme.text }]}>Related Products</Text>
+          <Text style={[styles.relatedTitle, { color: theme.text }]}>{i18n.t("products:productdescriptionscreen.relatedProducts")}</Text>
           <ProductGrid
             key={`related-${relatedProductId}`}
             useFlatList={false}

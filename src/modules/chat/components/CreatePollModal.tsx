@@ -17,6 +17,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useChatColors } from "./chatUiTokens";
 import { CHAT_UI } from "./chatUiTokens";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   visible: boolean;
@@ -29,6 +30,7 @@ const MIN_OPTIONS = 2;
 
 export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
@@ -63,16 +65,16 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
     const cleanQuestion = question.trim();
     const cleanOptions = options.map((text) => text.trim()).filter(Boolean);
     if (!cleanQuestion)
-      return Alert.alert("Add a question", "Enter a question for your poll.");
+      return Alert.alert(t("chat:poll.addQuestionTitle"), t("chat:poll.addQuestionBody"));
     if (cleanOptions.length < MIN_OPTIONS)
-      return Alert.alert("Add options", "A poll needs at least two choices.");
+      return Alert.alert(t("chat:poll.addOptionsTitle"), t("chat:poll.addOptionsBody"));
     if (
       new Set(cleanOptions.map((item) => item.toLocaleLowerCase())).size !==
       cleanOptions.length
     ) {
       return Alert.alert(
-        "Duplicate options",
-        "Please use different option names."
+        t("chat:poll.duplicateTitle"),
+        t("chat:poll.duplicateBody")
       );
     }
     Keyboard.dismiss();
@@ -86,8 +88,8 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
       onClose();
     } catch (error: any) {
       Alert.alert(
-        "Could not create poll",
-        error?.response?.data?.message || error?.message || "Please try again."
+        t("chat:poll.createFailed"),
+        error?.response?.data?.message || error?.message || t("common:errors.generic")
       );
     } finally {
       savingRef.current = false;
@@ -110,7 +112,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
         <Pressable
           style={StyleSheet.absoluteFill}
           onPress={close}
-          accessibilityLabel="Dismiss poll composer"
+          accessibilityLabel={t("chat:poll.dismiss")}
         />
         <View
           style={[
@@ -137,17 +139,17 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
             </View>
             <View style={styles.headerText}>
               <Text style={[styles.title, { color: theme.text }]}>
-                Create a poll
+                {t("chat:poll.createTitle")}
               </Text>
               <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
-                Get everyone's opinion
+                {t("chat:poll.createSubtitle")}
               </Text>
             </View>
             <Pressable
               onPress={close}
               disabled={saving}
               accessibilityRole="button"
-              accessibilityLabel="Close poll"
+              accessibilityLabel={t("chat:poll.close")}
               style={[styles.close, { backgroundColor: theme.background }]}
             >
               <MaterialCommunityIcons
@@ -163,12 +165,12 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <Text style={[styles.label, { color: theme.text }]}>Question</Text>
+            <Text style={[styles.label, { color: theme.text }]}>{t("chat:poll.question")}</Text>
             <TextInput
               value={question}
               onChangeText={setQuestion}
               editable={!saving}
-              placeholder="What should we decide?"
+              placeholder={t("chat:poll.questionPlaceholder")}
               placeholderTextColor={theme.secondaryText}
               maxLength={250}
               multiline
@@ -182,7 +184,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
               ]}
             />
             <Text style={[styles.label, { color: theme.text, marginTop: 18 }]}>
-              Options
+              {t("chat:poll.options")}
             </Text>
             {options.map((option, index) => (
               <View key={index} style={styles.optionRow}>
@@ -200,7 +202,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
                   value={option}
                   onChangeText={(text) => changeOption(index, text)}
                   editable={!saving}
-                  placeholder={`Option ${index + 1}`}
+                  placeholder={t("chat:poll.optionN", { n: index + 1 })}
                   placeholderTextColor={theme.secondaryText}
                   maxLength={120}
                   returnKeyType="done"
@@ -222,7 +224,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
                       )
                     }
                     accessibilityRole="button"
-                    accessibilityLabel={`Remove option ${index + 1}`}
+                    accessibilityLabel={t("chat:poll.removeOptionN", { n: index + 1 })}
                     style={styles.remove}
                   >
                     <MaterialCommunityIcons
@@ -247,12 +249,12 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
                   color={theme.primary}
                 />
                 <Text style={[styles.addText, { color: theme.primary }]}>
-                  Add option
+                  {t("chat:poll.addOption")}
                 </Text>
               </Pressable>
             )}
             <Text style={[styles.hint, { color: theme.secondaryText }]}>
-              Participants can select one option.
+              {t("chat:poll.singleHint")}
             </Text>
           </ScrollView>
 
@@ -260,7 +262,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
             onPress={submit}
             disabled={saving}
             accessibilityRole="button"
-            accessibilityLabel="Create poll"
+            accessibilityLabel={t("chat:poll.create")}
             style={[
               styles.submit,
               { backgroundColor: theme.primary, opacity: saving ? 0.7 : 1 },
@@ -270,7 +272,7 @@ export default function CreatePollModal({ visible, onClose, onCreate }: Props) {
               <ActivityIndicator color="#FFF" />
             ) : (
               <>
-                <Text style={styles.submitText}>Create poll</Text>
+                <Text style={styles.submitText}>{t("chat:poll.create")}</Text>
                 <MaterialCommunityIcons
                   name="arrow-right"
                   size={20}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Modal, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppTheme } from '../../../theme/ThemeContext';
@@ -13,6 +14,7 @@ type Props = {
 /** Optional JS bundle updates only. Native App Store updates use AppUpdateModal. */
 export function OtaUpdatePrompt({ visible, releaseNotes, onUpdate, onLater }: Props) {
   const { isDark, theme } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onLater}>
@@ -21,15 +23,15 @@ export function OtaUpdatePrompt({ visible, releaseNotes, onUpdate, onLater }: Pr
           <View style={styles.iconWrap}>
             <MaterialCommunityIcons name="cloud-download-outline" size={30} color="#A654CD" />
           </View>
-          <Text style={[styles.title, { color: theme.text }]}>Update Ready</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{t('common:update.readyTitle')}</Text>
           <Text style={[styles.body, { color: isDark ? '#D4D4D8' : '#62527E' }]}>
-            {releaseNotes || 'A quick improvement is ready to apply. It only takes a second and the app will restart.'}
+            {releaseNotes || t('common:update.readyBody')}
           </Text>
           <TouchableOpacity style={styles.primaryBtn} onPress={onUpdate} activeOpacity={0.85}>
-            <Text style={styles.primaryBtnText}>Update Now</Text>
+            <Text style={styles.primaryBtnText}>{t('common:actions.updateNow')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.laterBtn} onPress={onLater} activeOpacity={0.7}>
-            <Text style={[styles.laterBtnText, { color: isDark ? '#A1A1AA' : '#9B7FC0' }]}>Later</Text>
+            <Text style={[styles.laterBtnText, { color: isDark ? '#A1A1AA' : '#9B7FC0' }]}>{t('common:actions.later')}</Text>
           </TouchableOpacity>
         </View>
       </View>

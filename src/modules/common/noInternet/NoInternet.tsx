@@ -13,6 +13,8 @@ import NetInfo from '@react-native-community/netinfo';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import i18n from "../../../i18n";
 
 interface Props {
   onRetry?: () => void;
@@ -21,18 +23,19 @@ interface Props {
 const STATUS_CARDS = [
   {
     icon: 'cloud-sync-outline',
-    title: 'Auto sync',
-    text: 'Rewards and orders will refresh when the connection returns.',
+    title: 'common:offline.autoSyncTitle',
+    text: 'common:offline.autoSyncBody',
   },
   {
     icon: 'shield-check-outline',
-    title: 'Data protected',
-    text: 'Your wallet activity stays safe while you are offline.',
+    title: 'common:offline.protectedTitle',
+    text: 'common:offline.protectedBody',
   },
 ];
 
 export default function NoInternetScreen({ onRetry }: Props) {
   const { isDark } = useAppTheme();
+  const { t } = useTranslation();
   const [retrying, setRetrying] = useState(false);
   const pulse = useRef(new Animated.Value(0)).current;
   const float = useRef(new Animated.Value(0)).current;
@@ -203,10 +206,10 @@ export default function NoInternetScreen({ onRetry }: Props) {
           </View>
         </Animated.View>
 
-        <Text style={[styles.eyebrow, { color: colors.primary }]}>CONNECTION LOST</Text>
-        <Text style={[styles.title, { color: colors.text }]}>No Internet Connection</Text>
+        <Text style={[styles.eyebrow, { color: colors.primary }]}>{t('common:offline.connectionLost')}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{t('common:offline.title')}</Text>
         <Text style={[styles.subtitle, { color: colors.muted }]}>
-          We are holding your place. Reconnect to continue shopping, booking, and redeeming rewards.
+          {i18n.t("common:r2.weAreHoldingYourPlaceReconnect")}
         </Text>
 
         <View style={styles.statusGrid}>
@@ -224,8 +227,8 @@ export default function NoInternetScreen({ onRetry }: Props) {
               <View style={[styles.statusIcon, { backgroundColor: colors.cardSoft }]}>
                 <MaterialCommunityIcons name={item.icon} size={22} color={colors.primary} />
               </View>
-              <Text style={[styles.statusTitle, { color: colors.text }]}>{item.title}</Text>
-              <Text style={[styles.statusText, { color: colors.subtle }]}>{item.text}</Text>
+              <Text style={[styles.statusTitle, { color: colors.text }]}>{t(item.title)}</Text>
+              <Text style={[styles.statusText, { color: colors.subtle }]}>{t(item.text)}</Text>
             </View>
           ))}
         </View>
@@ -245,19 +248,19 @@ export default function NoInternetScreen({ onRetry }: Props) {
             {retrying ? (
               <>
                 <ActivityIndicator color="#FFFFFF" size="small" />
-                <Text style={styles.btnText}>Checking...</Text>
+                <Text style={styles.btnText}>{t('common:status.checking')}</Text>
               </>
             ) : (
               <>
                 <MaterialCommunityIcons name="refresh" size={20} color="#FFFFFF" />
-                <Text style={styles.btnText}>Try Again</Text>
+                <Text style={styles.btnText}>{t('common:actions.tryAgain')}</Text>
               </>
             )}
           </LinearGradient>
         </TouchableOpacity>
 
         <Text style={[styles.helperText, { color: colors.subtle }]}>
-          Check Wi-Fi, mobile data, or airplane mode.
+          {i18n.t("common:r2.checkWiFiMobileDataOr")}
         </Text>
       </View>
     </SafeAreaView>

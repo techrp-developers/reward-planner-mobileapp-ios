@@ -19,6 +19,7 @@ import { useGlobalSearch } from './useGlobalSearch';
 import type { SearchData } from '../api/GlobalSearchAPI';
 import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import { rs } from '../../../utils/responsive';
+import { useTranslation } from "react-i18next";
 
 const ANDROID_STATUS_BAR = StatusBar.currentHeight ?? 24;
 const HEADER_ROW_HEIGHT  = rs(58);
@@ -83,6 +84,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
   onSearchDropdownChange,
   onSearchOverlayChange,
 }) => {
+  const { t } = useTranslation();
   const { isDark }   = useAppTheme();
   const [searchActive, setSearchActive] = useState(false);
   const [searchQuery,  setSearchQuery]  = useState('');
@@ -102,7 +104,7 @@ const HeaderComponent: React.FC<HeaderProps> = ({
     () => normalizeLocalCmsImageUrl(companyLogoUri),
     [companyLogoUri],
   );
-  const firstName = useMemo(() => userName.trim().split(/\s+/)[0] || 'User', [userName]);
+  const firstName = useMemo(() => userName.trim().split(/\s+/)[0] || t('profile:user'), [userName, t]);
 
   useEffect(() => {
     setCompanyLogoFailed(false);
@@ -250,26 +252,26 @@ const HeaderComponent: React.FC<HeaderProps> = ({
           {!searchActive ? (
           <View style={[styles.topRow, { gap: rowGap }]}>
             <View style={styles.greetWrap}>
-              <Text style={[styles.nameText, { color: tk.nameColor }]} numberOfLines={1} ellipsizeMode="tail">Hi, {firstName}</Text>
+              <Text style={[styles.nameText, { color: tk.nameColor }]} numberOfLines={1} ellipsizeMode="tail">{t("dashboard:header.greeting", { name: firstName })}</Text>
             </View>
             {normalizedCompanyLogoUri && !companyLogoFailed ? (
               <View style={[styles.logoPill, { width: logoWidth }]}>
-                <Image source={{ uri: normalizedCompanyLogoUri }} style={styles.logoImage} resizeMode="contain" onError={() => setCompanyLogoFailed(true)} accessibilityLabel="Company logo" />
+                <Image source={{ uri: normalizedCompanyLogoUri }} style={styles.logoImage} resizeMode="contain" onError={() => setCompanyLogoFailed(true)} accessibilityLabel={t("dashboard:header.companyLogo")} />
               </View>
             ) : (
               <View style={[styles.logoPill, { width: logoWidth }]}><MaterialCommunityIcons name="domain" size={rs(24)} color="#6A00FF" /></View>
             )}
             {onProfilePress && (
-              <TouchableOpacity onPress={onProfilePress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Open profile" activeOpacity={0.75}>
+              <TouchableOpacity onPress={onProfilePress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel={t("dashboard:header.openProfile")} activeOpacity={0.75}>
                 <MaterialCommunityIcons name="account-circle-outline" size={rs(23)} color={tk.searchTextColor} />
               </TouchableOpacity>
             )}
             {showSearch && (
-              <TouchableOpacity onPress={openSearch} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Search" activeOpacity={0.75}>
+              <TouchableOpacity onPress={openSearch} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel={t("common:actions.search")} activeOpacity={0.75}>
                 <MaterialCommunityIcons name="magnify" size={rs(22)} color={tk.searchTextColor} />
               </TouchableOpacity>
             )}
-            <TouchableOpacity onPress={onNotificationPress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel="Notifications" activeOpacity={0.75}>
+            <TouchableOpacity onPress={onNotificationPress} style={[styles.actionButton, { backgroundColor: tk.searchBg, borderColor: tk.buttonBorder }]} accessibilityRole="button" accessibilityLabel={t("dashboard:header.notifications")} activeOpacity={0.75}>
               <MaterialCommunityIcons name="bell-outline" size={rs(23)} color={tk.searchTextColor} />
             </TouchableOpacity>
           </View>
@@ -277,9 +279,9 @@ const HeaderComponent: React.FC<HeaderProps> = ({
           <View style={styles.expandedSearchRow}>
             <Animated.View style={[styles.expandedSearch, { width: searchWidth, backgroundColor: tk.searchBg }]}>
               <MaterialCommunityIcons name="magnify" size={rs(19)} color={tk.placeholderColor} />
-              <TextInput ref={inputRef} placeholder="Search for rewards, services & more..." placeholderTextColor={tk.placeholderColor} value={searchQuery} onChangeText={handleQueryChange} onSubmitEditing={handleSubmit} style={[styles.searchInput, { color: tk.searchTextColor }]} returnKeyType="search" />
+              <TextInput ref={inputRef} placeholder={t("dashboard:header.searchPlaceholder")} placeholderTextColor={tk.placeholderColor} value={searchQuery} onChangeText={handleQueryChange} onSubmitEditing={handleSubmit} style={[styles.searchInput, { color: tk.searchTextColor }]} returnKeyType="search" />
             </Animated.View>
-            <TouchableOpacity onPress={closeSearch} style={styles.closeButton} accessibilityLabel="Close search"><MaterialCommunityIcons name="close" size={rs(24)} color={tk.nameColor} /></TouchableOpacity>
+            <TouchableOpacity onPress={closeSearch} style={styles.closeButton} accessibilityLabel={t("dashboard:header.closeSearch")}><MaterialCommunityIcons name="close" size={rs(24)} color={tk.nameColor} /></TouchableOpacity>
           </View>
           )}
         </Animated.View>

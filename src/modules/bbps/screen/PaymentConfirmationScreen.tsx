@@ -21,6 +21,8 @@ import {
 } from '../api/BillsAPI';
 import { useAlert } from '../../ecommerce/components/alerts';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 // Premium Design Theme Config
 const BRAND_PRIMARY = '#8665FF';
@@ -124,6 +126,7 @@ const InfoRow: React.FC<InfoRowProps> = React.memo(({ icon, label, value, bbpsTh
 InfoRow.displayName = 'InfoRow';
 
 const PaymentConfirmationScreenComponent = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const alert = useAlert();
@@ -147,8 +150,8 @@ const PaymentConfirmationScreenComponent = () => {
   }, [customer.consumerNumber, params.formValues]);
 
   const customerName = useMemo(() => customer.customerName || 'Customer', [customer.customerName]);
-  const operatorName = useMemo(() => params.operatorName || 'Biller', [params.operatorName]);
-  const categoryName = useMemo(() => params.categoryName || 'Bill Payment', [params.categoryName]);
+  const operatorName = useMemo(() => params.operatorName || i18n.t("payments:msg.biller"), [params.operatorName]);
+  const categoryName = useMemo(() => params.categoryName || i18n.t("payments:msg.billPayment"), [params.categoryName]);
 
   const cardTitle = useMemo(() => {
     return params.nickname ? `${params.nickname} - ${customerName}` : customerName;
@@ -173,7 +176,7 @@ const PaymentConfirmationScreenComponent = () => {
     if (paymentFlowInProgress.current) return;
 
     if (!billFetchId) {
-      alert.warning('Missing Bill', 'Bill fetch id is missing. Please fetch the bill again.');
+      alert.warning(i18n.t("payments:paymentConfirmationScreen.missingBill"), i18n.t("payments:paymentConfirmationScreen.billFetchIdIsMissing"));
       return;
     }
 
@@ -193,7 +196,7 @@ const PaymentConfirmationScreenComponent = () => {
       if (response.success === false) {
         alert.warning(
           'Order Failed',
-          response.message || 'Unable to create bill payment order.',
+          response.message || i18n.t("payments:msg.billOrderFailed"),
           PAYMENT_MESSAGE_DURATION_MS
         );
         return;
@@ -204,7 +207,7 @@ const PaymentConfirmationScreenComponent = () => {
       transactionId = order?.transaction_id ?? null;
 
       if (!order?.key || !order?.orderId || !Number(order?.amount)) {
-        alert.warning('Payment Failed', 'Payment order details are missing.', PAYMENT_MESSAGE_DURATION_MS);
+        alert.warning(i18n.t("payments:paymentConfirmationScreen.paymentFailed"), i18n.t("payments:paymentConfirmationScreen.paymentOrderDetailsAreMissing"), PAYMENT_MESSAGE_DURATION_MS);
         return;
       }
 
@@ -214,7 +217,7 @@ const PaymentConfirmationScreenComponent = () => {
         amount: order.amount,
         currency: order.currency || 'INR',
         name: 'RewardsPlanners',
-        description: `${operatorName} Bill Payment`,
+        description: i18n.t('payments:msg.operatorBillPayment', { operator: operatorName }),
         prefill: {
           name: customerName,
           contact: consumerNumber,
@@ -243,7 +246,7 @@ const PaymentConfirmationScreenComponent = () => {
       if (verifyResponse?.success === false && !transactionId) {
         alert.warning(
           'Payment Verification Failed',
-          verifyResponse?.message || 'Unable to verify payment.',
+          verifyResponse?.message || i18n.t("payments:msg.verifyFailed"),
           PAYMENT_MESSAGE_DURATION_MS
         );
         return;
@@ -274,7 +277,7 @@ const PaymentConfirmationScreenComponent = () => {
         }
       }
 
-      alert.error('Error', error?.message || 'Could not create bill payment order.', PAYMENT_MESSAGE_DURATION_MS);
+      alert.error(i18n.t("payments:paymentConfirmationScreen.error"), error?.message || i18n.t("payments:msg.billOrderFailed2"), PAYMENT_MESSAGE_DURATION_MS);
     } finally {
       setProcessing(false);
       paymentFlowInProgress.current = false;
@@ -316,22 +319,22 @@ const PaymentConfirmationScreenComponent = () => {
             </View>
 
             <View style={styles.customerCardBody}>
-              <InfoRow icon="apartment" label="Operator" value={operatorName} bbpsTheme={bbpsTheme} />
+              <InfoRow icon="apartment" label={tx("payments:paymentConfirmationScreen.operator")} value={operatorName} bbpsTheme={bbpsTheme} />
               <View style={[styles.infoRowDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
-              <InfoRow icon="category" label="Category" value={categoryName} bbpsTheme={bbpsTheme} />
+              <InfoRow icon="category" label={tx("payments:paymentConfirmationScreen.category")} value={categoryName} bbpsTheme={bbpsTheme} />
             </View>
           </View>
 
           {/* Bill Summary Card */}
           <View style={[styles.billSummaryCard, { backgroundColor: bbpsTheme.colors.surface, borderColor: bbpsTheme.colors.border }]}>
-            <Text style={[styles.cardSectionTitle, { color: bbpsTheme.colors.textStrong }]}>Bill Summary</Text>
-            <InfoRow icon="confirmation-number" label="Bill Number" value={bill.billNumber || '-'} bbpsTheme={bbpsTheme} />
+            <Text style={[styles.cardSectionTitle, { color: bbpsTheme.colors.textStrong }]}>{tx("payments:paymentConfirmationScreen.billSummary")}</Text>
+            <InfoRow icon="confirmation-number" label={tx("payments:paymentConfirmationScreen.billNumber")} value={bill.billNumber || '-'} bbpsTheme={bbpsTheme} />
             <View style={[styles.infoRowDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
-            <InfoRow icon="event" label="Bill Date" value={billDate} bbpsTheme={bbpsTheme} />
+            <InfoRow icon="event" label={tx("payments:paymentConfirmationScreen.billDate")} value={billDate} bbpsTheme={bbpsTheme} />
             <View style={[styles.infoRowDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
-            <InfoRow icon="event-busy" label="Due Date" value={dueDate} bbpsTheme={bbpsTheme} />
+            <InfoRow icon="event-busy" label={tx("payments:paymentConfirmationScreen.dueDate")} value={dueDate} bbpsTheme={bbpsTheme} />
             <View style={[styles.infoRowDivider, { backgroundColor: bbpsTheme.colors.divider }]} />
-            <InfoRow icon="person-outline" label="Consumer No." value={String(consumerNumber)} bbpsTheme={bbpsTheme} />
+            <InfoRow icon="person-outline" label={tx("payments:paymentConfirmationScreen.consumerNo")} value={String(consumerNumber)} bbpsTheme={bbpsTheme} />
           </View>
 
           {/* Conditional Warning Notification Banner */}
@@ -347,7 +350,7 @@ const PaymentConfirmationScreenComponent = () => {
 
           {/* Amount Card */}
           <View style={[styles.amountCard, { backgroundColor: bbpsTheme.colors.surface }]}>
-            <Text style={[styles.amountCardLabel, { color: bbpsTheme.colors.muted }]}>Amount Payable</Text>
+            <Text style={[styles.amountCardLabel, { color: bbpsTheme.colors.muted }]}>{tx("payments:paymentConfirmationScreen.amountPayable")}</Text>
             <LinearGradient
               colors={bbpsTheme.gradients.primary}
               start={{ x: 0, y: 0 }}
@@ -362,8 +365,8 @@ const PaymentConfirmationScreenComponent = () => {
           <View style={styles.securityTrustCard}>
             <MaterialIcons name="shield" size={22} color={COLOR_SUCCESS} style={styles.securityShieldIcon} />
             <View style={styles.securityContextWrap}>
-              <Text style={styles.securityCardTitle}>100% Secure Payment</Text>
-              <Text style={styles.securityCardSub}>Powered by Razorpay</Text>
+              <Text style={styles.securityCardTitle}>{tx("payments:paymentConfirmationScreen.n100SecurePayment")}</Text>
+              <Text style={styles.securityCardSub}>{tx("payments:paymentConfirmationScreen.poweredByRazorpay")}</Text>
             </View>
           </View>
 
@@ -395,7 +398,7 @@ const PaymentConfirmationScreenComponent = () => {
             {processing ? (
               <>
                 <ActivityIndicator color="#FFFFFF" size="small" />
-                <Text style={styles.premiumCTAText}> Processing Payment...</Text>
+                <Text style={styles.premiumCTAText}>{tx("payments:paymentConfirmationScreen.processingPayment")}</Text>
               </>
             ) : (
               <>

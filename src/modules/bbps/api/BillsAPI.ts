@@ -2,6 +2,7 @@ import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
 import { apiClient, NormalizedApiError } from "./apiClient";
 import { API_BASE_URL } from '../../../config/apiConfig';
+import i18n from "../../../i18n";
 
 export interface BillCategory {
   operator_category_name: string;
@@ -334,7 +335,7 @@ export const createBillPayOrder = async (
       success: false,
       status: null,
       kind: "UNKNOWN_ERROR",
-      message: error?.message || "Could not create the recharge/bill order.",
+      message: error?.message || i18n.t("payments:api.orderFailed"),
       error,
     };
   }
@@ -505,7 +506,7 @@ const extractTransactionStatus = (response: any): { status: TransactionStatus; m
     response?.message ||
     response?.data?.message ||
     (status === "PENDING"
-      ? "Transaction is being processed."
+      ? i18n.t("payments:api.processing")
       : `Payment ${response?.data?.payment_status || response?.data?.bbps_status || status}.`);
 
   return { status, message };
@@ -550,7 +551,7 @@ export const pollTransactionStatus = (
       if (consecutiveErrors < MAX_CONSECUTIVE_POLL_ERRORS) {
         onUpdate({
           status: "PENDING",
-          message: "Having trouble reaching the server, retrying...",
+          message: i18n.t("payments:api.retrying"),
         });
         timer = setTimeout(tick, intervalMs);
         return;

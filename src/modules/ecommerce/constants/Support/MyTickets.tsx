@@ -22,6 +22,8 @@ import {
   type SupportTicket,
 } from "../../api/SupportApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type TicketFilter = "all" | "open" | "in_progress" | "closed";
 
@@ -104,6 +106,7 @@ const TicketCard = ({
   isDark: boolean;
   onPreviewImage: (url: string) => void;
 }) => {
+  const { t: tx } = useTranslation();
   const statusStyle = getStatusStyle(item.status);
 
   return (
@@ -120,7 +123,7 @@ const TicketCard = ({
             style={[styles.ticketCategory, isDark && darkStyles.accentText]}
             numberOfLines={1}
           >
-            {item.category_name || "General"}
+            {item.category_name || i18n.t("products:r2.general")}
           </Text>
         </View>
 
@@ -140,7 +143,7 @@ const TicketCard = ({
         style={[styles.ticketDescription, isDark && darkStyles.secondaryText]}
         numberOfLines={2}
       >
-        {item.description || "No description added for this ticket."}
+        {item.description || i18n.t("products:r2.noDescriptionAddedForThisTicket")}
       </Text>
 
       <View style={styles.contextRow}>
@@ -151,7 +154,7 @@ const TicketCard = ({
             color="#7C3AED"
           />
           <Text style={[styles.contextPillText, isDark && darkStyles.secondaryText]}>
-            {item.support_module === 'ecommerce' ? 'Shopping' : item.support_module === 'services' ? 'Services' : item.support_module === 'bbps' ? 'Bills & recharge' : item.support_module === 'step_counter' ? 'Step counter' : 'General'}
+            {item.support_module === 'ecommerce' ? i18n.t("products:r2.shopping") : item.support_module === 'services' ? i18n.t("products:r2.services") : item.support_module === 'bbps' ? i18n.t("products:r2.billsRecharge") : item.support_module === 'step_counter' ? i18n.t("products:r2.stepCounter2") : i18n.t("products:r2.general")}
           </Text>
         </View>
         {item.reference_type === 'order' && item.reference_label ? (
@@ -177,7 +180,7 @@ const TicketCard = ({
           />
           <View style={styles.imageAttachmentOverlay}>
             <MaterialCommunityIcons name="magnify-plus-outline" size={18} color="#FFFFFF" />
-            <Text style={styles.imageAttachmentLabel}>View image</Text>
+            <Text style={styles.imageAttachmentLabel}>{tx("products:myTickets.viewImage")}</Text>
           </View>
         </TouchableOpacity>
       ) : item.attachment_url ? (
@@ -188,7 +191,7 @@ const TicketCard = ({
         >
           <MaterialCommunityIcons name="paperclip" size={16} color="#7C3AED" />
           <Text style={[styles.attachmentLinkText, isDark && darkStyles.secondaryText]}>
-            View attachment
+            {tx("products:myTickets.viewAttachment")}
           </Text>
           <MaterialCommunityIcons name="open-in-new" size={14} color="#7C3AED" />
         </TouchableOpacity>
@@ -265,6 +268,7 @@ const FilterCard = ({
 );
 
 export default function MyTickets({ navigation }: any) {
+  const { t: tx } = useTranslation();
   const { isDark } = useAppTheme();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
@@ -328,7 +332,7 @@ export default function MyTickets({ navigation }: any) {
   });
 
   return (
-    <SafeAreaView style={[styles.screen, isDark && darkStyles.screen]} edges={["top"]}>
+    <SafeAreaView style={[styles.screen, isDark && darkStyles.screen]} edges={["top", "bottom"]}>
       <StatusBar
         barStyle={isDark ? "light-content" : "dark-content"}
         backgroundColor={isDark ? "#09090B" : "#F7F3FF"}
@@ -347,7 +351,7 @@ export default function MyTickets({ navigation }: any) {
         </TouchableOpacity>
 
         <Text style={[styles.headerTitle, isDark && darkStyles.primaryText]}>
-          My Tickets
+          {tx("products:myTickets.myTickets")}
         </Text>
       </View>
 
@@ -380,28 +384,28 @@ export default function MyTickets({ navigation }: any) {
               contentContainerStyle={styles.filtersRow}
             >
               <FilterCard
-                label="All Tickets"
+                label={tx("products:myTickets.allTickets")}
                 count={ticketCounts.all}
                 active={activeFilter === "all"}
                 isDark={isDark}
                 onPress={() => setActiveFilter("all")}
               />
               <FilterCard
-                label="Open"
+                label={tx("products:myTickets.open")}
                 count={ticketCounts.open}
                 active={activeFilter === "open"}
                 isDark={isDark}
                 onPress={() => setActiveFilter("open")}
               />
               <FilterCard
-                label="In Progress"
+                label={tx("products:myTickets.inProgress")}
                 count={ticketCounts.in_progress}
                 active={activeFilter === "in_progress"}
                 isDark={isDark}
                 onPress={() => setActiveFilter("in_progress")}
               />
               <FilterCard
-                label="Closed"
+                label={tx("products:myTickets.closed")}
                 count={ticketCounts.closed}
                 active={activeFilter === "closed"}
                 isDark={isDark}
@@ -410,7 +414,7 @@ export default function MyTickets({ navigation }: any) {
             </ScrollView>
 
             <Text style={[styles.sectionTitle, isDark && darkStyles.primaryText]}>
-              Available Tickets
+              {tx("products:myTickets.availableTickets")}
             </Text>
           </View>
         }
@@ -419,7 +423,7 @@ export default function MyTickets({ navigation }: any) {
             <View style={styles.loaderWrap}>
               <ActivityIndicator size="large" color="#A654CD" />
               <Text style={[styles.loaderText, isDark && darkStyles.mutedText]}>
-                Loading your tickets...
+                {tx("products:myTickets.loadingYourTickets")}
               </Text>
             </View>
           ) : (
@@ -430,7 +434,7 @@ export default function MyTickets({ navigation }: any) {
                 color="#C4B5FD"
               />
               <Text style={[styles.emptyTitle, isDark && darkStyles.primaryText]}>
-                No tickets found
+                {tx("products:myTickets.noTicketsFound")}
               </Text>
               <Text
                 style={[
@@ -438,7 +442,7 @@ export default function MyTickets({ navigation }: any) {
                   isDark && darkStyles.secondaryText,
                 ]}
               >
-                Once a user raises a support request, it will appear here.
+                {tx("products:myTickets.onceAUserRaisesA")}
               </Text>
             </View>
           )
@@ -454,7 +458,7 @@ export default function MyTickets({ navigation }: any) {
       >
         <View style={styles.previewModal}>
           <TouchableOpacity
-            accessibilityLabel="Close image preview"
+            accessibilityLabel={tx("products:myTickets.closeImagePreview")}
             activeOpacity={0.8}
             style={styles.previewCloseButton}
             onPress={() => setPreviewImageUrl(null)}

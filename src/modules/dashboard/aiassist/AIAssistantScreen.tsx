@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import Svg, { Path, Rect, Circle } from 'react-native-svg';
 import RPAIAssistantHeader from '../header/Rpaiassistantheader';
+import { useTranslation } from "react-i18next";
 
 // ---------- Icon Components ----------
 
@@ -97,12 +98,13 @@ const Chip: React.FC<ChipProps> = ({ icon, label, onPress }) => (
 
 const AIAssistantScreen: React.FC = () => {
   const alert = useAlert();
+  const { t } = useTranslation();
   const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [inputText, setInputText] = useState<string>('');
 
   const handleUnavailable = () => {
-    alert.info('RP AI Assistant', 'RP AI Assistant is not available at this moment.');
+    alert.info(t('dashboard:ai.title'), t('dashboard:ai.unavailable'));
   };
 
   useEffect(() => {
@@ -125,15 +127,15 @@ const AIAssistantScreen: React.FC = () => {
     : null;
 
   const quickActions: ChipProps[] = [
-    { icon: <GiftIcon />, label: 'Show my rewards', onPress: handleUnavailable },
-    { icon: <TrackIcon />, label: 'Track my expenses', onPress: handleUnavailable },
-    { icon: <TrendIcon />, label: 'How can I save more this month?', onPress: handleUnavailable },
-    { label: 'RP Points', onPress: handleUnavailable },
-    { label: 'Step Count', onPress: handleUnavailable },
-    { icon: <HeartIcon />, label: 'Suggest health goals for today', onPress: handleUnavailable },
-    { icon: <GridIcon />, label: 'Which modules should I use today?', onPress: handleUnavailable },
-    { label: 'Offers', onPress: handleUnavailable },
-    { icon: <DineIcon />, label: 'Show dine out offers near me', onPress: handleUnavailable },
+    { icon: <GiftIcon />, label: t('dashboard:ai.chips.rewards'), onPress: handleUnavailable },
+    { icon: <TrackIcon />, label: t('dashboard:ai.chips.expenses'), onPress: handleUnavailable },
+    { icon: <TrendIcon />, label: t('dashboard:ai.chips.save'), onPress: handleUnavailable },
+    { label: t('dashboard:ai.chips.points'), onPress: handleUnavailable },
+    { label: t('dashboard:ai.chips.steps'), onPress: handleUnavailable },
+    { icon: <HeartIcon />, label: t('dashboard:ai.chips.health'), onPress: handleUnavailable },
+    { icon: <GridIcon />, label: t('dashboard:ai.chips.modules'), onPress: handleUnavailable },
+    { label: t('dashboard:ai.chips.offers'), onPress: handleUnavailable },
+    { icon: <DineIcon />, label: t('dashboard:ai.chips.dineOut'), onPress: handleUnavailable },
   ];
 
   return (
@@ -157,12 +159,11 @@ const AIAssistantScreen: React.FC = () => {
               <ActivityIndicator color="#6c63d4" style={{ marginBottom: 8 }} />
             ) : (
               <Text style={styles.greetingTitle}>
-                Hi {displayName ?? 'there'}! 👋
+                {displayName ? t('dashboard:ai.greeting', { name: displayName }) : t('dashboard:ai.greetingNoName')}
               </Text>
             )}
             <Text style={styles.greetingSubtitle}>
-              I'm your RP AI Assistant. I can help you maximize rewards, track
-              expenses, stay healthy, and discover the best offers just for you.
+              {t('dashboard:ai.intro')}
             </Text>
           </View>
 
@@ -179,7 +180,7 @@ const AIAssistantScreen: React.FC = () => {
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.textInput}
-              placeholder="Ask anything, get your answer..."
+              placeholder={t('dashboard:ai.placeholder')}
               placeholderTextColor="#aaa"
               value={inputText}
               onChangeText={setInputText}

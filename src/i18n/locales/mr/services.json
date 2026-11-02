@@ -1,0 +1,924 @@
+{
+  "step2": {
+    "familyMember": "कुटुंबातील सदस्य",
+    "howOldAreThey": "त्यांचे वय किती आहे?",
+    "ageHelpsUsFindThe": "वयामुळे तुमच्या कुटुंबासाठी सर्वात योग्य प्लॅन शोधण्यास मदत होते.",
+    "next": "पुढे"
+  },
+  "step3": {
+    "city": "शहर",
+    "selectYourLocation": "तुमचे लोकेशन निवडा",
+    "loginRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLogInToGet": "विमा कोट्स मिळवण्यासाठी कृपया लॉग इन करा",
+    "ok": "ठीक आहे",
+    "validation": "पडताळणी",
+    "pleaseFillAllRequiredFields": "कृपया सर्व आवश्यक माहिती भरा",
+    "authenticationRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLogInToContinue": "पुढे जाण्यासाठी कृपया लॉग इन करा",
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जाऊन पुन्हा सुरू करा.",
+    "noQuotesCouldBeFetched": "कोणतेही कोट मिळू शकले नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "verifyingAuthentication": "लॉगिनची पडताळणी होत आहे...",
+    "personalDetails": "वैयक्तिक तपशील",
+    "thisInformationHelpsUsPersonalize": "या माहितीमुळे आम्ही तुमचे विमा कोट्स तुमच्यानुसार तयार करतो.",
+    "firstName": "पहिले नाव",
+    "john": "राहुल",
+    "lastName": "आडनाव",
+    "doe": "पाटील",
+    "mobileNumber": "मोबाइल नंबर",
+    "pincode": "पिनकोड",
+    "zone": "झोन",
+    "enterCity": "शहर लिहा",
+    "typeYourCity": "तुमचे शहर लिहा",
+    "requiredCoverAmount": "आवश्यक कव्हर रक्कम",
+    "termsConditions": "नियम आणि अटी"
+  },
+  "step1": {
+    "insureYourFamily": "तुमच्या कुटुंबाचा विमा काढा",
+    "selectEveryoneYouWantTo": "ज्यांना संरक्षण द्यायचे आहे त्या सर्वांना निवडा",
+    "reviewCoverage": "कव्हरेजचे पुनरावलोकन करा",
+    "continue": "पुढे जा"
+  },
+  "health": {
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जा.",
+    "healthInsurance": "आरोग्य विमा",
+    "simpleHealthCoverForYou": "तुमच्यासाठी आणि तुमच्या कुटुंबासाठी सोपे आरोग्य कव्हर"
+  },
+  "quotesResult": {
+    "coverAmount": "कव्हर रक्कम",
+    "deductible": "डिडक्टिबल",
+    "premiumYear": "प्रीमियम/वर्ष",
+    "enquireNow": "आता चौकशी करा",
+    "fetching22LiveQuotes": "22+ लाइव्ह कोट्स मिळवत आहे...",
+    "noPlansFoundForThis": "या निकषांसाठी कोणताही प्लॅन सापडला नाही.",
+    "adjustDetails": "तपशील बदला"
+  },
+  "step3SuperTopUp": {
+    "ok": "ठीक आहे",
+    "validation": "पडताळणी",
+    "pleaseFillAllRequiredFields": "कृपया सर्व आवश्यक माहिती भरा",
+    "authenticationRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLogInToContinue": "पुढे जाण्यासाठी कृपया लॉग इन करा",
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जाऊन पुन्हा सुरू करा.",
+    "noQuotesCouldBeFetched": "कोणतेही कोट मिळू शकले नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "verifyingAuthentication": "लॉगिनची पडताळणी होत आहे...",
+    "personalDetails": "वैयक्तिक तपशील",
+    "thisInformationHelpsUsPersonalize": "या माहितीमुळे आम्ही तुमचे विमा कोट्स तुमच्यानुसार तयार करतो.",
+    "firstName": "पहिले नाव",
+    "john": "राहुल",
+    "lastName": "आडनाव",
+    "doe": "पाटील",
+    "mobileNumber": "मोबाइल नंबर",
+    "pincode": "पिनकोड",
+    "city": "शहर",
+    "searchOrSelectCity": "शहर शोधा किंवा निवडा",
+    "requiredCoverAmount": "आवश्यक कव्हर रक्कम",
+    "termsConditions": "नियम आणि अटी"
+  },
+  "pA": {
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जा.",
+    "personalAccidentInsurance": "पर्सनल ॲक्सिडेंट विमा",
+    "protectYourIncomeFromAccidental": "अपघाताच्या जोखमीपासून तुमचे उत्पन्न सुरक्षित करा"
+  },
+  "superTop": {
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जा.",
+    "superTopUpInsurance": "सुपर टॉप-अप विमा",
+    "extraCoverageWithAffordablePremiums": "परवडणाऱ्या प्रीमियममध्ये अतिरिक्त कव्हरेज"
+  },
+  "step3PA": {
+    "ok": "ठीक आहे",
+    "validation": "पडताळणी",
+    "pleaseFillAllRequiredFields": "कृपया सर्व आवश्यक माहिती भरा",
+    "pleaseSelectAValidNature": "कृपया कामाचे योग्य स्वरूप निवडा",
+    "authenticationRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLogInToContinue": "पुढे जाण्यासाठी कृपया लॉग इन करा",
+    "error": "त्रुटी",
+    "sessionExpiredPleaseGoBack": "सत्र संपले. कृपया टप्पा 1 वर परत जाऊन पुन्हा सुरू करा.",
+    "noQuotesCouldBeFetched": "कोणतेही कोट मिळू शकले नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "verifyingAuthentication": "लॉगिनची पडताळणी होत आहे...",
+    "additionalDetails": "अतिरिक्त तपशील",
+    "helpUsClassifyRiskAnd": "जोखीम ठरवण्यासाठी आणि पर्सनल ॲक्सिडेंट कोट्स मिळवण्यासाठी आम्हाला मदत करा.",
+    "occupationOfInsured": "विमाधारकाचा व्यवसाय *",
+    "annualIncomeRange": "वार्षिक उत्पन्न श्रेणी *",
+    "natureOfWorkDesignation": "कामाचे स्वरूप / पद *",
+    "coverAmount": "कव्हर रक्कम *",
+    "termsConditions": "नियम आणि अटी",
+    "privacyPolicy": "गोपनीयता धोरण"
+  },
+  "step1PA": {
+    "selectYourGender": "तुमचे लिंग निवडा",
+    "personalAccidentCoversSelfOnly": "पर्सनल ॲक्सिडेंट फक्त तुम्हाला कव्हर करतो",
+    "thisPolicyIsIssuedFor": "ही पॉलिसी फक्त विमाधारक व्यक्तीसाठी दिली जाते.",
+    "self": "स्वतः",
+    "continue": "पुढे जा"
+  },
+  "step2PA": {
+    "loginRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLogInToGet": "विमा कोट्स मिळवण्यासाठी कृपया लॉग इन करा",
+    "ok": "ठीक आहे",
+    "verifyingAuthentication": "लॉगिनची पडताळणी होत आहे...",
+    "personalDetails": "वैयक्तिक तपशील",
+    "thisInformationHelpsUsPersonalize": "या माहितीमुळे आम्ही तुमचे विमा कोट्स तुमच्यानुसार तयार करतो.",
+    "firstName": "पहिले नाव *",
+    "enterFirstName": "पहिले नाव लिहा",
+    "lastName": "आडनाव *",
+    "enterLastName": "आडनाव लिहा",
+    "dateOfBirth": "जन्मतारीख *",
+    "ddMmYyyy": "DD/MM/YYYY",
+    "enterAValidDateDd": "योग्य तारीख लिहा (DD/MM/YYYY)",
+    "mobileNumber": "मोबाइल नंबर *",
+    "enterMobileNumber": "मोबाइल नंबर लिहा",
+    "pincode": "पिनकोड *",
+    "enterPincode": "पिनकोड लिहा",
+    "zone": "झोन",
+    "city": "शहर *",
+    "searchOrSelectCity": "शहर शोधा किंवा निवडा",
+    "continue": "पुढे जा"
+  },
+  "insurance": {
+    "gender": {
+      "Male": "पुरुष",
+      "Female": "महिला"
+    },
+    "member": {
+      "self": "स्वतः",
+      "spouse": "जोडीदार",
+      "son": "मुलगा",
+      "daughter": "मुलगी",
+      "father": "वडील",
+      "mother": "आई"
+    },
+    "memberN": "{{member}} {{n}}",
+    "ageYears_one": "{{count}} वर्ष",
+    "ageYears_other": "{{count}} वर्षे",
+    "selectAge": "वय निवडा",
+    "proceedFailed": "पुढे जाता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+    "quotesFetched": "कोट्स मिळाले!",
+    "superQuotesFetched": "सुपर टॉप-अप कोट्स!",
+    "paQuotesFetched": "PA कोट्स मिळाले!",
+    "foundPlans_one": "तुमच्यासाठी {{count}} खास प्लॅन सापडला",
+    "foundPlans_other": "तुमच्यासाठी {{count}} खास प्लॅन सापडले",
+    "foundPlansHeader_one": "{{count}} खास प्लॅन सापडला",
+    "foundPlansHeader_other": "{{count}} खास प्लॅन सापडले",
+    "foundFamilyQuotes_one": "तुमच्या कुटुंबासाठी {{count}} कोट सापडला!",
+    "foundFamilyQuotes_other": "तुमच्या कुटुंबासाठी {{count}} कोट सापडले!",
+    "success": "यशस्वी",
+    "other": "इतर",
+    "selectCity": "शहर निवडा",
+    "autoFilled": "आपोआप भरले",
+    "selectCover": "कव्हर रक्कम निवडा",
+    "selectCoverage": "कव्हरेज निवडा",
+    "searching": "शोधत आहे...",
+    "getQuotes": "मोफत कोट्स मिळवा",
+    "processFailed": "तुमची विनंती पूर्ण करता आली नाही. कृपया पुन्हा प्रयत्न करा.",
+    "selectOccupation": "व्यवसाय निवडा",
+    "selectIncome": "उत्पन्न श्रेणी निवडा",
+    "selectWork": "कामाचे स्वरूप / पद निवडा",
+    "mappedCategory": "कॅटेगरी {{category}} मध्ये ठेवले",
+    "healthPlan": "हेल्थ प्लॅन",
+    "paPlan": "पर्सनल ॲक्सिडेंट प्लॅन",
+    "enquiryConfirmed": "चौकशीची पुष्टी झाली",
+    "enquirySubmitted": "चौकशी यशस्वीरित्या सबमिट झाली",
+    "planSelected": "{{company}} - {{plan}} {{premium}} प्रीमियमवर निवडला"
+  },
+  "amount": {
+    "lakh_one": "{{count}} लाख",
+    "lakh_other": "{{count}} लाख",
+    "crore_one": "{{count}} कोटी",
+    "crore_other": "{{count}} कोटी",
+    "lakhRange": "₹{{from}} लाख – ₹{{to}} लाख"
+  },
+  "options": {
+    "salaried": "पगारदार",
+    "selfEmployedBusiness": "स्वयंरोजगार/व्यवसाय",
+    "incomeFromOtherSources": "इतर स्रोतांतून उत्पन्न",
+    "41LakhAndAbove": "₹41 लाख आणि त्याहून अधिक",
+    "doctors": "डॉक्टर",
+    "lawyers": "वकील",
+    "accountants": "अकाउंटंट",
+    "architectsConsultingEngineers": "आर्किटेक्ट/कन्सल्टिंग इंजिनिअर",
+    "teachers": "शिक्षक",
+    "bankers": "बँकर",
+    "clericalAdministrativeFunctions": "लिपिक/प्रशासकीय काम",
+    "bfsiProfessional": "BFSI प्रोफेशनल",
+    "businessmanNotWorkingOnFactory": "फॅक्टरी फ्लोअरवर काम न करणारे व्यावसायिक",
+    "homemaker": "गृहिणी",
+    "student": "विद्यार्थी",
+    "buildersContractors": "बिल्डर/कंत्राटदार",
+    "engineersOnSite": "साइटवरील इंजिनिअर",
+    "veterinaryDoctors": "पशुवैद्य",
+    "mechanics": "मेकॅनिक",
+    "manualLabourersNotWorkingIn": "खाणी, स्फोटके, विद्युत स्थापना अशा धोकादायक उद्योगांत काम न करणारे मजूर",
+    "businessWorkingOnFactoryFloors": "फॅक्टरी फ्लोअरवर काम करणारे व्यावसायिक",
+    "workingInMinesExplosives": "खाणी/स्फोटकांमध्ये काम",
+    "electricalInstallations": "विद्युत स्थापना",
+    "racer": "रेसर",
+    "circusArtistOrEngagedIn": "सर्कस कलाकार किंवा अशा प्रकारचा इतर व्यवसाय",
+    "engagedFullTimePartTime": "कोणत्याही साहसी क्रियाकलापात पूर्णवेळ/अर्धवेळ",
+    "professionalSportsperson": "व्यावसायिक खेळाडू",
+    "professionalAdventurerTrekkerMountaineer": "व्यावसायिक साहसी/ट्रेकर/गिर्यारोहक",
+    "defenseServices": "संरक्षण सेवा",
+    "drivers": "चालक"
+  },
+  "cartCard": {
+    "documentsNeededToProceed": "पुढे जाण्यासाठी आवश्यक दस्तऐवज",
+    "bundleSavings": "बंडल घेतल्यास आणखी ₹{{amount}} वाचवा"
+  },
+  "documentUpload": {
+    "required": "आवश्यक",
+    "uploadFailedTapToRetry": "अपलोड अयशस्वी — पुन्हा प्रयत्न करण्यासाठी टॅप करा",
+    "imageVideoPdfOfficeMax": "इमेज · व्हिडिओ · PDF · ऑफिस · कमाल 10 MB",
+    "pickerError": "निवडताना त्रुटी",
+    "selectionFailed": "निवड अयशस्वी",
+    "couldNotReadTheSelected": "निवडलेली फाइल वाचता आली नाही. कृपया पुन्हा प्रयत्न करा.",
+    "fileTooLarge": "फाइल खूप मोठी आहे",
+    "maximumAllowedSizeIs10": "कमाल आकार 10 MB आहे. कृपया लहान फाइल निवडा.",
+    "couldNotSelectThisDocument": "हा दस्तऐवज निवडता आला नाही. कृपया पुन्हा प्रयत्न करा.",
+    "nothingToSubmit": "सबमिट करण्यासाठी काही नाही",
+    "pleaseSelectAtLeastOne": "कृपया अपलोड करण्यासाठी किमान एक दस्तऐवज निवडा.",
+    "submissionFailed": "सबमिट करता आले नाही",
+    "documentsRequired": "आवश्यक दस्तऐवज",
+    "loadingDocuments": "दस्तऐवज लोड होत आहेत…",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "requiredDocuments": "आवश्यक दस्तऐवज",
+    "optionalDocuments": "पर्यायी दस्तऐवज",
+    "closeFileOptions": "फाइल पर्याय बंद करा",
+    "uploadDocument": "दस्तऐवज अपलोड करा",
+    "photoOrVideo": "फोटो किंवा व्हिडिओ",
+    "jpgPngWebpHeicMp4": "JPG, PNG, WebP, HEIC, MP4, MOV किंवा WebM",
+    "browseDocuments": "दस्तऐवज पहा",
+    "pdfWordExcelPowerpointCsv": "PDF, Word, Excel, PowerPoint, CSV किंवा टेक्स्ट",
+    "secureUploadMaximumFileSize": "सुरक्षित अपलोड · कमाल फाइल आकार 10 MB"
+  },
+  "bundleEnquiryForm": {
+    "missingInfo": "माहिती अपूर्ण आहे",
+    "pleaseFillAllRequiredFields": "कृपया सर्व आवश्यक माहिती भरा.",
+    "invalidEmail": "चुकीचा ईमेल",
+    "pleaseEnterAValidEmail": "कृपया योग्य ईमेल पत्ता लिहा.",
+    "error": "त्रुटी",
+    "nameEmailAndMobileAre": "नाव, ईमेल आणि मोबाइल आवश्यक आहेत",
+    "unableToIdentifyBundleDetails": "या चौकशीसाठी बंडलची माहिती सापडली नाही. कृपया पुन्हा प्रयत्न करा.",
+    "success": "यशस्वी",
+    "optional": "(पर्यायी)",
+    "enquireNow": "आता चौकशी करा",
+    "fillOutTheFormBelow": "खालील फॉर्म भरा, आमची टीम लवकरच तुमच्याशी संपर्क साधेल.",
+    "noFormFieldsAvailablePlease": "फॉर्मची माहिती उपलब्ध नाही. कृपया पुन्हा प्रयत्न करा.",
+    "submit": "सबमिट करा"
+  },
+  "dynamicEnquiryForm": {
+    "submit": "सबमिट करा"
+  },
+  "limitedOffer": {
+    "limitedTimeOffers": "मर्यादित कालावधीच्या ऑफर",
+    "grabThemBeforeTheyRe": "संपण्यापूर्वी मिळवा"
+  },
+  "serviceCart": {
+    "upto48Off": "48% पर्यंत सूट",
+    "upto48OffOnRenewal": "नूतनीकरणावर 48% पर्यंत सूट",
+    "applyBeforeTheOfferEnds": "ऑफर संपण्यापूर्वी अर्ज करा",
+    "todayOnly": "फक्त आज",
+    "addToCart": "कार्टमध्ये जोडा"
+  },
+  "serviceHeader": {
+    "searchServices": "सेवा शोधा..."
+  },
+  "serviceInterestForm": {
+    "enterYourNameHere": "तुमचे नाव येथे लिहा",
+    "enterYourMobileNumberHere": "तुमचा मोबाइल नंबर येथे लिहा",
+    "enterYourEmailIdHere": "तुमचा ईमेल आयडी येथे लिहा",
+    "additionalNotesOptional": "अतिरिक्त नोंदी (पर्यायी)",
+    "enterAnySpecificQuestionsOr": "काही विशिष्ट प्रश्न किंवा गरज असल्यास येथे लिहा",
+    "submit": "सबमिट करा"
+  },
+  "youMayNeedServicesCarousel": {
+    "youMayAlsoNeed": "तुम्हाला यांचीही गरज असू शकते",
+    "handyAddOnsForThis": "या सेवेसाठी उपयुक्त ॲड-ऑन"
+  },
+  "needHelpBanner": {
+    "needHelpWithGovernmentDocuments": "सरकारी दस्तऐवजांसाठी मदत हवी आहे?",
+    "notSureWhichDocumentYou": "कोणता दस्तऐवज हवा याची खात्री नाही? आमची टीम तुम्हाला प्रत्येक टप्प्यावर मार्गदर्शन करेल.",
+    "talkToUs": "आमच्याशी बोला"
+  },
+  "bundleService": {
+    "getFullPack": "संपूर्ण पॅक घ्या",
+    "bundleServices": "बंडल सेवा"
+  },
+  "mostBookedServices": {
+    "mostBookedServices": "सर्वाधिक बुक केलेल्या सेवा",
+    "trustedByThousandsOfCustomers": "हजारो ग्राहकांचा विश्वास",
+    "trending": "ट्रेंडिंग"
+  },
+  "quickServices": {
+    "quickPicks": "झटपट निवड",
+    "viewAll": "सर्व पहा"
+  },
+  "articleDetails": {
+    "articleNotFound": "लेख सापडला नाही."
+  },
+  "calculatorCard": {
+    "tool": "टूल",
+    "calculateNow": "आता गणना करा"
+  },
+  "calculators": {
+    "sipCalculator": "SIP कॅल्क्युलेटर",
+    "estimateFutureValueOfYour": "तुमच्या मासिक SIP च्या भविष्यातील मूल्याचा अंदाज घ्या",
+    "estimatedMaturityValue": "अंदाजे मॅच्युरिटी मूल्य",
+    "parameters": "निकष",
+    "adjustToSeeProjections": "अंदाज पाहण्यासाठी बदला",
+    "monthlyInvestment": "मासिक गुंतवणूक",
+    "expectedAnnualReturn": "अपेक्षित वार्षिक परतावा",
+    "investmentDuration": "गुंतवणुकीचा कालावधी",
+    "breakdown": "तपशील",
+    "goalSipCalculator": "लक्ष्य SIP कॅल्क्युलेटर",
+    "monthlyInvestmentNeededToReach": "लक्ष्य गाठण्यासाठी आवश्यक मासिक गुंतवणूक",
+    "monthlySipRequired": "आवश्यक मासिक SIP",
+    "goalDetails": "लक्ष्याचा तपशील",
+    "targetGoalAmount": "लक्ष्य रक्कम",
+    "timeToAchieveGoal": "लक्ष्य गाठण्याचा कालावधी",
+    "summary": "सारांश",
+    "smartGoalCalculator": "स्मार्ट लक्ष्य कॅल्क्युलेटर",
+    "planGoalsConsideringExistingInvestments": "सध्याची गुंतवणूक लक्षात घेऊन लक्ष्ये ठरवा",
+    "additionalMonthlySipNeeded": "आवश्यक अतिरिक्त मासिक SIP",
+    "yourGoal": "तुमचे लक्ष्य",
+    "goalAmount": "लक्ष्य रक्कम",
+    "currentSavingsInvestments": "सध्याची बचत / गुंतवणूक",
+    "timeHorizon": "कालावधी",
+    "analysis": "विश्लेषण",
+    "inflationCalculator": "महागाई कॅल्क्युलेटर",
+    "impactOfInflationOnYour": "तुमच्या खर्चावर महागाईचा परिणाम",
+    "futureValueOfExpenses": "खर्चाचे भविष्यातील मूल्य",
+    "currentMonthlyExpense": "सध्याचा मासिक खर्च",
+    "expectedInflationRate": "अपेक्षित महागाई दर",
+    "timePeriod": "कालावधी",
+    "impactAnalysis": "परिणामाचे विश्लेषण",
+    "costOfDelay": "विलंबाची किंमत",
+    "impactOfDelayingYourInvestments": "गुंतवणुकीत विलंबाचा परिणाम",
+    "wealthLostDueToDelay": "विलंबामुळे गमावलेली संपत्ती",
+    "delayPeriod": "विलंबाचा कालावधी",
+    "comparison": "तुलना",
+    "lumpsumCalculator": "एकरकमी कॅल्क्युलेटर",
+    "calculateReturnsOnOneTime": "एकरकमी गुंतवणुकीवरील परताव्याची गणना करा",
+    "investmentDetails": "गुंतवणूक तपशील",
+    "oneTimeInvestmentAmount": "एकरकमी गुंतवणूक रक्कम",
+    "retirementPlanning": "निवृत्ती नियोजन",
+    "estimateYourRetirementCorpus": "तुमच्या निवृत्ती निधीचा अंदाज घ्या",
+    "yourDetails": "तुमचा तपशील",
+    "currentAge": "सध्याचे वय",
+    "retirementAge": "निवृत्तीचे वय",
+    "lifeExpectancy": "आयुर्मान",
+    "monthlyExpensesToday": "मासिक खर्च (आज)",
+    "returnAssumptions": "परताव्याचे गृहीतक",
+    "expectedReturnPreRetirement": "अपेक्षित परतावा (निवृत्तीपूर्वी)",
+    "returnPostRetirement": "परतावा (निवृत्तीनंतर)",
+    "inflationRate": "महागाई दर",
+    "retirementPlan": "निवृत्ती प्लॅन",
+    "stepUpSipCalculator": "स्टेप-अप SIP कॅल्क्युलेटर",
+    "futureValueWithAnnualSip": "वार्षिक SIP वाढीसह भविष्यातील मूल्य",
+    "maturityWithStepUp": "स्टेप-अपसह मॅच्युरिटी",
+    "initialMonthlySip": "सुरुवातीचा मासिक SIP",
+    "annualStepUpPercentage": "वार्षिक स्टेप-अप टक्केवारी",
+    "stepUpAdvantage": "स्टेप-अपचा फायदा",
+    "swpCalculator": "SWP कॅल्क्युलेटर",
+    "systematicWithdrawalPlanProjections": "सिस्टमॅटिक विथड्रॉवल प्लॅनचा अंदाज",
+    "remainingBalance": "उर्वरित शिल्लक",
+    "totalInvestment": "एकूण गुंतवणूक",
+    "monthlyWithdrawal": "मासिक काढणी",
+    "withdrawalDuration": "काढणीचा कालावधी",
+    "withdrawalPlan": "काढणी प्लॅन"
+  },
+  "commonQuestionsScreen": {
+    "articles": "लेख",
+    "viewAll": "सर्व पहा",
+    "commonlyAskedQuestions": "नेहमी विचारले जाणारे प्रश्न",
+    "yourGuideToInvestingSmarter": "हुशारीने गुंतवणूक करण्यासाठी तुमचा मार्गदर्शक",
+    "browseByTopic": "विषयानुसार पहा"
+  },
+  "fAQListingScreen": {
+    "readArticle": "लेख वाचा",
+    "commonlyAskedQuestions": "नेहमी विचारले जाणारे प्रश्न",
+    "articles": "लेख"
+  },
+  "fAQSection": {
+    "quickClarity": "झटपट स्पष्टता",
+    "commonlyAskedQuestions": "नेहमी विचारले जाणारे प्रश्न"
+  },
+  "mFBeginners": {
+    "mutualFunds": "म्युच्युअल फंड",
+    "forBeginners": "नवशिक्यांसाठी",
+    "readMore": "अधिक वाचा",
+    "startYourMutualFundJourney": "तुमचा म्युच्युअल फंड प्रवास सुरू करा",
+    "viewAll": "सर्व पहा"
+  },
+  "mFInformedInvestors": {
+    "informedInvesting": "समजूतदार गुंतवणूक",
+    "readMore": "अधिक वाचा",
+    "forTheInformedInvestor": "जाणकार गुंतवणूकदारांसाठी",
+    "viewAll": "सर्व पहा"
+  },
+  "mFInvestorsDetail": {
+    "viewAll": "सर्व पहा",
+    "noContentAvailable": "कोणताही मजकूर उपलब्ध नाही."
+  },
+  "mFScreen": {
+    "smartWealthTools": "स्मार्ट वेल्थ टूल्स",
+    "calculateReturnsLearnTheBasics": "परताव्याची गणना करा, मूलभूत गोष्टी शिका आणि तुमच्या आर्थिक भविष्याचा मागोवा घ्या.",
+    "calculators": "कॅल्क्युलेटर",
+    "faq": "नेहमी विचारले जाणारे प्रश्न",
+    "guides": "मार्गदर्शक",
+    "mf": "MF",
+    "learning": "शिकणे",
+    "mfCalculators": "MF कॅल्क्युलेटर",
+    "mutualFunds": "म्युच्युअल फंड",
+    "calculatorsLearnGrow": "कॅल्क्युलेटर · शिका · वाढा",
+    "tools": "टूल्स"
+  },
+  "mFSectionArticles": {
+    "readMore": "अधिक वाचा",
+    "noArticlesFound": "कोणतेही लेख सापडले नाहीत."
+  },
+  "uIComponents": {
+    "returns": "परतावा"
+  },
+  "myOrder": {
+    "service": "सेवा",
+    "viewOrder": "ऑर्डर पहा",
+    "filterOrders": "ऑर्डर फिल्टर करा",
+    "reset": "रीसेट करा",
+    "orderTime": "ऑर्डरची वेळ",
+    "orderStatus": "ऑर्डर स्टेटस",
+    "applyFilters": "फिल्टर लागू करा",
+    "searchYourOrdersHere": "तुमच्या ऑर्डर येथे शोधा",
+    "filters": "फिल्टर",
+    "coinsEarnedTillDate": "आतापर्यंत मिळवलेले कॉइन:",
+    "totalSavingsTillDate": "आतापर्यंतची एकूण बचत:",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "noOrdersFound": "कोणतीही ऑर्डर सापडली नाही",
+    "myOrders": "माझ्या ऑर्डर",
+    "help": "मदत",
+    "noMoreOrders": "आणखी ऑर्डर नाहीत"
+  },
+  "serviceBundleCard": {
+    "bundleTotal": "बंडल एकूण"
+  },
+  "serviceCancellationDetails": {
+    "invoiceUnavailable": "इनव्हॉइस उपलब्ध नाही",
+    "orderDetails": "ऑर्डर तपशील",
+    "loadingCancellationDetails": "रद्द करण्याचा तपशील लोड होत आहे...",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "reorder": "पुन्हा ऑर्डर करा",
+    "yourCancellationRequestWasRejected": "तुमची रद्द करण्याची विनंती नाकारली गेली. ही सेवा ठरल्याप्रमाणे सुरू राहील.",
+    "refundToCard": "कार्डमध्ये परतावा",
+    "rewardCoinsReversed": "रिवॉर्ड कॉइन परत केले",
+    "topPicksForYou": "तुमच्यासाठी खास",
+    "popularServicesCustomersChooseNext": "ग्राहक पुढे निवडतात त्या लोकप्रिय सेवा",
+    "help": "मदत",
+    "saveACopyOfYour": "तुमच्या ऑर्डरची प्रत सेव्ह करा",
+    "downloadInvoice": "इनव्हॉइस डाउनलोड करा"
+  },
+  "serviceCancellationRequest": {
+    "reasonRequired": "कारण आवश्यक आहे",
+    "pleaseSelectACancellationReason": "कृपया रद्द करण्याचे कारण निवडा.",
+    "requestFailed": "विनंती अयशस्वी",
+    "orderCancellationRequested": "ऑर्डर रद्द करण्याची विनंती केली",
+    "weVeReceivedYourRequest": "आम्हाला तुमची विनंती मिळाली आहे, आमची टीम लवकरच ती तपासेल.",
+    "viewCancellationDetails": "रद्द करण्याचा तपशील पहा",
+    "keepShopping": "खरेदी सुरू ठेवा",
+    "viewAllOrders": "सर्व ऑर्डर पहा",
+    "requestCancellation": "रद्द करण्याची विनंती करा",
+    "reasonForCancellation": "रद्द करण्याचे कारण",
+    "loadingReasons": "कारणे लोड होत आहेत...",
+    "noCancellationReasonsAreAvailable": "सध्या रद्द करण्याची कोणतीही कारणे उपलब्ध नाहीत.",
+    "retry": "पुन्हा प्रयत्न करा",
+    "enterAnySpecificQuestionsOr": "काही विशिष्ट प्रश्न किंवा गरज असल्यास येथे लिहा",
+    "submitRequest": "विनंती सबमिट करा"
+  },
+  "serviceDocumentsCard": {
+    "documents": "दस्तऐवज",
+    "required": "आवश्यक",
+    "uploaded": "अपलोड झाले",
+    "pending": "प्रलंबित"
+  },
+  "serviceFeedback": {
+    "ratingRequired": "रेटिंग आवश्यक आहे",
+    "pleaseRateYourOverallService": "कृपया सेवेच्या एकूण अनुभवाला रेटिंग द्या.",
+    "thankYou": "धन्यवाद!",
+    "yourFeedbackHasBeenSubmitted": "तुमचा अभिप्राय यशस्वीरित्या सबमिट झाला.",
+    "submissionFailed": "सबमिट करता आले नाही",
+    "serviceFeedback": "सेवा अभिप्राय",
+    "howWasYourExperienceWith": "या सेवेचा तुमचा अनुभव कसा होता?",
+    "howEasyWasItTo": "आमच्या ॲपवर ही सेवा पूर्ण करणे किती सोपे होते?",
+    "howWasYourExperienceWith2": "आमच्या सर्व्हिस एक्सपर्टसोबत तुमचा अनुभव कसा होता?",
+    "wasYourServiceCompletedWithin": "तुमची सेवा अपेक्षित वेळेत पूर्ण झाली का?",
+    "didYouFeelConfidentThat": "तुमची सेवा योग्य प्रकारे हाताळली गेली याची तुम्हाला खात्री वाटली का?",
+    "wouldYouUseThisService": "तुम्ही ही सेवा पुन्हा वापराल का?",
+    "anythingYouDLikeUs": "आम्ही कशात सुधारणा करावी असे वाटते?",
+    "typeHere": "येथे लिहा",
+    "submit": "सबमिट करा"
+  },
+  "serviceFeedbackCard": {
+    "feedback": "अभिप्राय",
+    "rateThisService": "या सेवेला रेटिंग द्या"
+  },
+  "serviceOrderDetail": {
+    "invoiceUnavailable": "इनव्हॉइस उपलब्ध नाही",
+    "paymentConfirmed": "पेमेंटची पुष्टी झाली",
+    "yourPaymentIsAlreadyComplete": "तुमचे पेमेंट आधीच पूर्ण झाले आहे. आता दस्तऐवज अपलोड करता येतील.",
+    "paymentProcessing": "पेमेंट प्रक्रियेत आहे",
+    "yourPaymentIsStillBeing": "तुमच्या पेमेंटची पुष्टी अजून होत आहे. कृपया थोड्या वेळाने ही ऑर्डर रिफ्रेश करा.",
+    "paymentSuccessful": "पेमेंट यशस्वी",
+    "youCanNowUploadThe": "आता तुम्ही आवश्यक दस्तऐवज अपलोड करू शकता.",
+    "paymentUnsuccessful": "पेमेंट अयशस्वी",
+    "loadingOrderDetails": "ऑर्डरचा तपशील लोड होत आहे…",
+    "tryAgain": "पुन्हा प्रयत्न करा",
+    "trackEachServiceBelowFor": "खाली प्रत्येक सेवेचे दस्तऐवज आणि पूर्ण होण्याची कालमर्यादा पहा.",
+    "serviceOrder": "सेवा ऑर्डर",
+    "services": "सेवा",
+    "bundles": "बंडल",
+    "paymentSummary": "पेमेंट सारांश",
+    "topPicksForYou": "तुमच्यासाठी खास",
+    "popularServicesCustomersChooseNext": "ग्राहक पुढे निवडतात त्या लोकप्रिय सेवा",
+    "orderDetails": "ऑर्डर तपशील",
+    "help": "मदत",
+    "documents": "दस्तऐवज",
+    "complete": "पूर्ण",
+    "upload": "अपलोड करा",
+    "payNow": "आता पैसे भरा",
+    "saveACopyOfYour": "तुमच्या ऑर्डरची प्रत सेव्ह करा",
+    "downloadInvoice": "इनव्हॉइस डाउनलोड करा"
+  },
+  "serviceOrderItemCard": {
+    "serviceProgress": "सेवेची प्रगती"
+  },
+  "enquireForm": {
+    "success": "यशस्वी",
+    "yourEnquiryHasBeenSubmitted": "तुमची चौकशी यशस्वीरित्या सबमिट झाली!",
+    "enquireNow": "आता चौकशी करा",
+    "pleaseFillOutTheForm": "कृपया खालील फॉर्म भरा, आमची टीम लवकरच तुमच्याशी संपर्क साधेल.",
+    "enterYourNameHere": "तुमचे नाव येथे लिहा",
+    "enterYourMobileNumberHere": "तुमचा मोबाइल नंबर येथे लिहा",
+    "enterYourEmailIdHere": "तुमचा ईमेल आयडी येथे लिहा",
+    "enterCityHere": "शहर येथे लिहा",
+    "enterPincodeHere": "पिनकोड येथे लिहा",
+    "additionalNotesOptional": "अतिरिक्त नोंदी (पर्यायी)",
+    "enterAnySpecificQuestionsOr": "काही विशिष्ट प्रश्न किंवा गरज असल्यास येथे लिहा",
+    "submit": "सबमिट करा"
+  },
+  "packFooterCTA": {
+    "enquireNow": "आता चौकशी करा"
+  },
+  "priceTypeToggle": {
+    "bundlePrice": "बंडल किंमत",
+    "individualPrice": "स्वतंत्र किंमत"
+  },
+  "cartScreen": {
+    "error": "त्रुटी",
+    "bundleDataMissing": "बंडलची माहिती सापडली नाही",
+    "unableToContinue": "पुढे जाता येत नाही",
+    "serviceInformationIsIncomplete": "सेवेची माहिती अपूर्ण आहे.",
+    "couponsAndOffers": "कूपन आणि ऑफर",
+    "cart": "कार्ट",
+    "yourServiceCartIsEmpty": "तुमचे सेवा कार्ट रिकामे आहे. सुरुवात करण्यासाठी सेवा पहा.",
+    "retry": "पुन्हा प्रयत्न करा"
+  },
+  "governmentDocumentScreen": {
+    "unableToOpenThisCategory": "ही कॅटेगरी उघडता आली नाही.",
+    "noServicesFoundInThis": "या कॅटेगरीमध्ये कोणतीही सेवा सापडली नाही."
+  },
+  "packScreen": {
+    "error": "त्रुटी",
+    "bundleIdMissing": "बंडल आयडी सापडला नाही",
+    "selectItems": "वस्तू निवडा",
+    "pleaseSelectAtLeastOne": "कृपया किमान एक सेवा निवडा",
+    "unableToAddBundle": "बंडल जोडता आले नाही",
+    "bundleIdIsMissingFor": "या पॅकेजचा बंडल आयडी सापडला नाही.",
+    "selectionRequired": "निवड आवश्यक आहे",
+    "pleaseSelectAtLeastOne2": "कृपया किमान एक सेवा निवडा.",
+    "addToCartFailed": "कार्टमध्ये जोडता आले नाही"
+  },
+  "profile": {
+    "cancel": "रद्द करा",
+    "deleteFailed": "हटवता आले नाही",
+    "couldNotDeleteTheAccount": "खाते हटवता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+    "en": "EN",
+    "myOrders": "माझ्या ऑर्डर",
+    "wallet": "वॉलेट",
+    "rewards": "रिवॉर्ड",
+    "yourOrders": "तुमच्या ऑर्डर",
+    "yourNotes": "तुमच्या नोंदी",
+    "addressBook": "पत्ता यादी",
+    "settings": "सेटिंग्ज",
+    "languages": "भाषा",
+    "privacyPolicy": "गोपनीयता धोरण",
+    "termsConditions": "नियम आणि अटी",
+    "deleteAccount": "खाते हटवा",
+    "logout": "लॉग आउट",
+    "darkMode": "डार्क मोड"
+  },
+  "serviceCheckoutScreen": {
+    "loginRequired": "लॉगिन आवश्यक आहे",
+    "pleaseLoginToContinueCheckout": "चेकआउट सुरू ठेवण्यासाठी कृपया लॉग इन करा.",
+    "cancel": "रद्द करा",
+    "addAddress": "पत्ता जोडा",
+    "checkoutFailed": "चेकआउट अयशस्वी",
+    "orderError": "ऑर्डर त्रुटी",
+    "failedToCreateOrderPlease": "ऑर्डर तयार करता आली नाही. कृपया पुन्हा प्रयत्न करा.",
+    "checkout": "चेकआउट",
+    "pleaseAddADeliveryAddress": "पुढे जाण्यासाठी कृपया डिलिव्हरी पत्ता जोडा",
+    "documentsRequired": "आवश्यक दस्तऐवज",
+    "couponsAndOffers": "कूपन आणि ऑफर"
+  },
+  "serviceDescription": {
+    "unableToProceed": "पुढे जाता येत नाही",
+    "serviceOrVariantDetailsAre": "सेवा किंवा व्हेरिएंटची माहिती सापडली नाही.",
+    "buyNowFailed": "आता खरेदी अयशस्वी",
+    "unableToAddItem": "वस्तू जोडता आली नाही",
+    "addToCartFailed": "कार्टमध्ये जोडता आले नाही",
+    "missingInfo": "माहिती अपूर्ण आहे",
+    "pleaseFillInAllRequired": "कृपया सर्व आवश्यक माहिती भरा.",
+    "submissionFailed": "सबमिट करता आले नाही",
+    "requiredDocuments": "आवश्यक दस्तऐवज",
+    "required": "आवश्यक",
+    "interestedInThisService": "तुम्हाला या सेवेत रस आहे का?",
+    "fillInTheDetailsBelow": "खाली तपशील भरा, आमची टीम लवकरच तुमच्याशी संपर्क साधेल."
+  },
+  "serviceSearchScreen": {
+    "recentSearches": "अलीकडील शोध",
+    "clearAll": "सर्व साफ करा",
+    "typeAtLeast2Characters": "सेवा शोधण्यासाठी किमान 2 अक्षरे टाइप करा"
+  },
+  "submittedSuccessful": {
+    "areYouLovingYourExperience": "तुम्हाला आतापर्यंत आमच्या ॲपचा अनुभव आवडत आहे का?",
+    "giveUsARating": "आम्हाला रेटिंग द्या"
+  },
+  "orders": {
+    "status": {
+      "pending": "प्रलंबित",
+      "paymentPending": "पेमेंट प्रलंबित",
+      "paymentDone": "पेमेंट झाले",
+      "docsPending": "दस्तऐवज प्रलंबित",
+      "docsUploaded": "दस्तऐवज अपलोड झाले",
+      "inProgress": "प्रगतीपथावर",
+      "completed": "पूर्ण झाले",
+      "cancelled": "रद्द",
+      "delivered": "डिलिव्हर झाले",
+      "all": "सर्व"
+    },
+    "summary": {
+      "placed": "ऑर्डर दिली",
+      "cancelled": "ऑर्डर रद्द झाली",
+      "completed": "ऑर्डर पूर्ण झाली",
+      "inProgress": "ऑर्डर प्रगतीपथावर आहे",
+      "confirmed": "ऑर्डरची पुष्टी झाली",
+      "delivered": "ऑर्डर डिलिव्हर झाली",
+      "servicesConfirmed": "{{total}} पैकी {{done}} सेवांची पुष्टी झाली",
+      "servicesCompleted": "{{total}} पैकी {{done}} सेवा पूर्ण झाल्या"
+    },
+    "time": {
+      "all": "आतापर्यंत",
+      "days30": "मागील 30 दिवस",
+      "months3": "मागील 3 महिने",
+      "months6": "मागील 6 महिने"
+    },
+    "servicesCount": "सेवा ({{count}})",
+    "bundlesCount": "बंडल ({{count}})",
+    "invoiceNotFound": "या ऑर्डरचे इनव्हॉइस सापडले नाही.",
+    "serviceOrderN": "सेवा ऑर्डर {{id}}",
+    "cancellationRequested": "रद्द करण्याची विनंती केली"
+  },
+  "feedback": {
+    "fast": "अपेक्षेपेक्षा लवकर",
+    "onTime": "वेळेवर",
+    "delayed": "उशिरा",
+    "yesCompletely": "होय, पूर्णपणे",
+    "mostly": "बहुतांश",
+    "notReally": "फारसे नाही",
+    "definitely": "नक्कीच",
+    "maybe": "कदाचित",
+    "unlikely": "शक्यता कमी"
+  },
+  "calcResults": {
+    "amountInvested": "गुंतवलेली रक्कम",
+    "corpusRequired": "आवश्यक निधी",
+    "currentMonthlyExpense": "सध्याचा मासिक खर्च",
+    "estimatedReturns": "अंदाजे परतावा",
+    "existingSavingsGrowth": "सध्याच्या बचतीतील वाढ",
+    "extraWealthGained": "अतिरिक्त संपत्ती",
+    "goalAmount": "लक्ष्य रक्कम",
+    "inflationImpact": "महागाईचा परिणाम",
+    "maturityStepUp": "मॅच्युरिटी (स्टेप-अप)",
+    "maturityValue": "मॅच्युरिटी मूल्य",
+    "monthlyExpenseAtRetirement": "निवृत्तीच्या वेळी मासिक खर्च",
+    "monthlySipNeeded": "आवश्यक मासिक SIP",
+    "monthlySipRequired": "आवश्यक मासिक SIP",
+    "remainingToFund": "उभारण्यासाठी उर्वरित रक्कम",
+    "retirementDuration": "निवृत्तीचा कालावधी",
+    "returnsStepUp": "परतावा (स्टेप-अप)",
+    "targetAmount": "लक्ष्य रक्कम",
+    "totalAmountInvested": "एकूण गुंतवलेली रक्कम",
+    "totalInvestedStepUp": "एकूण गुंतवणूक (स्टेप-अप)",
+    "totalInvested": "एकूण गुंतवणूक",
+    "totalValue": "एकूण मूल्य",
+    "totalWithdrawn": "एकूण काढलेली रक्कम",
+    "wealthGained": "मिळालेली संपत्ती",
+    "wealthLost": "गमावलेली संपत्ती",
+    "withoutDelay": "विलंबाशिवाय",
+    "withoutStepUp": "स्टेप-अपशिवाय",
+    "yearsToRetirement": "निवृत्तीपर्यंतची वर्षे",
+    "expenseAfterYears": "{{years}} वर्षांनंतरचा खर्च",
+    "withMonthDelay": "{{months}} महिन्यांच्या विलंबासह",
+    "balanceAfterYears": "{{years}} वर्षांनंतरची शिल्लक"
+  },
+  "calcList": {
+    "sip": {
+      "title": "SIP कॅल्क्युलेटर",
+      "subtitle": "तुमच्या मासिक SIP गुंतवणुकीच्या भविष्यातील मूल्याचा अंदाज घ्या."
+    },
+    "goal": {
+      "title": "लक्ष्य SIP कॅल्क्युलेटर",
+      "subtitle": "लक्ष्य गाठण्यासाठी आवश्यक मासिक SIP जाणून घ्या."
+    },
+    "smart": {
+      "title": "स्मार्ट लक्ष्य कॅल्क्युलेटर",
+      "subtitle": "सध्याच्या गुंतवणुकीसह आवश्यक SIP किंवा एकरकमी रक्कम मोजून लक्ष्ये ठरवा."
+    },
+    "inflation": {
+      "title": "महागाई कॅल्क्युलेटर",
+      "subtitle": "तुमच्या खर्चावर आणि लक्ष्यांवर महागाईच्या परिणामाची गणना करा."
+    },
+    "delay": {
+      "title": "विलंबाची किंमत कॅल्क्युलेटर",
+      "subtitle": "गुंतवणूक सुरू करण्यात विलंबाची खरी किंमत तपासा."
+    },
+    "lumpsum": {
+      "title": "एकरकमी कॅल्क्युलेटर",
+      "subtitle": "एकरकमी गुंतवणुकीवरील संभाव्य परताव्याची गणना करा."
+    },
+    "retirement": {
+      "title": "निवृत्ती कॅल्क्युलेटर",
+      "subtitle": "आरामात निवृत्त होण्यासाठी आवश्यक निधी आणि मासिक SIP चा अंदाज घ्या."
+    },
+    "stepUp": {
+      "title": "स्टेप-अप SIP कॅल्क्युलेटर",
+      "subtitle": "वेळोवेळी SIP वाढवल्यास मिळणाऱ्या परताव्याची गणना करा."
+    },
+    "swp": {
+      "title": "SWP कॅल्क्युलेटर",
+      "subtitle": "व्याजासह नियमित काढणीनंतर उरलेल्या मूल्याची गणना करा."
+    }
+  },
+  "mf": {
+    "article": "लेख"
+  },
+  "fallback": {
+    "features": {
+      "singleForm": "एकाच फॉर्ममध्ये अर्ज",
+      "checklist": "दस्तऐवजांची यादी समाविष्ट",
+      "slot": "अपॉइंटमेंट स्लॉटसाठी मदत"
+    },
+    "faq": {
+      "q1": "आम्ही कोणत्या सेवा देतो?",
+      "a1": "सरकारी दस्तऐवजांसाठी नवीन अर्ज, दुरुस्ती, पुनर्मुद्रण आणि नूतनीकरण.",
+      "q2": "माझ्या सेवेला किती वेळ लागेल?",
+      "a2": "कालावधी सेवेच्या प्रकारावर आणि सरकारी प्रक्रियेवर अवलंबून असतो. पैसे भरण्यापूर्वी आम्ही अंदाजे कालावधी दाखवू.",
+      "q3": "मला कार्यालयात जावे लागेल का?",
+      "a3": "काही सेवा पूर्णपणे ऑनलाइन आहेत, तर काहींसाठी बायोमेट्रिक किंवा पडताळणीसाठी जावे लागते. आम्ही आधीच सांगू."
+    },
+    "stats": {
+      "partners": "विश्वासू भागीदार",
+      "customers": "ग्राहकांना सेवा दिली",
+      "expertise": "चा अनुभव",
+      "years": "5+ वर्षे",
+      "insurancePartners": "विश्वासू विमा भागीदार",
+      "insuranceSold": "विकलेले विमा",
+      "serviceExpertise": "चा सेवा अनुभव"
+    },
+    "whyMatters": "ही सेवा का महत्त्वाची आहे",
+    "fastProcess": "जलद आणि पारदर्शक प्रक्रिया",
+    "experiencedTeam": "अनुभवी दस्तऐवज टीम",
+    "dataSafety": "100% डेटा सुरक्षा",
+    "dataSafetyText": "तुमची वैयक्तिक माहिती सुरक्षित आहे आणि फक्त तुमच्या सेवा विनंतीसाठी वापरली जाते.",
+    "dataSafetyTextShort": "तुमची वैयक्तिक माहिती सुरक्षित आहे आणि फक्त तुमच्या सेवा विनंतीसाठी वापरली जाते."
+  },
+  "enquiry": {
+    "confirmed": "चौकशीची पुष्टी झाली",
+    "submitted": "चौकशी यशस्वीरित्या सबमिट झाली",
+    "reviewShortly": "आमची टीम तपशील पाहून लवकरच तुमच्याशी संपर्क साधेल.",
+    "contactShortly": "आमची टीम लवकरच तुमच्याशी संपर्क साधेल.",
+    "selectField": "{{field}} निवडा",
+    "enterField": "{{field}} लिहा",
+    "enterFieldHere": "{{field}} येथे लिहा",
+    "fields": {
+      "fullName": "पूर्ण नाव",
+      "mobile": "मोबाइल नंबर",
+      "email": "ईमेल आयडी",
+      "city": "शहर",
+      "pincode": "पिनकोड",
+      "notes": "अतिरिक्त नोंदी"
+    }
+  },
+  "docs": {
+    "submitted": "दस्तऐवज सबमिट झाले",
+    "uploadedTitle": "दस्तऐवज यशस्वीरित्या अपलोड झाले",
+    "uploadedBody": "आमची टीम तुमचे दस्तऐवज तपासून लवकरच तुमची सेवा ऑर्डर पुढे नेईल."
+  },
+  "search": {
+    "itr": "“ITR फायलिंग” शोधा",
+    "panItr": "\"PAN कार्ड, ITR फायलिंग…\" शोधा"
+  },
+  "recommended": {
+    "title": "तुमच्यासाठी सुचवलेले",
+    "subtitle": "लोकप्रियतेनुसार निवडलेले"
+  },
+  "errors": {
+    "checkoutFailed": "चेकआउटकडे जाता आले नाही.",
+    "cartFetch": "कार्टमधील वस्तू लोड करता आल्या नाहीत.",
+    "invoiceEmpty": "इनव्हॉइस PDF रिकामी आहे"
+  },
+  "payment": {
+    "serviceDescription": "सेवा पेमेंट"
+  },
+  "r2": {
+    "failedToSubmitEnquiry": "चौकशी सबमिट करता आली नाही",
+    "failedToAddBundle": "बंडल जोडता आले नाही",
+    "failedToAddToCart": "कार्टमध्ये जोडता आले नाही",
+    "failedToFetchCart": "कार्ट लोड करता आले नाही",
+    "failedToRemoveCartItem": "कार्टमधील वस्तू काढता आली नाही",
+    "failedToClearCart": "कार्ट रिकामे करता आले नाही",
+    "failedToLoadBuyNowPreview": "आता खरेदीचा प्रिव्ह्यू लोड करता आला नाही",
+    "failedToLoadCheckoutPreview": "चेकआउट प्रिव्ह्यू लोड करता आला नाही",
+    "failedToCreateOrder": "ऑर्डर तयार करता आली नाही",
+    "failedToFetchBuyNowPreview": "आता खरेदीचा प्रिव्ह्यू मिळवता आला नाही",
+    "failedToFetchCheckoutPreview": "चेकआउट प्रिव्ह्यू मिळवता आला नाही",
+    "orderCreationFailed": "ऑर्डर तयार करता आली नाही",
+    "unableToAddServiceToCart": "सेवा कार्टमध्ये जोडता आली नाही",
+    "unableToRemoveCartItem": "कार्टमधील वस्तू काढता आली नाही",
+    "unableToClearCart": "कार्ट रिकामे करता आले नाही",
+    "invoiceIsAvailableAfterPayment": "पेमेंटनंतर इनव्हॉइस उपलब्ध होईल.",
+    "failedToFetchServiceHome": "सेवा होम लोड करता आले नाही",
+    "removing": "काढत आहे…",
+    "buyThisNow": "हे आता खरेदी करा",
+    "expiryDateRequired": "कालबाह्यता तारीख आवश्यक आहे",
+    "uploadingDocuments": "दस्तऐवज अपलोड होत आहेत…",
+    "submitDocuments": "दस्तऐवज सबमिट करा",
+    "chooseAFileSource": "फाइल कुठून घ्यायची ते निवडा",
+    "enquirySubmittedSuccessfully": "चौकशी यशस्वीरित्या सबमिट झाली",
+    "getStarted": "सुरुवात करा",
+    "getQuote": "कोटेशन मिळवा",
+    "completeAssistanceFromApplicationToDelivery": "तुमच्या दस्तऐवजांसाठी अर्जापासून डिलिव्हरीपर्यंत संपूर्ण मदत.",
+    "selectAnOption": "एक पर्याय निवडा",
+    "noArticlesAvailable": "कोणतेही लेख उपलब्ध नाहीत",
+    "moreAboutMutualFunds": "म्युच्युअल फंडाबद्दल अधिक जाणून घ्या",
+    "newToMutualFunds": "म्युच्युअल फंडमध्ये नवीन आहात",
+    "serviceOrder": "सेवा ऑर्डर",
+    "failedToLoadOrders": "ऑर्डर लोड करता आल्या नाहीत",
+    "cancellationUnavailable": "रद्द करणे उपलब्ध नाही",
+    "unableToLoadCancellationDetails": "रद्द करण्याचा तपशील लोड करता आला नाही.",
+    "unableToDownloadInvoicePleaseTry": "इनव्हॉइस डाउनलोड करता आले नाही. कृपया पुन्हा प्रयत्न करा.",
+    "cancellationDetailsNotFound": "रद्द करण्याचा तपशील सापडला नाही.",
+    "cancellationRejected": "रद्द करण्याची विनंती नाकारली",
+    "serviceCancellation": "सेवा रद्द करणे",
+    "updatePending": "अपडेट प्रलंबित",
+    "pleaseTryAgainInAMoment": "कृपया थोड्या वेळाने पुन्हा प्रयत्न करा.",
+    "unableToSubmitCancellationRequest": "रद्द करण्याची विनंती सबमिट करता आली नाही.",
+    "cancellationRequested": "रद्द करण्याची विनंती केली",
+    "serviceCancellationRequest": "सेवा रद्द करण्याची विनंती",
+    "unableToSubmitFeedback": "अभिप्राय सबमिट करता आला नाही.",
+    "tellUsAboutYourCompletedService": "तुमच्या पूर्ण झालेल्या सेवेबद्दल सांगा",
+    "orderNotFound": "ऑर्डर सापडली नाही.",
+    "failedToLoadOrderDetails": "ऑर्डरचा तपशील लोड करता आला नाही.",
+    "documentUploadUnlocksAfterPayment": "पेमेंटनंतर दस्तऐवज अपलोड करता येतील",
+    "failedToSubmitYourEnquiryPlease": "तुमची चौकशी सबमिट करता आली नाही. कृपया पुन्हा प्रयत्न करा.",
+    "addToCart": "कार्टमध्ये जोडा",
+    "hide": "लपवा",
+    "serviceDetails": "सेवेचा तपशील",
+    "failedToProceed": "पुढे जाता आले नाही",
+    "failedToAddBundleToCart": "बंडल कार्टमध्ये जोडता आले नाही",
+    "cancellationProcessing": "रद्द करण्याची प्रक्रिया सुरू आहे",
+    "unableToLoadTheSelectedItem": "निवडलेली वस्तू लोड करता आली नाही. कृपया लॉग इन करून पुन्हा प्रयत्न करा.",
+    "noDeliveryAddress": "डिलिव्हरी पत्ता नाही",
+    "removing2": "काढत आहे...",
+    "plan": "प्लॅन",
+    "couldNotAddThisServiceTo": "ही सेवा कार्टमध्ये जोडता आली नाही.",
+    "somethingWentWrongWhileAddingTo": "कार्टमध्ये जोडताना काहीतरी चुकले.",
+    "unableToSubmitEnquiryRightNow": "सध्या चौकशी सबमिट करता येत नाही.",
+    "everythingYouNeedToKnow": "तुम्हाला माहीत असायला हवे ते सर्व",
+    "unableToLoadServiceDetails": "सेवेचा तपशील लोड करता आला नाही.",
+    "invalidCategory": "अवैध कॅटेगरी.",
+    "failedToLoadServicesPleaseTry": "सेवा लोड करता आल्या नाहीत. कृपया पुन्हा प्रयत्न करा.",
+    "invalidServiceId": "अवैध सेवा आयडी",
+    "failedToLoadServiceDetailsPlease": "सेवेचा तपशील लोड करता आला नाही. कृपया पुन्हा प्रयत्न करा.",
+    "showLess": "कमी दाखवा",
+    "viewAllCalculators": "सर्व {{count}} कॅल्क्युलेटर पहा",
+    "moreToolsAvailable": "आणखी {{count}} साधने उपलब्ध आहेत",
+    "toolsCount": "{{count}} साधने"
+  },
+  "src": {
+    "mfBeginners": "नवशिक्यांसाठी म्युच्युअल फंड",
+    "mfBeginnersSub": "आत्मविश्वासाने गुंतवणूक सुरू करण्यासाठी सोपे मार्गदर्शक",
+    "mfInformedSub": "फंडांचे प्रकार, लक्ष्य नियोजन आणि निवृत्ती धोरणे पहा"
+  }
+}

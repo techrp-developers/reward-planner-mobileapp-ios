@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -38,6 +39,7 @@ import { useAppTheme } from "../../../../theme/ThemeContext";
 import { fetchResolvedZones } from "../../../common/cms/cmsContentApi";
 import type { CmsModuleKey, CmsOfferImage as ContentZoneImage } from "../../../common/cms/cmsContentApi";
 import { useModuleContent, moduleContentQueryKey } from "../../../common/cms/useModuleContent";
+import i18n from "../../../../i18n";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Responsive constants
@@ -186,6 +188,7 @@ const FlashOfferProductCard = React.memo(({
   item: any;
   shouldLoadImage: boolean;
 }) => {
+  useTranslation(); // re-render memoized content on language change
   const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
   const [wishLoading, setWishLoading] = useState(false);
@@ -347,12 +350,12 @@ const FlashOfferProductCard = React.memo(({
     const parsedVariantId = Number(resolvedVariantId ?? variantId);
 
     if (!parsedProductId || isNaN(parsedProductId)) {
-      Alert.alert("Wishlist", "Invalid product");
+      Alert.alert(i18n.t("products:offerHome.wishlist"), i18n.t("products:offerHome.invalidProduct"));
       return;
     }
 
     if (!parsedVariantId || isNaN(parsedVariantId)) {
-      Alert.alert("Wishlist", "Product variant is missing");
+      Alert.alert(i18n.t("products:offerHome.wishlist"), i18n.t("products:offerHome.productVariantIsMissing"));
       return;
     }
 
@@ -362,7 +365,7 @@ const FlashOfferProductCard = React.memo(({
       setWishlisted(result.wishlisted);
     } catch (error: any) {
       Alert.alert(
-        "Wishlist",
+        i18n.t("products:offerHome.msg.wishlist"),
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||

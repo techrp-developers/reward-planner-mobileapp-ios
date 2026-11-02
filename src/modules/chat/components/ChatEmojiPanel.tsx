@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
 
 type Props = {
   onSelect: (emoji: string) => void;
@@ -44,6 +45,7 @@ const categories = [
 const COLUMNS = 8;
 
 export default function ChatEmojiPanel({ onSelect, onBackspace }: Props) {
+  const { t } = useTranslation();
   const { theme } = useAppTheme();
   const [active, setActive] = useState(categories[0].key);
   const emojis = categories.find(category => category.key === active)!.emojis;
@@ -59,7 +61,7 @@ export default function ChatEmojiPanel({ onSelect, onBackspace }: Props) {
         renderItem={({ item }) => (
           <TouchableOpacity
             accessibilityRole="button"
-            accessibilityLabel={`Insert ${item}`}
+            accessibilityLabel={t("chat:emoji.insert", { emoji: item })}
             onPress={() => onSelect(item)}
             style={styles.cell}
           >
@@ -85,7 +87,7 @@ export default function ChatEmojiPanel({ onSelect, onBackspace }: Props) {
         ))}
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Delete"
+          accessibilityLabel={t("common:actions.delete")}
           onPress={onBackspace}
           style={styles.tab}
         >

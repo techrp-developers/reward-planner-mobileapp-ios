@@ -1,0 +1,348 @@
+{
+  "stepsTrackerScreen": {
+    "required": "Required",
+    "openAppleHealth": "Open Apple Health",
+    "openHealthProfilePrivacyApps": "Open Health → Profile → Privacy → Apps and Services → RewardsPlanners to manage Steps access.",
+    "noStepsFound": "No Steps Found",
+    "connectYourApps": "Connect Your Apps",
+    "appleHealthSettings": "Apple Health Settings",
+    "manageStepsAccessInHealth": "Manage Steps access in Health → Profile → Privacy → Apps and Services → RewardsPlanners.",
+    "healthPermissions": "Health Permissions",
+    "manageStepsAccessInApple": "Manage Steps access in Apple Health",
+    "alreadyInstalledTryThisInstead": "Already installed? Try this instead",
+    "syncAFitnessApp": "Sync a Fitness App",
+    "openAnyAppBelowTo": "Open any app below to enable Health Connect sync. You can also use Fitbit, Garmin, or any other compatible app — no specific app is required.",
+    "idealForSamsungDevicesSyncs": "Ideal for Samsung devices — syncs automatically",
+    "worksOnAllAndroidPhones": "Works on all Android phones — great for step tracking",
+    "continue": "Continue"
+  },
+  "achievementsScreen": {
+    "achievements": "Achievements",
+    "loadingAchievements": "Loading achievements...",
+    "retry": "Retry"
+  },
+  "bMICard": {
+    "viewMore": "View More",
+    "yourActiveStreakPlan": "Your Active Streak Plan"
+  },
+  "bMIScreen": {
+    "stepsDay": "steps / day",
+    "buildingYourBmiPlan": "Building your BMI plan",
+    "fetchingYourProfileRecommendations": "Fetching your profile recommendations…",
+    "yourCurrentPlan": "Your current plan",
+    "weHavePutTogetherA": "We have put together a plan that gently guides you toward your goal at a pace that feels doable.",
+    "weeklyBreakdown": "Weekly Breakdown",
+    "yourWeeklyPlanWillAppear": "Your weekly plan will appear here soon.",
+    "coinsForConsistency": "Coins for consistency",
+    "stayConsistentAndEarnCoins": "Stay consistent and earn coins every week",
+    "updateMeasurementsAmpRecalculateBmi": "Update Measurements & Recalculate BMI",
+    "updateMeasurements": "Update Measurements",
+    "enterYourCurrentHeightAnd": "Enter your current height and weight to recalculate your BMI.",
+    "height": "Height",
+    "weight": "Weight",
+    "recalculateBmi": "Recalculate BMI"
+  },
+  "coinHistoryAndPlan": {
+    "coinHistory": "Coin History",
+    "viewMore": "View More",
+    "loadingCoinActivity": "Loading coin activity...",
+    "unableToLoadCoinsTap": "Unable to load coins. Tap to retry.",
+    "yourEarnedCoinsWillAppear": "Your earned coins will appear here.",
+    "wantAPersonalizedStepPlan": "Want a personalized step plan?",
+    "basedOnYourBmiWe": "Based on your BMI, we can recommend how much to walk daily to stay healthy or lose weight.",
+    "getMyPlan": "Get My Plan"
+  },
+  "dailyStats": {
+    "viewMore": "View More"
+  },
+  "dashboard": {
+    "steps": "steps",
+    "dayStreak": "day streak",
+    "keepItGoing": "Keep it going!",
+    "achievements": "Achievements",
+    "seeYourUnlockedMilestonesAnd": "See your unlocked milestones and rewards",
+    "todaySMovement": "Today's movement",
+    "loadingYourMovement": "Loading your movement...",
+    "retry": "Retry",
+    "kcal": "kcal",
+    "km": "km",
+    "min": "min",
+    "statistics": "Statistics",
+    "coinsPlan": "Coins & Plan"
+  },
+  "goalReachedScreen": {
+    "goal": "GOAL",
+    "goalCompleted": "Goal Completed",
+    "targetReached": "Target Reached!",
+    "youSuccessfullyCompletedYourGoal": "You successfully completed your goal for today. Keep the momentum going.",
+    "overallSummary": "Overall Summary",
+    "continue": "Continue"
+  },
+  "planProgressCard": {
+    "yourProgress": "Your Progress",
+    "yourHighestStepDay": "Your Highest Step Day"
+  },
+  "pointStatement": {
+    "pointsStatement": "Points Statement",
+    "myBalance": "My Balance",
+    "credited": "Credited",
+    "used": "Used",
+    "date": "Date",
+    "activity": "Activity",
+    "amount": "Amount",
+    "loadingYourCoinHistory": "Loading your coin history...",
+    "noCoinActivityYet": "No coin activity yet.",
+    "retry": "Retry"
+  },
+  "progressScreen": {
+    "yourProgress": "Your Progress",
+    "loadingCalendar": "Loading calendar...",
+    "retry": "Retry",
+    "steps": "Steps",
+    "kcal": "Kcal",
+    "km": "Km",
+    "moveMin": "Move Min",
+    "highest": "Highest"
+  },
+  "statisticsGraph": {
+    "statistics": "Statistics",
+    "today": "Today",
+    "retry": "Retry"
+  },
+  "stepForm": {
+    "selectGoal": "Select goal",
+    "pleaseSelectYourGoalFirst": "Please select your goal first.",
+    "profileUpdateFailed": "Profile update failed",
+    "bodyProfileUpdateFailed": "Body profile update failed",
+    "personalPlan": "Personal plan",
+    "whatSYourGoal": "What's your goal?",
+    "chooseWhatYouWantRp": "Choose what you want RP Move to optimize for.",
+    "continue": "Continue",
+    "aboutYou": "About you",
+    "detailsLookCorrect": "Details look correct?",
+    "thisHelpsCalculateAMore": "This helps calculate a more useful BMI plan.",
+    "finalCheck": "Final check",
+    "almostThere": "Almost there",
+    "addYourBodyMetricsTo": "Add your body metrics to generate your plan.",
+    "submit": "Submit"
+  },
+  "stepGoal": {
+    "selectGoal": "Select goal",
+    "pleaseSelectYourDailyStep": "Please select your daily step goal.",
+    "goalUpdateFailed": "Goal update failed",
+    "activityTarget": "Activity target",
+    "pickThePaceThatFeels": "Pick the pace that feels realistic. You can adjust it later.",
+    "loadingYourRecommendedGoals": "Loading your recommended goals…",
+    "retry": "Retry",
+    "noStepGoalsAvailableRight": "No step goals available right now.",
+    "dailyStepTarget": "Daily step target",
+    "theLongerYouWalkThe": "The longer you walk, the bigger the reward.",
+    "setGoal": "Set Goal"
+  },
+  "stepWelcome": {
+    "everyStepYouTakeBrings": "Every step you take brings you closer to better health and more coins.",
+    "walkEarnRedeem": "Walk. Earn. Redeem.",
+    "letSGetMoving": "Let's Get Moving"
+  },
+  "todayGoalCompletedScreen": {
+    "goal": "GOAL",
+    "todaySGoalCompleted": "Today's Goal Completed",
+    "planOverview": "Plan Overview",
+    "overallSummary": "Overall Summary",
+    "youReBuildingStrongHabits": "You're building strong habits.",
+    "coinsEarnedToday": "🪙 Coins Earned Today",
+    "continue": "Continue"
+  },
+  "weeklyGraph": {
+    "thisWeek": "This Week",
+    "viewMore": "View More"
+  },
+  "banner": {
+    "myBalance": "My Balance"
+  },
+  "featuredProducts": {
+    "featuredThisWeek": "Featured This Week"
+  },
+  "homeCategories": {
+    "allCategories": "All Categories"
+  },
+  "homeDeal": {
+    "blockbusterDeals": "Blockbuster Deals"
+  },
+  "homeSubCategories": {
+    "seeAllProducts": "See All Products"
+  },
+  "guide": {
+    "s0": {
+      "title": "Open Health Connect",
+      "desc": "Tap the Health Connect row above to open or install it."
+    },
+    "s1": {
+      "title": "App Permissions",
+      "desc": "Inside Health Connect, tap \"App permissions\" from the home screen."
+    },
+    "s2": {
+      "title": "Find this app",
+      "desc": "Scroll to Rewards Planners and tap it."
+    },
+    "s3": {
+      "title": "Enable Steps",
+      "desc": "Turn on \"Steps\" under the Read permissions toggle."
+    },
+    "s4": {
+      "title": "Come back here",
+      "desc": "Return to this screen — the status refreshes automatically."
+    },
+    "s5": {
+      "title": "Open phone Settings",
+      "desc": "Go to your phone's Settings app."
+    },
+    "s6": {
+      "title": "Go to Apps",
+      "desc": "Tap \"Apps\" (or \"Apps & notifications\")."
+    },
+    "s7": {
+      "title": "Find Reward Planners",
+      "desc": "Search for and tap \"Reward Planners\" in the app list."
+    },
+    "s8": {
+      "title": "Open Permissions",
+      "desc": "Tap \"Permissions\" on the app info screen."
+    },
+    "s9": {
+      "title": "Allow the toggles",
+      "desc": "Turn on \"Physical activity\" and \"Health Connect\", then come back here."
+    },
+    "s10": {
+      "title": "Connect Apple Health",
+      "desc": "Tap the Apple Health row above to show the iOS permission sheet."
+    },
+    "s11": {
+      "title": "Allow Steps",
+      "desc": "In the Apple permission sheet, enable Steps and tap Allow."
+    },
+    "s12": {
+      "title": "Come back here",
+      "desc": "Your step count refreshes automatically when you return."
+    },
+    "s13": {
+      "title": "Open the Health app",
+      "desc": "Open Apple Health on your iPhone."
+    },
+    "s14": {
+      "title": "Open Sharing",
+      "desc": "Tap Sharing, then Apps and Services."
+    },
+    "s15": {
+      "title": "RewardsPlanners",
+      "desc": "Select RewardsPlanners and enable Steps access."
+    }
+  },
+  "bmi": {
+    "under": "Under",
+    "normal": "Normal",
+    "over": "Over",
+    "obese": "Obese",
+    "underweight": "Underweight",
+    "overweight": "Overweight"
+  },
+  "goals": {
+    "weightLoss": "Weight Loss",
+    "weightGain": "Weight Gain",
+    "stayHealthy": "Stay Healthy"
+  },
+  "plan": {
+    "type": "Plan Type",
+    "duration": "Total Plan Duration",
+    "today": "Today",
+    "dailyTarget": "Daily Target",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "dayN": "Day {{n}}"
+  },
+  "summary": {
+    "steps": "Steps",
+    "calories": "Calories Burned",
+    "distance": "Distance",
+    "activeHours": "Active Hours"
+  },
+  "units": {
+    "stepsN": "{{value}} steps",
+    "stepsCapN": "{{value}} Steps",
+    "kcalN": "{{value}} kcal",
+    "kmN": "{{value}} km",
+    "weekN": "Week {{n}}"
+  },
+  "achievements": {
+    "walkingTitle": "Walking Enthusiast",
+    "walkingDesc": "You've taken your first step toward a healthier lifestyle!"
+  },
+  "r2": {
+    "failedToSyncSteps": "Failed to sync steps",
+    "failedToFetchDashboard": "Failed to fetch dashboard",
+    "failedToFetchTodaySummary": "Failed to fetch today summary",
+    "failedToFetchWeeklyProgress": "Failed to fetch weekly progress",
+    "failedToFetchStreak": "Failed to fetch streak",
+    "failedToFetchCalendar": "Failed to fetch calendar",
+    "failedToFetchHourlyStats": "Failed to fetch hourly stats",
+    "failedToFetchStepHistory": "Failed to fetch step history",
+    "failedToFetchStepSummary": "Failed to fetch step summary",
+    "failedToFetchAchievements": "Failed to fetch achievements",
+    "invalidGoalType": "Invalid goal type",
+    "invalidDailyStepsValue": "Invalid daily steps value",
+    "connected": "Connected",
+    "install": "Install",
+    "appleHealthRequired": "Apple Health Required",
+    "healthConnectRequired": "Health Connect Required",
+    "permissionMissing": "Permission Missing",
+    "appleHealthIsNotAvailableOn": "Apple Health is not available on this device.",
+    "pleaseInstallHealthConnectToContinue": "Please install Health Connect to continue.",
+    "connectAppleHealthSoWeCan": "Connect Apple Health so we can track your steps and reward you with coins.",
+    "linkYourFitnessAppsSoWe": "Link your fitness apps so we can track your steps and reward you with coins.",
+    "stepsFromYourIphoneAndApple": "Steps from your iPhone and Apple Watch",
+    "viewPermissionDetails": "View permission details",
+    "fixPermissionFromPhoneSettings": "Fix permission from phone Settings",
+    "fixPermissionInAppleHealth": "Fix permission in Apple Health",
+    "openAppSettings": "Open App Settings",
+    "failedToFetchProfilePlan": "Failed to fetch profile plan",
+    "chooseANewPlan": "Choose a New Plan",
+    "makeThisMyGoal": "Make This My Goal",
+    "failedToLoadDashboard": "Failed to load dashboard",
+    "calories": "Calories",
+    "awesome": "Awesome! 🎉",
+    "nextAchievement": "Next Achievement →",
+    "failedToFetchCoinHistory": "Failed to fetch coin history",
+    "coinsCredited": "Coins Credited",
+    "coinsUsed": "Coins Used",
+    "stepWalletActivity": "Step wallet activity",
+    "failedToLoadGoals": "Failed to load goals",
+    "tracksYourDailyStepsAutomatically": "Tracks your daily steps automatically",
+    "earnCoinsForHittingYourStep": "Earn coins for hitting your step goal",
+    "seeYourWeeklyProgressAtA": "See your weekly progress at a glance",
+    "maintainStreaksForBonusRewards": "Maintain streaks for bonus rewards",
+    "syncFailed": "Sync failed",
+    "healthConnectNotInstalled": "Health Connect not installed",
+    "healthConnectNeedsSetup": "Health Connect needs setup",
+    "setUpPlan": "Let's set up your plan",
+    "planUnavailable": "Plan unavailable",
+    "addBodyDetails": "Add your body details so we can build your personalized step plan.",
+    "setUpProfile": "Set Up My Profile",
+    "iosRecorded": "Steps recorded by your <b>iPhone, Apple Watch, and apps connected to Apple Health</b> are included.",
+    "androidWorksWith": "Also works with <b>Fitbit, Garmin Connect, Huawei Health, Strava</b> and any app that supports Health Connect.",
+    "youWalked": "You've walked <b>{{steps}} steps.</b>",
+    "noStepsIos": "No steps were found for today. Walk a few steps with your iPhone or Apple Watch, then return here.",
+    "noStepsAndroid": "Open your fitness app (Google Fit, Samsung Health, Fitbit, Garmin, etc.), enable Health Connect sync, walk a few steps, then return here.",
+    "tipIos": "Keep your iPhone with you or wear your Apple Watch. Apple Health combines their step data automatically.",
+    "tipAndroid": "Inside your fitness app, go to Settings → Connected apps → Health Connect and enable it. Then walk a few steps so data appears."
+  },
+  "src": {
+    "walkingEnthusiast": "WALKING ENTHUSIAST",
+    "streakKeeper": "STREAK KEEPER",
+    "trailblazer": "TRAILBLAZER",
+    "sunriseStrider": "SUNRISE STRIDER",
+    "walkHeadline": "Great pace! You logged amazing steps today",
+    "streakHeadline": "Your {streak}-day streak has been successfully completed",
+    "trailHeadline": "Awesome walk! You explored new ground today",
+    "sunriseHeadline": "Early mover! You kicked off the day with strong steps"
+  }
+}

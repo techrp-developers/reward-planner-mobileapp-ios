@@ -12,6 +12,10 @@ import BBPSOrderFilterSheet, {
 } from './BBPSOrderFilterSheet';
 import { bbpsOrderHistoryQueryKey, fetchOrderHistory, OrderHistoryItem } from '../../api/BillsAPI';
 import { useBbpsTheme } from '../../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import { formatDate, formatDateTime, formatINR } from "../../../../i18n/format";
+import i18n from "../../../../i18n";
 
 type TemporaryOrder = {
   id: string;
@@ -62,12 +66,12 @@ const toTemporaryOrder = (item: OrderHistoryItem): TemporaryOrder => {
     status: mapOrderStatus(item.final_status),
     statusText: STATUS_TEXT[item.final_status] || 'Processing',
     dateLabel: validDate
-      ? created.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit' })
+      ? formatDateTime(created, { day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit' })
       : '-',
     dateValue: item.created_at,
     month: validDate
-      ? created.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })
-      : 'Unknown',
+      ? formatDate(created, { month: 'long', year: 'numeric' })
+      : i18n.t('payments:src.unknown'),
   };
 };
 
@@ -119,7 +123,7 @@ const OrderCard = ({ order, bbpsTheme }: { order: TemporaryOrder; bbpsTheme: Bbp
       <Text style={[styles.orderTitle, { color: bbpsTheme.colors.text }]} numberOfLines={1}>{order.title}</Text>
       <Text style={[styles.orderId, { color: bbpsTheme.colors.muted }]}>{order.id}</Text>
       <Text style={[styles.orderStatus, statusTextStyle(order.status)]}>
-        {`\u20B9${order.amount.toLocaleString('en-IN')}, ${order.statusText}`}
+        {`${formatINR(order.amount)}, ${translateSourceText("payments", order.statusText)}`}
       </Text>
       <Text style={[styles.orderDate, { color: bbpsTheme.colors.subtle }]}>{order.dateLabel}</Text>
     </View>
@@ -127,6 +131,7 @@ const OrderCard = ({ order, bbpsTheme }: { order: TemporaryOrder; bbpsTheme: Bbp
 );
 
 function OrderHistory({ navigation }: any) {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<BBPSOrderStatus>('');
@@ -170,7 +175,7 @@ function OrderHistory({ navigation }: any) {
   return (
     <View style={[styles.container, { backgroundColor: bbpsTheme.colors.background }]}>
       <OrderHeading
-        title="My Orders"
+        title={tx("payments:orderHistory.myOrders")}
         onBackPress={() => navigation.goBack()}
         onHelpPress={() => navigation.navigate('HelpForm')}
       />
@@ -178,7 +183,7 @@ function OrderHistory({ navigation }: any) {
       <View style={[styles.toolbar, { backgroundColor: bbpsTheme.colors.surface }]}>
         <View style={[styles.searchBox, { backgroundColor: bbpsTheme.colors.elevated, borderColor: bbpsTheme.colors.border }]}>
           <MaterialCommunityIcons name="magnify" size={24} color={bbpsTheme.colors.muted} />
-          <TextInput value={search} onChangeText={setSearch} placeholder="Search transactions" placeholderTextColor={bbpsTheme.colors.subtle} style={[styles.searchInput, { color: bbpsTheme.colors.text }]} />
+          <TextInput value={search} onChangeText={setSearch} placeholder={tx("payments:orderHistory.searchTransactions")} placeholderTextColor={bbpsTheme.colors.subtle} style={[styles.searchInput, { color: bbpsTheme.colors.text }]} />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')}>
               <MaterialCommunityIcons name="close-circle" size={19} color={bbpsTheme.colors.subtle} />
@@ -208,14 +213,14 @@ function OrderHistory({ navigation }: any) {
           </View>
         ) : isError ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyTitle, { color: bbpsTheme.colors.text }]}>Could not load transactions</Text>
+            <Text style={[styles.emptyTitle, { color: bbpsTheme.colors.text }]}>{tx("payments:orderHistory.couldNotLoadTransactions")}</Text>
             <TouchableOpacity style={[styles.retryButton, { borderColor: bbpsTheme.colors.primary }]} onPress={() => refetch()}>
-              <Text style={[styles.retryText, { color: bbpsTheme.colors.primary }]}>Retry</Text>
+              <Text style={[styles.retryText, { color: bbpsTheme.colors.primary }]}>{tx("payments:orderHistory.retry")}</Text>
             </TouchableOpacity>
           </View>
         ) : groupedOrders.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={[styles.emptyTitle, { color: bbpsTheme.colors.text }]}>No transaction found</Text>
+            <Text style={[styles.emptyTitle, { color: bbpsTheme.colors.text }]}>{tx("payments:orderHistory.noTransactionFound")}</Text>
           </View>
         ) : groupedOrders.map((group) => {
           const total = group.orders.reduce((sum, order) => sum + order.amount, 0);
@@ -252,7 +257,7 @@ function OrderHistory({ navigation }: any) {
 
 const FilterChip = ({ label, onPress, bbpsTheme }: { label: string; onPress: () => void; bbpsTheme: BbpsTheme }) => (
   <TouchableOpacity style={[styles.activeChip, { backgroundColor: bbpsTheme.colors.elevated, borderColor: bbpsTheme.colors.border }]} onPress={onPress}>
-    <Text style={[styles.activeChipText, { color: bbpsTheme.colors.muted }]}>{label}</Text>
+    <Text style={[styles.activeChipText, { color: bbpsTheme.colors.muted }]}>{translateSourceText("payments", label)}</Text>
     <MaterialCommunityIcons name="close" size={18} color={bbpsTheme.colors.muted} />
   </TouchableOpacity>
 );

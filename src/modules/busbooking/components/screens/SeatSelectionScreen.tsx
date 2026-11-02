@@ -29,6 +29,8 @@ import AforfemaleSeater from "../../assets/icons/aforfemale (2).svg";
 import type {
   SeatLayoutSeat,
 } from "../../services/busBookingApi";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 
 type DeckKey = "lower" | "upper";
@@ -550,6 +552,7 @@ const buildSeatRows = (
 };
 
 export default function SeatSelectionScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "SeatSelectionScreen">>();
  const [
@@ -1211,13 +1214,13 @@ switch (seat.status) {
           <View style={styles.womenBookingBanner}>
             <MaterialCommunityIcons name="gender-female" size={16} color="#CE1538" />
             <Text style={styles.womenBookingBannerText}>
-              Ladies Booking preference active (female passenger details default)
+              {i18n.t("busBooking:r2.ladiesBookingPreferenceActiveFemalePassenger")}
             </Text>
           </View>
         )}
 
         <View style={styles.routeCard}>
-          <Text style={styles.routeLabel}>Route</Text>
+          <Text style={styles.routeLabel}>{tx("busBooking:seatSelectionScreen.route")}</Text>
           <View style={styles.routeRow}>
             <Text style={styles.routePointText}>{bus.from}</Text>
             <MaterialCommunityIcons name="arrow-right" size={18} color="#D31637" />
@@ -1239,11 +1242,11 @@ switch (seat.status) {
                   end={{ x: 1, y: 0 }}
                   style={styles.deckTabActive}
                 >
-                  <Text style={styles.deckTabTextActive}>Lower Deck</Text>
+                  <Text style={styles.deckTabTextActive}>{tx("busBooking:seatSelectionScreen.lowerDeck")}</Text>
                 </LinearGradient>
               ) : (
                 <View style={styles.deckTabInactive}>
-                  <Text style={styles.deckTabTextInactive}>Lower Deck</Text>
+                  <Text style={styles.deckTabTextInactive}>{tx("busBooking:seatSelectionScreen.lowerDeck")}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -1260,11 +1263,11 @@ switch (seat.status) {
                   end={{ x: 1, y: 0 }}
                   style={styles.deckTabActive}
                 >
-                  <Text style={styles.deckTabTextActive}>Upper Deck</Text>
+                  <Text style={styles.deckTabTextActive}>{tx("busBooking:seatSelectionScreen.upperDeck")}</Text>
                 </LinearGradient>
               ) : (
                 <View style={styles.deckTabInactive}>
-                  <Text style={styles.deckTabTextInactive}>Upper Deck</Text>
+                  <Text style={styles.deckTabTextInactive}>{tx("busBooking:seatSelectionScreen.upperDeck")}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -1384,11 +1387,11 @@ switch (seat.status) {
         </View>
 
         <View style={styles.seatGuideSection}>
-          <Text style={styles.seatGuideTitle}>Know Your Seat Types</Text>
+          <Text style={styles.seatGuideTitle}>{tx("busBooking:seatSelectionScreen.knowYourSeatTypes")}</Text>
 
           <View style={styles.seatGuideCard}>
             <View style={styles.seatGuideHeaderRow}>
-              <Text style={styles.seatGuideHeaderText}>Type</Text>
+              <Text style={styles.seatGuideHeaderText}>{tx("busBooking:seatSelectionScreen.type")}</Text>
               <Text style={styles.seatGuideHeaderText}>
                 {isSeaterLayout
                   ? "Seater"
@@ -1397,7 +1400,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Available</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.available")}</Text>
               {isSeaterLayout ? (
                 <Seatavailable width={22} height={28} />
               ) : (
@@ -1406,7 +1409,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Selected</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.selected")}</Text>
               {isSeaterLayout ? (
                 <Seatselected width={22} height={28} />
               ) : (
@@ -1415,7 +1418,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Booked</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.booked")}</Text>
               {isSeaterLayout ? (
                 <View style={styles.bookedSeatFaded}>
                   <Seatavailable width={22} height={28} />
@@ -1426,7 +1429,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Available only for female passenger</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.availableOnlyForFemalePassenger")}</Text>
               {isSeaterLayout ? (
                 <AforfemaleSeater width={22} height={28} />
               ) : (
@@ -1435,7 +1438,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Booked by female passenger</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.bookedByFemalePassenger")}</Text>
               {isSeaterLayout ? (
                 <Bookfemale width={22} height={28} />
               ) : (
@@ -1444,7 +1447,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRow}>
-              <Text style={styles.seatGuideLabel}>Available for male passenger</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.availableForMalePassenger")}</Text>
               {isSeaterLayout ? (
                 <AformaleSeater width={22} height={28} />
               ) : (
@@ -1453,7 +1456,7 @@ switch (seat.status) {
             </View>
 
             <View style={styles.seatGuideItemRowLast}>
-              <Text style={styles.seatGuideLabel}>Booked by male passenger</Text>
+              <Text style={styles.seatGuideLabel}>{tx("busBooking:seatSelectionScreen.bookedByMalePassenger")}</Text>
               {isSeaterLayout ? (
                 <Bookmale width={22} height={28} />
               ) : (
@@ -1466,7 +1469,7 @@ switch (seat.status) {
 
       <View style={styles.bottomBar}>
         <View>
-          <Text style={styles.bottomLabel}>TOTAL FARE</Text>
+          <Text style={styles.bottomLabel}>{tx("busBooking:seatSelectionScreen.totalFare")}</Text>
           <Text style={styles.bottomFare}>
           Rs {
   selectedSeats.length === 0
@@ -1500,7 +1503,7 @@ switch (seat.status) {
             end={{ x: 1, y: 0 }}
             style={styles.continueButton}
           >
-            <Text style={styles.continueButtonText}>Continue</Text>
+            <Text style={styles.continueButtonText}>{tx("busBooking:seatSelectionScreen.continue")}</Text>
             <MaterialCommunityIcons name="arrow-right" size={18} color="#FFFFFF" />
           </LinearGradient>
         </TouchableOpacity>

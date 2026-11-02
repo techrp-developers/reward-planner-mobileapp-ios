@@ -38,6 +38,9 @@ import {
   type GoalType,
 } from "../../api/ProfileAPI";
 import { useInvalidateFitnessQueries } from "../../api/useFitnessQueries";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type StepFormNavProp = NativeStackNavigationProp<FitnessStackParamList, "StepForm">;
 type FieldKey = "gender" | "age" | "height" | "weight";
@@ -78,6 +81,7 @@ const heightFeetToCm = (value: string) => {
 };
 
 const StepForm = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<StepFormNavProp>();
   const invalidateFitnessQueries = useInvalidateFitnessQueries();
   const { width, height } = useWindowDimensions();
@@ -142,7 +146,7 @@ const StepForm = () => {
     if (step < 3) {
       if (step === 2) {
         if (!selectedGoalType) {
-          Alert.alert("Select goal", "Please select your goal first.");
+          Alert.alert(i18n.t("stepCounter:stepForm.selectGoal"), i18n.t("stepCounter:stepForm.pleaseSelectYourGoalFirst"));
           setStep(1);
           return;
         }
@@ -156,7 +160,7 @@ const StepForm = () => {
           });
 
           if (!res.success) {
-            Alert.alert("Profile update failed", res.message);
+            Alert.alert(i18n.t("stepCounter:stepForm.profileUpdateFailed"), res.message);
             return;
           }
 
@@ -178,7 +182,7 @@ const StepForm = () => {
       });
 
       if (!res.success) {
-        Alert.alert("Body profile update failed", res.message);
+        Alert.alert(i18n.t("stepCounter:stepForm.bodyProfileUpdateFailed"), res.message);
         return;
       }
 
@@ -261,9 +265,9 @@ const StepForm = () => {
 
             {step === 1 ? (
               <>
-                <Text style={styles.eyebrow}>Personal plan</Text>
-                <Text style={styles.title}>What's your goal?</Text>
-                <Text style={styles.subtitle}>Choose what you want RP Move to optimize for.</Text>
+                <Text style={styles.eyebrow}>{tx("stepCounter:stepForm.personalPlan")}</Text>
+                <Text style={styles.title}>{tx("stepCounter:stepForm.whatSYourGoal")}</Text>
+                <Text style={styles.subtitle}>{tx("stepCounter:stepForm.chooseWhatYouWantRp")}</Text>
 
                 <View style={styles.goalRow}>
                   {goals.map(({ id, label, Icon }) => {
@@ -278,7 +282,7 @@ const StepForm = () => {
                       >
                         <Icon width={goalIconSize} height={goalIconSize} />
                         <Text style={[styles.goalLabel, selected && styles.goalLabelSelected]}>
-                          {label}
+                          {translateSourceText("stepCounter", label)}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -286,7 +290,7 @@ const StepForm = () => {
                 </View>
 
                 <GradientButton
-                  label="Continue"
+                  label={tx("stepCounter:stepForm.continue")}
                   disabled={!selectedGoal || submitting}
                   loading={submitting}
                   onPress={handleNext}
@@ -296,27 +300,27 @@ const StepForm = () => {
 
             {step === 2 ? (
               <>
-                <Text style={styles.eyebrow}>About you</Text>
-                <Text style={styles.title}>Details look correct?</Text>
-                <Text style={styles.subtitle}>This helps calculate a more useful BMI plan.</Text>
+                <Text style={styles.eyebrow}>{tx("stepCounter:stepForm.aboutYou")}</Text>
+                <Text style={styles.title}>{tx("stepCounter:stepForm.detailsLookCorrect")}</Text>
+                <Text style={styles.subtitle}>{tx("stepCounter:stepForm.thisHelpsCalculateAMore")}</Text>
 
                 {renderDropdown("Gender", gender, "gender")}
                 {renderDropdown("Age", age, "age")}
 
-                <GradientButton label="Continue" loading={submitting} disabled={submitting} onPress={handleNext} />
+                <GradientButton label={tx("stepCounter:stepForm.continue")} loading={submitting} disabled={submitting} onPress={handleNext} />
               </>
             ) : null}
 
             {step === 3 ? (
               <>
-                <Text style={styles.eyebrow}>Final check</Text>
-                <Text style={styles.title}>Almost there</Text>
-                <Text style={styles.subtitle}>Add your body metrics to generate your plan.</Text>
+                <Text style={styles.eyebrow}>{tx("stepCounter:stepForm.finalCheck")}</Text>
+                <Text style={styles.title}>{tx("stepCounter:stepForm.almostThere")}</Text>
+                <Text style={styles.subtitle}>{tx("stepCounter:stepForm.addYourBodyMetricsTo")}</Text>
 
                 {renderDropdown("Height", heightValue, "height")}
                 {renderDropdown("Weight", weight, "weight")}
 
-                <GradientButton label="Submit" loading={submitting} disabled={submitting} onPress={handleNext} />
+                <GradientButton label={tx("stepCounter:stepForm.submit")} loading={submitting} disabled={submitting} onPress={handleNext} />
               </>
             ) : null}
           </LinearGradient>

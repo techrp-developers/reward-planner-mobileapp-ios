@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { BASE_API_URL } from './api';
 import { getAuthHeaders } from '../../common/auth/api/AuthAPI';
+import i18n from "../../../i18n";
 
 
 // ===================== Types =====================
@@ -170,7 +171,7 @@ export const sendBundleEnquiry = async (
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to submit enquiry');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToSubmitEnquiry"));
     }
 
     return res.data;
@@ -201,7 +202,7 @@ export const addBundleToCart = async (
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to add bundle');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToAddBundle"));
     }
 
     return res.data;
@@ -231,7 +232,7 @@ export const addServiceToCart = async ({
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to add to cart');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToAddToCart"));
     }
 
     return res.data;
@@ -257,7 +258,7 @@ export const getServiceCartItems = async () => {
     >(`${BASE_API_URL}/service-cart/cart-items`, { headers });
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to fetch cart');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToFetchCart"));
     }
 
     return res.data.data;
@@ -276,7 +277,7 @@ export const removeServiceCartItem = async (item_id: number) => {
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to remove cart item');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToRemoveCartItem"));
     }
 
     return res.data;
@@ -292,7 +293,7 @@ export const clearServiceCart = async () => {
     const res = await axios.delete<ApiResponse>(`${BASE_API_URL}/service-cart/clear`, { headers });
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to clear cart');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToClearCart"));
     }
 
     return res.data;
@@ -322,7 +323,7 @@ export const getBuyNowPreview = async ({
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to load buy now preview');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToLoadBuyNowPreview"));
     }
 
     return res.data.data;
@@ -341,7 +342,7 @@ export const getCheckoutPreview = async () => {
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to load checkout preview');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToLoadCheckoutPreview"));
     }
 
     return res.data.data;
@@ -371,7 +372,7 @@ export const createCheckoutOrder = async ({
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to create order');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToCreateOrder"));
     }
 
     return res.data.data;
@@ -404,7 +405,7 @@ export const getBuyNowPreviewAPI = async ({
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to fetch buy now preview');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToFetchBuyNowPreview"));
     }
 
     return res.data.data;
@@ -425,7 +426,7 @@ export const getCheckoutPreviewAPI = async () => {
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Failed to fetch checkout preview');
+      throw new Error(res.data?.message || i18n.t("services:r2.failedToFetchCheckoutPreview"));
     }
 
     return res.data.data;
@@ -458,7 +459,7 @@ export const createOrderAPI = async ({
     );
 
     if (!res.data?.success) {
-      throw new Error(res.data?.message || 'Order creation failed');
+      throw new Error(res.data?.message || i18n.t("services:r2.orderCreationFailed"));
     }
 
     return res.data.data;

@@ -17,6 +17,7 @@ import LocationIcon from '../../assets/StepCount/location.svg';
 import ClockIcon from '../../assets/StepCount/clock_icon.svg';
 import LightningIcon from '../../assets/StepCount/lightning.svg';
 import { BORDER_RADIUS, COLORS, SPACING, TYPOGRAPHY } from '../../utils/theme';
+import { useTranslation } from "react-i18next";
 
 type DailyStatsNavProp = NativeStackNavigationProp<FitnessStackParamList>;
 
@@ -35,6 +36,7 @@ const safeNumber = (value: number | string) => {
 };
 
 const DailyStats: React.FC<DailyStatsProps> = ({ stats, onViewMore }) => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<DailyStatsNavProp>();
 
   const progress = useMemo(() => {
@@ -60,7 +62,7 @@ const DailyStats: React.FC<DailyStatsProps> = ({ stats, onViewMore }) => {
           onPress={handleViewMore}
           activeOpacity={0.82}
         >
-          <Text style={styles.viewMore}>View More</Text>
+          <Text style={styles.viewMore}>{tx("stepCounter:dailyStats.viewMore")}</Text>
           <MaterialCommunityIcons
             name="arrow-right"
             size={16}

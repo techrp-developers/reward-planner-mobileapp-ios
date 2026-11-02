@@ -45,6 +45,7 @@ import GamesDrawer from '../../games/components/GamesDrawer';
 import { fetchDashboardStatuses, markStatusViewed, sameStatusId, sanitizeStatusDebugData, STATUS_FEED_QUERY_KEY } from '../status/api/statusApi';
 import type { StatusFeedGroup, UserStatus } from '../status/types';
 import { queryClient } from '../../../query/queryClient';
+import i18n from "../../../i18n";
 
 const MAIN_DASHBOARD_SECTION_KEYS: readonly MainDashboardSectionKey[] = [
   'header', 'birthdays', 'stepProgress', 'investmentInsurance', 'exploreModules', 'moduleBanner', 'brandPromotionalBanner', 'rewardsOverview',
@@ -121,7 +122,7 @@ function Dashbord() {
   const dashboardLayout = useDashboardLayout('main', MAIN_DASHBOARD_SECTION_KEYS);
 
   const [headerUserName, setHeaderUserName] = useState<string>(
-    () => dashboardHeaderCache?.userName ?? user?.name ?? 'User',
+    () => dashboardHeaderCache?.userName ?? user?.name ?? i18n.t('profile:user'),
   );
   const [headerUserImage, setHeaderUserImage] = useState<string | null>(
     () => dashboardHeaderCache?.userImage ?? null,

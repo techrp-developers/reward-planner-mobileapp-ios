@@ -23,6 +23,8 @@ const { width } = Dimensions.get('window');
 
 import { useFocusEffect } from '@react-navigation/native';
 import { fetchGmcDetails, fetchClaimHistory } from '../../services/inssuranceApi';
+import { useTranslation } from "react-i18next";
+import { claimStatusLabel } from "../../i18nLabels";
 
 const isValidMemberName = (name: any) => {
   if (!name) return false;
@@ -81,6 +83,7 @@ const CardPattern: React.FC = () => {
 };
 
 const HealthDashboard: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark, theme } = useAppTheme();
 
@@ -133,10 +136,10 @@ const HealthDashboard: React.FC = () => {
           </TouchableOpacity>
           <View style={styles.userText}>
             <Text style={[styles.helloText, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-              Hello, {gmcDetails?.name ? gmcDetails.name.split(' ')[0] : 'User'} 👋
+              {gmcDetails?.name ? tx('insurance:dashboard.hello', { name: gmcDetails.name.split(' ')[0] }) : tx('insurance:dashboard.helloNoName')}
             </Text>
             <Text style={[styles.greetingText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-              Good morning!
+              {tx("insurance:healthDashboard.goodMorning")}
             </Text>
           </View>
         </View>
@@ -152,10 +155,10 @@ const HealthDashboard: React.FC = () => {
         {/* Title Block */}
         <View style={styles.titleBlock}>
           <Text style={[styles.titleText, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            Health Insurance
+            {tx("insurance:healthDashboard.healthInsurance")}
           </Text>
           <Text style={[styles.subTitleText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-            Your health. Our priority.
+            {tx("insurance:healthDashboard.yourHealthOurPriority")}
           </Text>
         </View>
 
@@ -182,8 +185,8 @@ const HealthDashboard: React.FC = () => {
                     <Text style={styles.careLogoText}>care</Text>
                   </View>
                   <View style={styles.careLogoSubBox}>
-                    <Text style={styles.careLogoSubText}>HEALTH</Text>
-                    <Text style={styles.careLogoSubTextMin}>INSURANCE</Text>
+                    <Text style={styles.careLogoSubText}>{tx("insurance:healthDashboard.health")}</Text>
+                    <Text style={styles.careLogoSubTextMin}>{tx("insurance:healthDashboard.insurance")}</Text>
                   </View>
                 </View>
                 
@@ -196,15 +199,15 @@ const HealthDashboard: React.FC = () => {
 
               {/* Policy type & company row */}
               <View style={{ marginTop: rs(6) }}>
-                <Text style={styles.groupPolicyText}>Policy Type : {gmcDetails.policy_type || 'Group Health Insurance'}</Text>
+                <Text style={styles.groupPolicyText}>{tx('insurance:card.policyType', { type: gmcDetails.policy_type || tx('insurance:card.groupHealthInsurance') })}</Text>
                 <Text style={styles.groupCompanyText}>{gmcDetails.policy_company_name || gmcDetails.company_name || '—'}</Text>
 
                 {/* Members Table - Spanning 100% full width */}
                 <View style={styles.groupTableContainer}>
                   <View style={styles.groupTableHeader}>
-                    <Text style={[styles.groupColHeader, { width: '50%' }]}>Name</Text>
-                    <Text style={[styles.groupColHeader, { width: '27%' }]}>Client Id</Text>
-                    <Text style={[styles.groupColHeader, { width: '23%' }]}>Dob</Text>
+                    <Text style={[styles.groupColHeader, { width: '50%' }]}>{tx("insurance:healthDashboard.name")}</Text>
+                    <Text style={[styles.groupColHeader, { width: '27%' }]}>{tx("insurance:healthDashboard.clientId")}</Text>
+                    <Text style={[styles.groupColHeader, { width: '23%' }]}>{tx("insurance:healthDashboard.dob")}</Text>
                   </View>
                   
                   {[
@@ -232,7 +235,7 @@ const HealthDashboard: React.FC = () => {
                   onPress={() => navigation.navigate('MyECardScreen')}
                 >
                   <MaterialCommunityIcons name="card-bulleted-outline" size={12} color="#007ca5" style={{ marginRight: 4 }} />
-                  <Text style={[styles.eCardBtnText, { color: '#007ca5' }]}>View E-Card</Text>
+                  <Text style={[styles.eCardBtnText, { color: '#007ca5' }]}>{tx("insurance:healthDashboard.viewECard")}</Text>
                 </TouchableOpacity>
               </View>
             </LinearGradient>
@@ -252,47 +255,47 @@ const HealthDashboard: React.FC = () => {
                     <Text style={styles.careLogoText}>care</Text>
                   </View>
                   <View style={styles.careLogoSubBox}>
-                    <Text style={styles.careLogoSubText}>HEALTH</Text>
-                    <Text style={styles.careLogoSubTextMin}>INSURANCE</Text>
+                    <Text style={styles.careLogoSubText}>{tx("insurance:healthDashboard.health")}</Text>
+                    <Text style={styles.careLogoSubTextMin}>{tx("insurance:healthDashboard.insurance")}</Text>
                   </View>
                 </View>
 
                 <View style={styles.activeBadge}>
                   <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" style={{ marginRight: 2 }} />
-                  <Text style={styles.activeText}>Active</Text>
+                  <Text style={styles.activeText}>{tx("insurance:healthDashboard.active")}</Text>
                 </View>
               </View>
 
               <View style={styles.carePolicyRowDashboard}>
-                <Text style={styles.cardLabel}>Policy Type</Text>
-                <Text style={styles.cardValue}>{gmcDetails.policy_type || 'Personal Health Card'}</Text>
+                <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.policyType")}</Text>
+                <Text style={styles.cardValue}>{gmcDetails.policy_type || tx('insurance:card.personalHealthCard')}</Text>
               </View>
 
               <View style={[styles.cardInfoGrid, { marginTop: rs(10) }]}>
                 <View style={styles.cardInfoCol}>
-                  <Text style={styles.cardLabel}>Policy Number</Text>
+                  <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.policyNumber")}</Text>
                   <Text style={styles.cardValue}>{gmcDetails.policy_number || '—'}</Text>
                 </View>
                 <View style={[styles.cardInfoCol, { alignItems: 'flex-end' }]}>
-                  <Text style={styles.cardLabel}>Member ID</Text>
+                  <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.memberId")}</Text>
                   <Text style={styles.cardValue}>{gmcDetails.member_id || '—'}</Text>
                 </View>
               </View>
 
               <View style={[styles.cardInfoGrid, { marginTop: rs(12) }]}>
                 <View style={styles.cardInfoCol}>
-                  <Text style={styles.cardLabel}>Employee ID</Text>
+                  <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.employeeId")}</Text>
                   <Text style={styles.cardValue}>{gmcDetails.employee_id || '—'}</Text>
                 </View>
                 <View style={styles.cardInfoCol}>
-                  <Text style={styles.cardLabel}>Valid Till</Text>
+                  <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.validTill")}</Text>
                   <View style={styles.dateRow}>
                     <MaterialCommunityIcons name="calendar" size={11} color="rgba(255,255,255,0.7)" style={{ marginRight: 3 }} />
                     <Text style={styles.cardValue}>{gmcDetails.valid_till || '—'}</Text>
                   </View>
                 </View>
                 <View style={[styles.cardInfoCol, { alignItems: 'flex-end' }]}>
-                  <Text style={styles.cardLabel}>Family Covered</Text>
+                  <Text style={styles.cardLabel}>{tx("insurance:healthDashboard.familyCovered")}</Text>
                   <View style={styles.dateRow}>
                     <MaterialCommunityIcons name="account-group" size={12} color="rgba(255,255,255,0.7)" style={{ marginRight: 3 }} />
                     <Text style={styles.cardValue}>
@@ -315,7 +318,7 @@ const HealthDashboard: React.FC = () => {
                   onPress={() => navigation.navigate('MyECardScreen')}
                 >
                   <MaterialCommunityIcons name="card-bulleted-outline" size={13} color={isDark ? '#0F172A' : '#007ca5'} style={{ marginRight: 4 }} />
-                  <Text style={[styles.eCardBtnText, { color: isDark ? '#0F172A' : '#007ca5' }]}>View E-Card</Text>
+                  <Text style={[styles.eCardBtnText, { color: isDark ? '#0F172A' : '#007ca5' }]}>{tx("insurance:healthDashboard.viewECard")}</Text>
                 </TouchableOpacity>
               </View>
             </LinearGradient>
@@ -324,7 +327,7 @@ const HealthDashboard: React.FC = () => {
           /* NO GMC CARD FALLBACK */
           <View style={[styles.careCard, { justifyContent: 'center', alignItems: 'center', minHeight: rs(140), backgroundColor: isDark ? '#1E1E24' : '#F1F5F9' }]}>
             <MaterialCommunityIcons name="shield-alert-outline" size={32} color={isDark ? '#52525B' : '#94A3B8'} />
-            <Text style={{ color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(11), fontWeight: '700', marginTop: rs(6) }}>No active health card available</Text>
+            <Text style={{ color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(11), fontWeight: '700', marginTop: rs(6) }}>{tx("insurance:healthDashboard.noActiveHealthCardAvailable")}</Text>
           </View>
         )}
 
@@ -339,10 +342,10 @@ const HealthDashboard: React.FC = () => {
             <View style={{ flex: 1, paddingRight: rs(12) }}>
               <View style={styles.tipCheckedRow}>
                 <MaterialCommunityIcons name="check-circle" size={12} color="#10B981" style={{ marginRight: 4 }} />
-                <Text style={styles.tipCheckText}>HEALTH TIP OF THE DAY</Text>
+                <Text style={styles.tipCheckText}>{tx("insurance:healthDashboard.healthTipOfTheDay")}</Text>
               </View>
-              <Text style={styles.fullWidthTipTitle}>Drink enough water</Text>
-              <Text style={styles.fullWidthTipSub}>Stay hydrated, boost energy and keep your body in balance.</Text>
+              <Text style={styles.fullWidthTipTitle}>{tx("insurance:healthDashboard.drinkEnoughWater")}</Text>
+              <Text style={styles.fullWidthTipSub}>{tx("insurance:healthDashboard.stayHydratedBoostEnergyAnd")}</Text>
             </View>
             <MaterialCommunityIcons name="water-outline" size={44} color="rgba(255,255,255,0.75)" style={{ alignSelf: 'center' }} />
           </View>
@@ -351,7 +354,7 @@ const HealthDashboard: React.FC = () => {
         {/* Quick Actions Header */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            Quick Actions
+            {tx("insurance:healthDashboard.quickActions")}
           </Text>
         </View>
 
@@ -366,8 +369,8 @@ const HealthDashboard: React.FC = () => {
             <View style={[styles.actionIconBox, { backgroundColor: '#e5f6fd' }]}>
               <MaterialCommunityIcons name="file-document-outline" size={24} color="#005b7f" />
             </View>
-            <Text style={[styles.actionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Cashless Claim</Text>
-            <Text style={[styles.actionSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Get treatment at network hospital</Text>
+            <Text style={[styles.actionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthDashboard.cashlessClaim")}</Text>
+            <Text style={[styles.actionSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.getTreatmentAtNetworkHospital")}</Text>
           </TouchableOpacity>
 
           {/* Button 2: Reimbursement Claim */}
@@ -379,15 +382,15 @@ const HealthDashboard: React.FC = () => {
             <View style={[styles.actionIconBox, { backgroundColor: '#FDF2F8' }]}>
               <MaterialCommunityIcons name="credit-card-outline" size={24} color="#DB2777" />
             </View>
-            <Text style={[styles.actionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Reimbursement Claim</Text>
-            <Text style={[styles.actionSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Submit bills and refund expenses</Text>
+            <Text style={[styles.actionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthDashboard.reimbursementClaim")}</Text>
+            <Text style={[styles.actionSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.submitBillsAndRefundExpenses")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Benefits at a glance Header */}
         <View style={[styles.sectionHeader, { marginTop: rs(24) }]}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            Benefits at a glance
+            {tx("insurance:healthDashboard.benefitsAtAGlance")}
           </Text>
         </View>
 
@@ -396,36 +399,36 @@ const HealthDashboard: React.FC = () => {
           {/* Benefit 1 */}
           <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <MaterialCommunityIcons name="shield-outline" size={22} color="#005b7f" style={styles.benefitIcon} />
-            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Sum Insured</Text>
+            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.sumInsured")}</Text>
             <Text style={[styles.benefitVal, { color: '#005b7f' }]}>₹10,00,000</Text>
           </View>
 
           {/* Benefit 2 */}
           <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <MaterialCommunityIcons name="hospital-building" size={22} color="#10B981" style={styles.benefitIcon} />
-            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Cashless Hospitals</Text>
+            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.cashlessHospitals")}</Text>
             <Text style={[styles.benefitVal, { color: '#10B981' }]}>6200+</Text>
           </View>
 
           {/* Benefit 3 */}
           <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <MaterialCommunityIcons name="account-group-outline" size={22} color="#7C3AED" style={styles.benefitIcon} />
-            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Members Covered</Text>
+            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.membersCovered")}</Text>
             <Text style={[styles.benefitVal, { color: '#7C3AED' }]}>4</Text>
           </View>
 
           {/* Benefit 4 */}
           <View style={[styles.benefitCard, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
             <MaterialCommunityIcons name="heart-flash" size={22} color="#DB2777" style={styles.benefitIcon} />
-            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Wellness Benefits</Text>
-            <Text style={[styles.benefitVal, { color: '#DB2777' }]}>Included</Text>
+            <Text style={[styles.benefitLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.wellnessBenefits")}</Text>
+            <Text style={[styles.benefitVal, { color: '#DB2777' }]}>{tx("insurance:healthDashboard.included")}</Text>
           </View>
         </View>
 
         {/* How claims work Header */}
         <View style={[styles.sectionHeader, { marginTop: rs(24) }]}>
           <Text style={[styles.sectionTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-            How claims work
+            {tx("insurance:healthDashboard.howClaimsWork")}
           </Text>
           <TouchableOpacity 
             activeOpacity={0.7}
@@ -433,7 +436,7 @@ const HealthDashboard: React.FC = () => {
             style={styles.watchVideosHeaderBtn}
           >
             <MaterialCommunityIcons name="youtube" size={16} color="#DC2626" style={{ marginRight: 4 }} />
-            <Text style={styles.viewAllText}>Watch Videos</Text>
+            <Text style={styles.viewAllText}>{tx("insurance:healthDashboard.watchVideos")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -444,8 +447,8 @@ const HealthDashboard: React.FC = () => {
               <Text style={styles.processStepText}>1</Text>
             </View>
             <MaterialCommunityIcons name="file-document-edit-outline" size={20} color="#005b7f" />
-            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Raise Claim</Text>
-            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Intimate your claim in steps</Text>
+            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthDashboard.raiseClaim")}</Text>
+            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.intimateYourClaimInSteps")}</Text>
           </View>
 
           <View style={styles.processDivider} />
@@ -455,8 +458,8 @@ const HealthDashboard: React.FC = () => {
               <Text style={styles.processStepText}>2</Text>
             </View>
             <MaterialCommunityIcons name="shield-search" size={20} color="#EA580C" />
-            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Review</Text>
-            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>We review your documents</Text>
+            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthDashboard.review")}</Text>
+            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.weReviewYourDocuments")}</Text>
           </View>
 
           <View style={styles.processDivider} />
@@ -466,8 +469,8 @@ const HealthDashboard: React.FC = () => {
               <Text style={styles.processStepText}>3</Text>
             </View>
             <MaterialCommunityIcons name="hand-coin-outline" size={20} color="#10B981" />
-            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Settlement</Text>
-            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Amount settled to you</Text>
+            <Text style={[styles.processTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:healthDashboard.settlement")}</Text>
+            <Text style={[styles.processSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.amountSettledToYou")}</Text>
           </View>
         </View>
 
@@ -486,10 +489,10 @@ const HealthDashboard: React.FC = () => {
             </View>
             <View style={{ marginLeft: rs(10), flex: 1 }}>
               <Text style={[styles.videoBannerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-                GMC Process Video Guides
+                {tx("insurance:healthDashboard.gmcProcessVideoGuides")}
               </Text>
               <Text style={[styles.videoBannerSub, { color: isDark ? '#A1A1AA' : '#64748B' }]}>
-                Watch 4 short guides on Cashless, PED coverage & claims
+                {tx("insurance:healthDashboard.watch4ShortGuidesOn")}
               </Text>
             </View>
           </View>
@@ -500,14 +503,14 @@ const HealthDashboard: React.FC = () => {
         <View style={{ marginTop: rs(24), marginBottom: rs(12) }}>
           <View style={styles.sectionHeaderCompact}>
             <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>
-              Recent Claims
+              {tx("insurance:healthDashboard.recentClaims")}
             </Text>
             {claims.length > 0 && (
               <TouchableOpacity 
                 activeOpacity={0.6}
                 onPress={() => navigation.navigate('HealthClaimsScreen')}
               >
-                <Text style={styles.viewAllTextCompact}>View All</Text>
+                <Text style={styles.viewAllTextCompact}>{tx("insurance:healthDashboard.viewAll")}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -515,7 +518,7 @@ const HealthDashboard: React.FC = () => {
           {claims.length === 0 ? (
             <View style={[styles.recentClaimCardFull, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingVertical: rs(24) }]}>
               <Text style={{ color: isDark ? '#A1A1AA' : '#64748B', fontSize: fs(12), fontWeight: '600' }}>
-                No recent claims found
+                {tx("insurance:healthDashboard.noRecentClaimsFound")}
               </Text>
             </View>
           ) : (
@@ -567,7 +570,7 @@ const HealthDashboard: React.FC = () => {
                       </Text>
                       <View style={[styles.approvedBadge, { backgroundColor: badgeBg }]}>
                         <MaterialCommunityIcons name={badgeIcon as any} size={10} color={badgeText} style={{ marginRight: 2 }} />
-                        <Text style={[styles.approvedText, { color: badgeText }]}>{claim.status || 'Under Review'}</Text>
+                        <Text style={[styles.approvedText, { color: badgeText }]}>{claimStatusLabel(claim.status)}</Text>
                       </View>
                     </View>
                   </View>
@@ -582,7 +585,7 @@ const HealthDashboard: React.FC = () => {
       <View style={[styles.tabBar, { backgroundColor: isDark ? '#18181B' : '#FFFFFF', borderTopColor: isDark ? '#27272A' : '#E4E4E7' }]}>
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6}>
           <MaterialCommunityIcons name="home" size={24} color="#005b7f" />
-          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:healthDashboard.home")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -591,12 +594,12 @@ const HealthDashboard: React.FC = () => {
           onPress={() => navigation.navigate('HealthClaimsScreen')}
         >
           <MaterialCommunityIcons name="file-document-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Claims</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.claims")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.tabItem} activeOpacity={0.6} onPress={() => navigation.navigate('Profile')}>
           <MaterialCommunityIcons name="account-outline" size={24} color={isDark ? '#A1A1AA' : '#64748B'} />
-          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:healthDashboard.profile")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

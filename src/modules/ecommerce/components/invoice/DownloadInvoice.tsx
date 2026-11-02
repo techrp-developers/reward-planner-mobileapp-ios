@@ -14,8 +14,11 @@ import Share from 'react-native-share';
 
 // Icons
 import CenterIcon from "../../../assets/menu/Menu_Home.svg"; 
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const InvoiceScreen = () => {
+  const { t: tx } = useTranslation();
   // In a real app, this would come from: const { orderId } = route.params; 
   // followed by a useEffect fetch call.
   const invoiceData = {
@@ -96,7 +99,7 @@ const InvoiceScreen = () => {
         ...(Platform.OS === 'android' ? ({ useInternalStorage: true } as Record<string, unknown>) : {}),
       });
     } catch {
-      Alert.alert('Error', 'Could not generate PDF');
+      Alert.alert(i18n.t("products:downloadInvoice.error"), i18n.t("products:downloadInvoice.couldNotGeneratePdf"));
     }
   };
 
@@ -109,7 +112,7 @@ const InvoiceScreen = () => {
           <View style={styles.iconCircle}>
              <CenterIcon width={30} height={30} fill="#4F46E5" />
           </View>
-          <Text style={styles.successTitle}>Order Confirmed!</Text>
+          <Text style={styles.successTitle}>{tx("products:downloadInvoice.orderConfirmed")}</Text>
         </View>
 
         <View style={styles.rewardsCard}>
@@ -118,7 +121,7 @@ const InvoiceScreen = () => {
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.sectionHeader}>Order Summary</Text>
+          <Text style={styles.sectionHeader}>{tx("products:downloadInvoice.orderSummary")}</Text>
           {invoiceData.items.map((item) => (
             <View key={item.id} style={styles.itemRow}>
               <Text style={styles.itemName}>{item.name} (x{item.quantity})</Text>
@@ -127,14 +130,14 @@ const InvoiceScreen = () => {
           ))}
           <View style={styles.divider} />
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total Paid</Text>
+            <Text style={styles.totalLabel}>{tx("products:downloadInvoice.totalPaid")}</Text>
             <Text style={styles.totalValue}>${invoiceData.total.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Action Button */}
         <TouchableOpacity style={styles.downloadBtn} onPress={handleGeneratePDF}>
-          <Text style={styles.downloadText}>Download PDF Receipt</Text>
+          <Text style={styles.downloadText}>{tx("products:downloadInvoice.downloadPdfReceipt")}</Text>
         </TouchableOpacity>
 
       </ScrollView>

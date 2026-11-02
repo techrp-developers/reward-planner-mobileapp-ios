@@ -9,6 +9,7 @@ import type { NavigationProp } from '@react-navigation/native';
 import type { ServiceItem } from '../../navigation/type';
 import Card from './Card';
 import { chunkArray, getServiceImageSource, getDiscount } from '../../utils/serviceUtils';
+import i18n from "../../../../i18n";
 
 type Props = {
   items: ServiceItem[];
@@ -70,7 +71,7 @@ export default function PaginatedServiceGrid({
                       compact
                       title={service.title || service.name}
                       image={getServiceImageSource(service)}
-                      price={service.price > 0 ? `₹${service.price}` : 'Get Quote'}
+                      price={service.price > 0 ? `₹${service.price}` : i18n.t("services:r2.getQuote")}
                       oldPrice={
                         service.mrp && service.mrp > service.price
                           ? `₹${service.mrp}`

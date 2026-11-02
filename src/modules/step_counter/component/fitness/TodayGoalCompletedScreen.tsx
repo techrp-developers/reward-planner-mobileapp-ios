@@ -14,6 +14,10 @@ import {
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
 import type { PlanOverview, OverallSummary } from "../../api/Stepsapi";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import { formatNumber } from "../../../../i18n/format";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -120,7 +124,7 @@ const GoalIllustration: React.FC<{
 
     <View style={styles.goalScene}>
       <View style={styles.signBoard}>
-        <Text style={styles.signBoardText}>GOAL</Text>
+        <Text style={styles.signBoardText}>{i18n.t("stepCounter:todayGoalCompletedScreen.goal")}</Text>
       </View>
       <View style={styles.postsRow}>
         <View style={styles.signPost} />
@@ -199,6 +203,7 @@ const GradientBar: React.FC<{ progress: number }> = ({ progress }) => {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
+  const { t: tx } = useTranslation();
   const overlay = isOverlay(props);
 
   const planOverview   = overlay ? props.planOverview   : props.route.params.planOverview;
@@ -245,17 +250,17 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
   const stepsProgress = Math.min(overallSummary.steps / (planOverview.daily_target * 1.2), 1);
 
   const planRows = [
-    { label: "Plan Type",           value: planOverview.plan_type,                          color: VD.accentDark },
-    { label: "Total Plan Duration", value: `${planOverview.total_duration_days} days`,      color: VD.white },
-    { label: "Today",               value: `Day ${planOverview.current_day}`,                color: VD.accentDark },
-    { label: "Daily Target",        value: `${planOverview.daily_target.toLocaleString()} steps`, color: VD.white },
+    { label: tx("stepCounter:plan.type"), value: translateSourceText("stepCounter", planOverview.plan_type), color: VD.accentDark },
+    { label: tx("stepCounter:plan.duration"), value: tx("stepCounter:plan.days", { count: planOverview.total_duration_days }), color: VD.white },
+    { label: tx("stepCounter:plan.today"), value: tx("stepCounter:plan.dayN", { n: planOverview.current_day }), color: VD.accentDark },
+    { label: tx("stepCounter:plan.dailyTarget"), value: tx("stepCounter:units.stepsN", { value: formatNumber(planOverview.daily_target) }), color: VD.white },
   ];
 
   const summaryRows = [
-    { icon: "🥾", label: "Steps",          value: `${overallSummary.steps.toLocaleString()} steps` },
-    { icon: "🔥", label: "Calories Burned", value: `${overallSummary.calories} kcal` },
-    { icon: "📍", label: "Distance",        value: `${overallSummary.distance_km} km` },
-    { icon: "⏱️", label: "Active Hours",    value: formatMinutes(overallSummary.active_minutes) },
+    { icon: "🥾", label: tx("stepCounter:summary.steps"), value: tx("stepCounter:units.stepsN", { value: formatNumber(overallSummary.steps) }) },
+    { icon: "🔥", label: tx("stepCounter:summary.calories"), value: tx("stepCounter:units.kcalN", { value: overallSummary.calories }) },
+    { icon: "📍", label: tx("stepCounter:summary.distance"), value: tx("stepCounter:units.kmN", { value: overallSummary.distance_km }) },
+    { icon: "⏱️", label: tx("stepCounter:summary.activeHours"), value: formatMinutes(overallSummary.active_minutes) },
   ];
 
   return (
@@ -273,7 +278,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
           <Text style={styles.backArrow}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Today's Goal Completed</Text>
+          <Text style={styles.headerTitle}>{tx("stepCounter:todayGoalCompletedScreen.todaySGoalCompleted")}</Text>
           <Text style={styles.headerSub}>• {planOverview.plan_type} Plan</Text>
         </View>
         <View style={styles.headerSpacer} />
@@ -284,7 +289,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
         <GoalIllustration scale={heroScale} planType={planOverview.plan_type} />
 
         <SectionCard fadeAnim={anims[0].fade} slideAnim={anims[0].slide} highlighted>
-          <Text style={styles.sectionTitle}>Plan Overview</Text>
+          <Text style={styles.sectionTitle}>{tx("stepCounter:todayGoalCompletedScreen.planOverview")}</Text>
           {planRows.map((row, i) => (
             <View key={i} style={[styles.infoRow, i < planRows.length - 1 && styles.rowDivider]}>
               <Text style={styles.infoLabel}>{row.label}</Text>
@@ -294,7 +299,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
         </SectionCard>
 
         <SectionCard fadeAnim={anims[1].fade} slideAnim={anims[1].slide} highlighted>
-          <Text style={styles.sectionTitle}>Overall Summary</Text>
+          <Text style={styles.sectionTitle}>{tx("stepCounter:todayGoalCompletedScreen.overallSummary")}</Text>
           {summaryRows.map((row, i) => (
             <View key={i} style={[styles.summaryRow, i < summaryRows.length - 1 && styles.rowDivider]}>
               <Text style={styles.summaryIcon}>{row.icon}</Text>
@@ -314,7 +319,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
                 Current Streak {"  "}
                 <Text style={styles.streakLightning}>⚡</Text>
               </Text>
-              <Text style={styles.streakSub}>You're building strong habits.</Text>
+              <Text style={styles.streakSub}>{tx("stepCounter:todayGoalCompletedScreen.youReBuildingStrongHabits")}</Text>
             </View>
             <Text style={styles.streakDays}>{currentStreak} Days</Text>
           </View>
@@ -323,7 +328,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
         {reward > 0 && (
           <SectionCard fadeAnim={anims[3].fade} slideAnim={anims[3].slide}>
             <View style={styles.rewardRow}>
-              <Text style={styles.rewardLabel}>🪙 Coins Earned Today</Text>
+              <Text style={styles.rewardLabel}>{tx("stepCounter:todayGoalCompletedScreen.coinsEarnedToday")}</Text>
               <Text style={styles.rewardValue}>+{reward}</Text>
             </View>
           </SectionCard>
@@ -339,7 +344,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
           onPress={handleContinue}
           activeOpacity={0.87}
         >
-          <Text style={styles.continueTxt}>Continue</Text>
+          <Text style={styles.continueTxt}>{tx("stepCounter:todayGoalCompletedScreen.continue")}</Text>
         </TouchableOpacity>
       </View>
     </View>

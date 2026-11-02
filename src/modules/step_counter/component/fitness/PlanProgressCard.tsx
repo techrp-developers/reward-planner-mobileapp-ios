@@ -8,6 +8,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from "react-i18next";
 
 interface DailyData {
   date: number; // Day of the month
@@ -172,6 +173,7 @@ const CalendarGrid: React.FC<{ progress: DailyData[]; selectedDay: number }> = (
 // --- Main Component ---
 
 const ProgressScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const [selectedMonthName, setSelectedMonthName] = useState('November');
   const selectedMonthData = mockProgressData.find(
     (m) => m.name === selectedMonthName,
@@ -200,7 +202,7 @@ const ProgressScreen: React.FC = () => {
           <TouchableOpacity onPress={() => console.log('Go back')}>
             <Icon name="arrow-left" size={24} color="#000" />
           </TouchableOpacity>
-          <Text style={styles.title}>Your Progress</Text>
+          <Text style={styles.title}>{tx("stepCounter:planProgressCard.yourProgress")}</Text>
         </View>
 
         {/* 1. Month Tabs */}
@@ -242,7 +244,7 @@ const ProgressScreen: React.FC = () => {
         <View style={styles.highestStepCard}>
             <Icon name="trophy" size={24} color="#FFD700" style={styles.trophyIcon} />
             <View>
-                <Text style={styles.cardTitle}>Your Highest Step Day</Text>
+                <Text style={styles.cardTitle}>{tx("stepCounter:planProgressCard.yourHighestStepDay")}</Text>
             </View>
             <View style={styles.highestStepDetails}>
                 <Text style={styles.highestStepCount}>{highestStepDay.steps.toLocaleString()}{' '}Steps</Text>

@@ -7,10 +7,13 @@ import Card from './Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const fallbackImg = require('../../assete/gov_documet/aadhar card.png');
 
 const YouMayNeedServicesCarousel = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
   const { data, isLoading, error } = useServiceHome();
@@ -25,8 +28,8 @@ const YouMayNeedServicesCarousel = () => {
     return (
       <View style={styles.wrapper}>
         <View style={styles.headerRow}>
-          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>You may also need</Text>
-          <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Handy add-ons for this service</Text>
+          <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{tx("services:youMayNeedServicesCarousel.youMayAlsoNeed")}</Text>
+          <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>{tx("services:youMayNeedServicesCarousel.handyAddOnsForThis")}</Text>
         </View>
         <ActivityIndicator size="small" color="#8665FF" style={styles.loader} />
       </View>
@@ -38,8 +41,8 @@ const YouMayNeedServicesCarousel = () => {
   return (
     <View style={styles.wrapper}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>You may also need</Text>
-        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Handy add-ons for this service</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{tx("services:youMayNeedServicesCarousel.youMayAlsoNeed")}</Text>
+        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>{tx("services:youMayNeedServicesCarousel.handyAddOnsForThis")}</Text>
       </View>
 
       <ScrollView
@@ -61,7 +64,7 @@ const YouMayNeedServicesCarousel = () => {
               key={`${item.service_id}-${item.variant_id}`}
               title={item.name}
               image={imageSource}
-              price={item.price > 0 ? `₹${item.price}` : 'Get Quote'}
+              price={item.price > 0 ? `₹${item.price}` : i18n.t("services:r2.getQuote")}
               oldPrice={
                 item.mrp && item.mrp > item.price
                   ? `₹${item.mrp}`

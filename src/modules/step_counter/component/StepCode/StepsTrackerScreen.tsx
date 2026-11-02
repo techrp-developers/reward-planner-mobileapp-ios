@@ -21,6 +21,10 @@ import { SdkAvailabilityStatus } from 'react-native-health-connect';
 import { useStepTracker } from './useStepTracker';
 import { BORDER_RADIUS, RESPONSIVE, SPACING } from '../../utils/theme';
 import { useAlert } from '../../../../modules/ecommerce/components/alerts';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import { Trans } from "react-i18next";
 
 // ─── Violet Dusk palette ──────────────────────────────────────────────────────
 
@@ -124,8 +128,8 @@ const PermissionGuide = ({
               {i < steps.length - 1 && <View style={ss.guideLine} />}
             </View>
             <View style={ss.guideStepRight}>
-              <Text style={ss.guideStepTitle}>{s.title}</Text>
-              <Text style={ss.guideStepDesc}>{s.desc}</Text>
+              <Text style={ss.guideStepTitle}>{translateSourceText("stepCounter", s.title)}</Text>
+              <Text style={ss.guideStepDesc}>{translateSourceText("stepCounter", s.desc)}</Text>
             </View>
           </View>
         ))}
@@ -152,7 +156,8 @@ const ProviderCard = ({
   title, subtitle, iconName, iconBg, iconTint,
   installed, connected, mandatory, onPress,
 }: ProviderCardProps) => {
-  const statusLabel = connected ? 'Connected' : installed ? 'Open' : 'Install';
+  const { t: tx } = useTranslation();
+  const statusLabel = connected ? i18n.t("stepCounter:r2.connected") : installed ? 'Open' : i18n.t("stepCounter:r2.install");
   const statusColor = connected ? VD.success : installed ? VD.accentDark : VD.warning;
 
   return (
@@ -170,7 +175,7 @@ const ProviderCard = ({
           <Text style={ss.providerTitle}>{title}</Text>
           {mandatory && (
             <View style={ss.requiredBadge}>
-              <Text style={ss.requiredText}>Required</Text>
+              <Text style={ss.requiredText}>{tx("stepCounter:stepsTrackerScreen.required")}</Text>
             </View>
           )}
         </View>
@@ -189,6 +194,7 @@ const ProviderCard = ({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function StepsTrackerScreen() {
+  const { t: tx } = useTranslation();
   const {
     healthConnectStatus, grantedPermissions,
     healthConnectError, isSetupComplete,
@@ -256,8 +262,8 @@ export default function StepsTrackerScreen() {
       await Linking.openURL('x-apple-health://');
     } catch {
       alert.info(
-        'Open Apple Health',
-        'Open Health → Profile → Privacy → Apps and Services → RewardsPlanners to manage Steps access.',
+        i18n.t("stepCounter:stepsTrackerScreen.openAppleHealth"),
+        i18n.t("stepCounter:stepsTrackerScreen.openHealthProfilePrivacyApps"),
       );
     }
   };
@@ -294,9 +300,9 @@ export default function StepsTrackerScreen() {
         return;
       }
       alert.warning(
-        !isHCInstalled ? (isIOS ? 'Apple Health Required' : 'Health Connect Required') : 'Permission Missing',
+        !isHCInstalled ? (isIOS ? i18n.t("stepCounter:r2.appleHealthRequired") : i18n.t("stepCounter:r2.healthConnectRequired")) : i18n.t("stepCounter:r2.permissionMissing"),
         !isHCInstalled
-          ? (isIOS ? 'Apple Health is not available on this device.' : 'Please install Health Connect to continue.')
+          ? (isIOS ? i18n.t("stepCounter:r2.appleHealthIsNotAvailableOn") : i18n.t("stepCounter:r2.pleaseInstallHealthConnectToContinue"))
           : `Please grant Steps permission in ${isIOS ? 'Apple Health' : 'Health Connect'}, then return here.`,
       );
       if (isHCInstalled) setGuideOpen(true);
@@ -304,10 +310,10 @@ export default function StepsTrackerScreen() {
     }
     if (!isIOS && totalSteps <= 0) {
       alert.warning(
-        'No Steps Found',
+        i18n.t("stepCounter:stepsTrackerScreen.noStepsFound"),
         isIOS
-          ? 'No steps were found for today. Walk a few steps with your iPhone or Apple Watch, then return here.'
-          : 'Open your fitness app (Google Fit, Samsung Health, Fitbit, Garmin, etc.), enable Health Connect sync, walk a few steps, then return here.',
+          ? i18n.t("stepCounter:r2.noStepsIos")
+          : i18n.t("stepCounter:r2.noStepsAndroid"),
       );
       refreshStatus();
       return;
@@ -340,19 +346,19 @@ export default function StepsTrackerScreen() {
 
           <View style={ss.headingGroup}>
             <Text style={ss.eyebrow}>RP Move</Text>
-            <Text style={ss.title}>Connect Your Apps</Text>
+            <Text style={ss.title}>{tx("stepCounter:stepsTrackerScreen.connectYourApps")}</Text>
             <Text style={ss.description}>
               {isIOS
-                ? 'Connect Apple Health so we can track your steps and reward you with coins.'
-                : 'Link your fitness apps so we can track your steps and reward you with coins.'}
+                ? i18n.t("stepCounter:r2.connectAppleHealthSoWeCan")
+                : i18n.t("stepCounter:r2.linkYourFitnessAppsSoWe")}
             </Text>
           </View>
 
           {/* Required */}
-          <Text style={ss.sectionLabel}>Required</Text>
+          <Text style={ss.sectionLabel}>{tx("stepCounter:stepsTrackerScreen.required")}</Text>
           <ProviderCard
             title={isIOS ? 'Apple Health' : 'Health Connect'}
-            subtitle={isIOS ? 'Steps from your iPhone and Apple Watch' : "Google's unified health data platform"}
+            subtitle={isIOS ? i18n.t("stepCounter:r2.stepsFromYourIphoneAndApple") : "Google's unified health data platform"}
             iconName={BRAND.hc.icon} iconBg={BRAND.hc.bg} iconTint={BRAND.hc.tint}
             installed={isHCInstalled} connected={isHCReady}
             mandatory onPress={handleHCPress}
@@ -361,7 +367,7 @@ export default function StepsTrackerScreen() {
           <TouchableOpacity style={ss.guideToggle} onPress={() => setGuideOpen(v => !v)} activeOpacity={0.7}>
             <MaterialCommunityIcons name={guideOpen ? 'chevron-up' : 'information-outline'} size={14} color={VD.warning} />
             <Text style={ss.guideToggleText}>
-              {isHCReady ? 'View permission details' : `How to grant Steps permission`}
+              {isHCReady ? i18n.t("stepCounter:r2.viewPermissionDetails") : `How to grant Steps permission`}
             </Text>
           </TouchableOpacity>
 
@@ -369,13 +375,13 @@ export default function StepsTrackerScreen() {
 
           {isIOS && (
             <>
-              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Apple Health Settings</Text>
+              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>{tx("stepCounter:stepsTrackerScreen.appleHealthSettings")}</Text>
               <Text style={ss.sectionHint}>
-                Manage Steps access in Health → Profile → Privacy → Apps and Services → RewardsPlanners.
+                {tx("stepCounter:stepsTrackerScreen.manageStepsAccessInHealth")}
               </Text>
               <ProviderCard
-                title="Health Permissions"
-                subtitle="Manage Steps access in Apple Health"
+                title={tx("stepCounter:stepsTrackerScreen.healthPermissions")}
+                subtitle={tx("stepCounter:stepsTrackerScreen.manageStepsAccessInApple")}
                 iconName="heart-pulse"
                 iconBg={BRAND.other.bg}
                 iconTint={BRAND.other.tint}
@@ -391,19 +397,19 @@ export default function StepsTrackerScreen() {
             <>
               <TouchableOpacity style={ss.guideToggle} onPress={() => setAltGuideOpen(v => !v)} activeOpacity={0.7}>
                 <MaterialCommunityIcons name={altGuideOpen ? 'chevron-up' : 'cog-outline'} size={14} color={VD.warning} />
-                <Text style={ss.guideToggleText}>Already installed? Try this instead</Text>
+                <Text style={ss.guideToggleText}>{tx("stepCounter:stepsTrackerScreen.alreadyInstalledTryThisInstead")}</Text>
               </TouchableOpacity>
 
               <PermissionGuide
                 visible={altGuideOpen}
                 steps={isIOS ? IOS_SETTINGS_STEPS : STEPS_ALREADY_INSTALLED}
-                headerText={isIOS ? 'Fix permission in Apple Health' : 'Fix permission from phone Settings'}
+                headerText={isIOS ? i18n.t("stepCounter:r2.fixPermissionInAppleHealth") : i18n.t("stepCounter:r2.fixPermissionFromPhoneSettings")}
               />
 
               {altGuideOpen && (
                 <TouchableOpacity style={ss.settingsBtn} onPress={isIOS ? openAppleHealth : openAppSettings} activeOpacity={0.78}>
                   <MaterialCommunityIcons name="cog-outline" size={16} color={VD.accentDark} />
-                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open Apple Health' : 'Open App Settings'}</Text>
+                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open Apple Health' : i18n.t("stepCounter:r2.openAppSettings")}</Text>
                 </TouchableOpacity>
               )}
             </>
@@ -412,14 +418,14 @@ export default function StepsTrackerScreen() {
           {!isIOS && (
             <>
               {/* Optional fitness apps — launchers, not required selection */}
-              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>Sync a Fitness App</Text>
+              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>{tx("stepCounter:stepsTrackerScreen.syncAFitnessApp")}</Text>
               <Text style={ss.sectionHint}>
-                Open any app below to enable Health Connect sync. You can also use Fitbit, Garmin, or any other compatible app — no specific app is required.
+                {tx("stepCounter:stepsTrackerScreen.openAnyAppBelowTo")}
               </Text>
 
               <ProviderCard
                 title="Samsung Health"
-                subtitle="Ideal for Samsung devices — syncs automatically"
+                subtitle={tx("stepCounter:stepsTrackerScreen.idealForSamsungDevicesSyncs")}
                 iconName={BRAND.samsung.icon} iconBg={BRAND.samsung.bg} iconTint={BRAND.samsung.tint}
                 installed={isSamsungHealthInstalled} connected={false}
                 mandatory={false}
@@ -427,7 +433,7 @@ export default function StepsTrackerScreen() {
               />
               <ProviderCard
                 title="Google Fit"
-                subtitle="Works on all Android phones — great for step tracking"
+                subtitle={tx("stepCounter:stepsTrackerScreen.worksOnAllAndroidPhones")}
                 iconName={BRAND.google.icon} iconBg={BRAND.google.bg} iconTint={BRAND.google.tint}
                 installed={isGoogleFitInstalled} connected={false}
                 mandatory={false}
@@ -442,9 +448,10 @@ export default function StepsTrackerScreen() {
               <MaterialCommunityIcons name={BRAND.other.icon} size={18} color={BRAND.other.tint} />
             </View>
             <Text style={ss.otherAppsText}>
-              {isIOS ? 'Steps recorded by your ' : 'Also works with '}
-              <Text style={ss.otherAppsHighlight}>{isIOS ? 'iPhone, Apple Watch, and apps connected to Apple Health' : 'Fitbit, Garmin Connect, Huawei Health, Strava'}</Text>
-              {isIOS ? ' are included.' : ' and any app that supports Health Connect.'}
+              <Trans
+                i18nKey={isIOS ? "stepCounter:r2.iosRecorded" : "stepCounter:r2.androidWorksWith"}
+                components={{ b: <Text style={ss.otherAppsHighlight} /> }}
+              />
             </Text>
           </View>
 
@@ -452,8 +459,8 @@ export default function StepsTrackerScreen() {
             <MaterialCommunityIcons name="lightbulb-outline" size={13} color={VD.accentDark} />
             <Text style={ss.appTipText}>
               {isIOS
-                ? 'Keep your iPhone with you or wear your Apple Watch. Apple Health combines their step data automatically.'
-                : 'Inside your fitness app, go to Settings → Connected apps → Health Connect and enable it. Then walk a few steps so data appears.'}
+                ? i18n.t("stepCounter:r2.tipIos")
+                : i18n.t("stepCounter:r2.tipAndroid")}
             </Text>
           </View>
 
@@ -471,7 +478,7 @@ export default function StepsTrackerScreen() {
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               style={ss.cta}
             >
-              <Text style={[ss.ctaText, !canProceed && ss.ctaTextDim]}>Continue</Text>
+              <Text style={[ss.ctaText, !canProceed && ss.ctaTextDim]}>{tx("stepCounter:stepsTrackerScreen.continue")}</Text>
               <MaterialCommunityIcons name="arrow-right" size={18} color={canProceed ? '#070A16' : VD.whiteLow} />
             </LinearGradient>
           </TouchableOpacity>

@@ -28,6 +28,9 @@ import Walking_Enthusiast from "../../assets/StepCount/Walking_Enthusiast.svg";
 
 // SMALL ICONS INSIDE SHIELD
 import icon_Walking_Enthusiast from "../../assets/StepCount/Achivement_icon(2).svg";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import i18n from "../../../../i18n";
 
 const { width } = Dimensions.get("window");
 
@@ -198,20 +201,21 @@ type AchievementCardProps = {
 
 const AchievementCard = ({ title, description, children }: AchievementCardProps) => (
   <View style={styles.card}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    <Text style={styles.sectionDesc}>{description}</Text>
+    <Text style={styles.sectionTitle}>{translateSourceText("stepCounter", title)}</Text>
+    <Text style={styles.sectionDesc}>{translateSourceText("stepCounter", description)}</Text>
     <View style={styles.badgeGrid}>{children}</View>
   </View>
 );
 
 /* ---------------- MAIN SCREEN ---------------- */
 export default function AchievementsScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const achievementsQuery = useAchievementsQuery();
   const loading = achievementsQuery.isLoading;
   const errorMessage =
     achievementsQuery.data?.message ||
-    (achievementsQuery.error ? "Failed to fetch achievements" : "");
+    (achievementsQuery.error ? i18n.t("stepCounter:r2.failedToFetchAchievements") : "");
 
   const achievementSections = useMemo<SectionData[]>(() => {
     const achievementGroups = achievementsQuery.data?.data || [];
@@ -254,7 +258,7 @@ export default function AchievementsScreen() {
                 color={VD.accentDark}
               />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Achievements</Text>
+            <Text style={styles.headerTitle}>{tx("stepCounter:achievementsScreen.achievements")}</Text>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -262,7 +266,7 @@ export default function AchievementsScreen() {
           {loading ? (
             <View style={[styles.card, styles.stateCard]}>
               <ActivityIndicator color={VD.accent} />
-              <Text style={styles.stateText}>Loading achievements...</Text>
+              <Text style={styles.stateText}>{tx("stepCounter:achievementsScreen.loadingAchievements")}</Text>
             </View>
           ) : errorMessage ? (
             <View style={[styles.card, styles.stateCard]}>
@@ -272,7 +276,7 @@ export default function AchievementsScreen() {
                 onPress={() => achievementsQuery.refetch()}
                 activeOpacity={0.84}
               >
-                <Text style={styles.retryText}>Retry</Text>
+                <Text style={styles.retryText}>{tx("stepCounter:achievementsScreen.retry")}</Text>
               </TouchableOpacity>
             </View>
           ) : (

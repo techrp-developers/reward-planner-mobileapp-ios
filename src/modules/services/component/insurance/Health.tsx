@@ -20,6 +20,8 @@ import QuotesResult from "./QuotesResult";
 import { useServicesTheme } from "../../utils/useServicesTheme";
 
 import { startInsurance, saveStep, mapMembersAges, mapMembersConfig } from "../../api/InsuranceApi";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 export type FormData = {
   gender: string;
@@ -49,6 +51,7 @@ export type QuoteData = {
 const steps = ["Select Member", "Select Age of Members", "Basic Details"];
 
 export default function Health() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { success, info } = useAlert();
   const servicesTheme = useServicesTheme();
@@ -114,7 +117,7 @@ export default function Health() {
       if (step === 1) {
         const enquiryId = formData.details?.enquiryId;
         if (!enquiryId) {
-          Alert.alert("Error", "Session expired. Please go back to Step 1.");
+          Alert.alert(i18n.t("services:health.error"), i18n.t("services:health.sessionExpiredPleaseGoBack"));
           return;
         }
         await saveStep(enquiryId, 2, "members", mapMembersAges(formData));
@@ -124,7 +127,7 @@ export default function Health() {
     } catch (e: any) {
       Alert.alert(
         "Error",
-        e?.response?.data?.message || e?.message || "Failed to proceed. Please try again."
+        e?.response?.data?.message || e?.message || tx("services:insurance.proceedFailed")
       );
     } finally {
       setStepLoading(false);
@@ -151,7 +154,7 @@ export default function Health() {
       ? results.filter((q: any) => q.success).length
       : results.plans?.filter((q: any) => q.success).length || 0;
 
-    success("Quotes Fetched!", `Found ${successCount} customized plans for you`);
+    success(tx("services:insurance.quotesFetched"), tx("services:insurance.foundPlans", { count: successCount }));
   };
 
   const handleBackToForm = () => {
@@ -182,9 +185,9 @@ export default function Health() {
           <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Health Insurance</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:health.healthInsurance")}</Text>
           <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-            Simple health cover for you and your family
+            {tx("services:health.simpleHealthCoverForYou")}
           </Text>
         </View>
       </View>

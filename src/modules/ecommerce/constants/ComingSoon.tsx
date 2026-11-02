@@ -12,6 +12,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import type { RouteProp } from '@react-navigation/native';
 import { useRoute } from '@react-navigation/native';
 import coming_soon from "../../../assets/product/coming_soon.png";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 
@@ -26,6 +27,7 @@ const MODULE_DISPLAY_NAMES: Record<string, string> = {
 };
 
 const ComingSoonScreen = () => {
+  const { t: tx } = useTranslation();
   const route = useRoute<RouteProp<ComingSoonRouteParams, 'ComingSoon'>>();
   const rawModuleName = route?.params?.moduleName || 'Dashboard';
   const moduleName = MODULE_DISPLAY_NAMES[rawModuleName] ?? rawModuleName;
@@ -66,14 +68,14 @@ const ComingSoonScreen = () => {
               ) : (
                 <View style={styles.placeholderBox}>
                   <Text style={styles.placeholderText}>🚀</Text>
-                  <Text style={styles.placeholderLabel}>Coming Soon</Text>
+                  <Text style={styles.placeholderLabel}>{tx("products:comingSoon.comingSoon")}</Text>
                 </View>
               )}
             </View>
 
             {/* Modern Typography Group */}
             <View style={styles.textGroup}>
-              <Text style={styles.headline}>Feature Under Development</Text>
+              <Text style={styles.headline}>{tx("products:comingSoon.featureUnderDevelopment")}</Text>
               <Text style={styles.description}>
                 We're polishing the <Text style={styles.boldText}>{moduleName}</Text> module to give you the best experience. 
                 Stay tuned for the update!

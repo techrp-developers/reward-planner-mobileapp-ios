@@ -5,6 +5,8 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import LinearGradient from "react-native-linear-gradient";
 // import RewardIcon from "../../../../assets/product/rewards.svg";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 
 type Props = {
@@ -43,6 +45,7 @@ export default function BuySection({
   showActions = true,
   isInCart = false,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme();
   const [open, setOpen] = React.useState(false);
 
@@ -74,7 +77,7 @@ export default function BuySection({
         >
           <MaterialCommunityIcons name="shield-check" size={14} color="#4CAF50"
             style={styles.secureIcon} />
-          <Text style={styles.secureText}>RP Secure Delivery</Text>
+          <Text style={styles.secureText}>{tx("products:buysections.rpSecureDelivery")}</Text>
         </LinearGradient>
 
         {/* Price */}
@@ -131,7 +134,7 @@ export default function BuySection({
           <Text style={styles.lowStockText}>Only {stock} left in stock!</Text>
         )}
 
-        {!inStock && <Text style={styles.outStockText}>Out of stock</Text>}
+        {!inStock && <Text style={styles.outStockText}>{tx("products:buysections.outOfStock")}</Text>}
 
         </>}
         {showActions && <>
@@ -152,11 +155,11 @@ export default function BuySection({
               {isAdding ? (
                 <View style={styles.buttonContent}>
                   <ActivityIndicator size="small" color={cartButtonTextColor} />
-                  <Text style={[styles.addToCartText, { color: cartButtonTextColor }]}>Adding...</Text>
+                  <Text style={[styles.addToCartText, { color: cartButtonTextColor }]}>{tx("products:buysections.adding")}</Text>
                 </View>
               ) : (
                 <Text style={[styles.addToCartText, { color: cartButtonTextColor }]}>
-                  {isInCart ? "Added to Cart" : "Add to Cart"}
+                  {isInCart ? "Added to Cart" : i18n.t("products:r2.addToCart")}
                 </Text>
               )}
             </View>
@@ -177,7 +180,7 @@ export default function BuySection({
             style={styles.container}
           >
             <View style={styles.row}>
-              <Text style={styles.buyNowText}>{isBuyingNow ? "Please wait..." : "Buy Now"}</Text>
+              <Text style={styles.buyNowText}>{isBuyingNow ? i18n.t("products:r2.pleaseWait") : i18n.t("products:r2.buyNow")}</Text>
               {isBuyingNow && <ActivityIndicator size="small" color="#FFF" />}
               {points > 0 ? <Text style={styles.pointsText}>+{points}</Text> : null}
             </View>

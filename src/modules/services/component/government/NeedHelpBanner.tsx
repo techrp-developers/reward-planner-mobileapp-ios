@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Linking } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 const StartConversationAvatars = require('../../assete/service/Gov_Conversation.png');
 
 export default function NeedHelpBanner() {
+  const { t: tx } = useTranslation();
   return (
     <LinearGradient
       colors={['#DFE4FF', '#4F6BFF']}
@@ -12,9 +14,9 @@ export default function NeedHelpBanner() {
       {/* TEXT + AVATAR ROW */}
       <View style={styles.topRow}>
         <View style={styles.textCol}>
-          <Text style={styles.title}>Need help with Government Documents?</Text>
+          <Text style={styles.title}>{tx("services:needHelpBanner.needHelpWithGovernmentDocuments")}</Text>
           <Text style={styles.description}>
-            Not sure which document you need? Our team will guide you step by step.
+            {tx("services:needHelpBanner.notSureWhichDocumentYou")}
           </Text>
         </View>
 
@@ -32,7 +34,7 @@ export default function NeedHelpBanner() {
         </View>
 
         <TouchableOpacity style={styles.talkSection} activeOpacity={0.8} onPress={() => Linking.openURL('tel:+918660583751')}>
-          <Text style={styles.talkText}>Talk To Us</Text>
+          <Text style={styles.talkText}>{tx("services:needHelpBanner.talkToUs")}</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>

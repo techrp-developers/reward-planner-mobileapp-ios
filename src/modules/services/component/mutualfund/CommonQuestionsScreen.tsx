@@ -18,6 +18,7 @@ import type { HomeStackParamList } from '../../navigation/type';
 import SkeletonBox from '../constant/SkeletonBox';
 import { getMutualFundCategories, type MFCategory } from '../../api/MutualFundAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get('window');
 const CARD_GAP = 12;
@@ -71,6 +72,7 @@ const CategoryCard: React.FC<{
   articleCount: number;
   onPress: () => void;
 }> = ({ item, theme, articleCount, onPress }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
@@ -88,7 +90,7 @@ const CategoryCard: React.FC<{
         {articleCount > 0 && (
           <View style={[styles.countBadge, { backgroundColor: servicesTheme.isDark ? '#18112A' : '#F3F0FF' }]}>
             <Text style={styles.countText}>{articleCount}</Text>
-            <Text style={styles.countLabel}> articles</Text>
+            <Text style={styles.countLabel}>{tx("services:commonQuestionsScreen.articles")}</Text>
           </View>
         )}
       </View>
@@ -96,7 +98,7 @@ const CategoryCard: React.FC<{
       <Text style={[styles.cardTitle, { color: servicesTheme.colors.textStrong }]} numberOfLines={2}>{item.title}</Text>
 
       <View style={styles.cardCta}>
-        <Text style={[styles.ctaText, { color: theme.gradientColors[0] }]}>View All</Text>
+        <Text style={[styles.ctaText, { color: theme.gradientColors[0] }]}>{tx("services:commonQuestionsScreen.viewAll")}</Text>
         <Text style={[styles.ctaArrow, { color: theme.gradientColors[0] }]}>{' '}›</Text>
       </View>
     </TouchableOpacity>
@@ -106,6 +108,7 @@ const CategoryCard: React.FC<{
 // ─── Screen ────────────────────────────────────────────────────────
 
 const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [categories, setCategories] = useState<MFCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,14 +174,14 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.backIcon}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>Commonly Asked Questions</Text>
-          <Text style={styles.headerSubtitle}>Your guide to investing smarter</Text>
+          <Text style={styles.headerTitle}>{tx("services:commonQuestionsScreen.commonlyAskedQuestions")}</Text>
+          <Text style={styles.headerSubtitle}>{tx("services:commonQuestionsScreen.yourGuideToInvestingSmarter")}</Text>
         </View>
       </LinearGradient>
 
       {loading ? (
         <View style={styles.scrollPad}>
-          <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Browse by Topic</Text>
+          <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>{tx("services:commonQuestionsScreen.browseByTopic")}</Text>
           <SkeletonGrid pulse={pulse} />
         </View>
       ) : (
@@ -191,7 +194,7 @@ const CommonQuestionsScreen: React.FC<Props> = ({ navigation }) => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>Browse by Topic</Text>
+            <Text style={[styles.sectionLabel, { color: servicesTheme.colors.muted }]}>{tx("services:commonQuestionsScreen.browseByTopic")}</Text>
           }
           ListFooterComponent={<View style={styles.listFooter} />}
         />

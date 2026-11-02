@@ -11,6 +11,8 @@ import QuotesResult from "./QuotesResult";
 import Step1PA from "./Step1PA";
 import { startInsurance, saveStep, mapMembersConfig } from "../../api/InsuranceApi";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 export type FormData = {
   gender: string;
@@ -44,6 +46,7 @@ export type QuoteData = {
 const steps = ["Select Self", "Basic Details", "Additional Details"];
 
 export default function PersonalAccident() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const { success, info } = useAlert();
   const servicesTheme = useServicesTheme();
@@ -92,7 +95,7 @@ export default function PersonalAccident() {
       if (step === 1) {
         const enquiryId = formData.details?.enquiryId;
         if (!enquiryId) {
-          Alert.alert("Error", "Session expired. Please go back to Step 1.");
+          Alert.alert(i18n.t("services:pA.error"), i18n.t("services:pA.sessionExpiredPleaseGoBack"));
           return;
         }
         // Basic details will be submitted from Step3PA via saveStep(3, "basic", ...)
@@ -101,7 +104,7 @@ export default function PersonalAccident() {
     } catch (e: any) {
       Alert.alert(
         "Error",
-        e?.response?.data?.message || e?.message || "Failed to proceed. Please try again.",
+        e?.response?.data?.message || e?.message || tx("services:insurance.proceedFailed"),
       );
     } finally {
       setStepLoading(false);
@@ -130,7 +133,7 @@ export default function PersonalAccident() {
       ? results.filter((q: any) => q.success).length
       : results.plans?.filter((q: any) => q.success).length || 0;
 
-    success("PA Quotes Fetched!", `Found ${successCount} customized plans for you`);
+    success(tx("services:insurance.paQuotesFetched"), tx("services:insurance.foundPlans", { count: successCount }));
   };
 
   const handleBackToForm = () => {
@@ -166,9 +169,9 @@ export default function PersonalAccident() {
           <MaterialIcons name="arrow-back" size={24} color={servicesTheme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerText}>
-          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Accident Insurance</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:pA.personalAccidentInsurance")}</Text>
           <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-            Protect your income from accidental risk
+            {tx("services:pA.protectYourIncomeFromAccidental")}
           </Text>
         </View>
       </View>

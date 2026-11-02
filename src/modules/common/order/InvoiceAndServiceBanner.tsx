@@ -4,6 +4,7 @@ import Share from "react-native-share";
 import ServiceBanner from "../../../assets/order/serviceBanner.svg";
 import { fetchOrderInvoice } from "../../ecommerce/api/OrderApi";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type InvoiceAndServiceBannerProps = {
   orderId: number | string;
@@ -12,6 +13,7 @@ type InvoiceAndServiceBannerProps = {
 export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBannerProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const { theme } = useAppTheme();
+  const { t: tx } = useTranslation();
 
   const handleDownloadInvoice = async () => {
     try {
@@ -22,13 +24,13 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
         const errorMessage =
           "message" in response && response.message
             ? response.message
-            : "Could not fetch invoice PDF";
-        Alert.alert("Download Failed", errorMessage);
+            : tx("products:order.invoiceFetchFailed");
+        Alert.alert(tx("products:order.downloadFailed"), errorMessage);
         return;
       }
 
       await Share.open({
-        title: "Download Invoice",
+        title: tx("products:order.downloadInvoice"),
         url: `data:application/pdf;base64,${response.base64}`,
         type: "application/pdf",
         filename: response.fileName.replace(/\.pdf$/i, ""),
@@ -40,8 +42,8 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
       const message =
         error instanceof Error && error.message
           ? error.message
-          : "Could not download invoice PDF";
-      Alert.alert("Download Failed", message);
+          : tx("products:order.invoiceDownloadFailed");
+      Alert.alert(tx("products:order.downloadFailed"), message);
     } finally {
       setIsDownloading(false);
     }
@@ -52,7 +54,7 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
       {/* Invoice row */}
       <View style={[styles.invoiceRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
         <Text style={[styles.invoiceText, { color: theme.text }]}>
-          Save a copy of your order
+          {tx("products:order.saveCopy")}
         </Text>
 
         <TouchableOpacity
@@ -65,7 +67,7 @@ export default function InvoiceAndServiceBanner({ orderId }: InvoiceAndServiceBa
           {isDownloading ? (
             <ActivityIndicator size="small" color={theme.primary} />
           ) : (
-            <Text style={[styles.downloadText, { color: theme.primary }]}>Download Invoice</Text>
+            <Text style={[styles.downloadText, { color: theme.primary }]}>{tx("products:order.downloadInvoice")}</Text>
           )}
         </TouchableOpacity>
       </View>

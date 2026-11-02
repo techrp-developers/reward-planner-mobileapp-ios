@@ -1,4 +1,5 @@
 import type { ChatMessage, ChatPoll } from "./types";
+import i18n from "../../i18n";
 
 export function deletedMessage(
   message: ChatMessage,
@@ -93,10 +94,10 @@ export function mergePollUpdate(
 }
 
 export function messagePreview(message: ChatMessage) {
-  if (message.deleted_at) return "This message was deleted";
-  if (message.message_type === "image") return "Photo";
+  if (message.deleted_at) return i18n.t("chat:preview.deleted");
+  if (message.message_type === "image") return i18n.t("chat:preview.photo");
   if (message.message_type === "file")
-    return message.attachment_name || "Document";
-  if (message.message_type === "poll") return message.poll?.question || "Poll";
-  return message.body || "Message";
+    return message.attachment_name || i18n.t("chat:preview.document");
+  if (message.message_type === "poll") return message.poll?.question || i18n.t("chat:preview.poll");
+  return message.body || i18n.t("chat:preview.message");
 }

@@ -23,6 +23,8 @@ import { useAlert } from '../../ecommerce/components/alerts';
 import SkeletonBox from '../../services/component/constant/SkeletonBox';
 import { useAuth } from '../../common/auth/context/AuthContext';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const BRAND_END = '#5B47A3';
 const FIVE_MINUTES = 5 * 60 * 1000;
@@ -68,6 +70,7 @@ const isUserInputField = (field: OperatorField) =>
   field.param_name !== 'recharge_plan_id';
 
 const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProps) => {
+  const { t: tx } = useTranslation();
   const alert = useAlert();
   const alertRef = useRef(alert);
   const { user } = useAuth();
@@ -77,10 +80,10 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
 
   const operatorData = routeParams.operatorData || {
     id: String(routeParams.operatorId || ''),
-    name: routeParams.operatorName || 'Biller',
+    name: routeParams.operatorName || i18n.t("payments:msg.biller"),
   };
   const operatorId = Number(operatorData.id || routeParams.operatorId);
-  const categoryName = routeParams?.categoryName || 'Electricity Bill';
+  const categoryName = routeParams?.categoryName || i18n.t("payments:msg.electricityBill");
   const hasValidOperatorId = Number.isFinite(operatorId) && operatorId > 0;
 
   const [formValues, setFormValues] = useState<FormValues>({});
@@ -104,7 +107,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
     [operatorDetails?.data]
   );
   const providerName =
-    operatorDetails?.operator_name || operatorData?.name || routeParams.operatorName || 'Biller';
+    operatorDetails?.operator_name || operatorData?.name || routeParams.operatorName || i18n.t("payments:msg.biller");
   const operatorLogoUrl = routeParams.operatorLogoUrl;
   const loggedInUserName = user?.name || 'Customer';
   const isBillFetchSupported = operatorDetails?.fetchBill === 1;
@@ -164,7 +167,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
 
   const validateInputs = useCallback(() => {
     if (fields.length === 0) {
-      alert.warning('Details Missing', 'No biller fields are available. Please try again.');
+      alert.warning(i18n.t("payments:billDetailsScreen.detailsMissing"), i18n.t("payments:billDetailsScreen.noBillerFieldsAreAvailable"));
       return false;
     }
 
@@ -172,14 +175,14 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
       const value = formValues[field.param_name]?.trim() || '';
 
       if (!value) {
-        alert.warning('Invalid Input', field.error_message || `Please enter ${field.param_label}.`);
+        alert.warning(i18n.t("payments:r2.invalidInput"), field.error_message || i18n.t("payments:r2.enterField", { field: field.param_label }));
         return false;
       }
 
       try {
         const regex = new RegExp(field.regex);
         if (!regex.test(value)) {
-          alert.warning('Invalid Input', field.error_message || `Please enter valid ${field.param_label}.`);
+          alert.warning(i18n.t("payments:r2.invalidInput"), field.error_message || i18n.t("payments:r2.enterValidField", { field: field.param_label }));
           return false;
         }
       } catch {
@@ -223,7 +226,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
       if (!response?.success) {
         alert.warning(
           'Bill Fetch Failed',
-          response?.message || 'Unable to fetch bill details'
+          response?.message || i18n.t("payments:msg.billFetchFailed")
         );
         return;
       }
@@ -235,7 +238,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
         fetchBillData: response,
       });
     } catch (error: any) {
-      alert.error('Error', error?.message || 'Could not fetch bill details.');
+      alert.error(i18n.t("payments:billDetailsScreen.error"), error?.message || i18n.t("payments:msg.billFetchFailed2"));
     } finally {
       setIsLoading(false);
     }
@@ -259,7 +262,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: bbpsTheme.colors.background }]}>
       <BBPSHead
-        title="Enter Details"
+        title={tx("payments:billDetailsScreen.enterDetails")}
         onBackPress={handleBackPress}
       />
 
@@ -332,7 +335,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
                         color: bbpsTheme.colors.text,
                       },
                     ]}
-                    placeholder={`Enter ${field.param_label}`}
+                    placeholder={i18n.t('payments:msg.enterField', { field: field.param_label })}
                     placeholderTextColor={bbpsTheme.colors.subtle}
                     keyboardType={isNumericField(field) ? 'numeric' : 'default'}
                     value={formValues[field.param_name] || ''}
@@ -374,7 +377,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
 
               <TouchableOpacity style={styles.addNicknameBtn}>
                 <Icon name="plus" size={16} color="#5B47A3" />
-                <Text style={styles.addNicknameText}>Add Nickname</Text>
+                <Text style={styles.addNicknameText}>{tx("payments:billDetailsScreen.addNickname")}</Text>
               </TouchableOpacity>
             </ScrollView>
           </View> */}
@@ -395,7 +398,7 @@ const BillDetailsScreenComponent = ({ route, navigation }: BillDetailsScreenProp
             {isLoading ? (
               <ActivityIndicator color="#FFF" />
             ) : (
-              <Text style={styles.buttonText}>Continue</Text>
+              <Text style={styles.buttonText}>{tx("payments:billDetailsScreen.continue")}</Text>
             )}
           </LinearGradient>
         </TouchableOpacity>

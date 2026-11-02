@@ -9,14 +9,18 @@ import { useAppTheme } from '../../../../theme/ThemeContext';
 import { fetchLivePolls, submitPollVote } from '../api/pollsApi';
 import type { LivePoll } from '../type';
 import { rs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { formatDateTime } from "../../../../i18n/format";
 
 function errorMessage(error: any) {
-    return error?.response?.data?.message || error?.message || 'Unable to submit your vote';
+    return error?.response?.data?.message || error?.message || i18n.t('dashboard:poll.submitFailed');
 }
 
 function LivePollCard() {
     const { isAuthenticated } = useAuth();
     const { theme } = useAppTheme();
+    const { t } = useTranslation();
     const isFocused = useIsFocused();
     const [now, setNow] = useState(Date.now());
     const [selected, setSelected] = useState<number[]>([]);
@@ -81,7 +85,7 @@ function LivePollCard() {
             if (error?.response?.status === 409) {
                 setVotedPollId(poll.poll_id);
                 queryClient.invalidateQueries({ queryKey: ['dashboard', 'live-polls'] });
-            } else Alert.alert('Vote not submitted', errorMessage(error));
+            } else Alert.alert(i18n.t('dashboard:poll.notSubmitted'), errorMessage(error));
         } finally { submissionInFlight.current = false; setSubmitting(false); }
     }, [poll, hasVoted]);
 
@@ -102,7 +106,7 @@ function LivePollCard() {
                     <MaterialCommunityIcons name="poll" size={rs(21)} color={theme.primary} />
                     <View style={styles.questionWrap}><Text style={[styles.question, { color: theme.text }]}>{poll.question}</Text></View>
                 </View>
-                    <Text style={[styles.hint, { color: theme.secondaryText }]}>{hasVoted ? 'Your vote is final · Results' : poll.allow_multiple ? 'Select one or more options' : 'Select one option to vote'}</Text>
+                    <Text style={[styles.hint, { color: theme.secondaryText }]}>{hasVoted ? t('dashboard:poll.final') : poll.allow_multiple ? t('dashboard:poll.selectMany') : t('dashboard:poll.selectOne')}</Text>
                     {poll.options.map(option => {
                         const checked = selectedIds.includes(option.option_id);
                         const percent = totalVotes ? Math.round(option.vote_count * 100 / totalVotes) : 0;
@@ -113,9 +117,9 @@ function LivePollCard() {
                             </Pressable>
                         );
                     })}
-                    {!hasVoted && poll.allow_multiple && <Pressable disabled={!selected.length || submitting} onPress={() => void vote(selected)} style={[styles.voteButton, { backgroundColor: theme.primary }, (!selected.length || submitting) && styles.voteButtonDisabled]}>{submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.voteText}>Vote</Text>}</Pressable>}
+                    {!hasVoted && poll.allow_multiple && <Pressable disabled={!selected.length || submitting} onPress={() => void vote(selected)} style={[styles.voteButton, { backgroundColor: theme.primary }, (!selected.length || submitting) && styles.voteButtonDisabled]}>{submitting ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.voteText}>{t('dashboard:poll.vote')}</Text>}</Pressable>}
                     {!hasVoted && !poll.allow_multiple && submitting && <ActivityIndicator style={styles.loader} size="small" color={theme.primary} />}
-                    <View style={[styles.footer, { borderTopColor: theme.border }]}><Text style={[styles.footerText, { color: theme.secondaryText }]}>{poll.participant_count} {poll.participant_count === 1 ? 'vote' : 'votes'}</Text>{poll.closes_at && <Text style={[styles.footerText, { color: theme.secondaryText }]}>Closes {new Date(poll.closes_at).toLocaleString()}</Text>}</View>
+                    <View style={[styles.footer, { borderTopColor: theme.border }]}><Text style={[styles.footerText, { color: theme.secondaryText }]}>{t('dashboard:poll.votes', { count: poll.participant_count })}</Text>{poll.closes_at && <Text style={[styles.footerText, { color: theme.secondaryText }]}>{t('dashboard:poll.closes', { date: formatDateTime(poll.closes_at) })}</Text>}</View>
             </View>
         </View>
     );

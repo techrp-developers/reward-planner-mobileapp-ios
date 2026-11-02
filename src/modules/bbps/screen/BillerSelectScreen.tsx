@@ -24,6 +24,9 @@ import {
   Operator,
 } from '../api/BillsAPI';
 import SkeletonBox from '../../services/component/constant/SkeletonBox';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../i18n/sourceText";
+import i18n from "../../../i18n";
 
 const FIVE_MINUTES = 5 * 60 * 1000;
 const SKELETON_GROUPS = [0, 1];
@@ -137,6 +140,7 @@ const filterSections = (
 };
 
 const BillerSelectScreenComponent = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const queryClient = useQueryClient();
@@ -146,7 +150,7 @@ const BillerSelectScreenComponent = () => {
 
   // Extract categoryId and categoryName from route params
   const categoryId = Number(route.params?.categoryId);
-  const categoryName = route.params?.categoryName || 'Billers';
+  const categoryName = route.params?.categoryName || i18n.t("payments:msg.billers");
   const hasValidCategoryId = Number.isFinite(categoryId) && categoryId > 0;
 
   const {
@@ -165,9 +169,9 @@ const BillerSelectScreenComponent = () => {
   });
 
   const error = !hasValidCategoryId
-    ? 'Category ID not provided'
+    ? i18n.t("payments:msg.categoryMissing")
     : queryError
-    ? 'Failed to load billers. Please try again.'
+    ? i18n.t("payments:msg.billersFailed")
     : null;
 
   const filteredData = useMemo(
@@ -257,12 +261,12 @@ const BillerSelectScreenComponent = () => {
         ]}
       >
         <View>
-          <Text style={[styles.stateHeaderText, { color: bbpsTheme.colors.textStrong }]}>{title}</Text>
-          <Text style={[styles.stateHeaderSubtext, { color: bbpsTheme.colors.muted }]}>Choose your service provider</Text>
+          <Text style={[styles.stateHeaderText, { color: bbpsTheme.colors.textStrong }]}>{translateSourceText("payments", title)}</Text>
+          <Text style={[styles.stateHeaderSubtext, { color: bbpsTheme.colors.muted }]}>{tx("payments:billerSelectScreen.chooseYourServiceProvider")}</Text>
         </View>
       </View>
     ),
-    [bbpsTheme]
+    [bbpsTheme, tx]
   );
 
   const keyExtractor = useCallback((item: Biller) => item.id, []);
@@ -271,7 +275,7 @@ const BillerSelectScreenComponent = () => {
     return (
       <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
         <BBPSHead
-          title={`Pay ${categoryName}`}
+          title={i18n.t('payments:msg.payCategory', { category: categoryName })}
           onBackPress={handleBackPress}
         />
         <View style={styles.errorContainer}>
@@ -281,7 +285,7 @@ const BillerSelectScreenComponent = () => {
             style={[styles.retryButton, { backgroundColor: bbpsTheme.colors.primary, shadowColor: bbpsTheme.colors.shadow }]}
             onPress={handleRetry}
           >
-            <Text style={styles.retryButtonText}>Retry</Text>
+            <Text style={styles.retryButtonText}>{tx("payments:billerSelectScreen.retry")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -291,7 +295,7 @@ const BillerSelectScreenComponent = () => {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
       <BBPSHead
-        title={`Pay ${categoryName}`}
+        title={i18n.t('payments:msg.payCategory', { category: categoryName })}
         onBackPress={handleBackPress}
       />
 
@@ -313,7 +317,7 @@ const BillerSelectScreenComponent = () => {
             <MaterialIcons name="search" size={24} color={bbpsTheme.colors.muted} style={styles.searchIcon} />
             <TextInput
               style={[styles.searchInput, { color: bbpsTheme.colors.text }]}
-              placeholder="Search operators"
+              placeholder={tx("payments:billerSelectScreen.searchOperators")}
               placeholderTextColor={bbpsTheme.colors.subtle}
               value={searchQuery}
               onChangeText={handleSearch}
@@ -350,9 +354,9 @@ const BillerSelectScreenComponent = () => {
       ) : filteredData.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialIcons name="search-off" size={48} color={bbpsTheme.colors.subtle} />
-          <Text style={[styles.emptyText, { color: bbpsTheme.colors.muted }]}>No billers found</Text>
+          <Text style={[styles.emptyText, { color: bbpsTheme.colors.muted }]}>{tx("payments:billerSelectScreen.noBillersFound")}</Text>
           {searchQuery && (
-            <Text style={[styles.emptySubtext, { color: bbpsTheme.colors.subtle }]}>Try searching with a different biller name or state</Text>
+            <Text style={[styles.emptySubtext, { color: bbpsTheme.colors.subtle }]}>{tx("payments:billerSelectScreen.trySearchingWithADifferent")}</Text>
           )}
         </View>
       ) : (

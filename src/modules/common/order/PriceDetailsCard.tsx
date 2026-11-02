@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   itemTotal: number;
@@ -29,6 +30,7 @@ export default function PriceDetailsCard({
   paymentMethod,
 }: Props) {
   const { isDark, theme } = useAppTheme();
+  const { t: tx } = useTranslation();
 
   const showEarnedBanner = isRewardCredited && rewardEarned > 0;
   const showPendingBanner = !isRewardCredited && rewardPotential > 0;
@@ -36,7 +38,7 @@ export default function PriceDetailsCard({
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       {/* Title */}
-      <Text style={[styles.title, { color: theme.text }]}>Price Details</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{tx("products:order.priceDetails")}</Text>
 
       {/* Green reward earned banner */}
       {/* <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
@@ -49,27 +51,27 @@ export default function PriceDetailsCard({
       {showEarnedBanner ? (
         <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#143524" : "#E7FBEF" }]}>
           <Text style={styles.earnedText}>
-            {rewardEarned} Reward Coins Earned
+            {tx("products:order.coinsEarned", { count: rewardEarned })}
           </Text>
         </View>
       ) : showPendingBanner ? (
         <View style={[styles.earnedBanner, { backgroundColor: isDark ? "#2A2410" : "#FFF7E0" }]}>
           <Text style={[styles.earnedText, styles.pendingText]}>
-            You'll earn {rewardPotential} Reward Coins on delivery
+            {tx("products:order.coinsOnDelivery", { count: rewardPotential })}
           </Text>
         </View>
       ) : null}
 
       {/* Price rows */}
-      <Row label="Item Total" value={`₹${itemTotal}`} />
-      <Row label="Delivery Fee" value={`₹${deliveryFee}`} />
+      <Row label={tx("products:order.itemTotal")} value={`₹${itemTotal}`} />
+      <Row label={tx("products:order.deliveryFee")} value={`₹${deliveryFee}`} />
       <Row
-        label="Bag Discount"
+        label={tx("products:order.bagDiscount")}
         value={`-₹${bagDiscount}`}
         valueStyle={styles.negative}
       />
       <Row
-        label="Reward Discount"
+        label={tx("products:order.rewardDiscount")}
         value={`-₹${rewardDiscount}`}
         valueStyle={styles.negative}
       />
@@ -78,13 +80,13 @@ export default function PriceDetailsCard({
 
       {/* Order total */}
       <View style={styles.rowBetween}>
-        <Text style={[styles.totalLabel, { color: theme.text }]}>Order Total</Text>
+        <Text style={[styles.totalLabel, { color: theme.text }]}>{tx("products:order.orderTotal")}</Text>
         <Text style={[styles.totalValue, { color: theme.text }]}>₹{orderTotal}</Text>
       </View>
 
       {/* Payment method */}
       <View style={styles.rowBetween}>
-        <Text style={[styles.paymentLabel, { color: theme.secondaryText }]}>Payment Method</Text>
+        <Text style={[styles.paymentLabel, { color: theme.secondaryText }]}>{tx("products:order.paymentMethod")}</Text>
         <Text style={[styles.paymentValue, { color: theme.text }]}>{paymentMethod}</Text>
       </View>
 

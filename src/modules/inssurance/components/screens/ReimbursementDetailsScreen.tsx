@@ -13,18 +13,21 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const ReimbursementDetailsScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
 
   const handleContinue = () => {
     Alert.alert(
-      'Expenses Saved',
-      'Your claim expenses summary has been recorded. Let\'s proceed to upload bills & documents.',
+      i18n.t('insurance:expenses.savedTitle'),
+      i18n.t('insurance:expenses.savedBody'),
       [
         {
-          text: 'Proceed',
+          text: i18n.t('insurance:hospitals.proceed'),
           onPress: () => navigation.navigate('HealthClaimsScreen'), // Mock step completion
         },
       ]
@@ -45,7 +48,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
           >
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Reimbursement Claim</Text>
+          <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:reimbursementDetailsScreen.reimbursementClaim")}</Text>
         </View>
 
         <TouchableOpacity style={[styles.backBtn, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]} activeOpacity={0.7}>
@@ -59,7 +62,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={[styles.stepCircleDone, { backgroundColor: '#10B981' }]}>
             <MaterialCommunityIcons name="check" size={10} color="#FFFFFF" />
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Treatment</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.treatment")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: '#10B981' }]} />
@@ -68,7 +71,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={[styles.stepCircleActive, { borderColor: '#005b7f', backgroundColor: '#005b7f' }]}>
             <Text style={styles.stepCircleActiveText}>2</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>Expenses</Text>
+          <Text style={[styles.stepLabel, { color: '#005b7f', fontWeight: '700' }]}>{tx("insurance:reimbursementDetailsScreen.expenses")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: isDark ? '#27272A' : '#E2E8F0' }]} />
@@ -77,7 +80,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={[styles.stepCirclePending, { borderColor: isDark ? '#52525B' : '#CBD5E1' }]}>
             <Text style={[styles.stepCirclePendingText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>3</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Documents</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.documents")}</Text>
         </View>
 
         <View style={[styles.stepLine, { backgroundColor: isDark ? '#27272A' : '#E2E8F0' }]} />
@@ -86,7 +89,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={[styles.stepCirclePending, { borderColor: isDark ? '#52525B' : '#CBD5E1' }]}>
             <Text style={[styles.stepCirclePendingText, { color: isDark ? '#A1A1AA' : '#64748B' }]}>4</Text>
           </View>
-          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Review</Text>
+          <Text style={[styles.stepLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.review")}</Text>
         </View>
       </View>
 
@@ -97,30 +100,30 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={styles.briefHeader}>
             <Text style={styles.briefLogoText}>care</Text>
             <View style={styles.briefStatusBadge}>
-              <Text style={styles.briefStatusText}>Active</Text>
+              <Text style={styles.briefStatusText}>{tx("insurance:reimbursementDetailsScreen.active")}</Text>
             </View>
           </View>
           <View style={styles.briefInfoGrid}>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Policy Number</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:reimbursementDetailsScreen.policyNumber")}</Text>
               <Text style={styles.briefVal}>B7812841</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Employee ID</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:reimbursementDetailsScreen.employeeId")}</Text>
               <Text style={styles.briefVal}>EMP124567</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Covered Members</Text>
-              <Text style={styles.briefVal}>4 Members</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:reimbursementDetailsScreen.coveredMembers")}</Text>
+              <Text style={styles.briefVal}>{tx("insurance:reimbursementDetailsScreen.n4Members")}</Text>
             </View>
           </View>
           <View style={[styles.briefInfoGrid, { marginTop: rs(6) }]}>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Valid Till</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:reimbursementDetailsScreen.validTill")}</Text>
               <Text style={styles.briefVal}>28 Jun 2027</Text>
             </View>
             <View style={styles.briefInfoCol}>
-              <Text style={styles.briefLabel}>Member ID</Text>
+              <Text style={styles.briefLabel}>{tx("insurance:reimbursementDetailsScreen.memberId")}</Text>
               <Text style={styles.briefVal}>00SWITRN10</Text>
             </View>
             <View style={styles.briefInfoCol} />
@@ -131,39 +134,39 @@ const ReimbursementDetailsScreen: React.FC = () => {
         <View style={[styles.cardSection, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF' }]}>
           <View style={styles.sectionHeaderCompact}>
             <MaterialCommunityIcons name="hospital-building" size={20} color="#005b7f" />
-            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Treatment Details</Text>
+            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:reimbursementDetailsScreen.treatmentDetails")}</Text>
           </View>
 
           <View style={styles.detailsGrid}>
             <View style={styles.detailsRow}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Member</Text>
-                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Ravi Sharma - Self</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.member")}</Text>
+                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:reimbursementDetailsScreen.raviSharmaSelf")}</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Hospital</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.hospital")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Apollo Hospital Bengaluru</Text>
               </View>
             </View>
 
             <View style={[styles.detailsRow, { marginTop: rs(8) }]}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Admission Date</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.admissionDate")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>18 Aug 2026</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Discharge Date</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.dischargeDate")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>20 Aug 2026</Text>
               </View>
             </View>
 
             <View style={[styles.detailsRow, { marginTop: rs(8) }]}>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Claim Type</Text>
-                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Hospitalization</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.claimType")}</Text>
+                <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:reimbursementDetailsScreen.hospitalization")}</Text>
               </View>
               <View style={styles.detailsCol}>
-                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Diagnosis</Text>
+                <Text style={[styles.detailsLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.diagnosis")}</Text>
                 <Text style={[styles.detailsVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Dengue Treatment</Text>
               </View>
             </View>
@@ -174,7 +177,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
         <View style={[styles.cardSection, { backgroundColor: isDark ? '#1E1E24' : '#FFFFFF', marginTop: rs(14) }]}>
           <View style={styles.sectionHeaderCompact}>
             <MaterialCommunityIcons name="calculator" size={20} color="#005b7f" />
-            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>Expense Summary</Text>
+            <Text style={[styles.sectionTitleCompact, { color: isDark ? '#FFFFFF' : '#0F172A' }]}>{tx("insurance:reimbursementDetailsScreen.expenseSummary")}</Text>
           </View>
 
           <View style={styles.expensesGrid}>
@@ -184,7 +187,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
                   <MaterialCommunityIcons name="hospital-building" size={20} color="#005b7f" />
                 </View>
                 <View style={{ marginLeft: 6 }}>
-                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Hospital Charges</Text>
+                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.hospitalCharges")}</Text>
                   <Text style={[styles.expenseValText, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>₹42,500</Text>
                 </View>
               </View>
@@ -194,7 +197,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
                   <MaterialCommunityIcons name="pill" size={20} color="#10B981" />
                 </View>
                 <View style={{ marginLeft: 6 }}>
-                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Pharmacy</Text>
+                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.pharmacy")}</Text>
                   <Text style={[styles.expenseValText, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>₹6,250</Text>
                 </View>
               </View>
@@ -206,7 +209,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
                   <MaterialCommunityIcons name="test-tube" size={20} color="#7C3AED" />
                 </View>
                 <View style={{ marginLeft: 6 }}>
-                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Diagnostics</Text>
+                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.diagnostics")}</Text>
                   <Text style={[styles.expenseValText, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>₹4,750</Text>
                 </View>
               </View>
@@ -216,7 +219,7 @@ const ReimbursementDetailsScreen: React.FC = () => {
                   <MaterialCommunityIcons name="plus" size={20} color={isDark ? '#A1A1AA' : '#64748B'} />
                 </View>
                 <View style={{ marginLeft: 6 }}>
-                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>Other</Text>
+                  <Text style={[styles.expenseLabel, { color: isDark ? '#A1A1AA' : '#64748B' }]}>{tx("insurance:reimbursementDetailsScreen.other")}</Text>
                   <Text style={[styles.expenseValText, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>₹0</Text>
                 </View>
               </View>
@@ -227,13 +230,13 @@ const ReimbursementDetailsScreen: React.FC = () => {
           <View style={[styles.divider, { backgroundColor: isDark ? '#27272A' : '#E2E8F0' }]} />
           
           <View style={styles.totalRow}>
-            <Text style={[styles.totalLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>Total Claimed Amount</Text>
+            <Text style={[styles.totalLabel, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>{tx("insurance:reimbursementDetailsScreen.totalClaimedAmount")}</Text>
             <Text style={[styles.totalAmtVal, { color: isDark ? '#FFFFFF' : '#1E293B' }]}>₹53,500</Text>
           </View>
 
           <TouchableOpacity style={[styles.editBtn, { borderColor: isDark ? '#52525B' : '#D1D5DB' }]} activeOpacity={0.7}>
             <MaterialCommunityIcons name="pencil-outline" size={13} color={isDark ? '#A1A1AA' : '#475569'} style={{ marginRight: 4 }} />
-            <Text style={[styles.editBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>Edit Amounts</Text>
+            <Text style={[styles.editBtnText, { color: isDark ? '#A1A1AA' : '#475569' }]}>{tx("insurance:reimbursementDetailsScreen.editAmounts")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -241,18 +244,18 @@ const ReimbursementDetailsScreen: React.FC = () => {
         <View style={[styles.noticeBanner, { backgroundColor: isDark ? '#1E293B' : '#e5f6fd' }]}>
           <MaterialCommunityIcons name="information" size={20} color="#005b7f" />
           <Text style={[styles.noticeText, { color: isDark ? '#D4D4D8' : '#003950' }]}>
-            Reimbursement means you pay first and then claim the eligible amount back after document verification.
+            {tx("insurance:reimbursementDetailsScreen.reimbursementMeansYouPayFirst")}
           </Text>
         </View>
 
         {/* Action Triggers */}
         <TouchableOpacity style={styles.continueClaimBtn} activeOpacity={0.85} onPress={handleContinue}>
-          <Text style={styles.continueClaimBtnText}>Continue to Documents</Text>
+          <Text style={styles.continueClaimBtnText}>{tx("insurance:reimbursementDetailsScreen.continueToDocuments")}</Text>
           <MaterialCommunityIcons name="chevron-right" size={20} color="#FFFFFF" style={{ marginLeft: 4 }} />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.draftBtn, { borderColor: isDark ? '#52525B' : '#D1D5DB' }]} activeOpacity={0.8}>
-          <Text style={[styles.draftBtnText, { color: isDark ? '#FFFFFF' : '#475569' }]}>Save Draft</Text>
+          <Text style={[styles.draftBtnText, { color: isDark ? '#FFFFFF' : '#475569' }]}>{tx("insurance:reimbursementDetailsScreen.saveDraft")}</Text>
         </TouchableOpacity>
 
       </ScrollView>

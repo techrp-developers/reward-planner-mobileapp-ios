@@ -30,6 +30,7 @@ import type {
 } from "../navigation/types";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type ProductScreenRoute = RouteProp<HomeStackParamList, "ProductScreen">;
@@ -108,7 +109,7 @@ function ProductScreen() {
   const pulse = useRef(new Animated.Value(0)).current;
   const { theme } = useAppTheme();
   const source = route.params?.source ?? "all";
-  const title = COLLECTION_TITLES[source];
+  const title = translateSourceText("products", COLLECTION_TITLES[source]);
 
   const gap = 12;
   const horizontalPadding = 16;

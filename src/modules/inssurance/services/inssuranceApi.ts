@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "../../../config/apiConfig";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
+import i18n from "../../../i18n";
 
 // Follow the shared environment switch, including the live reverse-proxy prefix.
 export const INSURANCE_BASE_URL = API_BASE_URL;
@@ -39,7 +40,7 @@ export const submitClaimEnquiry = async (payload: any): Promise<any> => {
     return result;
   } catch (error) {
     console.error("[InssuranceApi] Submit claim enquiry failed:", error);
-    return { success: false, message: "Network request failed" };
+    return { success: false, message: i18n.t("insurance:api.networkFailed") };
   }
 };
 

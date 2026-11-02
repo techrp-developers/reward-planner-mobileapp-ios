@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import i18n from "../../../i18n";
 
 export type BusBookingPopupVariant = "success" | "error" | "warning" | "info";
 
@@ -55,9 +56,10 @@ export default function BusBookingStatusPopup({
   title,
   message,
   variant = "info",
-  buttonText = "OK",
+  buttonText,
   onClose,
 }: Props) {
+  buttonText ??= i18n.t("common:actions.ok");
   const config = variantConfig[variant];
 
   return (

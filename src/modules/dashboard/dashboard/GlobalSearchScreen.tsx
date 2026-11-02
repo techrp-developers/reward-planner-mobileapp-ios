@@ -22,6 +22,8 @@ import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useGlobalSearch } from "../header/useGlobalSearch";
 import HeaderComponent from "../header/HeaderComponent";
 import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 const HEADER_CACHE_TTL_MS = 10 * 60 * 1000;
 let globalSearchHeaderCache: {
@@ -32,6 +34,7 @@ let globalSearchHeaderCache: {
 } | null = null;
 
 function GlobalSearchScreen() {
+  const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { isDark } = useAppTheme();
   const { isAuthenticated, user } = useAuth();
@@ -169,15 +172,15 @@ function GlobalSearchScreen() {
   };
 
   const badgeMeta: Record<string, { label: string; color: string; icon: "shopping-outline" | "briefcase-outline" | "shape-outline" }> = {
-    product: { label: "Product", color: tk.badgeProduct, icon: "shopping-outline" },
-    category: { label: "Category", color: tk.badgeProduct, icon: "shape-outline" },
-    subcategory: { label: "Subcategory", color: tk.badgeProduct, icon: "shape-outline" },
-    service: { label: "Service", color: tk.badgeService, icon: "briefcase-outline" },
+    product: { label: t("dashboard:search.types.product"), color: tk.badgeProduct, icon: "shopping-outline" },
+    category: { label: t("dashboard:search.types.category"), color: tk.badgeProduct, icon: "shape-outline" },
+    subcategory: { label: t("dashboard:search.types.subcategory"), color: tk.badgeProduct, icon: "shape-outline" },
+    service: { label: t("dashboard:search.types.service"), color: tk.badgeService, icon: "briefcase-outline" },
   };
 
   const sections = [
-    { title: "PRODUCTS", data: results?.products ?? [], badgeColor: tk.badgeProduct, icon: "shopping-outline" as const },
-    { title: "SERVICES", data: results?.services ?? [], badgeColor: tk.badgeService, icon: "briefcase-outline" as const },
+    { title: t("dashboard:search.sections.products"), data: results?.products ?? [], badgeColor: tk.badgeProduct, icon: "shopping-outline" as const },
+    { title: t("dashboard:search.sections.services"), data: results?.services ?? [], badgeColor: tk.badgeService, icon: "briefcase-outline" as const },
   ].filter((s) => s.data.length > 0);
 
   return (
@@ -235,8 +238,8 @@ function GlobalSearchScreen() {
               <View style={[styles.emptyIconCircle, { backgroundColor: tk.iconAccentBg }]}>
                 <MaterialCommunityIcons name="text-search" size={26} color={tk.iconAccent} />
               </View>
-              <Text style={[styles.noResultText, { color: tk.titleColor }]}>No results found</Text>
-              <Text style={[styles.emptySubText, { color: tk.subTextColor }]}>Try a different keyword</Text>
+              <Text style={[styles.noResultText, { color: tk.titleColor }]}>{t("dashboard:search.noResults")}</Text>
+              <Text style={[styles.emptySubText, { color: tk.subTextColor }]}>{t("dashboard:search.tryDifferent")}</Text>
             </View>
           ) : sections.length === 0 ? (
             <View style={styles.emptyStateWrap}>
@@ -244,7 +247,7 @@ function GlobalSearchScreen() {
                 <MaterialCommunityIcons name="magnify" size={26} color={tk.iconAccent} />
               </View>
               <Text style={[styles.emptySubText, { color: tk.subTextColor }]}>
-                Type at least 2 characters
+                {t("dashboard:search.minChars")}
               </Text>
             </View>
           ) : (
@@ -298,7 +301,7 @@ function GlobalSearchScreen() {
             <MaterialCommunityIcons name="magnify" size={26} color={tk.iconAccent} />
           </View>
           <Text style={[styles.emptySubText, { color: tk.subTextColor }]}>
-            Search products or services
+            {i18n.t("dashboard:r2.searchProductsOrServices")}
           </Text>
         </View>
       )}

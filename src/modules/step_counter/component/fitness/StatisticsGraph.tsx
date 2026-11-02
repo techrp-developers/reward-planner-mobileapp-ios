@@ -14,6 +14,8 @@ import {
   type HourlyStatItem,
 } from '../../api/DashboardAPI';
 import { useTodayHourlyStatsQuery } from '../../api/useFitnessQueries';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const { width } = Dimensions.get('window');
 
@@ -56,6 +58,7 @@ const parseHour = (time: string) => {
 };
 
 const StatisticsGraph: React.FC = () => {
+  const { t: tx } = useTranslation();
   const hourlyStatsQuery = useTodayHourlyStatsQuery();
   const hourlyStats =
     hourlyStatsQuery.data?.success && hourlyStatsQuery.data.data && hourlyStatsQuery.data.data.length > 0
@@ -64,7 +67,7 @@ const StatisticsGraph: React.FC = () => {
   const loading = hourlyStatsQuery.isLoading;
   const errorMessage =
     hourlyStatsQuery.data?.message ||
-    (hourlyStatsQuery.error ? 'Failed to fetch hourly stats' : '');
+    (hourlyStatsQuery.error ? i18n.t("stepCounter:r2.failedToFetchHourlyStats") : '');
 
   const graphWidth = Math.max(width - 76, 260);
   const barGap = Math.max(4, (graphWidth - DAY_SLOTS * BAR_WIDTH) / (DAY_SLOTS - 1));
@@ -86,10 +89,10 @@ const StatisticsGraph: React.FC = () => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.title}>Statistics</Text>
+        <Text style={styles.title}>{tx("stepCounter:statisticsGraph.statistics")}</Text>
 
         <View style={styles.dropdown}>
-          <Text style={styles.dropdownText}>Today</Text>
+          <Text style={styles.dropdownText}>{tx("stepCounter:statisticsGraph.today")}</Text>
           {/* <MaterialCommunityIcons
             name="chevron-down"
             size={24}
@@ -144,7 +147,7 @@ const StatisticsGraph: React.FC = () => {
 
         {errorMessage ? (
           <TouchableOpacity onPress={() => hourlyStatsQuery.refetch()} activeOpacity={0.8}>
-            <Text style={styles.retryText}>Retry</Text>
+            <Text style={styles.retryText}>{tx("stepCounter:statisticsGraph.retry")}</Text>
           </TouchableOpacity>
         ) : null}
 

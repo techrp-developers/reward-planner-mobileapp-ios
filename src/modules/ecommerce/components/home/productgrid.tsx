@@ -14,6 +14,7 @@ import { fetchAllProducts, fetchSimilarProducts } from "../../api/ProductApi";
 import SkeletonBox from "../../../services/component/constant/SkeletonBox";
 import { normalizeProduct } from "../../utils/normalizeProduct";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import i18n from "../../../../i18n";
 
 type Props = {
   products?: any[];
@@ -187,8 +188,8 @@ export default function ProductGrid({
 
   const errorMsg = error
     ? hasRelatedContext
-      ? "Failed to load relevant products"
-      : "Failed to load products"
+      ? i18n.t("products:r2.failedToLoadRelevantProducts")
+      : i18n.t("products:r2.failedToLoadProducts")
     : "";
 
   const onViewableItemsChanged = useRef(

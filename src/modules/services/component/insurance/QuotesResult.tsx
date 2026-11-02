@@ -16,6 +16,7 @@ import { useAlert } from "../../../ecommerce/components/alerts/useAlert";
 import GradientButton from "../../constant/GradientButton";
 import { selectPlan } from "../../api/InsuranceApi";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
 
 type QuoteData = {
   url: string;
@@ -41,6 +42,7 @@ const QuotesResult: React.FC<Props> = ({
   insuranceType = "health",
   enquiryId,
 }) => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { warning, info } = useAlert();
   const servicesTheme = useServicesTheme();
@@ -196,7 +198,7 @@ const QuotesResult: React.FC<Props> = ({
     const companyKey = getCompanyKey(item.url);
 
     const companyName = getDisplayCompanyName(apiData, companyKey);
-    const defaultPlanName = insuranceType === "personal_accident" ? "Personal Accident Plan" : "Health Plan";
+    const defaultPlanName = insuranceType === "personal_accident" ? tx("services:insurance.paPlan") : tx("services:insurance.healthPlan");
     const planName = getDisplayPlanName(apiData, defaultPlanName);
     const premium = getPremiumDisplay(apiData);
     const deductible = getDeductibleDisplay(apiData);
@@ -259,9 +261,9 @@ const QuotesResult: React.FC<Props> = ({
         }
       }
 
-      const statusText = "Enquiry Confirmed";
-      const title = "Enquiry Submitted Successfully";
-      const description = `${companyName} - ${planName} selected at premium ${premium}`;
+      const statusText = tx("services:insurance.enquiryConfirmed");
+      const title = tx("services:insurance.enquirySubmitted");
+      const description = tx("services:insurance.planSelected", { company: companyName, plan: planName, premium });
 
       navigation.navigate("SubmittedSuccessful", {
         statusText,
@@ -310,7 +312,7 @@ const QuotesResult: React.FC<Props> = ({
             <View style={[styles.coverItem, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
               <MaterialIcons name="security" size={18} color={servicesTheme.colors.primary} />
               <View style={styles.coverDetail}>
-                <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>Cover Amount</Text>
+                <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>{tx("services:quotesResult.coverAmount")}</Text>
                 <Text style={[styles.coverValue, { color: servicesTheme.colors.textStrong }]}>{displayCoverAmount}</Text>
               </View>
             </View>
@@ -318,7 +320,7 @@ const QuotesResult: React.FC<Props> = ({
               <View style={[styles.coverItem, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
                 <MaterialIcons name="receipt-long" size={18} color={servicesTheme.colors.primary} />
                 <View style={styles.coverDetail}>
-                  <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>Deductible</Text>
+                  <Text style={[styles.coverLabel, { color: servicesTheme.colors.muted }]}>{tx("services:quotesResult.deductible")}</Text>
                   <Text style={[styles.coverValue, { color: servicesTheme.colors.textStrong }]}>{deductible}</Text>
                 </View>
               </View>
@@ -339,7 +341,7 @@ const QuotesResult: React.FC<Props> = ({
         {/* Bottom Section: Price & CTA */}
         <View style={[styles.cardFooter, { backgroundColor: servicesTheme.colors.surfaceAlt }]}>
           <View style={styles.priceSection}>
-            <Text style={[styles.priceLabel, { color: servicesTheme.colors.muted }]}>Premium/Year</Text>
+            <Text style={[styles.priceLabel, { color: servicesTheme.colors.muted }]}>{tx("services:quotesResult.premiumYear")}</Text>
             <Text style={styles.priceAmount}>{premium}</Text>
           </View>
           
@@ -354,7 +356,7 @@ const QuotesResult: React.FC<Props> = ({
               end={{ x: 1, y: 0 }}
               style={StyleSheet.absoluteFill}
             />
-            <Text style={styles.ctaButtonText}>Enquire Now</Text>
+            <Text style={styles.ctaButtonText}>{tx("services:quotesResult.enquireNow")}</Text>
             <MaterialIcons name="arrow-forward" size={16} color="#FFF" />
             
           </TouchableOpacity>
@@ -374,7 +376,7 @@ const QuotesResult: React.FC<Props> = ({
         >
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#8665FF" />
-            <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Fetching 22+ Live Quotes...</Text>
+            <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>{tx("services:quotesResult.fetching22LiveQuotes")}</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -396,12 +398,12 @@ const QuotesResult: React.FC<Props> = ({
         <View style={styles.headerText}>
           <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>
             {insuranceType === "supertopup"
-              ? "Super Top-Up Insurance"
+              ? tx("services:superTop.superTopUpInsurance")
               : insuranceType === "personal_accident"
-                ? "Personal Accident Insurance"
-                : "Health Insurance"}
+                ? tx("services:pA.personalAccidentInsurance")
+                : tx("services:health.healthInsurance")}
           </Text>
-          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>Found {successQuotes.length} customized plans</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{tx("services:insurance.foundPlansHeader", { count: successQuotes.length })}</Text>
         </View>
       </View>
 
@@ -413,8 +415,8 @@ const QuotesResult: React.FC<Props> = ({
         ListEmptyComponent={
           <View style={styles.centerContainer}>
             <MaterialIcons name="error-outline" size={50} color="#CCC" />
-            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>No plans found for this criteria.</Text>
-            <GradientButton title="Adjust Details" onPress={onBack} />
+            <Text style={[styles.emptyText, { color: servicesTheme.colors.muted }]}>{tx("services:quotesResult.noPlansFoundForThis")}</Text>
+            <GradientButton title={tx("services:quotesResult.adjustDetails")} onPress={onBack} />
           </View>
         }
       />

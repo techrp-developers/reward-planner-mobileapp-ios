@@ -16,10 +16,12 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useNavigation, useRoute } from "@react-navigation/native";
 import OrderReceipt from "./OrderReceipt";
 import { fetchOrderReceipt } from "../../ecommerce/api/OrderApi";
+import { useTranslation } from "react-i18next";
 
 const { height } = Dimensions.get("window");
 
 export default function OrderConfirmScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const route = useRoute<any>();
   const { order_id } = route.params;
@@ -77,7 +79,7 @@ export default function OrderConfirmScreen() {
   if (!receipt) {
     return (
       <SafeAreaView style={styles.loaderWrap}>
-        <Text style={styles.errorText}>Order not found</Text>
+        <Text style={styles.errorText}>{tx("products:order.notFound")}</Text>
       </SafeAreaView>
     );
   }
@@ -109,18 +111,17 @@ export default function OrderConfirmScreen() {
             </View>
 
             {/* Title */}
-            <Text style={styles.title}>Order Placed Successfully!</Text>
+            <Text style={styles.title}>{tx("products:order.placedTitle")}</Text>
 
             {/* Subtitle */}
-            <Text style={styles.subtitle}>Your package is on its way</Text>
+            <Text style={styles.subtitle}>{tx("products:order.onItsWay")}</Text>
             <Text style={styles.subtitle}>
-              Sit back and relax we'll update you as it gets {"\n"}
-              closer to your doorstep!
+              {tx("products:order.relax")}
             </Text>
 
             {/* Reward Section */}
             <View style={styles.rewardContainer}>
-              <Text style={styles.rewardHeader}>🎉 You earned Reward Coins</Text>
+              <Text style={styles.rewardHeader}>{tx("products:order.earnedHeader")}</Text>
 
               <Pressable
                 onPress={() => navigation.navigate("Home" as never)}
@@ -134,7 +135,7 @@ export default function OrderConfirmScreen() {
                 >
                   <Text style={styles.coinIcon}>🪙</Text>
                   <Text style={styles.rewardBtnText}>
-                    +{Number(receipt?.rewards?.earned ?? 0)} Coins earned on this order
+                    {tx("products:order.coinsEarnedOnOrder", { count: Number(receipt?.rewards?.earned ?? 0) })}
                   </Text>
                 </LinearGradient>
               </Pressable>

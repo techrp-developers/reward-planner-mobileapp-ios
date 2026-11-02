@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type BenefitsRowProps = {
   is_returnable?: number | boolean;
@@ -10,15 +12,16 @@ type BenefitsRowProps = {
 };
 
 export default function BenefitsRow(props: BenefitsRowProps) {
+  const { t: tx } = useTranslation();
   const { theme } = useAppTheme();
   const isReturnable = Boolean(props.is_returnable);
   const isReplaceable = Boolean(props.is_replaceable);
 
   const returnText = isReturnable
     ? `${props.return_window_days ?? 7} Day Return`
-    : "Non Returnable";
+    : i18n.t("products:r2.nonReturnable");
 
-  const replacementText = isReplaceable ? "Replacement Available" : "No Replacement";
+  const replacementText = isReplaceable ? i18n.t("products:r2.replacementAvailable") : i18n.t("products:r2.noReplacement");
 
   return (
     <View style={styles.benefitsRow}>
@@ -46,7 +49,7 @@ export default function BenefitsRow(props: BenefitsRowProps) {
 
       <View style={styles.benefitItem}>
         <MaterialCommunityIcons name="flash" size={26} color="#F97316" />
-        <Text style={[styles.benefitText, { color: theme.secondaryText }]}>Fast Delivery</Text>
+        <Text style={[styles.benefitText, { color: theme.secondaryText }]}>{tx("products:benefitsrow.fastDelivery")}</Text>
       </View>
     </View>
   );

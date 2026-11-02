@@ -23,10 +23,12 @@ import {
   type SearchSuggestion,
 } from '../../api/SearchAPI';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ServiceSearch'>;
 
 export default function ServiceSearchScreen({ navigation }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [search, setSearch]               = useState('');
   const [loading, setLoading]             = useState(false);
@@ -133,9 +135,9 @@ export default function ServiceSearchScreen({ navigation }: Props) {
             {!historyLoading && history.length > 0 && (
               <View style={styles.historySection}>
                 <View style={styles.historyHeader}>
-                  <Text style={[styles.historyTitle, { color: servicesTheme.colors.textStrong }]}>Recent searches</Text>
+                  <Text style={[styles.historyTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceSearchScreen.recentSearches")}</Text>
                   <TouchableOpacity onPress={handleClearHistory}>
-                    <Text style={[styles.clearText, { color: servicesTheme.colors.primary }]}>Clear all</Text>
+                    <Text style={[styles.clearText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceSearchScreen.clearAll")}</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.chipsRow}>
@@ -161,7 +163,7 @@ export default function ServiceSearchScreen({ navigation }: Props) {
             )}
 
             {!historyLoading && history.length === 0 && (
-              <Text style={[styles.hint, { color: servicesTheme.colors.subtle }]}>Type at least 2 characters to search services</Text>
+              <Text style={[styles.hint, { color: servicesTheme.colors.subtle }]}>{tx("services:serviceSearchScreen.typeAtLeast2Characters")}</Text>
             )}
           </>
         )}

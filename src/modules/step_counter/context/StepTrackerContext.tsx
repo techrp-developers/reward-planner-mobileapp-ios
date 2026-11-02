@@ -25,6 +25,7 @@ import type { Permission } from 'react-native-health-connect';
 import { syncStepsToServer, type GoalSyncData } from '../api/Stepsapi';
 import { fetchProfileStepStatus } from '../api/ProfileAPI';
 import { fitnessQueryKeys } from '../api/fitnessQueryKeys';
+import i18n from "../../../i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -239,7 +240,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     try {
       const payload = buildPayload(count);
       const res = await syncStepsToServer(payload);
-      if (!res.success) throw new Error(res.message || 'Sync failed');
+      if (!res.success) throw new Error(res.message || i18n.t("stepCounter:r2.syncFailed"));
 
       lastSyncedDate.current  = payload.date;
       lastSyncedSteps.current = count;
@@ -418,8 +419,8 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
           }
         }
         const msg = sdkStatus === SdkAvailabilityStatus.SDK_UNAVAILABLE
-          ? 'Health Connect not installed'
-          : 'Health Connect needs setup';
+          ? i18n.t("stepCounter:r2.healthConnectNotInstalled")
+          : i18n.t("stepCounter:r2.healthConnectNeedsSetup");
         setHealthConnectError(msg);
         setStepDataState('no_permission');
         setLoading(false);
@@ -455,7 +456,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
       ) {
         initialized.current = false;
         setHealthConnectStatus('0');
-        setHealthConnectError('Health Connect not installed');
+        setHealthConnectError(i18n.t("stepCounter:r2.healthConnectNotInstalled"));
         setStepDataState('no_permission');
       } else {
         setHealthConnectError(err?.message || String(err));

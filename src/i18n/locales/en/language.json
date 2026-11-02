@@ -1,0 +1,10 @@
+{
+  "welcomeTitle": "Welcome to Reward Planners",
+  "chooseTitle": "Choose your preferred language",
+  "chooseBody": "Select the language you'd like to use in Reward Planners. You can change it anytime from your profile settings.",
+  "settingsTitle": "App Language",
+  "settingsBody": "Choose the language you prefer to use across Reward Planners.",
+  "selected": "Selected",
+  "optionLabel": "{{nativeName}}, {{englishName}}",
+  "saveFailed": "Your language could not be saved. Please try again."
+}

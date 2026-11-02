@@ -16,6 +16,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../theme/ThemeContext';
 import { SearchData, SearchResultItem } from '../api/GlobalSearchAPI';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,10 +37,10 @@ type Section = {
 // ─── Result type metadata (badge + icon) ───────────────────────────────────────
 
 const TYPE_META: Record<string, { label: string; color: string; icon: string }> = {
-  product: { label: 'Product', color: '#7C5CFC', icon: 'shopping-outline' },
-  category: { label: 'Category', color: '#7C5CFC', icon: 'shape-outline' },
-  subcategory: { label: 'Subcategory', color: '#7C5CFC', icon: 'shape-outline' },
-  service: { label: 'Service', color: '#0EA5E9', icon: 'briefcase-outline' },
+  product: { label: 'dashboard:search.types.product', color: '#7C5CFC', icon: 'shopping-outline' },
+  category: { label: 'dashboard:search.types.category', color: '#7C5CFC', icon: 'shape-outline' },
+  subcategory: { label: 'dashboard:search.types.subcategory', color: '#7C5CFC', icon: 'shape-outline' },
+  service: { label: 'dashboard:search.types.service', color: '#0EA5E9', icon: 'briefcase-outline' },
 };
 
 // ─── Query highlight ──────────────────────────────────────────────────────────
@@ -100,9 +102,10 @@ const ResultItem = memo(({
   titleColor: string;
   separatorColor: string;
 }) => {
+  useTranslation(); // re-render memoized content on language change
   const meta = TYPE_META[item.type] ?? TYPE_META.service;
   const badgeColor = meta.color;
-  const badgeLabel = meta.label;
+  const badgeLabel = i18n.t(meta.label);
   const badgeIcon = meta.icon;
 
   return (
@@ -169,6 +172,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
 }) => {
   const { isDark } = useAppTheme();
   const navigation = useNavigation<any>();
+  const { t } = useTranslation();
   const { height: windowHeight } = useWindowDimensions();
   const dropdownHeight = Math.min(Math.max(windowHeight * 0.42, 320), 460);
 
@@ -258,10 +262,10 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const sections: Section[] = useMemo(() => {
     if (!results) return [];
     const out: Section[] = [];
-    if (results.products.length > 0) out.push({ title: 'PRODUCTS', data: results.products });
-    if (results.services.length > 0) out.push({ title: 'SERVICES', data: results.services });
+    if (results.products.length > 0) out.push({ title: t('dashboard:search.sections.products'), data: results.products });
+    if (results.services.length > 0) out.push({ title: t('dashboard:search.sections.services'), data: results.services });
     return out;
-  }, [results]);
+  }, [results, t]);
 
   // ── "See all results" footer ──────────────────────────────────────────────────
   const listFooter = useMemo(() => (
@@ -274,10 +278,10 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
       activeOpacity={0.7}
     >
       <MaterialCommunityIcons name="magnify" size={14} color="#7C5CFC" />
-      <Text style={styles.viewAllText}>See all results for "{query.trim()}"</Text>
+      <Text style={styles.viewAllText}>{t("dashboard:search.seeAllFor", { query: query.trim() })}</Text>
       <MaterialCommunityIcons name="chevron-right" size={16} color="#7C5CFC" />
     </TouchableOpacity>
-  ), [tk.footerBorder, onClose, navigation, query]);
+  ), [tk.footerBorder, onClose, navigation, query, t]);
 
   // ── Loading ───────────────────────────────────────────────────────────────────
   if (loading) {
@@ -286,7 +290,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
         <Animated.View style={animStyle}>
           <View style={styles.centered}>
             <ActivityIndicator color="#7C5CFC" size="small" />
-            <Text style={[styles.hint, tk.spinnerHint]}>Searching…</Text>
+            <Text style={[styles.hint, tk.spinnerHint]}>{t("dashboard:search.searching")}</Text>
           </View>
         </Animated.View>
       </View>
@@ -300,7 +304,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
         <Animated.View style={animStyle}>
           <View style={styles.centered}>
             <MaterialCommunityIcons name="magnify" size={24} color={tk.magnifyIcon} />
-            <Text style={[styles.hint, tk.minCharHint]}>Type at least 2 characters</Text>
+            <Text style={[styles.hint, tk.minCharHint]}>{t("dashboard:search.minChars")}</Text>
           </View>
         </Animated.View>
       </View>
@@ -315,9 +319,9 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
           <View style={styles.centered}>
             <MaterialCommunityIcons name="magnify-close" size={28} color={tk.magnifyIcon} />
             <Text style={[styles.emptyTitle, tk.emptyTitle]}>
-              No results for "{query.trim()}"
+              {t("dashboard:search.noResultsFor", { query: query.trim() })}
             </Text>
-            <Text style={[styles.hint, tk.emptyHint]}>Try a different keyword</Text>
+            <Text style={[styles.hint, tk.emptyHint]}>{t("dashboard:search.tryDifferent")}</Text>
           </View>
         </Animated.View>
       </View>

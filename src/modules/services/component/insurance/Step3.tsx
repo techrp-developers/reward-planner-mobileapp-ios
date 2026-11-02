@@ -25,6 +25,9 @@ import { getZoneFromCity } from "../../utils/InsuranceUtils";
 import { fetchUserInfo, getAuthHeaders, isAuthenticated } from "../../../common/auth/api/AuthAPI";
 import { buildHealthEnquiryData } from "../../api/enquiryPayloadBuilders";
 import { useServicesTheme } from "../../utils/useServicesTheme";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { insuranceOptionLabel } from "../../constant/insuranceLabels";
 
 type FormData = {
   gender: string;
@@ -74,7 +77,7 @@ const CityInputDropdown: React.FC<{
   customCity,
 }) => {
     const servicesTheme = useServicesTheme();
-    const displayCity = isOtherCitySelected ? (customCity || "Other") : selectedCity;
+    const displayCity = isOtherCitySelected ? (customCity || i18n.t("services:insurance.other")) : selectedCity;
 
     return (
       <View style={styles.cityInputWrapper}>
@@ -96,14 +99,14 @@ const CityInputDropdown: React.FC<{
               <MaterialIcons name="location-city" size={24} color="#8665FF" />
             </View>
             <View style={styles.cityTextContainer}>
-              <Text style={[styles.cityLabel, { color: servicesTheme.colors.textStrong }]}>City</Text>
-              <Text style={[styles.citySubLabel, { color: servicesTheme.colors.muted }]}>Select your location</Text>
+              <Text style={[styles.cityLabel, { color: servicesTheme.colors.textStrong }]}>{i18n.t("services:step3.city")}</Text>
+              <Text style={[styles.citySubLabel, { color: servicesTheme.colors.muted }]}>{i18n.t("services:step3.selectYourLocation")}</Text>
             </View>
           </View>
 
           <View style={[styles.cityInputBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }, isOpen && styles.cityInputActive]}>
             <Text style={[styles.cityInputText, { color: displayCity ? servicesTheme.colors.text : servicesTheme.colors.subtle }]} numberOfLines={1}>
-              {displayCity || "Select City"}
+              {displayCity || i18n.t("services:insurance.selectCity")}
             </Text>
             <MaterialIcons name={isOpen ? "expand-less" : "expand-more"} size={20} color={servicesTheme.colors.muted} />
           </View>
@@ -151,6 +154,7 @@ const CityInputDropdown: React.FC<{
   };
 
 export default function Step3({ data, setData, onBack, onShowResults }: Props) {
+  const { t: tx } = useTranslation();
   const insets = useSafeAreaInsets();
   const servicesTheme = useServicesTheme();
 
@@ -167,8 +171,8 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
     const checkAuthAndLoadUser = async () => {
       try {
         if (!isAuthenticated()) {
-          Alert.alert("Login Required", "Please log in to get insurance quotes", [
-            { text: "OK", onPress: () => onBack() },
+          Alert.alert(i18n.t("services:step3.loginRequired"), i18n.t("services:step3.pleaseLogInToGet"), [
+            { text: i18n.t("services:step3.ok"), onPress: () => onBack() },
           ]);
           setChecking(false);
           return;
@@ -305,18 +309,18 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
 
   const handleSubmit = async () => {
     if (!isFormValid) {
-      Alert.alert("Validation", "Please fill all required fields");
+      Alert.alert(i18n.t("services:step3.validation"), i18n.t("services:step3.pleaseFillAllRequiredFields"));
       return;
     }
 
     if (!isAuthenticated()) {
-      Alert.alert("Authentication Required", "Please log in to continue");
+      Alert.alert(i18n.t("services:step3.authenticationRequired"), i18n.t("services:step3.pleaseLogInToContinue"));
       return;
     }
 
     const enquiryId = data.details.enquiryId;
     if (!enquiryId) {
-      Alert.alert("Error", "Session expired. Please go back to Step 1 and restart.");
+      Alert.alert(i18n.t("services:step3.error"), i18n.t("services:step3.sessionExpiredPleaseGoBack"));
       return;
     }
 
@@ -367,10 +371,10 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
           enquiryId,
         });
       } else {
-        Alert.alert("Error", "No quotes could be fetched. Please try again.");
+        Alert.alert(i18n.t("services:step3.error"), i18n.t("services:step3.noQuotesCouldBeFetched"));
       }
     } catch (error: any) {
-      Alert.alert("Error", error?.response?.data?.message || error?.message || "Something went wrong");
+      Alert.alert(i18n.t("services:step3.error"), error?.response?.data?.message || error?.message || i18n.t("common:errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -387,7 +391,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
         >
           <View style={styles.centerContainer}>
             <MaterialIcons name="lock-outline" size={50} color="#8665FF" />
-            <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>Verifying authentication...</Text>
+            <Text style={[styles.loadingText, { color: servicesTheme.colors.primary }]}>{tx("services:step3.verifyingAuthentication")}</Text>
           </View>
         </LinearGradient>
       </SafeAreaView>
@@ -410,20 +414,20 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
           contentContainerStyle={styles.scrollContent}
         >
           <View style={styles.header}>
-            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Personal Details</Text>
+            <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step3.personalDetails")}</Text>
             <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-              This information helps us personalize your insurance quotes.
+              {tx("services:step3.thisInformationHelpsUsPersonalize")}
             </Text>
           </View>
 
           <View style={styles.formContainer}>
                 <View style={styles.row}>
                   <View style={styles.flex1}>
-                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>First Name</Text>
+                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.firstName")}</Text>
                     <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                       <TextInput
                         style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                        placeholder="John"
+                        placeholder={tx("services:step3.john")}
                         placeholderTextColor={servicesTheme.colors.subtle}
                         value={data.details.firstName}
                         onChangeText={(v) => handleInputChange("firstName", v)}
@@ -435,11 +439,11 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                   <View style={styles.spacer} />
 
                   <View style={styles.flex1}>
-                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Last Name</Text>
+                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.lastName")}</Text>
                     <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                       <TextInput
                         style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                        placeholder="Doe"
+                        placeholder={tx("services:step3.doe")}
                         placeholderTextColor={servicesTheme.colors.subtle}
                         value={data.details.lastName}
                         onChangeText={(v) => handleInputChange("lastName", v)}
@@ -450,7 +454,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                 </View>
 
                 <View style={styles.fieldWrapper}>
-                  <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Mobile Number</Text>
+                  <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.mobileNumber")}</Text>
                   <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                     <TextInput
                       style={[styles.textInput, styles.mobileInput, { color: servicesTheme.colors.text }]}
@@ -468,7 +472,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
 
                 <View style={styles.row}>
                   <View style={styles.flex1}>
-                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Pincode</Text>
+                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.pincode")}</Text>
                     <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}>
                       <TextInput
                         style={[styles.textInput, { color: servicesTheme.colors.text }]}
@@ -486,10 +490,10 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                   <View style={styles.spacer} />
 
                   <View style={styles.flex1}>
-                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Zone</Text>
+                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.zone")}</Text>
                     <View style={[styles.inputBox, styles.disabledBox, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
                       <Text style={[styles.textInput, styles.disabledText, { color: servicesTheme.colors.subtle }]}>
-                        {data.details.zone || "Auto-filled"}
+                        {data.details.zone || tx("services:insurance.autoFilled")}
                       </Text>
                     </View>
                   </View>
@@ -507,11 +511,11 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
 
                 {isOtherCitySelected && (
                   <View style={styles.fieldWrapper}>
-                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Enter City</Text>
+                    <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.enterCity")}</Text>
                     <View style={[styles.inputBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
                       <TextInput
                         style={[styles.textInput, { color: servicesTheme.colors.text }]}
-                        placeholder="Type your city"
+                        placeholder={tx("services:step3.typeYourCity")}
                         value={customCity}
                         onChangeText={handleCustomCityChange}
                         placeholderTextColor={servicesTheme.colors.subtle}
@@ -522,7 +526,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                 )}
 
                 <View style={styles.fieldWrapper}>
-                  <Text style={[styles.label, { color: servicesTheme.colors.text }]}>Required Cover Amount</Text>
+                  <Text style={[styles.label, { color: servicesTheme.colors.text }]}>{tx("services:step3.requiredCoverAmount")}</Text>
                   <TouchableOpacity
                     style={[styles.dropdownBox, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border, shadowColor: servicesTheme.colors.shadow }]}
                     onPress={() => {
@@ -535,7 +539,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                       style={[styles.dropdownText, { color: data.details.coverAmount ? servicesTheme.colors.text : servicesTheme.colors.subtle }]}
                       numberOfLines={1}
                     >
-                      {data.details.coverAmount || "Select Cover Amount"}
+                      {insuranceOptionLabel(data.details.coverAmount) || tx("services:insurance.selectCover")}
                     </Text>
                     <MaterialIcons name="expand-more" size={20} color={servicesTheme.colors.muted} />
                   </TouchableOpacity>
@@ -550,7 +554,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                     {data.details.agreeToTerms && <MaterialIcons name="check" size={14} color="#FFF" />}
                   </View>
                   <Text style={[styles.termsLabel, { color: servicesTheme.colors.muted }]}>
-                    I agree to the <Text style={styles.boldLink}>Terms & Conditions</Text>
+                    I agree to the <Text style={styles.boldLink}>{tx("services:step3.termsConditions")}</Text>
                   </Text>
                 </TouchableOpacity>
           </View>
@@ -564,7 +568,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
             </TouchableOpacity>
             <View style={styles.footerButtonWrapper}>
               <GradientButton
-                title={loading ? "Searching..." : "Get Free Quotes"}
+                title={loading ? tx("services:insurance.searching") : tx("services:insurance.getQuotes")}
                 onPress={handleSubmit}
                 disabled={!isFormValid || loading}
                 style={styles.quoteButton}
@@ -595,7 +599,7 @@ export default function Step3({ data, setData, onBack, onShowResults }: Props) {
                       }}
                       activeOpacity={0.85}
                     >
-                      <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{item.label}</Text>
+                      <Text style={[styles.modalItemText, { color: servicesTheme.colors.text }]}>{insuranceOptionLabel(item.label)}</Text>
                       {data.details.coverAmount === item.label && (
                         <MaterialIcons name="check-circle" size={20} color="#8665FF" />
                       )}

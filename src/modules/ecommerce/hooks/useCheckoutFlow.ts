@@ -6,6 +6,7 @@ import { useAlert } from '../components/alerts';
 import { fetchBuyNowCheckout } from '../api/CheckoutApi';
 import { checkoutPreviewQueryKey, prefetchCheckoutScreenData } from '../navigation/navigationPerformance';
 import { CheckoutParams, ShoppingNavigation, navigateToCheckout, validateBuyNowParams, validateBuyNowPreview } from '../navigation/checkoutFlow';
+import i18n from "../../../i18n";
 
 export function useCheckoutFlow() {
   const navigation = useNavigation<ShoppingNavigation>();
@@ -28,7 +29,7 @@ export function useCheckoutFlow() {
     if (locked.current) return;
     if (!isAuthenticated) {
       // RootNavigator already switches to Auth when the session is absent.
-      alert.error('Login Required', 'Please log in to buy products.', 3000);
+      alert.error(i18n.t("products:useCheckoutFlow.loginRequired"), i18n.t("products:useCheckoutFlow.pleaseLogInToBuy"), 3000);
       return;
     }
     locked.current = true;
@@ -55,7 +56,7 @@ export function useCheckoutFlow() {
     } catch (error: any) {
       if (!isCurrent()) return;
       __DEV__ && console.error('[CHECKOUT] failed', error?.message);
-      alert.error('Unable to continue', String(error?.response?.data?.message || error?.message || 'Please try again.'), 3500);
+      alert.error(i18n.t("products:useCheckoutFlow.unableToContinue"), String(error?.response?.data?.message || error?.message || i18n.t("products:r2.pleaseTryAgain")), 3500);
       if (Number(error?.response?.status) === 401) await logout();
     } finally {
       // Keep the tap lock until the screen regains focus after navigation.

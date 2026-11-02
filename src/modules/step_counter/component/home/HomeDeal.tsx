@@ -1,8 +1,10 @@
 import React, { useCallback } from 'react';
 import { View, Text, Image, StyleSheet, FlatList } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTranslation } from "react-i18next";
 
 export default function HomeDeal() {
+  const { t: tx } = useTranslation();
   const data = [
     {
       id: 1,
@@ -117,7 +119,7 @@ export default function HomeDeal() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Text style={styles.dealHead}>Blockbuster Deals</Text>
+            <Text style={styles.dealHead}>{tx("stepCounter:homeDeal.blockbusterDeals")}</Text>
           </LinearGradient>
         </View>
       </View>

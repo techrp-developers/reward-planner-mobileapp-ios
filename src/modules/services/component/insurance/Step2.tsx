@@ -18,6 +18,8 @@ import Husband from "../../assete/insurance/Gender (1).png";
 import Wife from "../../assete/insurance/Gender (2).png";
 import Son from "../../assete/insurance/Gender (3).png";
 import Daughter from "../../assete/insurance/Gender (4).png";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const AGE_RANGE = Array.from({ length: 100 }, (_, i) => i + 1);
 
@@ -92,7 +94,7 @@ const AgeInputDropdown: React.FC<{
 
           <View style={styles.textContainer}>
             <Text style={[styles.memberLabel, { color: servicesTheme.colors.textStrong }]}>{memberLabel}</Text>
-            <Text style={[styles.memberSubLabel, { color: servicesTheme.colors.muted }]}>Family Member</Text>
+            <Text style={[styles.memberSubLabel, { color: servicesTheme.colors.muted }]}>{i18n.t("services:step2.familyMember")}</Text>
           </View>
         </View>
 
@@ -105,7 +107,7 @@ const AgeInputDropdown: React.FC<{
             ]}
             numberOfLines={1}
           >
-            {selectedAge ? `${selectedAge} years` : "Select Age"}
+            {selectedAge ? i18n.t("services:insurance.ageYears", { count: Number(selectedAge) }) : i18n.t("services:insurance.selectAge")}
           </Text>
           <MaterialIcons
             name={isOpen ? "expand-less" : "expand-more"}
@@ -159,6 +161,7 @@ const AgeInputDropdown: React.FC<{
 };
 
 export default function Step2({ data, setData, onNext, onBack }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -169,14 +172,14 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
     if (count === 1) {
       expandedMembers.push({
         id: memberType,
-        label: memberType.charAt(0).toUpperCase() + memberType.slice(1),
+        label: tx(`services:insurance.member.${memberType}`, { defaultValue: memberType.charAt(0).toUpperCase() + memberType.slice(1) }),
         type: memberType,
       });
     } else {
       for (let i = 1; i <= count; i++) {
         expandedMembers.push({
           id: `${memberType}_${i}`,
-          label: `${memberType.charAt(0).toUpperCase() + memberType.slice(1)} ${i}`,
+          label: tx("services:insurance.memberN", { member: tx(`services:insurance.member.${memberType}`, { defaultValue: memberType.charAt(0).toUpperCase() + memberType.slice(1) }), n: i }),
           type: memberType,
         });
       }
@@ -207,9 +210,9 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>How old are they?</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:step2.howOldAreThey")}</Text>
           <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>
-            Age helps us find the most accurate plans for your family.
+            {tx("services:step2.ageHelpsUsFindThe")}
           </Text>
         </View>
 
@@ -238,7 +241,7 @@ export default function Step2({ data, setData, onNext, onBack }: Props) {
           </TouchableOpacity>
           <View style={styles.buttonWrapper}>
             <GradientButton
-              title="Next"
+              title={tx("services:step2.next")}
               onPress={onNext}
               disabled={isNextDisabled}
               style={styles.nextButton}

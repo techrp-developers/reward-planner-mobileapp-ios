@@ -20,6 +20,8 @@ import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
 import { BORDER_RADIUS, RESPONSIVE, SPACING } from "../../utils/theme";
 import RunningIcon from "../../assets/StepCount/running 1.svg";
 import { fetchProfileStepStatus } from "../../api/ProfileAPI";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "StepWelcome">;
 
@@ -53,6 +55,7 @@ const Feature = ({ icon, text }: { icon: string; text: string }) => (
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const StepWelcome = () => {
+  const { t: tx } = useTranslation();
   const navigation      = useNavigation<Nav>();
   const [checking, setChecking] = useState(true);
   const heroMotion = useRef(new Animated.Value(0)).current;
@@ -177,18 +180,18 @@ const StepWelcome = () => {
           <Text style={ss.eyebrow}>RP Move</Text>
           <Text style={ss.title}>Welcome to{"\n"}RP Move</Text>
           <Text style={ss.subtitle}>
-            Every step you take brings you closer to better health and more coins.
+            {tx("stepCounter:stepWelcome.everyStepYouTakeBrings")}
           </Text>
 
           {/* Features */}
           <View style={ss.featureList}>
-            <Feature icon="shoe-print"        text="Tracks your daily steps automatically" />
-            <Feature icon="coin-outline"       text="Earn coins for hitting your step goal" />
-            <Feature icon="chart-line-variant" text="See your weekly progress at a glance" />
-            <Feature icon="fire"               text="Maintain streaks for bonus rewards" />
+            <Feature icon="shoe-print"        text={i18n.t("stepCounter:r2.tracksYourDailyStepsAutomatically")} />
+            <Feature icon="coin-outline"       text={i18n.t("stepCounter:r2.earnCoinsForHittingYourStep")} />
+            <Feature icon="chart-line-variant" text={i18n.t("stepCounter:r2.seeYourWeeklyProgressAtA")} />
+            <Feature icon="fire"               text={i18n.t("stepCounter:r2.maintainStreaksForBonusRewards")} />
           </View>
 
-          <Text style={ss.tagline}>Walk. Earn. Redeem.</Text>
+          <Text style={ss.tagline}>{tx("stepCounter:stepWelcome.walkEarnRedeem")}</Text>
 
           {/* CTA */}
           <TouchableOpacity activeOpacity={0.9} onPress={handleNext} disabled={checking} style={ss.ctaWrap}>
@@ -201,7 +204,7 @@ const StepWelcome = () => {
                 <ActivityIndicator color={VD.accentDark} />
               ) : (
                 <>
-                  <Text style={ss.ctaText}>Let's Get Moving</Text>
+                  <Text style={ss.ctaText}>{tx("stepCounter:stepWelcome.letSGetMoving")}</Text>
                   <MaterialCommunityIcons name="arrow-right" size={18} color="#070A16" />
                 </>
               )}

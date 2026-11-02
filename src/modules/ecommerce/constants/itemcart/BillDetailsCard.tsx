@@ -3,6 +3,7 @@ import React, { useEffect, useMemo } from 'react'
 import { View, Text, StyleSheet, Switch } from 'react-native'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import { useTranslation } from "react-i18next";
 
 type Props = {
   cartTotal?: number
@@ -46,6 +47,7 @@ export default function BillDetailsCard({
   showRedeemableCoins = false,
   onPayableChange,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme()
   const safeCartTotal = useMemo(() => Math.max(0, Number(cartTotal ?? subtotal ?? 0)), [cartTotal, subtotal])
   const safeFinalPayable = useMemo(() => Math.max(0, Number(finalPayable ?? finalTotal ?? 0)), [finalPayable, finalTotal])
@@ -69,15 +71,15 @@ export default function BillDetailsCard({
 
   return (
     <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      <Text style={[styles.title, { color: theme.text }]}>Bill Details</Text>
+      <Text style={[styles.title, { color: theme.text }]}>{tx("products:billDetailsCard.billDetails")}</Text>
 
       <View style={styles.rewardToggleRow}>
-        <View>
-          <Text style={[styles.label, { color: theme.secondaryText }]}>Use Reward Coins</Text>
-          <Text style={[styles.helperText, { color: theme.secondaryText }]}>Available savings on this order</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>{tx("products:billDetailsCard.useRewardCoins")}</Text>
+          <Text style={[styles.helperText, { color: theme.secondaryText }]}>{tx("products:billDetailsCard.availableSavingsOnThisOrder")}</Text>
           {showRedeemableCoins && (
             <Text style={[styles.redeemableText, { color: theme.primary }]}>
-              {safeAvailableRewards.toLocaleString('en-IN')} coins redeemable
+              {tx("products:billDetailsCard.coinsRedeemable", { count: safeAvailableRewards, amount: safeAvailableRewards.toLocaleString("en-IN") })}
             </Text>
           )}
         </View>
@@ -98,16 +100,16 @@ export default function BillDetailsCard({
 
       <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
-      <MemoRow label="Item Total" value={formatAmount(safeCartTotal)} />
+      <MemoRow label={tx("products:billDetailsCard.itemTotal")} value={formatAmount(safeCartTotal)} />
       <MemoRow
-        label="Bag Discount"
+        label={tx("products:billDetailsCard.bagDiscount")}
         value={formatAmount(safeBagDiscount)}
         valueStyle={safeBagDiscount > 0 ? styles.negative : undefined}
       />
 
       {rewardDiscount > 0 && (
         <MemoRow
-          label="Reward Discount"
+          label={tx("products:billDetailsCard.rewardDiscount")}
           value={`-${formatAmount(rewardDiscount)}`}
           valueStyle={styles.negative}
         />
@@ -118,13 +120,13 @@ export default function BillDetailsCard({
       )}
 
       {showHandlingFees && (
-        <MemoRow label="Handling Fees" value={formatAmount(safeHandlingFees)} />
+        <MemoRow label={tx("products:billDetailsCard.handlingFees")} value={formatAmount(safeHandlingFees)} />
       )}
 
       <View style={[styles.divider, { backgroundColor: theme.border }]} />
 
       <View style={styles.totalRow}>
-        <Text style={[styles.totalLabel, { color: theme.text }]}>Order Total</Text>
+        <Text style={[styles.totalLabel, { color: theme.text }]}>{tx("products:billDetailsCard.orderTotal")}</Text>
         <Text style={[styles.totalValue, { color: theme.text }]}>{formatAmount(payableAmount)}</Text>
       </View>
 

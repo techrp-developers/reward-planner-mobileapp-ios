@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import Svg, { Path } from "react-native-svg";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 // No backend endpoint exists yet for portfolio value / active policy count —
 // these two cards are presentational (matching the design mock) with
@@ -34,6 +35,7 @@ const Sparkline = () => (
 
 const InvestmentInsuranceOverview: React.FC = () => {
   const { theme } = useAppTheme();
+  const { t } = useTranslation();
   const navigation = useNavigation<any>();
 
   const goToInvestments = useCallback(() => {
@@ -63,19 +65,19 @@ const InvestmentInsuranceOverview: React.FC = () => {
               <MaterialCommunityIcons name="trending-up" size={13} color={GREEN} />
             </View>
             <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
-              Investments
+              {t("dashboard:overview.investments")}
             </Text>
             <MaterialCommunityIcons name="chevron-right" size={16} color={theme.secondaryText} />
           </View>
 
-          <Text style={[styles.label, { color: theme.secondaryText }]}>Total Portfolio Value</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>{t("dashboard:overview.portfolioValue")}</Text>
           <Text style={[styles.value, { color: theme.text }]} numberOfLines={1}>
             {PORTFOLIO_VALUE}
           </Text>
           <View style={styles.growthRow}>
             <MaterialCommunityIcons name="arrow-up-bold" size={10} color={GREEN} />
             <Text style={styles.growthText}>{PORTFOLIO_GROWTH_PERCENT}</Text>
-            <Text style={[styles.growthMuted, { color: theme.secondaryText }]}>(All time)</Text>
+            <Text style={[styles.growthMuted, { color: theme.secondaryText }]}>{t("dashboard:overview.allTime")}</Text>
           </View>
 
           <View style={styles.sparklineWrap}>
@@ -85,7 +87,7 @@ const InvestmentInsuranceOverview: React.FC = () => {
 
         <View style={[styles.ctaButton, { backgroundColor: GREEN_BG }]}>
           <MaterialCommunityIcons name="chart-pie" size={12} color={GREEN} />
-          <Text style={[styles.ctaText, { color: GREEN }]}>View Portfolio</Text>
+          <Text style={[styles.ctaText, { color: GREEN }]}>{t("dashboard:overview.viewPortfolio")}</Text>
           <MaterialCommunityIcons name="chevron-right" size={13} color={GREEN} />
         </View>
       </TouchableOpacity>
@@ -101,19 +103,19 @@ const InvestmentInsuranceOverview: React.FC = () => {
               <MaterialCommunityIcons name="shield-check" size={13} color={PURPLE} />
             </View>
             <Text style={[styles.cardTitle, { color: theme.text }]} numberOfLines={1}>
-              Insurance
+              {t("dashboard:overview.insurance")}
             </Text>
             <MaterialCommunityIcons name="chevron-right" size={16} color={theme.secondaryText} />
           </View>
 
-          <Text style={[styles.label, { color: theme.secondaryText }]}>Active Policies</Text>
+          <Text style={[styles.label, { color: theme.secondaryText }]}>{t("dashboard:overview.activePolicies")}</Text>
           <Text style={[styles.value, { color: theme.text }]} numberOfLines={1}>
             {ACTIVE_POLICIES}
           </Text>
           <View style={styles.growthRow}>
             <View style={styles.statusDot} />
             <Text style={[styles.growthMuted, { color: theme.secondaryText }]}>
-              All policies are active
+              {t("dashboard:overview.allActive")}
             </Text>
           </View>
 
@@ -124,7 +126,7 @@ const InvestmentInsuranceOverview: React.FC = () => {
 
         <View style={[styles.ctaButton, { backgroundColor: PURPLE_BG }]}>
           <MaterialCommunityIcons name="file-document-outline" size={12} color={PURPLE} />
-          <Text style={[styles.ctaText, { color: PURPLE }]}>View Policies</Text>
+          <Text style={[styles.ctaText, { color: PURPLE }]}>{t("dashboard:overview.viewPolicies")}</Text>
           <MaterialCommunityIcons name="chevron-right" size={13} color={PURPLE} />
         </View>
       </TouchableOpacity>

@@ -14,10 +14,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/type';
 import { sendServiceEnquiry } from '../../api/ServiceAPI';
 import { useAlert } from '../../../ecommerce/components/alerts/useAlert';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 
 const EnquireForm = () => {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<NavProp>();
     const alert = useAlert();
 
@@ -62,7 +65,7 @@ const EnquireForm = () => {
             await sendServiceEnquiry(payload);
             
             setIsLoading(false);
-            alert.success('Success', 'Your enquiry has been submitted successfully!');
+            alert.success(i18n.t("services:enquireForm.success"), i18n.t("services:enquireForm.yourEnquiryHasBeenSubmitted"));
             
             // Reset form
             setForm({
@@ -82,16 +85,16 @@ const EnquireForm = () => {
             setIsLoading(false);
             alert.error(
                 'Error',
-                error?.message || 'Failed to submit your enquiry. Please try again.'
+                error?.message || i18n.t("services:r2.failedToSubmitYourEnquiryPlease")
             );
         }
     };
 
     return (
         <View style={styles.card}>
-            <Text style={styles.heading}>Enquire Now</Text>
+            <Text style={styles.heading}>{tx("services:enquireForm.enquireNow")}</Text>
             <Text style={styles.desc}>
-                Please fill out the form below and our team will get in touch with you shortly.
+                {tx("services:enquireForm.pleaseFillOutTheForm")}
             </Text>
 
             {/* FULL NAME */}
@@ -100,7 +103,7 @@ const EnquireForm = () => {
             </Text>
             <View style={styles.inputWrap}>
                 <TextInput
-                    placeholder="Enter your name here"
+                    placeholder={tx("services:enquireForm.enterYourNameHere")}
                     placeholderTextColor="#A3A3A3"
                     value={form.name}
                     onChangeText={(t) => onChange('name', t)}
@@ -117,7 +120,7 @@ const EnquireForm = () => {
             </Text>
             <View style={styles.inputWrap}>
                 <TextInput
-                    placeholder="Enter your mobile number here"
+                    placeholder={tx("services:enquireForm.enterYourMobileNumberHere")}
                     placeholderTextColor="#A3A3A3"
                     value={form.mobile}
                     onChangeText={(t) =>
@@ -138,7 +141,7 @@ const EnquireForm = () => {
             </Text>
             <View style={styles.inputWrap}>
                 <TextInput
-                    placeholder="Enter your email id here"
+                    placeholder={tx("services:enquireForm.enterYourEmailIdHere")}
                     placeholderTextColor="#A3A3A3"
                     value={form.email}
                     onChangeText={(t) => onChange('email', t)}
@@ -157,7 +160,7 @@ const EnquireForm = () => {
             </Text>
             <View style={styles.inputWrap}>
                 <TextInput
-                    placeholder="Enter city here"
+                    placeholder={tx("services:enquireForm.enterCityHere")}
                     placeholderTextColor="#A3A3A3"
                     value={form.city}
                     onChangeText={(t) => onChange('city', t)}
@@ -171,7 +174,7 @@ const EnquireForm = () => {
             </Text>
             <View style={styles.inputWrap}>
                 <TextInput
-                    placeholder="Enter pincode here"
+                    placeholder={tx("services:enquireForm.enterPincodeHere")}
                     placeholderTextColor="#A3A3A3"
                     value={form.pincode}
                     onChangeText={(t) =>
@@ -184,10 +187,10 @@ const EnquireForm = () => {
             </View>
 
             {/* NOTES */}
-            <Text style={styles.optionalLabel}>Additional Notes (optional)</Text>
+            <Text style={styles.optionalLabel}>{tx("services:enquireForm.additionalNotesOptional")}</Text>
             <View style={[styles.inputWrap, styles.textAreaWrap]}>
                 <TextInput
-                    placeholder="Enter any specific questions or requirements you’d like to share"
+                    placeholder={tx("services:enquireForm.enterAnySpecificQuestionsOr")}
                     placeholderTextColor="#A3A3A3"
                     value={form.notes}
                     onChangeText={(t) => onChange('notes', t)}
@@ -210,7 +213,7 @@ const EnquireForm = () => {
                     {isLoading ? (
                         <ActivityIndicator size="small" color="#FFFFFF" />
                     ) : (
-                        <Text style={styles.submitText}>Submit</Text>
+                        <Text style={styles.submitText}>{tx("services:enquireForm.submit")}</Text>
                     )}
                 </LinearGradient>
             </TouchableOpacity>

@@ -1,0 +1,170 @@
+{
+  "appName": "Reward Planners",
+  "actions": {
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "done": "Done",
+    "back": "Back",
+    "goBack": "Go back",
+    "close": "Close",
+    "retry": "Retry",
+    "tryAgain": "Try again",
+    "ok": "OK",
+    "gotIt": "Got it",
+    "yes": "Yes",
+    "no": "No",
+    "later": "Later",
+    "notNow": "Not now",
+    "openSettings": "Open Settings",
+    "updateNow": "Update now",
+    "delete": "Delete",
+    "edit": "Edit",
+    "submit": "Submit",
+    "send": "Send",
+    "search": "Search",
+    "viewAll": "View all",
+    "seeAll": "See all",
+    "apply": "Apply",
+    "clear": "Clear",
+    "confirm": "Confirm",
+    "share": "Share",
+    "copy": "Copy",
+    "reply": "Reply",
+    "next": "Next",
+    "previous": "Previous",
+    "skip": "Skip",
+    "select": "Select",
+    "remove": "Remove",
+    "add": "Add",
+    "update": "Update",
+    "download": "Download",
+    "upload": "Upload",
+    "refresh": "Refresh",
+    "startExploring": "Start exploring",
+    "getStarted": "Get started"
+  },
+  "tabs": {
+    "home": "Home",
+    "search": "Search",
+    "cart": "Cart",
+    "profile": "Profile",
+    "history": "History",
+    "todoList": "Todo List",
+    "chat": "Chat"
+  },
+  "modules": {
+    "product": "Product",
+    "services": "Services",
+    "payments": "Payments",
+    "dineOut": "DineOut"
+  },
+  "badges": {
+    "cartItems_one": "{{label}}, {{count}} item",
+    "cartItems_other": "{{label}}, {{count}} items",
+    "unreadMessages_one": "{{label}}, {{count}} unread message",
+    "unreadMessages_other": "{{label}}, {{count}} unread messages"
+  },
+  "status": {
+    "loading": "Loading…",
+    "saving": "Saving…",
+    "sending": "Sending…",
+    "checking": "Checking…",
+    "pleaseWait": "Please wait…",
+    "active": "Active",
+    "success": "Success",
+    "failed": "Failed",
+    "pending": "Pending"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Please check your internet connection and try again.",
+    "unavailable": "This is unavailable right now. Please try again later."
+  },
+  "notifications": {
+    "disabledTitle": "Notifications disabled",
+    "disabledMessage": "Turn on notifications to receive order updates, delivery alerts, and reward credits."
+  },
+  "offline": {
+    "connectionLost": "CONNECTION LOST",
+    "title": "No internet connection",
+    "tryReconnecting": "Try reconnecting",
+    "autoSyncTitle": "Auto sync",
+    "autoSyncBody": "Rewards and orders will refresh when the connection returns.",
+    "protectedTitle": "Data protected",
+    "protectedBody": "Your wallet activity stays safe while you are offline.",
+    "checkingConnection": "Checking connection…"
+  },
+  "update": {
+    "readyTitle": "Update ready",
+    "maintenanceTitle": "Scheduled maintenance",
+    "requiredTitle": "Required update",
+    "availableTitle": "New version available",
+    "tagline": "Secure rewards, faster checkout, smoother experience",
+    "unavailableTitle": "Update unavailable",
+    "storeLinkMissing": "The App Store link is not configured.",
+    "maintenanceHeading": "We'll Be\nRight Back",
+    "forceHeading": "Time to\nUpgrade",
+    "optionalHeading": "Something\nBetter Awaits",
+    "maintenanceBody": "We're polishing things behind the scenes.\nCheck back in a few minutes.",
+    "forceBody": "This version has been retired. Update now to keep your rewards safe and your experience seamless.",
+    "optionalBody": "Fresh features and a smoother experience are ready for you on {{platform}}. Takes just a second.",
+    "storeOpenFailedTitle": "Unable to open the store",
+    "storeOpenFailedBody": "Please open the App Store and search for Reward Planners.",
+    "readyBody": "A quick improvement is ready to apply. It only takes a second and the app will restart.",
+    "dataSafeAll": "All your rewards & data are safe",
+    "dataSafeAlways": "Your rewards and data are always safe"
+  },
+  "reward": {
+    "welcomeBonus": "Welcome bonus",
+    "welcomeTitle": "Welcome to Reward Planners",
+    "accountActive": "Your account is now active",
+    "firstLoginBonus": "First login bonus",
+    "rewardCoins": "Reward coins",
+    "credited": "Successfully credited",
+    "rewardWallet": "Reward wallet",
+    "readyToUse": "Ready to use"
+  },
+  "time": {
+    "justNow": "Just now",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "minutesAgo_one": "{{count}} min ago",
+    "minutesAgo_other": "{{count}} mins ago",
+    "hoursAgo_one": "{{count}} hour ago",
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo_one": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago"
+  },
+  "nav": {
+    "guest": "Guest",
+    "deliverTo": "Deliver to",
+    "setLocation": "Set delivery location",
+    "searchHints": {
+      "product": [
+        "Search products and offers",
+        "Search brands and categories",
+        "Search rewards and deals"
+      ],
+      "service": [
+        "Search PAN and Aadhaar",
+        "Search passport services",
+        "Search insurance and SIP"
+      ],
+      "payment": [
+        "Search mobile recharge",
+        "Search electricity bills",
+        "Search water and DTH bills"
+      ],
+      "dineout": [
+        "Search bus routes",
+        "Search bus tickets",
+        "Search destinations"
+      ]
+    }
+  },
+  "r2": {
+    "weAreHoldingYourPlaceReconnect": "We are holding your place. Reconnect to continue shopping, booking, and redeeming rewards.",
+    "checkWiFiMobileDataOr": "Check Wi-Fi, mobile data, or airplane mode."
+  }
+}

@@ -1,0 +1,229 @@
+{
+  "billsCard": {
+    "yourBills": "Your Bills",
+    "viewMore": "View More"
+  },
+  "reachargeBill": {
+    "everythingDue": "Everything due,",
+    "allInOnePlace": "all in one place.",
+    "quickPay": "Quick pay",
+    "allBillPayments": "All bill payments",
+    "chooseACategoryToContinue": "Choose a category to continue",
+    "noServiceFound": "No service found",
+    "tryADifferentCategoryOr": "Try a different category or service name.",
+    "paymentBenefits": "Payment benefits",
+    "earnRpPoints": "Earn RP points",
+    "rpPointsAreCreditedAfter": "RP points are credited after every successful transaction.",
+    "noExtraCharges": "No extra charges",
+    "payOnlyTheBillAmount": "Pay only the bill amount with no additional fee.",
+    "others": "Others",
+    "rechargesBillPaymentHistory": "Recharges & bill payment history",
+    "helpAndSupport": "Help and support"
+  },
+  "bBPSOrderFilterSheet": {
+    "filter": "Filter",
+    "sortBy": "SORT BY",
+    "sortByTime": "SORT BY TIME",
+    "apply": "Apply"
+  },
+  "orderHistory": {
+    "myOrders": "My Orders",
+    "searchTransactions": "Search transactions",
+    "couldNotLoadTransactions": "Could not load transactions",
+    "retry": "Retry",
+    "noTransactionFound": "No transaction found"
+  },
+  "rechargeSuccessCard": {
+    "dthRechargeSuccessful": "DTH Recharge Successful",
+    "paid": "Paid",
+    "payAnotherBill": "Pay Another Bill",
+    "share": "Share"
+  },
+  "recommendedServices": {
+    "recommendedServices": "Recommended Services"
+  },
+  "reachargeHomeScreen": {
+    "recharge": "Recharge",
+    "selectCircle": "Select Circle",
+    "searchCircle": "Search circle...",
+    "noCirclesFound": "No circles found",
+    "rechargeOrPayMobileBill": "Recharge or Pay Mobile Bill",
+    "enterMobileNumber": "Enter Mobile Number",
+    "enter10DigitNumber": "Enter 10-digit number",
+    "circleHelpsFindTheRight": "Circle helps find the right plans for your number",
+    "viewPlansRecharge": "View Plans & Recharge",
+    "myNumber": "My Number",
+    "myRechargesBill": "My Recharges & Bill",
+    "contacts": "Contacts",
+    "viewAll": "View All"
+  },
+  "rechargeSection": {
+    "selectCircle": "Select Circle",
+    "pleaseSelectACircleFirst": "Please select a circle first.",
+    "circle": "Circle",
+    "change": "Change",
+    "selectACircleFirstTo": "Select a circle first to see matching recharge plans",
+    "searchAPlanEG": "Search a Plan, e.g. 299 or 28 days",
+    "selectACircleToView": "Select a circle to view plans",
+    "loadingPlans": "Loading plans...",
+    "noRechargePlansFound": "No recharge plans found",
+    "data": "Data",
+    "validity": "Validity",
+    "searchCircle": "Search circle...",
+    "noCirclesFound": "No circles found"
+  },
+  "bBPSHead": {
+    "change": "Change",
+    "help": "Help"
+  },
+  "rechargeModal": {
+    "serviceTemporarilyUnavailable": "Service Temporarily Unavailable",
+    "okayGotIt": "Okay, Got It"
+  },
+  "rewardProductCard": {
+    "rewards": "Rewards"
+  },
+  "search": {
+    "typeAtLeast2Characters": "Type at least 2 characters to search bill payments",
+    "unableToLoadBillPayment": "Unable to load bill-payment services right now."
+  },
+  "billDetailsScreen": {
+    "detailsMissing": "Details Missing",
+    "noBillerFieldsAreAvailable": "No biller fields are available. Please try again.",
+    "error": "Error",
+    "enterDetails": "Enter Details",
+    "addNickname": "Add Nickname",
+    "continue": "Continue"
+  },
+  "billerSelectScreen": {
+    "chooseYourServiceProvider": "Choose your service provider",
+    "retry": "Retry",
+    "searchOperators": "Search operators",
+    "noBillersFound": "No billers found",
+    "trySearchingWithADifferent": "Try searching with a different biller name or state"
+  },
+  "orderSuccessful": {
+    "n247HelpSupport": "24/7 Help & Support"
+  },
+  "paymentConfirmationScreen": {
+    "missingBill": "Missing Bill",
+    "billFetchIdIsMissing": "Bill fetch id is missing. Please fetch the bill again.",
+    "paymentFailed": "Payment Failed",
+    "paymentOrderDetailsAreMissing": "Payment order details are missing.",
+    "error": "Error",
+    "operator": "Operator",
+    "category": "Category",
+    "billSummary": "Bill Summary",
+    "billNumber": "Bill Number",
+    "billDate": "Bill Date",
+    "dueDate": "Due Date",
+    "consumerNo": "Consumer No.",
+    "amountPayable": "Amount Payable",
+    "n100SecurePayment": "100% Secure Payment",
+    "poweredByRazorpay": "Powered by Razorpay",
+    "processingPayment": "Processing Payment..."
+  },
+  "productScreen": {
+    "rewards": "Rewards"
+  },
+  "rechargeConfirmationScreen": {
+    "missingDetails": "Missing Details",
+    "rechargeDetailsAreIncomplete": "Recharge details are incomplete.",
+    "error": "Error",
+    "planDetails": "Plan details",
+    "planPrice": "Plan price",
+    "validity": "Validity",
+    "data": "Data",
+    "details": "Details",
+    "orderCreationFailed": "Order Creation Failed",
+    "retry": "Retry",
+    "copyErrorDetails": "Copy Error Details",
+    "proceedToRecharge": "Proceed to recharge"
+  },
+  "transactionStatusScreen": {
+    "paymentStatus": "Payment Status",
+    "goToHome": "Go to Home"
+  },
+  "src": {
+    "processingPayment": "Processing Payment",
+    "paymentSuccessful": "Payment Successful",
+    "paymentFailed": "Payment Failed",
+    "paymentRefunded": "Payment Refunded",
+    "reconciliationRequired": "Reconciliation Required",
+    "capturedRetrying": "Payment Captured, Retrying",
+    "refundInProgress": "Refund In Progress",
+    "successful": "Successful",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "retrying": "Retrying",
+    "processing": "Processing",
+    "pending": "Pending",
+    "last30": "Last 30 days",
+    "last3m": "Last 3 months",
+    "last6m": "Last 6 months",
+    "currentYear": "Current Year",
+    "mobilePrepaid": "Mobile Prepaid",
+    "mobilePostpaid": "Mobile Postpaid",
+    "electricity": "Electricity",
+    "creditCardPayment": "Credit Card Payment",
+    "fastagRecharge": "FASTag Recharge",
+    "recommendedPacks": "Recommended Packs",
+    "payNow": "Pay Now",
+    "yourRegisteredNumber": "Your registered number",
+    "myNumber": "My Number",
+    "availableOperators": "Available operators",
+    "unknown": "Unknown"
+  },
+  "msg": {
+    "loadingCircles": "Loading circles…",
+    "chooseCircle": "Choose your telecom circle",
+    "circlesFailed": "Could not load circles.",
+    "plansFailed": "Could not load recharge plans.",
+    "rechargeWithPlan": "Recharge with ₹{{amount}} plan",
+    "billers": "Billers",
+    "categoryMissing": "Category ID not provided",
+    "billersFailed": "Failed to load billers. Please try again.",
+    "payCategory": "Pay {{category}}",
+    "biller": "Biller",
+    "electricityBill": "Electricity Bill",
+    "billFetchFailed": "Unable to fetch bill details",
+    "billFetchFailed2": "Could not fetch bill details.",
+    "enterField": "Enter {{field}}",
+    "rechargeOrderFailed": "Unable to create recharge order.",
+    "orderDetailsMissing": "Payment order details (key/orderId) are missing from the response.",
+    "verifyFailed": "Unable to verify payment.",
+    "rechargeOrderFailed2": "Could not create recharge order.",
+    "errorDetailsTitle": "Recharge order error details",
+    "noDescription": "No description available",
+    "operatorPayment": "{{operator}} payment",
+    "operatorLogo": "{{operator}} logo",
+    "operator": "Operator",
+    "billPayment": "Bill Payment",
+    "billOrderFailed": "Unable to create bill payment order.",
+    "billOrderFailed2": "Could not create bill payment order.",
+    "operatorBillPayment": "{{operator}} Bill Payment",
+    "paymentsAndBills": "Payments & bills",
+    "searchPlaceholder": "Search \"Electricity, DTH, FASTag…\"",
+    "product": "Product",
+    "rechargeSuccessful": "Recharge successful",
+    "dthRechargeSuccessful": "DTH recharge of customer {{customer}} was successful.",
+    "recharge": "Recharge"
+  },
+  "api": {
+    "timeout": "The request timed out. Please check your connection and try again.",
+    "network": "Network error. Please check your internet connection and try again.",
+    "sessionExpired": "Session expired. Please log in again.",
+    "rejected": "The backend rejected this request as invalid.",
+    "invalid": "Invalid request.",
+    "server": "Server error. Please try again later.",
+    "generic": "Something went wrong.",
+    "orderFailed": "Could not create the recharge/bill order.",
+    "processing": "Transaction is being processed.",
+    "retrying": "Having trouble reaching the server, retrying..."
+  },
+  "r2": {
+    "invalidInput": "Invalid Input",
+    "enterField": "Please enter {{field}}.",
+    "enterValidField": "Please enter valid {{field}}."
+  }
+}

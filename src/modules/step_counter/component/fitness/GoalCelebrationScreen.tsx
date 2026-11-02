@@ -25,6 +25,10 @@ import icon_Walking_Enthusiast from "../../assets/StepCount/Achivement_icon(2).s
 import icon_Streak_Keeper from "../../assets/StepCount/Achivement_icon(3).svg";
 import icon_Trailblazer from "../../assets/StepCount/Achivement_icon(4).svg";
 import icon_Sunrise_Strider from "../../assets/StepCount/Achivement_icon(1).svg";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import { Trans } from "react-i18next";
+import { formatNumber } from "../../../../i18n/format";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export type AchievementCategory = "walking" | "streak" | "trail" | "sunrise";
@@ -280,7 +284,7 @@ const BlastEffect: React.FC = () => (
 const StatsRow: React.FC<{ summary: NonNullable<GoalSyncData["overallSummary"]> }> = ({ summary }) => {
   const stats = [
     { icon: "👣", label: "Steps",    value: summary.steps.toLocaleString() },
-    { icon: "🔥", label: "Calories", value: `${summary.calories}` },
+    { icon: "🔥", label: i18n.t("stepCounter:r2.calories"), value: `${summary.calories}` },
     { icon: "📍", label: "Distance", value: `${summary.distance_km} km` },
     { icon: "⏱️", label: "Active",   value: `${summary.active_minutes} min` },
   ];
@@ -316,8 +320,8 @@ const AchievementCard: React.FC<{
 
   const headline =
     category === "streak"
-      ? config.headline.replace("{streak}", String(response.currentStreak ?? 0))
-      : config.headline;
+      ? translateSourceText("stepCounter", config.headline).replace("{streak}", String(response.currentStreak ?? 0))
+      : translateSourceText("stepCounter", config.headline);
 
   const { BadgeSvg } = config;
 
@@ -327,7 +331,7 @@ const AchievementCard: React.FC<{
     >
       <View style={styles.cardHeader}>
         <View style={styles.headerDividerLeft} />
-        <Text style={styles.categoryLabel}>{config.label}</Text>
+        <Text style={styles.categoryLabel}>{translateSourceText("stepCounter", config.label)}</Text>
         <View style={styles.headerDividerRight} />
       </View>
 
@@ -356,8 +360,7 @@ const AchievementCard: React.FC<{
       {response.overallSummary ? (
         config.subtext(steps) !== "" && (
           <Text style={styles.subtext}>
-            You've walked{" "}
-            <Text style={styles.subtextHighlight}>{steps.toLocaleString()} steps.</Text>
+            <Trans i18nKey="stepCounter:r2.youWalked" values={{ steps: formatNumber(steps) }} components={{ b: <Text style={styles.subtextHighlight} /> }} />
           </Text>
         )
       ) : achievement?.description ? (
@@ -377,7 +380,7 @@ const AchievementCard: React.FC<{
       {response.overallSummary && <StatsRow summary={response.overallSummary} />}
 
       <TouchableOpacity style={styles.ctaBtn} onPress={onNext} activeOpacity={0.85}>
-        <Text style={styles.ctaBtnText}>{isLast ? "Awesome! 🎉" : "Next Achievement →"}</Text>
+        <Text style={styles.ctaBtnText}>{isLast ? i18n.t("stepCounter:r2.awesome") : i18n.t("stepCounter:r2.nextAchievement")}</Text>
       </TouchableOpacity>
     </Animated.View>
   );

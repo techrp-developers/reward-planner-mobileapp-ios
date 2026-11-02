@@ -16,6 +16,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { fetchAllStates } from "../../api/AddressApi";
 import { useAlert } from "../alerts";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type AddressTag = "Home" | "Work" | "Other";
 
@@ -132,6 +134,7 @@ function AddressDetailsSheet({
   onClose,
   onSubmit,
 }: Props) {
+  const { t: tx } = useTranslation();
   const insets = useSafeAreaInsets();
   const alert = useAlert();
   const { isDark, theme } = useAppTheme();
@@ -186,41 +189,41 @@ function AddressDetailsSheet({
     const phone = fields.phone.trim();
 
     if (!flatHouseBuilding) {
-      e.flatHouseBuilding = "Flat, house number or building name is required";
+      e.flatHouseBuilding = i18n.t("products:address.v.flatRequired");
     } else if (flatHouseBuilding.length < 2) {
-      e.flatHouseBuilding = "Enter at least 2 characters";
+      e.flatHouseBuilding = i18n.t("products:address.v.min2");
     }
 
     if (!areaLocality) {
-      e.areaLocality = "Area or locality is required";
+      e.areaLocality = i18n.t("products:address.v.areaRequired");
     } else if (areaLocality.length < 2) {
-      e.areaLocality = "Enter at least 2 characters";
+      e.areaLocality = i18n.t("products:address.v.min2");
     }
 
     if (!pincode) {
-      e.pincode = "Pincode is required";
+      e.pincode = i18n.t("products:address.v.pincodeRequired");
     } else if (!/^[1-9]\d{5}$/.test(pincode)) {
-      e.pincode = "Enter a valid 6-digit pincode";
+      e.pincode = i18n.t("products:address.v.pincodeInvalid");
     }
 
     if (!city) {
-      e.city = "City is required";
+      e.city = i18n.t("products:address.v.cityRequired");
     } else if (city.length < 2) {
-      e.city = "Enter a valid city name";
+      e.city = i18n.t("products:address.v.cityInvalid");
     }
 
-    if (fields.stateId === null) e.stateId = "Please select a state";
+    if (fields.stateId === null) e.stateId = i18n.t("products:address.v.stateRequired");
 
     if (!name) {
-      e.name = "Contact name is required";
+      e.name = i18n.t("products:address.v.nameRequired");
     } else if (name.length < 2) {
-      e.name = "Enter a valid contact name";
+      e.name = i18n.t("products:address.v.nameInvalid");
     }
 
     if (!phone) {
-      e.phone = "Phone number is required";
+      e.phone = i18n.t("products:address.v.phoneRequired");
     } else if (!/^[6-9]\d{9}$/.test(phone)) {
-      e.phone = "Enter a valid 10-digit mobile number";
+      e.phone = i18n.t("products:address.v.phoneInvalid");
     }
 
     return e;
@@ -261,17 +264,17 @@ function AddressDetailsSheet({
       });
     } catch (err: any) {
       console.error("Failed to save address:", err);
-      alert.error("Error", err?.response?.data?.message || "Failed to save address");
+      alert.error(i18n.t("products:addressFormPayload.error"), err?.response?.data?.message || i18n.t("products:r2.failedToSaveAddress"));
     } finally {
       setSubmitting(false);
     }
   };
 
   const statePlaceholder = statesLoading
-    ? "Loading states..."
+    ? i18n.t("products:r2.loadingStates")
     : statesError
       ? "Couldn't load states - tap to retry"
-      : "Select State";
+      : i18n.t("products:r2.selectState");
 
   const themedInputProps = {
     placeholderTextColor: isDark ? "#71717A" : "#9A9AA5",
@@ -286,7 +289,7 @@ function AddressDetailsSheet({
       >
         <View style={[styles.header, isDark && darkStyles.header]}>
           <View style={[styles.sheetHandle, isDark && darkStyles.sheetHandle]} />
-          <Text style={[styles.headerTitle, isDark && darkStyles.primaryText]}>Enter Complete Address</Text>
+          <Text style={[styles.headerTitle, isDark && darkStyles.primaryText]}>{tx("products:addressFormPayload.enterCompleteAddress")}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={10}>
             <Text style={[styles.closeText, isDark && darkStyles.primaryText]}>✕</Text>
           </TouchableOpacity>
@@ -297,7 +300,7 @@ function AddressDetailsSheet({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <Text style={[styles.label, isDark && darkStyles.label]}>Save Address as</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.saveAddressAs")}</Text>
           <View style={styles.chipRow}>
             {ADDRESS_TAGS.map(tag => {
               const active = fields.saveAs === tag;
@@ -321,12 +324,12 @@ function AddressDetailsSheet({
             })}
           </View>
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Flat / House no / Building Name*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.flatHouseNoBuildingName")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.flatHouseBuilding}
             onChangeText={t => setField("flatHouseBuilding", t)}
-            placeholder="Enter here"
+            placeholder={tx("products:addressFormPayload.enterHere")}
             maxLength={120}
             style={[
               styles.input,
@@ -339,12 +342,12 @@ function AddressDetailsSheet({
             <Text style={styles.errorText}>{errors.flatHouseBuilding}</Text>
           ) : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Area / Sector / Locality*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.areaSectorLocality")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.areaLocality}
             onChangeText={t => setField("areaLocality", t)}
-            placeholder="Enter here"
+            placeholder={tx("products:addressFormPayload.enterHere")}
             maxLength={120}
             style={[
               styles.input,
@@ -357,42 +360,42 @@ function AddressDetailsSheet({
             <Text style={styles.errorText}>{errors.areaLocality}</Text>
           ) : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Nearby Landmark (Optional)</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.nearbyLandmarkOptional")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.landmark}
             onChangeText={t => setField("landmark", t)}
-            placeholder="Enter here"
+            placeholder={tx("products:addressFormPayload.enterHere")}
             maxLength={100}
             style={[styles.input, isDark && darkStyles.input]}
           />
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Pincode*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.pincode")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.pincode}
             onChangeText={t => setField("pincode", t.replace(/\D/g, ""))}
             keyboardType="number-pad"
             maxLength={6}
-            placeholder="Enter pincode"
+            placeholder={tx("products:addressFormPayload.enterPincode")}
             style={[styles.input, isDark && darkStyles.input, touched.pincode && errors.pincode && styles.inputError]}
             onBlur={() => markTouched("pincode")}
           />
           {touched.pincode && errors.pincode ? <Text style={styles.errorText}>{errors.pincode}</Text> : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>City*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.city")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.city}
             onChangeText={t => setField("city", t)}
-            placeholder="Enter city"
+            placeholder={tx("products:addressFormPayload.enterCity")}
             maxLength={60}
             style={[styles.input, isDark && darkStyles.input, touched.city && errors.city && styles.inputError]}
             onBlur={() => markTouched("city")}
           />
           {touched.city && errors.city ? <Text style={styles.errorText}>{errors.city}</Text> : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>State*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.state")}</Text>
           <Dropdown
             style={[
               styles.input,
@@ -422,19 +425,19 @@ function AddressDetailsSheet({
           />
           {statesError ? (
             <TouchableOpacity onPress={retryStates}>
-              <Text style={styles.retryText}>Couldn't load states. Tap to retry.</Text>
+              <Text style={styles.retryText}>{tx("products:addressFormPayload.couldnTLoadStatesTap")}</Text>
             </TouchableOpacity>
           ) : null}
           {touched.stateId && errors.stateId ? (
             <Text style={styles.errorText}>{errors.stateId}</Text>
           ) : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Contact Name*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.contactName")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.name}
             onChangeText={t => setField("name", t)}
-            placeholder="Enter name"
+            placeholder={tx("products:addressFormPayload.enterName")}
             maxLength={80}
             style={[styles.input, isDark && darkStyles.input, touched.name && errors.name && styles.inputError]}
             onBlur={() => markTouched("name")}
@@ -443,12 +446,12 @@ function AddressDetailsSheet({
             <Text style={styles.errorText}>{errors.name}</Text>
           ) : null}
 
-          <Text style={[styles.label, isDark && darkStyles.label]}>Phone Number*</Text>
+          <Text style={[styles.label, isDark && darkStyles.label]}>{tx("products:addressFormPayload.phoneNumber")}</Text>
           <TextInput
             {...themedInputProps}
             value={fields.phone}
             onChangeText={t => setField("phone", t.replace(/[^\d]/g, ""))}
-            placeholder="Enter phone"
+            placeholder={tx("products:addressFormPayload.enterPhone")}
             keyboardType="number-pad"
             maxLength={10}
             style={[styles.input, isDark && darkStyles.input, touched.phone && errors.phone && styles.inputError]}
@@ -470,7 +473,7 @@ function AddressDetailsSheet({
               end={{ x: 1, y: 0.5 }}
               style={[styles.cta, submitting && styles.ctaDisabled]}
             >
-              <Text style={styles.ctaText}>{submitting ? "Saving..." : submitLabel}</Text>
+              <Text style={styles.ctaText}>{submitting ? i18n.t("products:r2.saving") : submitLabel}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </ScrollView>

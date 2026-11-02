@@ -36,6 +36,8 @@ import {
 import { useAlert } from '../../components/alerts';
 import type { AppStackParamList } from '../../../../navigation/RootNavigator';
 import { useAppTheme } from '../../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type HelpFormProps = NativeStackScreenProps<AppStackParamList, 'HelpForm'>;
 type SupportContext = 'general' | 'ecommerce' | 'services' | 'bbps' | 'step_counter';
@@ -89,6 +91,7 @@ const formatOrderDate = (value: string) => {
 };
 
 export default function HelpForm({ navigation, route }: HelpFormProps) {
+  const { t: tx } = useTranslation();
   const alert = useAlert();
   const { isDark, theme } = useAppTheme();
 
@@ -257,7 +260,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
 
   const setValidatedAttachment = useCallback((file: TicketAttachment) => {
     if (file.size && file.size > MAX_ATTACHMENT_SIZE) {
-      alert.error('File too large', 'Please select a file smaller than 25 MB.');
+      alert.error(i18n.t("products:helpForm.fileTooLarge"), i18n.t("products:helpForm.pleaseSelectAFileSmaller"));
       return;
     }
     setAttachment(file);
@@ -271,7 +274,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
     });
     if (result.didCancel) return;
     if (result.errorCode) {
-      alert.error('Attachment Error', result.errorMessage || 'Unable to select this file.');
+      alert.error(i18n.t("products:helpForm.attachmentError"), result.errorMessage || i18n.t("products:r2.unableToSelectThisFile"));
       return;
     }
     const asset = result.assets?.[0];
@@ -308,21 +311,21 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
       });
     } catch (error: any) {
       if (error?.code === 'OPERATION_CANCELED') return;
-      alert.error('Attachment Error', 'Unable to select this document.');
+      alert.error(i18n.t("products:helpForm.attachmentError"), i18n.t("products:helpForm.unableToSelectThisDocument"));
     }
   }, [alert, setValidatedAttachment]);
 
   const handleCreateTicket = useCallback(async () => {
     try {
       if (!selectedCategory?.category_id) {
-        alert.error('Validation Error', 'Please select category');
+        alert.error(i18n.t("products:helpForm.validationError"), i18n.t("products:helpForm.pleaseSelectCategory"));
         return;
       }
 
       if (description.trim().length < 10) {
         alert.error(
-          'Validation Error',
-          'Description must be minimum 10 characters',
+          i18n.t("products:helpForm.msg.validationError"),
+          i18n.t("products:helpForm.msg.descriptionMustBeMinimum10"),
         );
         return;
       }
@@ -343,8 +346,8 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
 
       if (res.success) {
         alert.success(
-          'Ticket Created',
-          res.message || 'Support ticket created successfully',
+          i18n.t("products:helpForm.msg.ticketCreated"),
+          res.message || i18n.t("products:r2.supportTicketCreatedSuccessfully"),
         );
 
         setDescription('');
@@ -355,11 +358,11 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
         return;
       }
 
-      alert.error('Ticket Error', res.message);
+      alert.error(i18n.t("products:helpForm.ticketError"), res.message);
     } catch (error: any) {
       alert.error(
-        'Ticket Error',
-        error?.message || 'Failed to create support ticket',
+        i18n.t("products:helpForm.msg.ticketError"),
+        error?.message || i18n.t("products:r2.failedToCreateSupportTicket"),
       );
     } finally {
       setLoading(false);
@@ -377,7 +380,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
   return (
     <SafeAreaView
       style={[styles.screen, isDark && darkStyles.screen]}
-      edges={['top']}
+      edges={['top', 'bottom']}
     >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
@@ -399,7 +402,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
               <Text
                 style={[styles.headerTitle, isDark && darkStyles.primaryText]}
               >
-                Support Ticket
+                {tx("products:helpForm.supportTicket")}
               </Text>
 
               <TouchableOpacity
@@ -413,13 +416,13 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                     isDark && darkStyles.historyBtnText,
                   ]}
                 >
-                  History
+                  {tx("products:helpForm.history")}
                 </Text>
               </TouchableOpacity>
             </View>
 
             <Text style={[styles.headerSub, isDark && darkStyles.mutedText]}>
-              Tell us what happened.We'll attach the right account context so our team can help faster
+              {tx("products:helpForm.tellUsWhatHappenedWe")}
             </Text>
           </View>
 
@@ -435,7 +438,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                       Recent {supportContext === 'services' ? 'service' : 'shopping'} orders
                     </Text>
                     <Text style={[styles.orderHint, isDark && darkStyles.mutedText]}>
-                      Select an order if your issue is related to one.
+                      {tx("products:helpForm.selectAnOrderIfYour")}
                     </Text>
                   </View>
                   {ordersLoading ? <ActivityIndicator size="small" color={theme.primary} /> : null}
@@ -445,7 +448,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                   <View style={[styles.contextNotice, isDark && darkStyles.contextNotice]}>
                     <MaterialCommunityIcons name="package-variant" size={20} color={theme.primary} />
                     <Text style={[styles.contextNoticeText, isDark && darkStyles.mutedText]}>
-                      No recent orders found. You can still create a general ticket.
+                      {tx("products:helpForm.noRecentOrdersFoundYou")}
                     </Text>
                   </View>
                 ) : null}
@@ -510,17 +513,17 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                 />
                 <Text style={[styles.contextNoticeText, isDark && darkStyles.mutedText]}>
                   {supportContext === 'bbps'
-                    ? 'Include the biller, transaction reference and payment date in your description.'
+                    ? i18n.t("products:r2.includeTheBillerTransactionReferenceAnd")
                     : supportContext === 'step_counter'
-                      ? 'Include your device model, step date and Health Connect status.'
-                      : 'Choose a category and describe the issue. We’ll route it to the right team.'}
+                      ? i18n.t("products:r2.includeYourDeviceModelStepDate")
+                      : i18n.t("products:r2.chooseACategoryAndDescribeThe")}
                 </Text>
               </View>
             )}
             {/* CATEGORY */}
 
             <Text style={[styles.label, isDark && darkStyles.primaryText]}>
-              Category
+              {tx("products:helpForm.category")}
             </Text>
 
             <TouchableOpacity
@@ -543,7 +546,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                   !selectedCategory && isDark && darkStyles.placeholderText,
                 ]}
               >
-                {selectedCategory?.name || 'Select Category'}
+                {selectedCategory?.name || i18n.t("products:r2.selectCategory")}
               </Text>
 
               <MaterialCommunityIcons
@@ -588,12 +591,12 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
             {/* DESCRIPTION */}
 
             <Text style={[styles.label, isDark && darkStyles.primaryText]}>
-              Description
+              {tx("products:helpForm.description")}
             </Text>
 
             <View style={[styles.textAreaWrap, isDark && darkStyles.inputWrap]}>
               <TextInput
-                placeholder="Describe your issue..."
+                placeholder={tx("products:helpForm.describeYourIssue")}
                 placeholderTextColor={isDark ? '#71717A' : '#999'}
                 selectionColor={theme.primary}
                 multiline
@@ -605,10 +608,10 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
             </View>
 
             <Text style={[styles.label, isDark && darkStyles.primaryText]}>
-              Attachment <Text style={styles.optionalLabel}>(optional)</Text>
+              Attachment <Text style={styles.optionalLabel}>{tx("products:helpForm.optional")}</Text>
             </Text>
             <Text style={[styles.attachmentHint, isDark && darkStyles.mutedText]}>
-              Add an image, video, PDF, Word, Excel or text file. Maximum 25 MB.
+              {tx("products:helpForm.addAnImageVideoPdf")}
             </Text>
 
             <View style={styles.attachmentActions}>
@@ -618,7 +621,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                 onPress={handlePickMedia}
               >
                 <MaterialCommunityIcons name="image-multiple-outline" size={20} color={theme.primary} />
-                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>Photo / Video</Text>
+                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>{tx("products:helpForm.photoVideo")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 activeOpacity={0.82}
@@ -626,7 +629,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                 onPress={handlePickDocument}
               >
                 <MaterialCommunityIcons name="file-document-outline" size={20} color={theme.primary} />
-                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>Document</Text>
+                <Text style={[styles.attachmentButtonText, isDark && darkStyles.primaryText]}>{tx("products:helpForm.document")}</Text>
               </TouchableOpacity>
             </View>
 
@@ -648,11 +651,11 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                     {attachment.name}
                   </Text>
                   <Text style={[styles.attachmentSize, isDark && darkStyles.mutedText]}>
-                    {formatFileSize(attachment.size) || 'Ready to upload'}
+                    {formatFileSize(attachment.size) || i18n.t("products:r2.readyToUpload")}
                   </Text>
                 </View>
                 <TouchableOpacity
-                  accessibilityLabel="Remove attachment"
+                  accessibilityLabel={tx("products:helpForm.removeAttachment")}
                   style={styles.removeAttachment}
                   onPress={() => setAttachment(null)}
                 >
@@ -677,7 +680,7 @@ export default function HelpForm({ navigation, route }: HelpFormProps) {
                 {loading ? (
                   <ActivityIndicator color="#FFF" />
                 ) : (
-                  <Text style={styles.submitText}>Create Ticket</Text>
+                  <Text style={styles.submitText}>{tx("products:helpForm.createTicket")}</Text>
                 )}
               </LinearGradient>
             </TouchableOpacity>

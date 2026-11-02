@@ -15,6 +15,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../navigation/type';
 import { useServiceBundles } from '../../hooks/useServiceBundles';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 const fallbackImage = require('../../assete/service/PackBanner.png');
 
@@ -90,6 +91,7 @@ function BundleCard({
   onPress,
   servicesTheme,
 }: BundleCardProps) {
+  const { t: tx } = useTranslation();
   const [imgError, setImgError] = useState(false);
   const services = useMemo(() => parseBundleServices(description), [description]);
   const displayPrice = formatBundlePrice(price);
@@ -144,7 +146,7 @@ function BundleCard({
           end={{ x: 1, y: 0 }}
           style={styles.cta}
         >
-          <Text style={styles.ctaText}>Get Full Pack</Text>
+          <Text style={styles.ctaText}>{tx("services:bundleService.getFullPack")}</Text>
         </LinearGradient>
       </TouchableOpacity>
 
@@ -164,6 +166,7 @@ function BundleCard({
 }
 
 export default function BundleService() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavProp>();
   const servicesTheme = useServicesTheme();
   const { data, isLoading } = useServiceBundles();
@@ -171,7 +174,7 @@ export default function BundleService() {
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-        <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>Bundle Services</Text>
+        <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>{tx("services:bundleService.bundleServices")}</Text>
         <ActivityIndicator size="large" color={servicesTheme.colors.primary} style={styles.loader} />
       </View>
     );
@@ -181,7 +184,7 @@ export default function BundleService() {
 
   return (
     <View style={[styles.container, { backgroundColor: servicesTheme.colors.background }]}>
-      <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>Bundle Services</Text>
+      <Text style={[styles.mainHeading, { color: servicesTheme.colors.textStrong }]}>{tx("services:bundleService.bundleServices")}</Text>
 
       {data.map((item) => (
         <BundleCard

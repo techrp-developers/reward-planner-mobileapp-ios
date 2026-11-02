@@ -5,6 +5,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import SelectableServiceCard from '../government/SelectableServiceCard';
 import { getServiceImageUrl } from '../../utils/serviceImage';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type VariantItem = {
     id: string;
@@ -48,6 +50,7 @@ export default function ServiceCart({
     onAddToCart,
     showAddToCart = true,
 }: ServiceCartProps) {
+    const { t: tx } = useTranslation();
     const servicesTheme = useServicesTheme();
     const services = useMemo(() => {
         if (Array.isArray(variants)) {
@@ -124,7 +127,7 @@ export default function ServiceCart({
                     start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }}
                     style={styles.discountBadge}
                 >
-                    <Text style={styles.discountText}>Upto 48% Off</Text>
+                    <Text style={styles.discountText}>{tx("services:serviceCart.upto48Off")}</Text>
                 </LinearGradient> */}
 
                 {/* <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
@@ -199,7 +202,7 @@ export default function ServiceCart({
                 </View>
 
                 <Text style={[styles.subText, { color: servicesTheme.colors.muted }]}>
-                    {selectedService?.subtitle || subText || 'Complete assistance from application to delivery for your document needs.'}
+                    {selectedService?.subtitle || subText || i18n.t("services:r2.completeAssistanceFromApplicationToDelivery")}
                 </Text>
 
                 {/* 4. Renewal Offer Banner */}
@@ -210,11 +213,11 @@ export default function ServiceCart({
                 >
                     <MaterialCommunityIcons name="gift" size={24} color="#B45309" />
                     <View style={styles.offerTextCol}>
-                        <Text style={styles.offerTitle}>Upto 48% Off on renewal</Text>
-                        <Text style={styles.offerSub}>Apply before the offer ends</Text>
+                        <Text style={styles.offerTitle}>{tx("services:serviceCart.upto48OffOnRenewal")}</Text>
+                        <Text style={styles.offerSub}>{tx("services:serviceCart.applyBeforeTheOfferEnds")}</Text>
                     </View>
                     <View style={styles.offerBadge}>
-                        <Text style={styles.offerBadgeText}>Today Only</Text>
+                        <Text style={styles.offerBadgeText}>{tx("services:serviceCart.todayOnly")}</Text>
                     </View>
                 </LinearGradient> */}
 
@@ -234,7 +237,7 @@ export default function ServiceCart({
                         activeOpacity={0.9}
                     >
                         <View style={[styles.outlineButtonInner, { backgroundColor: servicesTheme.colors.surface }]}>
-                            <Text style={[styles.outlineButtonText, { color: servicesTheme.colors.primary }]}>Add To Cart</Text>
+                            <Text style={[styles.outlineButtonText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceCart.addToCart")}</Text>
                         </View>
                     </TouchableOpacity>
                 )}

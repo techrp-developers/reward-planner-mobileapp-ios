@@ -7,6 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import RewardIcon from '../../../../assets/product/rewards.svg';
+import { useTranslation } from "react-i18next";
 
 type Props = {
   rewardCoins: number;
@@ -26,6 +27,7 @@ const PointsButton: React.FC<Props> = ({
   redeemCoins = 0,
   onPress,
 }) => {
+  const { t: tx } = useTranslation();
   return (
     <Pressable
       onPress={onPress}
@@ -44,7 +46,7 @@ const PointsButton: React.FC<Props> = ({
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              Earn
+              {tx("products:pointsButton.earn")}
             </Text>
             <View style={styles.valueRow}>
               <Text
@@ -68,7 +70,7 @@ const PointsButton: React.FC<Props> = ({
               numberOfLines={1}
               adjustsFontSizeToFit
             >
-              Redeem
+              {tx("products:pointsButton.redeem")}
             </Text>
             <View style={styles.valueRow}>
               <Text

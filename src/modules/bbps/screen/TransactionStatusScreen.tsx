@@ -5,6 +5,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import BBPSHead from '../constatnt/BBPSHead';
 import { pollTransactionStatus, TERMINAL_TRANSACTION_STATUSES, TransactionStatus } from '../api/BillsAPI';
 import { useBbpsTheme } from '../utils/useBbpsTheme';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../i18n/sourceText";
 
 const BRAND_SECONDARY = '#5B47A3';
 
@@ -37,6 +39,7 @@ const STATUS_PRESENTATION: Record<
 };
 
 const TransactionStatusScreenComponent = ({ navigation, route }: any) => {
+  const { t: tx } = useTranslation();
   const bbpsTheme = useBbpsTheme();
   const transactionId = route?.params?.transactionId;
   const [status, setStatus] = useState<TransactionStatus>('PENDING');
@@ -72,7 +75,7 @@ const TransactionStatusScreenComponent = ({ navigation, route }: any) => {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bbpsTheme.colors.background }]}>
-      <BBPSHead title="Payment Status" onBackPress={handleGoBack} />
+      <BBPSHead title={tx("payments:transactionStatusScreen.paymentStatus")} onBackPress={handleGoBack} />
 
       <View style={styles.container}>
         <View
@@ -92,7 +95,7 @@ const TransactionStatusScreenComponent = ({ navigation, route }: any) => {
             )}
           </View>
 
-          <Text style={[styles.title, { color: bbpsTheme.colors.textStrong }]}>{presentation.title}</Text>
+          <Text style={[styles.title, { color: bbpsTheme.colors.textStrong }]}>{translateSourceText("payments", presentation.title)}</Text>
           <Text style={[styles.message, { color: bbpsTheme.colors.muted }]}>{message}</Text>
 
           {transactionId ? (
@@ -117,7 +120,7 @@ const TransactionStatusScreenComponent = ({ navigation, route }: any) => {
               end={{ x: 1, y: 0 }}
               style={styles.cta}
             >
-              <Text style={styles.ctaText}>Go to Home</Text>
+              <Text style={styles.ctaText}>{tx("payments:transactionStatusScreen.goToHome")}</Text>
             </LinearGradient>
           </TouchableOpacity>
         )}

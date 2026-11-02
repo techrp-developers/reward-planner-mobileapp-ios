@@ -1,0 +1,858 @@
+{
+  "radialProgressCard": {
+    "retry": "Retry"
+  },
+  "addAddressMapScreen": {
+    "locationError": "Location Error",
+    "invalidLocation": "Invalid Location",
+    "thisSearchResultDoesNot": "This search result does not include valid coordinates.",
+    "noLocationSelected": "No Location Selected",
+    "pleaseTapTheMapOr": "Please tap the map or search for an address first.",
+    "addressSaved": "Address Saved",
+    "yourSelectedLocationHasBeen": "Your selected location has been saved successfully.",
+    "saveFailed": "Save Failed",
+    "error": "Error",
+    "couldNotLoadAddressDetails": "Could not load address details for editing. Please try again.",
+    "selectLocation": "Select Location",
+    "selectedLocation": "Selected Location",
+    "searchVillageCityAddress": "Search village, city, address...",
+    "change": "Change",
+    "addMoreAddressDetails": "Add more address details",
+    "tapAnywhereOnTheMap": "Tap anywhere on the map or drag the pin to set your location",
+    "saveLocation": "Save Location"
+  },
+  "addressFormPayload": {
+    "error": "Error",
+    "enterCompleteAddress": "Enter Complete Address",
+    "saveAddressAs": "Save Address as",
+    "flatHouseNoBuildingName": "Flat / House no / Building Name*",
+    "enterHere": "Enter here",
+    "areaSectorLocality": "Area / Sector / Locality*",
+    "nearbyLandmarkOptional": "Nearby Landmark (Optional)",
+    "pincode": "Pincode*",
+    "enterPincode": "Enter pincode",
+    "city": "City*",
+    "enterCity": "Enter city",
+    "state": "State*",
+    "couldnTLoadStatesTap": "Couldn't load states. Tap to retry.",
+    "contactName": "Contact Name*",
+    "enterName": "Enter name",
+    "phoneNumber": "Phone Number*",
+    "enterPhone": "Enter phone"
+  },
+  "addressPage": {
+    "error": "Error",
+    "failedToLoadAddresses": "Failed to load addresses",
+    "addNewAddress": "Add New Address",
+    "savedAddresses": "Saved Addresses",
+    "default": "Default",
+    "info": "Info",
+    "formSubmissionComingSoon": "Form submission coming soon",
+    "saveAddress": "Save Address"
+  },
+  "addressSelectScreen": {
+    "error": "Error",
+    "failedToLoadAddresses": "Failed to load addresses",
+    "deleted": "Deleted",
+    "addressDeletedSuccessfully": "Address deleted successfully",
+    "couldNotDeleteAddress": "Could not delete address",
+    "defaultAddressUpdated": "Default address updated",
+    "thisAddressIsNowYour": "This address is now your default",
+    "couldNotSetThisAddress": "Could not set this address as default",
+    "couldNotSaveYourSelected": "Could not save your selected address. Please try again.",
+    "couldNotLoadAddressDetails": "Could not load address details for editing",
+    "selectAddress": "Select Address",
+    "searchForAreaStreetName": "Search for area, street name...",
+    "addNewAddress": "Add New Address",
+    "savedAddresses": "Saved Addresses",
+    "loadingAddresses": "Loading addresses...",
+    "default": "Default",
+    "selectAddress2": "Select address",
+    "selectOption": "Select Option",
+    "setAsDefault": "Set as Default",
+    "editAddress": "Edit Address",
+    "deleteAddress": "Delete Address"
+  },
+  "newAddressForm": {
+    "success": "Success",
+    "error": "Error"
+  },
+  "withAddress": {
+    "couponsAndOffers": "Coupons and Offers",
+    "cart": "Cart"
+  },
+  "withoutAddress": {
+    "couponsAndOffers": "Coupons and Offers",
+    "viewAll": "View All",
+    "cart": "Cart",
+    "selectAddress": "Select Address"
+  },
+  "bestSeller": {
+    "bestSellers": "Best Sellers",
+    "viewAll": "View All"
+  },
+  "mostView": {
+    "mostViewed": "Most Viewed",
+    "exploreMore": "Explore More"
+  },
+  "newArrivals": {
+    "newArrivals": "New Arrivals",
+    "theLatestTrendsJustFor": "The latest trends, just for you",
+    "viewAll": "View All"
+  },
+  "recentProduct": {
+    "recentlyViewed": "Recently Viewed",
+    "viewAll": "View All"
+  },
+  "recommendedProducts": {
+    "youMayLikeThis": "You May Like This",
+    "exploreMore": "Explore More"
+  },
+  "topRated": {
+    "topRated": "Top Rated",
+    "exploreMore": "Explore More"
+  },
+  "addToCartSheet": {
+    "productAddedToCartSuccessfully": "Product Added to Cart Successfully",
+    "productAddedToCartSuccessfully2": "✔ Product Added to Cart Successfully"
+  },
+  "emptyCart": {
+    "yourCartLooksALittle": "Your cart looks a little lonely 🛒",
+    "browseProducts": "Browse products"
+  },
+  "benefitsrow": {
+    "fastDelivery": "Fast Delivery"
+  },
+  "buysections": {
+    "rpSecureDelivery": "RP Secure Delivery",
+    "outOfStock": "Out of stock",
+    "adding": "Adding..."
+  },
+  "deliverysections": {
+    "deliverTo": "Deliver to",
+    "estimatedDelivery": "Estimated Delivery"
+  },
+  "offersection": {
+    "apply": "APPLY",
+    "seeAllOffersDiscounts": "See all offers & discounts"
+  },
+  "productInioaccordions": {
+    "noSpecificationsAvailable": "No specifications available"
+  },
+  "productvariants": {
+    "outOfStock": "Out of stock",
+    "unavailable": "Unavailable",
+    "available": "Available"
+  },
+  "checkoutSummary": {
+    "proceedToBuy": "Proceed To Buy"
+  },
+  "orderProcedbutton": {
+    "placeOrder": "Place Order"
+  },
+  "orderStepUI": {
+    "msg": {
+      "sessionExpired": "Session expired",
+      "yourSessionHasExpiredPlease": "Your session has expired. Please log in again.",
+      "paymentProcessing": "Payment Processing",
+      "doNotPayAgainCheck": "Do not pay again; check this order shortly.",
+      "paymentFailed": "Payment Failed",
+      "thePaymentWasNotCompleted": "The payment was not completed. Your cart has been restored.",
+      "paymentStatusPending": "Payment Status Pending",
+      "checkYourOrderBeforeTrying": "Check your order before trying another payment.",
+      "paymentStatusUnavailable": "Payment Status Unavailable",
+      "doNotPayAgainYet": "Do not pay again yet. Please check your order after a few minutes.",
+      "paymentCancelled": "Payment Cancelled",
+      "youCancelledThePaymentYour": "You cancelled the payment. Your cart has been restored.",
+      "checkYourOrderBeforePaying": "Check your order before paying again.",
+      "updateFailed": "Update Failed",
+      "couldNotUpdateQuantityPlease": "Could not update quantity. Please try again."
+    },
+    "selectAddress": "Select Address",
+    "pleaseSelectAnAddress": "Please select an address.",
+    "checkoutFailed": "Checkout Failed",
+    "orderError": "Order Error",
+    "orderIdMissingPleaseTry": "Order ID missing. Please try again.",
+    "paymentFailed": "Payment Failed",
+    "error": "Error",
+    "stockLimit": "Stock Limit",
+    "onlyLimitedStockAvailable": "Only limited stock available",
+    "checkout": "Checkout",
+    "unableToLoadCheckout": "Unable to load checkout",
+    "cart": "Cart",
+    "yourCartIsEmptyAdd": "Your cart is empty. Add products to continue.",
+    "address": "Address",
+    "orderSummary": "Order Summary",
+    "payment": "Payment",
+    "removeAll": "Remove all",
+    "couponsAndOffers": "Coupons and Offers",
+    "relatedProducts": "Related Products"
+  },
+  "paymentOptionsUI": {
+    "upi": "UPI",
+    "card": "Card",
+    "creditDebitAtmCard": "Credit / Debit / ATM Card",
+    "addAndSecureCardsAs": "Add and secure cards as per RBI guidelines",
+    "getUpto5Cashback": "Get upto 5% cashback"
+  },
+  "homeBanner": {
+    "bigSavingsBiggerSmiles": "Big Savings. Bigger Smiles.",
+    "termsConditionsApply": "*Terms & Conditions apply"
+  },
+  "offerHome": {
+    "wishlist": "Wishlist",
+    "invalidProduct": "Invalid product",
+    "productVariantIsMissing": "Product variant is missing",
+    "msg": {
+      "wishlist": "Wishlist"
+    }
+  },
+  "transactionHistory": {
+    "transactionHistory": "Transaction History",
+    "loading": "Loading..."
+  },
+  "walletHistory": {
+    "rewardWallet": "REWARD WALLET",
+    "premium": "Premium",
+    "myBalance": "My Balance",
+    "n1Coin1": "1 Coin = ₹1",
+    "transactionHistory": "Transaction History",
+    "wallet": "Wallet",
+    "loading": "Loading..."
+  },
+  "categoriessection": {
+    "categories": "Categories",
+    "viewAll": "View All"
+  },
+  "featuresProduct": {
+    "featuredThisWeek": "Featured This Week",
+    "exploreMore": "Explore More"
+  },
+  "downloadInvoice": {
+    "error": "Error",
+    "couldNotGeneratePdf": "Could not generate PDF",
+    "orderConfirmed": "Order Confirmed!",
+    "orderSummary": "Order Summary",
+    "totalPaid": "Total Paid",
+    "downloadPdfReceipt": "Download PDF Receipt"
+  },
+  "filterBottomSheet": {
+    "filterOrders": "Filter Orders",
+    "reset": "Reset",
+    "orderTime": "Order Time",
+    "orderStatus": "Order Status",
+    "applyFilters": "Apply Filters"
+  },
+  "myOrder": {
+    "myOrders": "My Orders",
+    "searchYourOrdersHere": "Search your orders here",
+    "filters": "Filters",
+    "coinsEarnedTillDate": "Coins Earned Till Date:",
+    "totalSavingsTillDate": "Total Savings Till Date:",
+    "noOrdersFound": "No orders found",
+    "viewOrder": "View Order"
+  },
+  "selectItemCancellationReason": {
+    "reasonRequired": "Reason required",
+    "pleaseSelectCancellationReason": "Please select cancellation reason",
+    "success": "Success",
+    "itemCancellationRequestSubmittedSuccessfully": "Item cancellation request submitted successfully",
+    "ok": "OK",
+    "cancellationFailed": "Cancellation failed",
+    "error": "Error",
+    "unableToSubmitCancellationRequest": "Unable to submit cancellation request. Please try again.",
+    "requestItemCancellation": "Request Item Cancellation",
+    "reasonForCancellation": "Reason For Cancellation",
+    "noCancellationReasonsAvailable": "No cancellation reasons available.",
+    "comments": "Comments*",
+    "enterAnySpecificQuestionsOr": "Enter any specific questions or requirements you'd like to share"
+  },
+  "tribal": {
+    "pureTraditionalHandcrafted": "Pure, traditional & handcrafted",
+    "straightFromIndiaSTribal": "Straight from India’s tribal artisans",
+    "shopYourFavoritesBeforeThey": "Shop Your Favorites Before They're Gone!"
+  },
+  "tribalScreen": {
+    "tribal": "Tribal",
+    "n4Stars": "4+ Stars ⭐",
+    "bestOffers": "Best Offers",
+    "newArrivals": "New Arrivals",
+    "under999": "Under ₹999"
+  },
+  "buyAgain": {
+    "buyAgain": "Buy Again",
+    "sort": "Sort:"
+  },
+  "categoriesProduct": {
+    "all": "All",
+    "noProductsFoundInThis": "No products found in this category."
+  },
+  "customerReviewsView": {
+    "reviews": "Reviews",
+    "review": "Review",
+    "unableToUpdateHelpfulStatus": "Unable to update helpful status right now.",
+    "customerReviews": "Customer Reviews",
+    "share": "Share",
+    "noReviewsYet": "No reviews yet."
+  },
+  "comingSoon": {
+    "comingSoon": "Coming Soon",
+    "featureUnderDevelopment": "Feature Under Development"
+  },
+  "helpForm": {
+    "fileTooLarge": "File too large",
+    "pleaseSelectAFileSmaller": "Please select a file smaller than 25 MB.",
+    "attachmentError": "Attachment Error",
+    "unableToSelectThisDocument": "Unable to select this document.",
+    "validationError": "Validation Error",
+    "pleaseSelectCategory": "Please select category",
+    "msg": {
+      "validationError": "Validation Error",
+      "descriptionMustBeMinimum10": "Description must be minimum 10 characters",
+      "ticketCreated": "Ticket Created",
+      "ticketError": "Ticket Error"
+    },
+    "ticketError": "Ticket Error",
+    "supportTicket": "Support Ticket",
+    "history": "History",
+    "tellUsWhatHappenedWe": "Tell us what happened.We'll attach the right account context so our team can help faster",
+    "selectAnOrderIfYour": "Select an order if your issue is related to one.",
+    "noRecentOrdersFoundYou": "No recent orders found. You can still create a general ticket.",
+    "category": "Category",
+    "description": "Description",
+    "describeYourIssue": "Describe your issue...",
+    "optional": "(optional)",
+    "addAnImageVideoPdf": "Add an image, video, PDF, Word, Excel or text file. Maximum 25 MB.",
+    "photoVideo": "Photo / Video",
+    "document": "Document",
+    "removeAttachment": "Remove attachment",
+    "createTicket": "Create Ticket"
+  },
+  "myTickets": {
+    "viewImage": "View image",
+    "viewAttachment": "View attachment",
+    "myTickets": "My Tickets",
+    "allTickets": "All Tickets",
+    "open": "Open",
+    "inProgress": "In Progress",
+    "closed": "Closed",
+    "availableTickets": "Available Tickets",
+    "loadingYourTickets": "Loading your tickets...",
+    "noTicketsFound": "No tickets found",
+    "onceAUserRaisesA": "Once a user raises a support request, it will appear here.",
+    "closeImagePreview": "Close image preview"
+  },
+  "couponsPage": {
+    "coupons": "Coupons",
+    "typeCouponCodeHere": "Type coupon code here",
+    "apply": "APPLY"
+  },
+  "couponsSection": {
+    "apply": "APPLY"
+  },
+  "loginHead": {
+    "searchProducts": "Search products"
+  },
+  "orderHeading": {
+    "help": "Help"
+  },
+  "billDetailsCard": {
+    "billDetails": "Bill Details",
+    "useRewardCoins": "Use Reward Coins",
+    "availableSavingsOnThisOrder": "Available savings on this order",
+    "itemTotal": "Item Total",
+    "bagDiscount": "Bag Discount",
+    "rewardDiscount": "Reward Discount",
+    "handlingFees": "Handling Fees",
+    "orderTotal": "Order Total",
+    "coinsRedeemable_one": "{{amount}} coin redeemable",
+    "coinsRedeemable_other": "{{amount}} coins redeemable"
+  },
+  "cartItemCard": {
+    "noImage": "No Image",
+    "removeItem": "Remove Item"
+  },
+  "pointsButton": {
+    "earn": "Earn",
+    "redeem": "Redeem"
+  },
+  "productCard": {
+    "wishlist": "Wishlist",
+    "invalidProduct": "Invalid product",
+    "productVariantIsMissing": "Product variant is missing"
+  },
+  "useCheckoutFlow": {
+    "loginRequired": "Login Required",
+    "pleaseLogInToBuy": "Please log in to buy products.",
+    "unableToContinue": "Unable to continue"
+  },
+  "privacyPolicy": {
+    "msg": {
+      "error": "Error",
+      "failedToLoadPrivacyPolicy": "Failed to load Privacy Policy."
+    },
+    "privacy": "Privacy",
+    "policy": "Policy"
+  },
+  "profile": {
+    "deleteFailed": "Delete failed",
+    "couldNotDeleteTheAccount": "Could not delete the account. Please try again.",
+    "myOrders": "My Orders",
+    "buyAgain": "Buy Again",
+    "wishlist": "Wishlist",
+    "rewards": "Rewards",
+    "yourOrders": "Your Orders",
+    "yourNotes": "Your Notes",
+    "addressBook": "Address Book",
+    "settings": "Settings",
+    "languages": "Languages",
+    "privacyPolicy": "Privacy Policy",
+    "termsConditions": "Terms & Conditions",
+    "deleteAccount": "Delete Account",
+    "logout": "Logout",
+    "areYouSureYouWant": "Are you sure you want to permanently delete your account?",
+    "thisActionCannotBeUndone": "This action cannot be undone.",
+    "deleting": "Deleting...",
+    "darkMode": "Dark Mode"
+  },
+  "termsandCondition": {
+    "error": "Error",
+    "failedToLoadTermsConditions": "Failed to load Terms & Conditions.",
+    "msg": {
+      "accepted": "Accepted",
+      "termsConditionsAcceptedSuccessfully": "Terms & Conditions accepted successfully.",
+      "updateFailed": "Update Failed",
+      "couldNotSaveYourPreference": "Could not save your preference. Please try again."
+    },
+    "terms": "Terms &",
+    "conditions": "Conditions",
+    "loading": "Loading…",
+    "termsConditionsAccepted": "Terms & Conditions Accepted",
+    "termsConditions": "Terms & Conditions",
+    "iUnderstandAgree": "I Understand & Agree"
+  },
+  "todoList": {
+    "msg": {
+      "todo": "Todo",
+      "reminder": "Reminder"
+    },
+    "todo": "Todo",
+    "pleaseEnterTaskTitle": "Please enter task title",
+    "pleaseSelectStartAndEnd": "Please select start and end time",
+    "deleteTask": "Delete Task",
+    "areYouSureYouWant": "Are you sure you want to delete this task?",
+    "cancel": "Cancel",
+    "deleteTasks": "Delete Tasks",
+    "deleteAllSelectedTasks": "Delete all selected tasks?",
+    "reminder": "Reminder",
+    "pleaseSelectATaskFirst": "Please select a task first.",
+    "addNew": "Add New",
+    "edit": "Edit",
+    "share": "Share",
+    "delete": "Delete",
+    "done": "Done",
+    "loadingTasks": "Loading tasks...",
+    "noTasksFound": "No tasks found",
+    "addANewTaskFor": "Add a new task for this selected date.",
+    "allTasks": "All Tasks",
+    "todayTasks": "Today Tasks",
+    "pendingTasks": "Pending Tasks",
+    "completedTasks": "Completed Tasks",
+    "taskName": "Task Name",
+    "taskDescription": "Task Description...",
+    "setAlarmReminder": "Set Alarm Reminder",
+    "reminderTimeEG10": "Reminder time e.g. 10:30 AM",
+    "saveAlarm": "Save Alarm"
+  },
+  "visitingCardModal": {
+    "permissionRequired": "Permission required",
+    "storageAccessIsNeededTo": "Storage access is needed to save the card.",
+    "cardSaved": "Card saved",
+    "yourVisitingCardHasBeen": "Your visiting card has been saved to Photos.",
+    "couldNotSaveCard": "Could not save card",
+    "couldNotShareCard": "Could not share card",
+    "closeVisitingCard": "Close visiting card",
+    "scanToConnect": "SCAN TO CONNECT",
+    "saveVisitingCardToPhotos": "Save visiting card to Photos",
+    "download": "Download",
+    "shareVisitingCard": "Share visiting card",
+    "share": "Share"
+  },
+  "allCategories": {
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "all": "All"
+  },
+  "campaignProductsScreen": {
+    "unableToLoadThisCampaign": "Unable to load this campaign.",
+    "noProductsFoundInThis": "No products found in this campaign."
+  },
+  "categoriesScreen": {
+    "allCategories": "All Categories",
+    "all": "All",
+    "noSubcategoriesAvailable": "No subcategories available"
+  },
+  "explore": {
+    "explore": "Explore"
+  },
+  "itemCancellationDetailsScreen": {
+    "cancellationStatus": "Cancellation Status",
+    "loadingCancellationDetails": "Loading cancellation details..."
+  },
+  "orderConfirmedScreen": {
+    "orderConfirmed": "Order Confirmed",
+    "loadingOrderDetails": "Loading order details...",
+    "orderItems": "Order items",
+    "cancelItem": "Cancel Item",
+    "writeReview": "Write Review",
+    "reviewed": "Reviewed",
+    "youMayAlsoLikeThis": "You may also like this"
+  },
+  "paymentScreen": {
+    "success": "Success",
+    "paymentVerifiedSuccessfully": "Payment verified successfully 🎉",
+    "verificationFailed": "Verification Failed",
+    "pleaseContactSupport": "Please contact support",
+    "paymentCancelled": "Payment Cancelled",
+    "youExitedThePaymentWindow": "You exited the payment window.",
+    "msg": {
+      "paymentFailed": "Payment Failed",
+      "error": "Error",
+      "verificationPending": "Verification Pending",
+      "paymentIsBeingVerifiedPlease": "Payment is being verified. Please check orders page."
+    }
+  },
+  "productCategoriesScreen": {
+    "noProductsFoundInThis": "No products found in this category."
+  },
+  "reviewScreen": {
+    "camera": "Camera",
+    "couldNotCapturePhotoPlease": "Could not capture photo. Please try again.",
+    "unableToOpenCameraRight": "Unable to open camera right now.",
+    "gallery": "Gallery",
+    "noPhotosSelected": "No photos selected.",
+    "unableToOpenGalleryRight": "Unable to open gallery right now.",
+    "ratingRequired": "Rating Required",
+    "pleaseSelectAStarRating": "Please select a star rating.",
+    "reviewRequired": "Review Required",
+    "pleaseWriteYourReview": "Please write your review.",
+    "loginRequired": "Login Required",
+    "pleaseLoginToSubmitYour": "Please login to submit your review.",
+    "review": "Review",
+    "thankYou": "Thank You",
+    "yourReviewHasBeenSubmitted": "Your review has been submitted.",
+    "ok": "OK",
+    "yourExperienceMatters": "Your Experience Matters",
+    "addPhotos": "Add Photos",
+    "addUpTo6Photos": "Add up to 6 photos like Amazon reviews.",
+    "addMorePhotos": "Add more photos",
+    "whatDidYouLoveAbout": "What did you love about it?",
+    "valueForMoney": "Value for Money",
+    "goodQuality": "Good Quality",
+    "smoothExperienceDeliveryProductUse": "Smooth Experience (Delivery + Product Use)",
+    "tellUsMore": "Tell us more",
+    "shareWhatYouLovedAbout": "Share what you loved about this product",
+    "submit": "Submit"
+  },
+  "searchScreen": {
+    "noProductFound": "No product found",
+    "tryADifferentKeyword": "Try a different keyword",
+    "pastSearches": "Past Searches",
+    "success": "Success",
+    "searchHistoryCleared": "Search history cleared.",
+    "error": "Error",
+    "unableToClearSearchHistory": "Unable to clear search history. Please try again.",
+    "noRecentSearches": "No recent searches"
+  },
+  "wishlistScreen": {
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "productInformationIsIncomplete": "Product information is incomplete.",
+    "productVariantIsMissing": "Product variant is missing.",
+    "itemAddedToCart": "Item added to cart.",
+    "myWishlist": "My Wishlist",
+    "yourWishlistIsEmpty": "Your wishlist is empty",
+    "saveProductsYouLoveTo": "Save products you love to find them quickly."
+  },
+  "productdescriptionscreen": {
+    "loginRequired": "Login Required",
+    "pleaseLoginToBuyProducts": "Please login to buy products.",
+    "selectionUnavailable": "Selection unavailable",
+    "pleaseChooseAnAvailableProduct": "Please choose an available product option.",
+    "pleaseLoginToAddProducts": "Please login to add products to cart.",
+    "pleaseChooseAnOptionThat": "Please choose an option that is in stock.",
+    "cartUpdated": "Cart Updated",
+    "cartQuantityUpdatedSuccessfully": "Cart quantity updated successfully.",
+    "msg": {
+      "addedToCart": "Added to Cart",
+      "v0AddedToCartSuccessfully": "{{v0}} added to cart successfully!"
+    },
+    "addToCartFailed": "Add to Cart Failed",
+    "wishlist": "Wishlist",
+    "invalidProduct": "Invalid product",
+    "productVariantIsMissing": "Product variant is missing",
+    "productNotFound": "Product not found",
+    "relatedProducts": "Related Products"
+  },
+  "src": {
+    "orderPlaced": "Order placed",
+    "orderDetails": "Order Details",
+    "orderInProgress": "Order in Progress",
+    "inTransit": "In Transit",
+    "outForDelivery": "Out for Delivery",
+    "orderDelivered": "Order Delivered",
+    "last30Days": "Last 30 Days",
+    "last3Months": "Last 3 Months",
+    "last6Months": "Last 6 Months",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled",
+    "returned": "Returned",
+    "fourStars": "4+ Stars",
+    "newArrivals": "New Arrivals",
+    "under499": "Under ₹499",
+    "over3000": "Over ₹3000",
+    "recentlyBought": "Recently Bought",
+    "mostFrequent": "Most Frequent",
+    "priceLowHigh": "Price: Low to High",
+    "priceHighLow": "Price: High to Low",
+    "general": "General",
+    "categoryInfo": "Category Information",
+    "features": "Features",
+    "dimensions": "Physical Dimensions",
+    "variantDetails": "Variant Details",
+    "additionalInfo": "Additional Information",
+    "exploreProduct": "Product",
+    "exploreServices": "Services",
+    "explorePayments": "Payments",
+    "exploreDineOut": "Dine Out",
+    "exploreBus": "Bus Booking",
+    "exploreExpense": "Expense Track",
+    "exploreCommunity": "Community",
+    "topCategories": "Top Categories For You",
+    "newLaunches": "New & Upcoming Launches",
+    "payAnyUpi": "Pay by any UPI App",
+    "upiApps": "Google Pay, Paytm , PhonePe and more",
+    "allProducts": "All Products",
+    "cancelRequested": "Cancellation Requested",
+    "cancelConfirmed": "Cancellation Confirmed",
+    "refundInitiated": "Refund Initiated",
+    "refundCompleted": "Refund Completed",
+    "cancelRejected": "Cancellation Rejected",
+    "refundOriginal": "Refund to Original Payment",
+    "coinsReversed": "Reward Coins Reversed",
+    "itemCancelled": "Item Cancelled",
+    "spec": {
+      "batteryLife": "Battery Life",
+      "bluetoothVersion": "Bluetooth Version",
+      "breadth": "Breadth",
+      "chargingTime": "Charging Time",
+      "chargingType": "Charging Type",
+      "colour": "Colour",
+      "connectivity": "Connectivity",
+      "countryOfOrigin": "Country Of Origin",
+      "dimensions": "Dimensions",
+      "driverSize": "Driver Size",
+      "frequencyResponse": "Frequency Response",
+      "height": "Height",
+      "impedance": "Impedance",
+      "length": "Length",
+      "manufacturer": "Manufacturer",
+      "micAvailable": "Mic Available",
+      "modelName": "Model Name",
+      "modelNumber": "Model Number",
+      "noiseCancellation": "Noise Cancellation",
+      "playbackTime": "Playback Time",
+      "productType": "Product Type",
+      "standbyTime": "Standby Time",
+      "subcategory": "Subcategory",
+      "touchControl": "Touch Control",
+      "type": "Type",
+      "vendor": "Vendor",
+      "warranty": "Warranty",
+      "waterResistance": "Water Resistance",
+      "weight": "Weight",
+      "brand": "Brand",
+      "category": "Category"
+    }
+  },
+  "journey": {
+    "statusBy": "Status: {{date}}",
+    "orderStatus": "Order status"
+  },
+  "productHeadImg": {
+    "myOrdersFallback": "My Orders",
+    "searchPlaceholder": "Search \"TRF Bling\""
+  },
+  "review": {
+    "mediaLimitTitle": "Media Limit",
+    "mediaLimitBody": "You can upload up to {{count}} photos."
+  },
+  "address": {
+    "addDetails": "Add Details",
+    "done": "Done",
+    "saveFailed": "Could not save address. Please try again.",
+    "v": {
+      "flatRequired": "Flat, house number or building name is required",
+      "min2": "Enter at least 2 characters",
+      "areaRequired": "Area or locality is required",
+      "pincodeRequired": "Pincode is required",
+      "pincodeInvalid": "Enter a valid 6-digit pincode",
+      "cityRequired": "City is required",
+      "cityInvalid": "Enter a valid city name",
+      "stateRequired": "Please select a state",
+      "nameRequired": "Contact name is required",
+      "nameInvalid": "Enter a valid contact name",
+      "phoneRequired": "Phone number is required",
+      "phoneInvalid": "Enter a valid 10-digit mobile number"
+    }
+  },
+  "visitingCard": {
+    "permTitle": "Save visiting card",
+    "permBody": "Allow Reward Planners to save your visiting card to Photos.",
+    "allow": "Allow",
+    "shareTitle": "{{name}}'s visiting card"
+  },
+  "todo": {
+    "delete": "Delete",
+    "deleteFailed": "Failed to delete todo"
+  },
+  "invoice": {
+    "notYet": "Invoice is not available for this order yet.",
+    "genFailed": "Invoice could not be generated right now. Please try again later.",
+    "fetchFailed": "Could not fetch invoice PDF"
+  },
+  "payment": {
+    "orderDescription": "Order Payment"
+  },
+  "order": {
+    "refund": {
+      "completed": "Completed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "cancelledTitle": "Order Cancelled",
+    "reason": "Reason: {{reason}}",
+    "deliveryDetails": "Delivery Details",
+    "invoiceFetchFailed": "Could not fetch invoice PDF",
+    "invoiceDownloadFailed": "Could not download invoice PDF",
+    "downloadFailed": "Download Failed",
+    "downloadInvoice": "Download Invoice",
+    "saveCopy": "Save a copy of your order",
+    "notFound": "Order not found",
+    "placedTitle": "Order Placed Successfully!",
+    "onItsWay": "Your package is on its way",
+    "relax": "Sit back and relax, we'll update you as it gets closer to your doorstep!",
+    "earnedHeader": "🎉 You earned Reward Coins",
+    "coinsEarnedOnOrder": "+{{count}} Coins earned on this order",
+    "brandFallback": "Brand",
+    "productFallback": "Product",
+    "bestseller": "Bestseller",
+    "receiptNotFound": "Receipt not found",
+    "billDetails": "Bill Details",
+    "priceDetails": "Price Details",
+    "itemTotal": "Item Total",
+    "deliveryFee": "Delivery Fee",
+    "bagDiscount": "Bag Discount",
+    "rewardDiscount": "Reward Discount",
+    "rewardsUsed": "Rewards Used",
+    "coinsCount_one": "{{count}} coin",
+    "coinsCount_other": "{{count}} coins",
+    "orderTotal": "Order Total",
+    "paymentMethod": "Payment Method",
+    "note": "<b>Note:</b> Reward coins will be credited to your wallet within 24 hours after your order is delivered.",
+    "coinsEarned": "{{count}} Reward Coins Earned",
+    "coinsOnDelivery": "You'll earn {{count}} Reward Coins on delivery",
+    "cancelOrder": "Cancel Order"
+  },
+  "wallet": {
+    "filters": {
+      "All": "All",
+      "All Transactions": "All Transactions",
+      "Additions": "Additions",
+      "Deductions": "Deductions",
+      "Expired": "Expired"
+    },
+    "expiredOn": "Expired on {{date}}",
+    "expiresOn": "Expires on {{date}}",
+    "txnId": "Txn Id: {{id}}",
+    "orderNo": "Order No. {{id}}",
+    "coinsExpiring_one": "{{count}} Coin Expiring",
+    "coinsExpiring_other": "{{count}} Coins Expiring",
+    "notAvailable": "N/A"
+  },
+  "r2": {
+    "addToCartFailed": "Add to cart failed",
+    "unableToSubmitCancellationRequest": "Unable to submit cancellation request",
+    "failedToLoadSupportTickets": "Failed to load support tickets",
+    "couldNotGetYourCurrentLocation": "Could not get your current location.",
+    "deliverHere": "Deliver here?",
+    "deliveringTo": "Delivering to",
+    "noSavedContact": "No saved contact",
+    "noSavedAddressYet": "No saved address yet",
+    "viewAddressOptions": "View address options",
+    "viewSelectedAddress": "View selected address",
+    "failedToSaveAddress": "Failed to save address",
+    "loadingStates": "Loading states...",
+    "selectState": "Select State",
+    "saving": "Saving...",
+    "deliveryAddress": "Delivery address",
+    "noAddressSelected": "No address selected",
+    "pleaseWait": "Please wait...",
+    "hide": "Hide",
+    "customersAlsoBought": "Customers Also Bought",
+    "similarProducts": "Similar Products",
+    "addAFewFavouritesAndWatch": "Add a few favourites and watch this space glow up. ✨",
+    "nonReturnable": "Non Returnable",
+    "noReplacement": "No Replacement",
+    "replacementAvailable": "Replacement Available",
+    "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
+    "addressNotSet": "Address not set",
+    "pleaseSelectAValidProductOption": "Please select a valid product option.",
+    "thisProductIsCurrentlyUnavailableFor": "This product is currently unavailable for checkout.",
+    "retrying": "Retrying...",
+    "stepCounter": "Step Counter",
+    "failedToLoadSteps": "Failed to load steps",
+    "failedToLoadRelevantProducts": "Failed to load relevant products",
+    "failedToLoadProducts": "Failed to load products",
+    "submitting": "Submitting...",
+    "noComment": "No comment",
+    "unableToSelectThisFile": "Unable to select this file.",
+    "supportTicketCreatedSuccessfully": "Support ticket created successfully",
+    "failedToCreateSupportTicket": "Failed to create support ticket",
+    "includeTheBillerTransactionReferenceAnd": "Include the biller, transaction reference and payment date in your description.",
+    "includeYourDeviceModelStepDate": "Include your device model, step date and Health Connect status.",
+    "chooseACategoryAndDescribeThe": "Choose a category and describe the issue. We’ll route it to the right team.",
+    "selectCategory": "Select Category",
+    "readyToUpload": "Ready to upload",
+    "noDescriptionAddedForThisTicket": "No description added for this ticket.",
+    "shopping": "Shopping",
+    "services": "Services",
+    "billsRecharge": "Bills & recharge",
+    "stepCounter2": "Step counter",
+    "general": "General",
+    "buyThisNow": "Buy this Now",
+    "pleaseTryAgain": "Please try again.",
+    "noReminderTime": "No reminder time",
+    "tasks": "Tasks",
+    "myTasks": "My Tasks",
+    "selectAll": "Select All",
+    "unselectAll": "Unselect All",
+    "createTask": "Create Task",
+    "editTask": "Edit Task",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "updateTask": "Update Task",
+    "products": "Products",
+    "campaignProducts": "Campaign Products",
+    "viewLess": "View Less",
+    "unableToLoadCancellationDetails": "Unable to load cancellation details.",
+    "unableToLoadOrderDetails": "Unable to load order details.",
+    "addressUnavailable": "Address unavailable",
+    "failedToSubmitReview": "Failed to submit review",
+    "anonymous": "Anonymous",
+    "paymentCancelled": "Payment cancelled",
+    "moreOffers": "{{count}} more offers available"
+  }
+}

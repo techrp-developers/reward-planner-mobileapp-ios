@@ -19,6 +19,8 @@ import type { HomeStackParamList } from "../navigation/types";
 import ProductHeadColor from "../constants/heading/Poduct_Head_Color";
 import { useCart } from "../context/CartContext";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type WishlistItem = any;
@@ -68,6 +70,7 @@ const uniqueIds = (values: unknown[]) => {
 };
 
 const WishlistScreen = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { addItem, items: cartItems } = useCart();
   const { isDark, theme } = useAppTheme();
@@ -207,7 +210,7 @@ const WishlistScreen = () => {
         error?.message ||
         "Failed to remove from wishlist";
       __DEV__ && console.log("Wishlist remove failed", message);
-      Alert.alert("Wishlist", String(message));
+      Alert.alert(i18n.t("products:wishlistScreen.wishlist"), String(message));
     }
   };
 
@@ -241,7 +244,7 @@ const WishlistScreen = () => {
     const itemKey = String(item?.wishlist_id ?? item?.id ?? productId ?? "");
 
     if (!productId) {
-      Alert.alert("Cart", "Product information is incomplete.");
+      Alert.alert(i18n.t("products:wishlistScreen.cart"), i18n.t("products:wishlistScreen.productInformationIsIncomplete"));
       return;
     }
 
@@ -250,7 +253,7 @@ const WishlistScreen = () => {
       const variantId = await resolveCartVariantId(item, productId);
 
       if (!variantId) {
-        Alert.alert("Cart", "Product variant is missing.");
+        Alert.alert(i18n.t("products:wishlistScreen.cart"), i18n.t("products:wishlistScreen.productVariantIsMissing"));
         return;
       }
 
@@ -260,14 +263,14 @@ const WishlistScreen = () => {
       }
 
       await addItem(productId, variantId, 1);
-      Alert.alert("Cart", "Item added to cart.");
+      Alert.alert(i18n.t("products:wishlistScreen.cart"), i18n.t("products:wishlistScreen.itemAddedToCart"));
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
         "Unable to add item to cart.";
-      Alert.alert("Cart", String(message));
+      Alert.alert(i18n.t("products:wishlistScreen.cart"), String(message));
     } finally {
       setCartLoadingKey(null);
     }
@@ -390,7 +393,7 @@ const WishlistScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ProductHeadColor
-        title="My Wishlist"
+        title={tx("products:wishlistScreen.myWishlist")}
         onBackPress={() => navigation.goBack()}
         showSearch={false}
         isDark={isDark}
@@ -416,8 +419,8 @@ const WishlistScreen = () => {
         ListEmptyComponent={
             <View style={styles.emptyContainer}>
                 <MaterialCommunityIcons name="heart-outline" size={80} color={theme.border} />
-                <Text style={[styles.emptyText, { color: theme.text }]}>Your wishlist is empty</Text>
-                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>Save products you love to find them quickly.</Text>
+                <Text style={[styles.emptyText, { color: theme.text }]}>{tx("products:wishlistScreen.yourWishlistIsEmpty")}</Text>
+                <Text style={[styles.emptySubText, { color: theme.secondaryText }]}>{tx("products:wishlistScreen.saveProductsYouLoveTo")}</Text>
             </View>
         }
       />

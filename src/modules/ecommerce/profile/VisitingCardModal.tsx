@@ -21,6 +21,8 @@ import { CameraRoll } from '@react-native-camera-roll/camera-roll';
 import Share from 'react-native-share';
 import QRCode from 'react-native-qrcode-svg';
 import { rs, fs } from '../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Props = {
   visible: boolean;
@@ -56,6 +58,7 @@ export default function VisitingCardModal({
   phone,
   email,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { width, height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const captureRef = useRef<ViewShotRef>(null);
@@ -96,22 +99,22 @@ export default function VisitingCardModal({
         const permission = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
           {
-            title: 'Save visiting card',
-            message: 'Allow Reward Planners to save your visiting card to Photos.',
-            buttonPositive: 'Allow',
+            title: i18n.t('products:visitingCard.permTitle'),
+            message: i18n.t('products:visitingCard.permBody'),
+            buttonPositive: i18n.t('products:visitingCard.allow'),
             buttonNegative: 'Cancel',
           },
         );
         if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permission required', 'Storage access is needed to save the card.');
+          Alert.alert(i18n.t("products:visitingCardModal.permissionRequired"), i18n.t("products:visitingCardModal.storageAccessIsNeededTo"));
           return;
         }
       }
       const uri = await captureCard();
       await CameraRoll.save(uri, { type: 'photo', album: Platform.OS === 'android' ? 'Reward Planners' : undefined });
-      Alert.alert('Card saved', 'Your visiting card has been saved to Photos.');
+      Alert.alert(i18n.t("products:visitingCardModal.cardSaved"), i18n.t("products:visitingCardModal.yourVisitingCardHasBeen"));
     } catch (error: any) {
-      Alert.alert('Could not save card', error?.message || 'Please try again.');
+      Alert.alert(i18n.t("products:visitingCardModal.couldNotSaveCard"), error?.message || i18n.t("products:r2.pleaseTryAgain"));
     } finally {
       setExporting(false);
     }
@@ -122,15 +125,15 @@ export default function VisitingCardModal({
       setExporting(true);
       const uri = await captureCard();
       await Share.open({
-        title: `${name}'s visiting card`,
-        subject: `${name}'s visiting card`,
+        title: i18n.t('products:visitingCard.shareTitle', { name }),
+        subject: i18n.t('products:visitingCard.shareTitle', { name }),
         message: shareMessage,
         url: uri,
         type: 'image/jpeg',
         failOnCancel: false,
       });
     } catch (error: any) {
-      Alert.alert('Could not share card', error?.message || 'Please try again.');
+      Alert.alert(i18n.t("products:visitingCardModal.couldNotShareCard"), error?.message || i18n.t("products:r2.pleaseTryAgain"));
     } finally {
       setExporting(false);
     }
@@ -148,7 +151,7 @@ export default function VisitingCardModal({
             style={styles.closeButton}
             onPress={onClose}
             disabled={exporting}
-            accessibilityLabel="Close visiting card"
+            accessibilityLabel={tx("products:visitingCardModal.closeVisitingCard")}
           >
             <MaterialCommunityIcons name="close" size={rs(23)} color="#FFFFFF" />
           </TouchableOpacity>
@@ -205,19 +208,19 @@ export default function VisitingCardModal({
                 <View style={styles.qrFrame}>
                   <QRCode value={contactVCard} size={qrSize} color="#111111" backgroundColor="#FFFFFF" ecl="M" />
                 </View>
-                <Text style={styles.scanLabel}>SCAN TO CONNECT</Text>
+                <Text style={styles.scanLabel}>{tx("products:visitingCardModal.scanToConnect")}</Text>
               </View>
             </LinearGradient>
           </ViewShot>
 
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.downloadButton} onPress={saveCard} disabled={exporting} accessibilityLabel="Save visiting card to Photos">
+            <TouchableOpacity style={styles.downloadButton} onPress={saveCard} disabled={exporting} accessibilityLabel={tx("products:visitingCardModal.saveVisitingCardToPhotos")}>
               {exporting ? <ActivityIndicator size="small" color="#FFFFFF" /> : <MaterialCommunityIcons name="download-outline" size={rs(19)} color="#FFFFFF" />}
-              <Text style={styles.actionText}>Download</Text>
+              <Text style={styles.actionText}>{tx("products:visitingCardModal.download")}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.shareButton} onPress={shareCard} disabled={exporting} accessibilityLabel="Share visiting card">
+            <TouchableOpacity style={styles.shareButton} onPress={shareCard} disabled={exporting} accessibilityLabel={tx("products:visitingCardModal.shareVisitingCard")}>
               <MaterialCommunityIcons name="share-variant-outline" size={rs(19)} color="#FFFFFF" />
-              <Text style={styles.actionText}>Share</Text>
+              <Text style={styles.actionText}>{tx("products:visitingCardModal.share")}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -25,6 +25,7 @@ import {
 import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
 import { queryClient } from "../../../../query/queryClient";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -49,6 +50,7 @@ const fetchRecentProductsData = async () => {
 };
 
 const RecentProduct = () => {
+    const { t: tx } = useTranslation();
     const navigation = useNavigation<Nav>();
     const { user, isAuthenticated } = useAuth();
     const { isDark, theme } = useAppTheme();
@@ -92,7 +94,7 @@ const RecentProduct = () => {
                 style={styles.gradientSection}
             >
                 <View style={styles.headerRow}>
-                    <Text style={[styles.heading, { color: theme.text }]}>Recently Viewed</Text>
+                    <Text style={[styles.heading, { color: theme.text }]}>{tx("products:recentProduct.recentlyViewed")}</Text>
                     <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={handlePressAll}
@@ -101,7 +103,7 @@ const RecentProduct = () => {
                             { backgroundColor: isDark ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.45)" },
                         ]}
                     >
-                        <Text style={[styles.viewAllText, { color: isDark ? "#FFFFFF" : "#111827" }]}>View All</Text>
+                        <Text style={[styles.viewAllText, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:recentProduct.viewAll")}</Text>
                     </TouchableOpacity>
                 </View>
 

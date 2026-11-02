@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import ProductHeadColor from "../heading/Poduct_Head_Color";
 import CouponsSection from "./CouponsSection";
+import { useTranslation } from "react-i18next";
 
 const COUPONS = [
     {
@@ -28,6 +29,7 @@ const COUPONS = [
 ];
 
 function CouponsPage({ navigation }) {
+    const { t: tx } = useTranslation();
     const [couponCode, setCouponCode] = useState("");
 
     const isDisabled = couponCode.trim().length === 0;
@@ -35,14 +37,14 @@ function CouponsPage({ navigation }) {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "#F6F6F6" }}>
             <ProductHeadColor
-                title="Coupons"
+                title={tx("products:couponsPage.coupons")}
                 onBackPress={() => navigation.goBack()}
             />
 
             {/* Coupon Input */}
             <View style={styles.inputWrapper}>
                 <TextInput
-                    placeholder="Type coupon code here"
+                    placeholder={tx("products:couponsPage.typeCouponCodeHere")}
                     placeholderTextColor="#9E9E9E"
                     value={couponCode}
                     onChangeText={setCouponCode}
@@ -53,7 +55,7 @@ function CouponsPage({ navigation }) {
                     style={[styles.applyBtn, isDisabled && styles.disabledBtn]}
                     disabled={isDisabled}
                 >
-                    <Text style={styles.applyText}>APPLY</Text>
+                    <Text style={styles.applyText}>{tx("products:couponsPage.apply")}</Text>
                 </TouchableOpacity>
             </View>
 

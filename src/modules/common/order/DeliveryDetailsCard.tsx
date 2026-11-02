@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   addressType?: string;
@@ -17,11 +18,12 @@ export default function DeliveryDetailsCard({
   phone,
 }: Props) {
   const { theme } = useAppTheme();
+  const { t: tx } = useTranslation();
 
   return (
     <View style={styles.wrapper}>
       {/* Section Title */}
-      <Text style={[styles.sectionTitle, { color: theme.text }]}>Delivery Details</Text>
+      <Text style={[styles.sectionTitle, { color: theme.text }]}>{tx("products:order.deliveryDetails")}</Text>
 
       {/* Card */}
       <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>

@@ -13,6 +13,7 @@ import {
   SPACING,
   TYPOGRAPHY,
 } from "../../utils/theme";
+import { useTranslation } from "react-i18next";
 
 interface WeeklyGraphProps {
   weeklyData: DailyData[];
@@ -38,6 +39,7 @@ const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
   weeklyData,
   onViewMore,
 }) => {
+  const { t: tx } = useTranslation();
   const today = new Date().getDate();
 
   return (
@@ -45,7 +47,7 @@ const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
       {/* Header */}
       <View style={styles.weekHeader}>
         <Text style={styles.sectionLabel}>
-          This Week
+          {tx("stepCounter:weeklyGraph.thisWeek")}
         </Text>
 
         <TouchableOpacity
@@ -54,7 +56,7 @@ const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
           onPress={onViewMore}
         >
           <Text style={styles.viewMore}>
-            View More
+            {tx("stepCounter:weeklyGraph.viewMore")}
           </Text>
 
           <MaterialCommunityIcons

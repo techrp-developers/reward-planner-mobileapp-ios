@@ -47,6 +47,8 @@ import {
   saveRecentSearch,
   type StoredRecentSearch,
 } from "../../utils/busBookingStorage";
+import i18n from "../../../../i18n";
+import { useTranslation } from "react-i18next";
 
 type DateChip = {
   id: string;
@@ -162,6 +164,8 @@ const formatJourneyDateLabel = (journeyDate: string) => {
 };
 
 export default function BookingHomeScreen() {
+  // Re-render on language change; some labels below use i18n.t directly.
+  useTranslation();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -416,8 +420,8 @@ const handleCitySearch = async (
     });
 
     showPopup({
-      title: "City Search",
-      message: error.message || "Unable to search cities",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.citySearch"),
+      message: error.message || i18n.t("busBooking:r2.unableToSearchCities"),
       variant: "error",
     });
 
@@ -436,8 +440,8 @@ const handleSelectCity = (city: City) => {
   ) {
 
     showPopup({
-      title: "Select City",
-      message: "Please select a city, not a local area.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.selectCity"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectACityNot"),
       variant: "warning",
     });
 
@@ -519,8 +523,8 @@ const handleSearchBuses = async () => {
   if (!fromCity) {
 
     showPopup({
-      title: "Select Source",
-      message: "Please select From city.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.selectSource"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectFromCity"),
       variant: "warning",
     });
 
@@ -531,8 +535,8 @@ const handleSearchBuses = async () => {
   if (!toCity) {
 
     showPopup({
-      title: "Select Destination",
-      message: "Please select To city.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.selectDestination"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectToCity"),
       variant: "warning",
     });
 
@@ -546,8 +550,8 @@ const handleSearchBuses = async () => {
   ) {
 
     showPopup({
-      title: "Invalid Route",
-      message: "From and To city cannot be same.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.invalidRoute"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.fromAndToCityCannot"),
       variant: "warning",
     });
 
@@ -558,8 +562,8 @@ const handleSearchBuses = async () => {
   if (!selectedDateId) {
 
     showPopup({
-      title: "Select Date",
-      message: "Please select journey date.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.selectDate"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectJourneyDate"),
       variant: "warning",
     });
 
@@ -570,8 +574,8 @@ const handleSearchBuses = async () => {
   if (!computedJourneyTime) {
 
     showPopup({
-      title: "Select Time",
-      message: "Please select journey time.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.selectTime"),
+      message: i18n.t("busBooking:bookingHomeScreen.msg.pleaseSelectJourneyTime"),
       variant: "warning",
     });
 
@@ -807,8 +811,8 @@ const handleSearchBuses = async () => {
 
 
     showPopup({
-      title: "Search Failed",
-      message: errorMessage || "Unable to search buses.",
+      title: i18n.t("busBooking:bookingHomeScreen.msg.searchFailed"),
+      message: errorMessage || i18n.t("busBooking:r2.unableToSearchBuses"),
       variant: "error",
     });
 
@@ -852,7 +856,7 @@ const handleSearchBuses = async () => {
   <View style={styles.routeTextWrap}>
 
     <Text style={styles.routeLabel}>
-      From
+      {i18n.t("busBooking:bookingHomeScreen.from")}
     </Text>
 
     <Text
@@ -866,7 +870,7 @@ const handleSearchBuses = async () => {
       {
         fromCity
           ? fromCity.city_name
-          : "Select source city"
+          : i18n.t("busBooking:r2.selectSourceCity")
       }
     </Text>
 
@@ -926,7 +930,7 @@ const handleSearchBuses = async () => {
   <View style={styles.routeTextWrap}>
 
     <Text style={styles.routeLabel}>
-      To
+      {i18n.t("busBooking:bookingHomeScreen.to")}
     </Text>
 
     <Text
@@ -940,7 +944,7 @@ const handleSearchBuses = async () => {
       {
         toCity
           ? toCity.city_name
-          : "Select destination city"
+          : i18n.t("busBooking:r2.selectDestinationCity")
       }
     </Text>
 
@@ -967,9 +971,9 @@ const handleSearchBuses = async () => {
               color="#444444"
             />
             <View style={styles.dateJourneyTextWrap}>
-              <Text style={styles.dateJourneyLabel}>Date of Journey</Text>
+              <Text style={styles.dateJourneyLabel}>{i18n.t("busBooking:bookingHomeScreen.dateOfJourney")}</Text>
               <Text style={styles.dateJourneyValue}>{journeyDateText}</Text>
-              <Text style={styles.dateJourneyHint}>Tap to choose travel date</Text>
+              <Text style={styles.dateJourneyHint}>{i18n.t("busBooking:bookingHomeScreen.tapToChooseTravelDate")}</Text>
             </View>
           </View>
 
@@ -977,10 +981,10 @@ const handleSearchBuses = async () => {
             <View style={styles.dateBadge}>
               <Text style={styles.dateBadgeText}>
                 {selectedDateId === todayChip?.id
-                  ? "Today"
+                  ? i18n.t("busBooking:r2.today")
                   : selectedDateId === tomorrowChip?.id
-                    ? "Tomorrow"
-                    : selectedChip?.fullLabel?.split(",").slice(1).join(",").trim() || "Upcoming"}
+                    ? i18n.t("busBooking:r2.tomorrow")
+                    : selectedChip?.fullLabel?.split(",").slice(1).join(",").trim() || i18n.t("busBooking:r2.upcoming")}
               </Text>
             </View>
             <MaterialCommunityIcons
@@ -1001,7 +1005,7 @@ const handleSearchBuses = async () => {
             color="#CE1538"
           />
           <View style={styles.womenBookingText}>
-            <Text style={styles.womenBookingTitle}>Booking for Women</Text>
+            <Text style={styles.womenBookingTitle}>{i18n.t("busBooking:bookingHomeScreen.bookingForWomen")}</Text>
           </View>
         </View>
         <TouchableOpacity
@@ -1059,7 +1063,7 @@ const handleSearchBuses = async () => {
       {
         searchingBuses
           ? "Searching..."
-          : "Search buses"
+          : i18n.t("busBooking:r2.searchBuses")
       }
 
     </Text>
@@ -1070,13 +1074,13 @@ const handleSearchBuses = async () => {
 
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>
-          {nextJourney ? "Your Next Journey" : "My Bookings"}
+          {nextJourney ? i18n.t("busBooking:r2.yourNextJourney") : i18n.t("busBooking:r2.myBookings")}
         </Text>
         <TouchableOpacity
           activeOpacity={0.85}
           onPress={() => navigation.navigate("BusOrdersScreen")}
         >
-          <Text style={styles.viewAllText}>View All</Text>
+          <Text style={styles.viewAllText}>{i18n.t("busBooking:bookingHomeScreen.viewAll")}</Text>
         </TouchableOpacity>
       </View>
 
@@ -1100,7 +1104,7 @@ const handleSearchBuses = async () => {
               <Text style={styles.departureTime}>
                 {formatBusTime(nextJourney.departureTime)}
               </Text>
-              <Text style={styles.departureLabel}>DEPARTURE</Text>
+              <Text style={styles.departureLabel}>{i18n.t("busBooking:bookingHomeScreen.departure")}</Text>
             </View>
           </View>
 
@@ -1123,7 +1127,7 @@ const handleSearchBuses = async () => {
                   : `Ref: ${nextJourney.orderRef}`}
               </Text>
             </View>
-            <Text style={styles.viewDetailsText}>VIEW DETAILS</Text>
+            <Text style={styles.viewDetailsText}>{i18n.t("busBooking:bookingHomeScreen.viewDetails")}</Text>
           </View>
         </TouchableOpacity>
       ) : (
@@ -1140,11 +1144,11 @@ const handleSearchBuses = async () => {
             />
           </View>
           <View style={styles.historyTextWrap}>
-            <Text style={styles.historyRoute}>View your bus bookings</Text>
+            <Text style={styles.historyRoute}>{i18n.t("busBooking:bookingHomeScreen.viewYourBusBookings")}</Text>
             <Text style={styles.historyMeta}>
               {loadingBookings
-                ? "Checking for upcoming trips..."
-                : "No upcoming trips right now"}
+                ? i18n.t("busBooking:r2.checkingForUpcomingTrips")
+                : i18n.t("busBooking:r2.noUpcomingTripsRightNow")}
             </Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={22} color="#374151" />
@@ -1154,7 +1158,7 @@ const handleSearchBuses = async () => {
       <CmsOffersBanner module="dineout" inset={0} style={styles.cmsBanner} />
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Recent Searches</Text>
+        <Text style={styles.sectionTitle}>{i18n.t("busBooking:bookingHomeScreen.recentSearches")}</Text>
       </View>
 
       <View style={styles.historyList}>
@@ -1183,7 +1187,7 @@ const handleSearchBuses = async () => {
           <View style={styles.historyEmptyCard}>
             <MaterialCommunityIcons name="clock-outline" size={18} color="#C8102E" />
             <Text style={styles.historyEmptyText}>
-              Your recent bus searches will appear here after you search a route.
+              {i18n.t("busBooking:bookingHomeScreen.yourRecentBusSearchesWill")}
             </Text>
           </View>
         )}
@@ -1192,7 +1196,7 @@ const handleSearchBuses = async () => {
       {popularRoutes.length > 0 ? (
         <>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Popular Routes</Text>
+            <Text style={styles.sectionTitle}>{i18n.t("busBooking:bookingHomeScreen.popularRoutes")}</Text>
           </View>
 
           <ScrollView
@@ -1211,7 +1215,7 @@ const handleSearchBuses = async () => {
                 <Text style={styles.popularRouteCity} numberOfLines={1}>
                   {item.sourceCity}
                 </Text>
-                <Text style={styles.popularRouteTo}>to</Text>
+                <Text style={styles.popularRouteTo}>{i18n.t("busBooking:bookingHomeScreen.to2")}</Text>
                 <Text style={styles.popularRouteCity} numberOfLines={1}>
                   {item.destinationCity}
                 </Text>
@@ -1248,8 +1252,8 @@ const handleSearchBuses = async () => {
         <Text style={styles.modalTitle}>
           {
             cityPickerType === "from"
-              ? "Select From City"
-              : "Select To City"
+              ? i18n.t("busBooking:r2.selectFromCity")
+              : i18n.t("busBooking:r2.selectToCity")
           }
         </Text>
 
@@ -1284,7 +1288,7 @@ const handleSearchBuses = async () => {
           onChangeText={
             handleCitySearch
           }
-          placeholder="Search city"
+          placeholder={i18n.t("busBooking:bookingHomeScreen.searchCity")}
           placeholderTextColor="#9CA3AF"
           style={styles.citySearchInput}
           autoFocus
@@ -1368,7 +1372,7 @@ const handleSearchBuses = async () => {
                   styles.cityEmptyText
                 }
               >
-                No cities found.
+                {i18n.t("busBooking:bookingHomeScreen.noCitiesFound")}
               </Text>
             )
             : null
@@ -1396,7 +1400,7 @@ const handleSearchBuses = async () => {
       <View style={styles.modalHeader}>
 
         <Text style={styles.modalTitle}>
-          Select Date
+          {i18n.t("busBooking:bookingHomeScreen.selectDate")}
         </Text>
 
         <TouchableOpacity
@@ -1426,7 +1430,7 @@ const handleSearchBuses = async () => {
             }
           }}
         >
-          <Text style={styles.calendarTodayButtonText}>Today</Text>
+          <Text style={styles.calendarTodayButtonText}>{i18n.t("busBooking:bookingHomeScreen.today")}</Text>
         </TouchableOpacity>
       </View>
 

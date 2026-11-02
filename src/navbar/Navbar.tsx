@@ -38,6 +38,8 @@ import { useNavbarScroll } from "./NavbarScrollContext";
 import WalletSvg from "../assets/homepage/navwallet.svg";
 import Reward from "../assets/product/rewards.svg";
 import { useAppTheme } from "../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import { localizedModuleLabel } from "../i18n/moduleLabels";
 import { hitSlop, rs } from "../utils/responsive";
 
 import type { RootStackParamList } from "@/navigation/types";
@@ -234,12 +236,10 @@ const ACTIVE_TAB_SCALE = 1;
 const PRESSED_SCALE_DELTA = 0.06;
 const NAV_TABS_H_PADDING = rs(16);
 const NAV_TAB_GAP = rs(10);
-const SEARCH_PLACEHOLDERS: Record<string, string[]> = {
-  product: ["Search products and offers", "Search brands and categories", "Search rewards and deals"],
-  service: ["Search PAN and Aadhaar", "Search passport services", "Search insurance and SIP"],
-  payment: ["Search mobile recharge", "Search electricity bills", "Search water and DTH bills"],
-  dineout: ["Search bus routes", "Search bus tickets", "Search destinations"],
-};
+const SEARCH_PLACEHOLDER_KEYS = ["product", "service", "payment", "dineout"] as const;
+// Sentinels kept in the navbar cache; displayed through translations.
+const GUEST_NAME = "Guest";
+const NO_LOCATION = "Set delivery location";
 
 function RotatingSearchPlaceholder({
   moduleKey,
@@ -248,7 +248,12 @@ function RotatingSearchPlaceholder({
   moduleKey: string;
   color: string;
 }) {
-  const placeholders = SEARCH_PLACEHOLDERS[moduleKey] ?? SEARCH_PLACEHOLDERS.product;
+  const { t } = useTranslation();
+  const hintKey = (SEARCH_PLACEHOLDER_KEYS as readonly string[]).includes(moduleKey) ? moduleKey : "product";
+  const placeholders = React.useMemo(
+    () => t(`common:nav.searchHints.${hintKey}`, { returnObjects: true }) as unknown as string[],
+    [hintKey, t]
+  );
   const [index, setIndex] = React.useState(0);
   const opacity = React.useRef(new Animated.Value(1)).current;
 
@@ -444,6 +449,8 @@ const TopIconWithLabel = React.memo(
 );
 
 export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
+  // Re-renders module labels and navbar text when the app language changes.
+  const { t } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<any>();
@@ -838,10 +845,10 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
             <View style={styles.deliveryTextBlock}>
               <View style={styles.deliveryTitleRow}>
                 <Text style={[styles.deliveryPrefix, { color: navbarMutedColor }]} numberOfLines={1}>
-                  Deliver to
+                  {t("common:nav.deliverTo")}
                 </Text>
                 <Text style={[styles.deliveryTitle, { color: navbarIconColor }]} numberOfLines={1}>
-                  {customerName}
+                  {customerName === GUEST_NAME ? t("common:nav.guest") : customerName}
                 </Text>
                 <MaterialCommunityIcons
                   name="chevron-down"
@@ -851,7 +858,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 />
               </View>
               <Text style={[styles.deliveryAddress, { color: navbarMutedColor }]} numberOfLines={1}>
-                {customerLocation}
+                {customerLocation === NO_LOCATION ? t("common:nav.setLocation") : customerLocation}
               </Text>
             </View>
           </AnimatedTouchableOpacity>
@@ -928,7 +935,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 iconUrl={iconUrl}
                 fallbackIconUrl={module.icon_url}
                 moduleKey={module.module_key}
-                label={module.label}
+                label={localizedModuleLabel(module)}
                 activeTint={isScrolledWhite ? (module.active_color || "#B77900") : (module.active_color || activeThemeColor)}
                 inactiveTint={isScrolledWhite ? "#111827" : isDark ? "#FFFFFF" : (module.normal_color || navbarIconColor)}
                 gradientStart={module.gradient_start_color}

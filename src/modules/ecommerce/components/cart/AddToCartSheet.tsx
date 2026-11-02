@@ -20,6 +20,8 @@ import {
   getSimilarProducts,
 } from "../../api/PromotionalApi";
 import type { HomeStackParamList } from "../../navigation/types";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.62;
@@ -62,6 +64,7 @@ function resolveNumericProductId(value: unknown): number {
 }
 
 export default function AddToCartSheet({ visible, onClose, productId }: Props) {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
 
@@ -200,7 +203,7 @@ export default function AddToCartSheet({ visible, onClose, productId }: Props) {
   }, [hasMore, loadingMore, productId, source, offset]);
 
   const sectionTitle =
-    source === "also-bought" ? "Customers Also Bought" : "Similar Products";
+    source === "also-bought" ? i18n.t("products:r2.customersAlsoBought") : i18n.t("products:r2.similarProducts");
 
   const handleProductPress = useCallback(
     (nextProductId: string | number) => {
@@ -248,9 +251,9 @@ export default function AddToCartSheet({ visible, onClose, productId }: Props) {
                 <View style={styles.successIcon}>
                   <MaterialCommunityIcons name="check-bold" size={14} color="#FFFFFF" />
                 </View>
-                <Text style={styles.successText}>Product Added to Cart Successfully</Text>
+                <Text style={styles.successText}>{tx("products:addToCartSheet.productAddedToCartSuccessfully")}</Text>
               <Text style={styles.successTextHidden}>
-                ✔ Product Added to Cart Successfully
+                {tx("products:addToCartSheet.productAddedToCartSuccessfully2")}
               </Text>
               </View>
               <TouchableOpacity onPress={onClose} hitSlop={8}>

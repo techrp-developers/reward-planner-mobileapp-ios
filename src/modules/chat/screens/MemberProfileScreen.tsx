@@ -22,6 +22,8 @@ import ChatAvatar from "../components/ChatAvatar";
 import { fetchChatPresence } from "../api/chatApi";
 import { chatSocket } from "../services/chatSocket";
 import type { ChatStackParamList } from "../types";
+import { useTranslation } from "react-i18next";
+import { formatDateTime } from "../../../i18n/format";
 
 type Route = NativeStackScreenProps<
   ChatStackParamList,
@@ -36,6 +38,7 @@ export default function MemberProfileScreen() {
   const { user } = useAuth();
   const currentUserId = getChatUserId(user);
   const theme = useChatColors();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const isMe = sameChatId(member.user_id, currentUserId);
   const [online, setOnline] = useState(false);
@@ -85,21 +88,21 @@ export default function MemberProfileScreen() {
     return () => { active.current = false; unsub(); appState.remove(); clearInterval(poll); };
   }, [member.user_id, isMe, refreshPresence]);
 
-  const status = isMe ? "Your profile" : !presenceKnown ? "Checking status…"
-    : online ? "Online"
+  const status = isMe ? t("chat:member.yourProfile") : !presenceKnown ? t("chat:conv.checkingStatus")
+    : online ? t("chat:conv.online")
     : lastSeen && Number.isFinite(new Date(lastSeen).getTime())
-      ? `Last seen ${new Date(lastSeen).toLocaleString([], { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}`
-      : "Offline";
+      ? t("chat:conv.lastSeen", { time: formatDateTime(lastSeen, { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" }) })
+      : t("chat:conv.offline");
 
   const details = [
     {
       icon: "office-building-outline",
-      label: "Department",
+      label: t("chat:member.department"),
       value: member.department,
     },
     {
       icon: "briefcase-outline",
-      label: "Role",
+      label: t("chat:member.role"),
       value:
         member.job_role ||
         (member.role !== "admin" && member.role !== "member"
@@ -131,7 +134,7 @@ export default function MemberProfileScreen() {
       >
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t("common:actions.goBack")}
           onPress={() => navigation.goBack()}
           style={styles.back}
         >
@@ -141,7 +144,7 @@ export default function MemberProfileScreen() {
             color={theme.text}
           />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>Profile</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>{t("chat:member.profile")}</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
@@ -149,11 +152,11 @@ export default function MemberProfileScreen() {
           <ChatAvatar name={member.name} uri={member.user_image} size={104} online={!isMe && online} />
           <Text style={[styles.name, { color: theme.text }]}>
             {member.name}
-            {isMe ? " (You)" : ""}
+            {isMe ? t("chat:group.youSuffix") : ""}
           </Text>
           <Text style={[styles.subtitle, { color: theme.secondaryText }]}>
             {[member.job_role, member.department].filter(Boolean).join(" · ") ||
-              "Coworker"}
+              t("chat:newChat.coworker")}
           </Text>
           <Text style={[styles.subtitle, { color: online && !isMe ? "#22C55E" : theme.secondaryText }]}>
             {status}
@@ -166,7 +169,7 @@ export default function MemberProfileScreen() {
                 color={theme.primary}
               />
               <Text style={[styles.adminText, { color: theme.primary }]}>
-                Group admin
+                {t("chat:group.admin")}
               </Text>
             </View>
           ) : null}
@@ -216,7 +219,7 @@ export default function MemberProfileScreen() {
             ))
           ) : (
             <Text style={[styles.noDetails, { color: theme.secondaryText }]}>
-              No additional profile details available.
+              {t("chat:member.noDetails")}
             </Text>
           )}
         </View>

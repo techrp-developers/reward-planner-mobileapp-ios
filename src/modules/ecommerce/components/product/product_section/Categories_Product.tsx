@@ -31,6 +31,7 @@ import {
 import { HomeStackParamList } from "../../../navigation/types";
 import { normalizeProduct } from "../../../../../modules/ecommerce/utils/normalizeProduct";
 import { PROMO_CARD_GAP } from "../../../constants/cardLayout";
+import { useTranslation } from "react-i18next";
 
 interface Category {
   id: string | number;
@@ -93,6 +94,7 @@ const resolveInitialSelection = (
 };
 
 export default function Categories_Product() {
+  const { t: tx } = useTranslation();
   const route = useRoute<CategoryRouteProp>();
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const { categoryId, title, subcategoryId } = route.params;
@@ -392,7 +394,7 @@ export default function Categories_Product() {
                       ]}
                       numberOfLines={1}
                     >
-                      All
+                      {tx("products:categoriesProduct.all")}
                     </Text>
                   </TouchableOpacity>
 
@@ -459,7 +461,7 @@ export default function Categories_Product() {
             ListEmptyComponent={
               !isProductsLoading ? (
                 <View style={styles.emptyWrap}>
-                  <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No products found in this category.</Text>
+                  <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:categoriesProduct.noProductsFoundInThis")}</Text>
                 </View>
               ) : null
             }

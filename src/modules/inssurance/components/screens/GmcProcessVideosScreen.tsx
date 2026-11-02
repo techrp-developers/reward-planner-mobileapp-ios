@@ -18,6 +18,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useNavigation } from '@react-navigation/native';
 import { useAppTheme } from '../../../../theme/ThemeContext';
 import { rs, fs as rfs } from '../../../../utils/responsive';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 interface VideoItem {
   id: string;
@@ -41,9 +43,9 @@ const GMC_VIDEOS: VideoItem[] = [
     title: 'Group Medical Insurance Presentation',
     subtitle: 'Complete Guide for Employers & Employees',
     category: 'Guide',
-    categoryLabel: 'Complete Guide',
+    categoryLabel: 'insurance:videos.category.guide',
     categoryColor: '#005b7f',
-    duration: 'Full Guide',
+    duration: 'insurance:videos.fullGuide',
     author: 'Policy Planner',
     url: 'https://www.youtube.com/watch?v=flDoG_dW1-0',
     description:
@@ -56,9 +58,9 @@ const GMC_VIDEOS: VideoItem[] = [
     title: 'GMC FAQ: Is Pre-Existing Disease Covered?',
     subtitle: 'Pre-existing Disease (PED) Rules Explained in Hindi',
     category: 'FAQ',
-    categoryLabel: 'FAQ & Coverage',
+    categoryLabel: 'insurance:videos.category.faq',
     categoryColor: '#10B981',
-    duration: '3:15 min',
+    duration: '3:15',
     author: 'Policy Planner',
     url: 'https://www.youtube.com/watch?v=Er0pvyRmo28',
     description:
@@ -71,9 +73,9 @@ const GMC_VIDEOS: VideoItem[] = [
     title: 'Group Medical Insurance Premium Explained',
     subtitle: 'Cost Calculation & Premium Slabs by Vivek Pawar',
     category: 'Premium',
-    categoryLabel: 'Premium Guide',
+    categoryLabel: 'insurance:videos.category.premium',
     categoryColor: '#7C3AED',
-    duration: '4:40 min',
+    duration: '4:40',
     author: 'Policy Planner',
     url: 'https://www.youtube.com/watch?v=wlwhGE7zgNc',
     description:
@@ -86,9 +88,9 @@ const GMC_VIDEOS: VideoItem[] = [
     title: 'Group Medical Insurance: Pros & Cons',
     subtitle: 'In-Depth Analysis & Comparison by Vivek Pawar',
     category: 'Analysis',
-    categoryLabel: 'Pros & Cons',
+    categoryLabel: 'insurance:videos.category.analysis',
     categoryColor: '#EA580C',
-    duration: '5:20 min',
+    duration: '5:20',
     author: 'Policy Planner',
     url: 'https://www.youtube.com/watch?v=qqA95ZKzS7c',
     description:
@@ -98,6 +100,7 @@ const GMC_VIDEOS: VideoItem[] = [
 ];
 
 const GmcProcessVideosScreen: React.FC = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const { isDark } = useAppTheme();
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Guide' | 'FAQ' | 'Premium' | 'Analysis'>('All');
@@ -111,7 +114,7 @@ const GmcProcessVideosScreen: React.FC = () => {
     try {
       await Linking.openURL(url);
     } catch (err: any) {
-      Alert.alert('Cannot Open Video', 'Could not open the YouTube video: ' + err.message);
+      Alert.alert(i18n.t("insurance:gmcProcessVideosScreen.cannotOpenVideo"), i18n.t("insurance:gmcProcessVideosScreen.couldNotOpenTheYoutube") + err.message);
     }
   };
 
@@ -119,7 +122,7 @@ const GmcProcessVideosScreen: React.FC = () => {
     try {
       await Share.share({
         title: video.title,
-        message: `Watch "${video.title}" by ${video.author} on YouTube:\n${video.url}`,
+        message: tx('insurance:videos.shareMessage', { title: video.title, author: video.author, url: video.url }),
       });
     } catch (error) {
       // user cancelled
@@ -141,7 +144,7 @@ const GmcProcessVideosScreen: React.FC = () => {
             <MaterialCommunityIcons name="arrow-left" size={20} color={isDark ? '#FFFFFF' : '#0F172A'} />
           </TouchableOpacity>
           <Text style={[styles.headerTitle, { color: isDark ? '#FFFFFF' : '#0F172A', marginLeft: rs(10) }]}>
-            GMC Process Videos
+            {tx("insurance:gmcProcessVideosScreen.gmcProcessVideos")}
           </Text>
         </View>
       </View>
@@ -154,11 +157,11 @@ const GmcProcessVideosScreen: React.FC = () => {
           contentContainerStyle={styles.filtersContainer}
         >
           {[
-            { key: 'All', label: 'All Videos' },
-            { key: 'Guide', label: 'Process Guide' },
-            { key: 'FAQ', label: 'FAQs & PED' },
-            { key: 'Premium', label: 'Premium' },
-            { key: 'Analysis', label: 'Pros & Cons' },
+            { key: 'All', label: tx('insurance:videos.filters.all') },
+            { key: 'Guide', label: tx('insurance:videos.filters.guide') },
+            { key: 'FAQ', label: tx('insurance:videos.filters.faq') },
+            { key: 'Premium', label: tx('insurance:videos.filters.premium') },
+            { key: 'Analysis', label: tx('insurance:videos.filters.analysis') },
           ].map((item) => {
             const isSelected = selectedFilter === item.key;
             return (
@@ -231,12 +234,12 @@ const GmcProcessVideosScreen: React.FC = () => {
                   {/* Duration / Type Pill at bottom right */}
                   <View style={styles.durationPill}>
                     <MaterialCommunityIcons name="youtube" size={12} color="#FF0000" style={{ marginRight: 3 }} />
-                    <Text style={styles.durationText}>{video.duration}</Text>
+                    <Text style={styles.durationText}>{video.duration.includes(':') && !video.duration.includes(' ') ? tx('insurance:videos.minutes', { time: video.duration }) : tx(video.duration)}</Text>
                   </View>
 
                   {/* Category Pill at top left */}
                   <View style={[styles.categoryPill, { backgroundColor: video.categoryColor }]}>
-                    <Text style={styles.categoryPillText}>{video.categoryLabel}</Text>
+                    <Text style={styles.categoryPillText}>{tx(video.categoryLabel)}</Text>
                   </View>
                 </TouchableOpacity>
 
@@ -295,7 +298,7 @@ const GmcProcessVideosScreen: React.FC = () => {
                       activeOpacity={0.8}
                     >
                       <MaterialCommunityIcons name="youtube" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
-                      <Text style={styles.watchNowText}>Watch on YouTube</Text>
+                      <Text style={styles.watchNowText}>{tx("insurance:gmcProcessVideosScreen.watchOnYoutube")}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -309,10 +312,10 @@ const GmcProcessVideosScreen: React.FC = () => {
           <MaterialCommunityIcons name="help-circle-outline" size={24} color="#005b7f" style={{ marginRight: rs(10) }} />
           <View style={{ flex: 1 }}>
             <Text style={[styles.helpBannerTitle, { color: isDark ? '#FFFFFF' : '#003950' }]}>
-              Still have questions about your GMC?
+              {tx("insurance:gmcProcessVideosScreen.stillHaveQuestionsAboutYour")}
             </Text>
             <Text style={[styles.helpBannerSub, { color: isDark ? '#A1A1AA' : '#005b7f' }]}>
-              You can raise a claim enquiry or check your covered family members anytime from the home screen.
+              {tx("insurance:gmcProcessVideosScreen.youCanRaiseAClaim")}
             </Text>
           </View>
         </View>

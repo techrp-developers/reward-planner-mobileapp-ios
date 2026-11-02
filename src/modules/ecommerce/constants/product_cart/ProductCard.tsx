@@ -19,6 +19,7 @@ import OptimizedImage from "../../components/common/OptimizedImage";
 import { normalizeProduct } from "../../utils/normalizeProduct";
 import { fetchProductDetailsByID } from "../../api/ProductApi";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import i18n from "../../../../i18n";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -235,12 +236,12 @@ const ProductCardComponent = ({
     const parsedVariantId = Number(resolvedVariantId ?? variantId);
 
     if (!parsedProductId || Number.isNaN(parsedProductId)) {
-      Alert.alert("Wishlist", "Invalid product");
+      Alert.alert(i18n.t("products:productCard.wishlist"), i18n.t("products:productCard.invalidProduct"));
       return;
     }
 
     if (!parsedVariantId || Number.isNaN(parsedVariantId)) {
-      Alert.alert("Wishlist", "Product variant is missing");
+      Alert.alert(i18n.t("products:productCard.wishlist"), i18n.t("products:productCard.productVariantIsMissing"));
       return;
     }
 
@@ -254,7 +255,7 @@ const ProductCardComponent = ({
         error?.response?.data?.error ||
         error?.message ||
         "Failed to update wishlist";
-      Alert.alert("Wishlist", String(message));
+      Alert.alert(i18n.t("products:productCard.wishlist"), String(message));
     } finally {
       setWishLoading(false);
     }

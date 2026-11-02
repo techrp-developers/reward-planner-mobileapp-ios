@@ -4,6 +4,7 @@ import {
   getCachedCategoryServices,
   type CategoryServiceItem,
 } from '../services/categoryServices';
+import i18n from "../../../i18n";
 
 type UseCategoryServicesState = {
   loading: boolean;
@@ -53,7 +54,7 @@ export function useCategoryServices(categoryId: number): UseCategoryServicesStat
     if (!Number.isFinite(categoryId) || categoryId <= 0) {
       setState({
         loading: false,
-        error: 'Invalid category.',
+        error: i18n.t("services:r2.invalidCategory"),
         services: [],
         directServiceId: null,
       });
@@ -110,7 +111,7 @@ export function useCategoryServices(categoryId: number): UseCategoryServicesStat
         if (cancelled) return;
         setState({
           loading: false,
-          error: 'Failed to load services. Please try again.',
+          error: i18n.t("services:r2.failedToLoadServicesPleaseTry"),
           services: [],
           directServiceId: null,
         });

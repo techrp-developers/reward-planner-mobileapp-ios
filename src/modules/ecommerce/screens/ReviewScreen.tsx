@@ -28,6 +28,8 @@ import { useAuth } from "../../common/auth/context/AuthContext";
 import type { HomeStackParamList } from "../navigation/types";
 import SkeletonBox from "../../services/component/constant/SkeletonBox";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type ReviewRoute = RouteProp<HomeStackParamList, "ReviewScreen">;
@@ -112,6 +114,7 @@ function PreferenceRow({
 }
 
 export default function ReviewScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<ReviewRoute>();
   const { isAuthenticated } = useAuth();
@@ -176,7 +179,7 @@ export default function ReviewScreen() {
 
   const handleOpenCamera = async () => {
     if (reviewMedia.length >= MAX_REVIEW_MEDIA) {
-      Alert.alert("Media Limit", `You can upload up to ${MAX_REVIEW_MEDIA} photos.`);
+      Alert.alert(i18n.t("products:review.mediaLimitTitle"), i18n.t("products:review.mediaLimitBody", { count: MAX_REVIEW_MEDIA }));
       return;
     }
 
@@ -190,24 +193,24 @@ export default function ReviewScreen() {
 
       if (result.didCancel) return;
       if (result.errorMessage) {
-        Alert.alert("Camera", result.errorMessage);
+        Alert.alert(i18n.t("products:reviewScreen.camera"), result.errorMessage);
         return;
       }
 
       if (!result.assets?.length) {
-        Alert.alert("Camera", "Could not capture photo. Please try again.");
+        Alert.alert(i18n.t("products:reviewScreen.camera"), i18n.t("products:reviewScreen.couldNotCapturePhotoPlease"));
         return;
       }
 
       appendMedia(result.assets);
     } catch {
-      Alert.alert("Camera", "Unable to open camera right now.");
+      Alert.alert(i18n.t("products:reviewScreen.camera"), i18n.t("products:reviewScreen.unableToOpenCameraRight"));
     }
   };
 
   const handlePickFromGallery = async () => {
     if (reviewMedia.length >= MAX_REVIEW_MEDIA) {
-      Alert.alert("Media Limit", `You can upload up to ${MAX_REVIEW_MEDIA} photos.`);
+      Alert.alert(i18n.t("products:review.mediaLimitTitle"), i18n.t("products:review.mediaLimitBody", { count: MAX_REVIEW_MEDIA }));
       return;
     }
 
@@ -221,35 +224,35 @@ export default function ReviewScreen() {
 
       if (result.didCancel) return;
       if (result.errorMessage) {
-        Alert.alert("Gallery", result.errorMessage);
+        Alert.alert(i18n.t("products:reviewScreen.gallery"), result.errorMessage);
         return;
       }
 
       if (!result.assets?.length) {
-        Alert.alert("Gallery", "No photos selected.");
+        Alert.alert(i18n.t("products:reviewScreen.gallery"), i18n.t("products:reviewScreen.noPhotosSelected"));
         return;
       }
 
       appendMedia(result.assets);
     } catch {
-      Alert.alert("Gallery", "Unable to open gallery right now.");
+      Alert.alert(i18n.t("products:reviewScreen.gallery"), i18n.t("products:reviewScreen.unableToOpenGalleryRight"));
     }
   };
 
   const onSubmit = async () => {
     if (isSubmitDisabled) {
       if (rating === 0) {
-        Alert.alert("Rating Required", "Please select a star rating.");
+        Alert.alert(i18n.t("products:reviewScreen.ratingRequired"), i18n.t("products:reviewScreen.pleaseSelectAStarRating"));
         return;
       }
       if (!reviewText.trim()) {
-        Alert.alert("Review Required", "Please write your review.");
+        Alert.alert(i18n.t("products:reviewScreen.reviewRequired"), i18n.t("products:reviewScreen.pleaseWriteYourReview"));
       }
       return;
     }
 
     if (!isAuthenticated) {
-      Alert.alert("Login Required", "Please login to submit your review.");
+      Alert.alert(i18n.t("products:reviewScreen.loginRequired"), i18n.t("products:reviewScreen.pleaseLoginToSubmitYour"));
       return;
     }
 
@@ -279,20 +282,20 @@ export default function ReviewScreen() {
       const res = await createReview(payload);
 
       if (res?.success === false) {
-        Alert.alert("Review", String(res?.message || "Failed to submit review"));
+        Alert.alert(i18n.t("products:reviewScreen.review"), String(res?.message || i18n.t("products:r2.failedToSubmitReview")));
         return;
       }
 
-      Alert.alert("Thank You", "Your review has been submitted.", [
-        { text: "OK", onPress: () => navigation.goBack() },
+      Alert.alert(i18n.t("products:reviewScreen.thankYou"), i18n.t("products:reviewScreen.yourReviewHasBeenSubmitted"), [
+        { text: i18n.t("products:reviewScreen.ok"), onPress: () => navigation.goBack() },
       ]);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.message ||
-        "Failed to submit review";
-      Alert.alert("Review", String(message));
+        i18n.t("products:r2.failedToSubmitReview");
+      Alert.alert(i18n.t("products:reviewScreen.review"), String(message));
     } finally {
       setSubmitting(false);
     }
@@ -338,13 +341,13 @@ export default function ReviewScreen() {
         </View>
 
         <View style={[styles.formCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <Text style={[styles.formTitle, { color: theme.text }]}>Your Experience Matters</Text>
+          <Text style={[styles.formTitle, { color: theme.text }]}>{tx("products:reviewScreen.yourExperienceMatters")}</Text>
 
           {showReviewHeaderSkeleton ? <StarRowSkeleton pulse={pulse} /> : <StarRow rating={rating} onRate={setRating} />}
 
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Add Photos</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{tx("products:reviewScreen.addPhotos")}</Text>
           <View style={[styles.photoBox, { backgroundColor: isDark ? "#2D2148" : "#F9ECF8" }]}>
-            <Text style={[styles.photoText, { color: theme.secondaryText }]}>Add up to 6 photos like Amazon reviews.</Text>
+            <Text style={[styles.photoText, { color: theme.secondaryText }]}>{tx("products:reviewScreen.addUpTo6Photos")}</Text>
             <View style={styles.mediaActionRow}>
               <TouchableOpacity
                 style={[styles.galleryButton, { backgroundColor: theme.card, borderColor: "#D946EF" }]}
@@ -352,7 +355,7 @@ export default function ReviewScreen() {
                 onPress={handlePickFromGallery}
               >
                 <MaterialCommunityIcons name="image-multiple-outline" size={20} color="#D946EF" />
-                <Text style={styles.galleryButtonText}>Gallery</Text>
+                <Text style={styles.galleryButtonText}>{tx("products:reviewScreen.gallery")}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.cameraButton, { backgroundColor: theme.card }]} activeOpacity={0.75} onPress={handleOpenCamera}>
@@ -392,28 +395,28 @@ export default function ReviewScreen() {
               onPress={handlePickFromGallery}
             >
               <MaterialCommunityIcons name="plus" size={16} color="#5B47A3" />
-              <Text style={[styles.addMoreText, { color: theme.primary }]}>Add more photos</Text>
+              <Text style={[styles.addMoreText, { color: theme.primary }]}>{tx("products:reviewScreen.addMorePhotos")}</Text>
             </TouchableOpacity>
           ) : null}
 
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>What did you love about it?</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{tx("products:reviewScreen.whatDidYouLoveAbout")}</Text>
           <PreferenceRow
-            label="Value for Money"
+            label={tx("products:reviewScreen.valueForMoney")}
             value={valueForMoney}
             onChange={setValueForMoney}
           />
-          <PreferenceRow label="Good Quality" value={goodQuality} onChange={setGoodQuality} />
+          <PreferenceRow label={tx("products:reviewScreen.goodQuality")} value={goodQuality} onChange={setGoodQuality} />
           <PreferenceRow
-            label="Smooth Experience (Delivery + Product Use)"
+            label={tx("products:reviewScreen.smoothExperienceDeliveryProductUse")}
             value={smoothExperience}
             onChange={setSmoothExperience}
           />
 
-          <Text style={[styles.sectionTitle, { color: theme.text }]}>Tell us more</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>{tx("products:reviewScreen.tellUsMore")}</Text>
           <TextInput
             value={reviewText}
             onChangeText={setReviewText}
-            placeholder="Share what you loved about this product"
+            placeholder={tx("products:reviewScreen.shareWhatYouLovedAbout")}
             placeholderTextColor={theme.secondaryText}
             multiline
             style={[
@@ -441,7 +444,7 @@ export default function ReviewScreen() {
               {submitting ? (
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text style={styles.submitText}>Submit</Text>
+                <Text style={styles.submitText}>{tx("products:reviewScreen.submit")}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>

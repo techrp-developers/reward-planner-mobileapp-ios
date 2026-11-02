@@ -17,6 +17,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SERVICE_CART_QUERY_KEY, SERVICE_CHECKOUT_QUERY_KEY } from '../../constant/queryKeys';
 import PackBanner from '../../assete/service/PackBanner.png';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import i18n from "../../../../i18n";
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 type PackRouteProp = RouteProp<HomeStackParamList, 'PackScreen'>;
 
@@ -164,7 +165,7 @@ function PackScreen() {
             variantId: Number(item.variant_id || 0),
             bundleItemId: Number(item.id || 0),
             title: item.title || item.service_name || 'Service',
-            desc: item.variant_name || item.service_name || 'Service details',
+            desc: item.variant_name || item.service_name || i18n.t("services:r2.serviceDetails"),
             oldPrice: individualPrice,
             price: bundlePrice,
             bundlePrice,
@@ -357,12 +358,12 @@ function PackScreen() {
       const finalBundleId = Number(resolvedBundleId);
 
       if (!finalBundleId) {
-        Alert.alert('Error', 'Bundle ID missing');
+        Alert.alert(i18n.t("services:packScreen.error"), i18n.t("services:packScreen.bundleIdMissing"));
         return;
       }
 
       if (addBundlePayload.selected_items.length === 0) {
-        Alert.alert('Select items', 'Please select at least one service');
+        Alert.alert(i18n.t("services:packScreen.selectItems"), i18n.t("services:packScreen.pleaseSelectAtLeastOne"));
         return;
       }
 
@@ -389,7 +390,7 @@ function PackScreen() {
 
     } catch (error: any) {
       console.error("❌ Buy Now Bundle Error:", error);
-      Alert.alert("Error", error?.message || "Failed to proceed");
+      Alert.alert(i18n.t("services:packScreen.error"), error?.message || i18n.t("services:r2.failedToProceed"));
     }
   };
 
@@ -397,12 +398,12 @@ function PackScreen() {
     if (isAddingToCart) return;
 
     if (!resolvedBundleId || resolvedBundleId <= 0) {
-      Alert.alert('Unable to add bundle', 'Bundle ID is missing for this package.');
+      Alert.alert(i18n.t("services:packScreen.unableToAddBundle"), i18n.t("services:packScreen.bundleIdIsMissingFor"));
       return;
     }
 
     if (addBundlePayload.selected_items.length === 0) {
-      Alert.alert('Selection required', 'Please select at least one service.');
+      Alert.alert(i18n.t("services:packScreen.selectionRequired"), i18n.t("services:packScreen.pleaseSelectAtLeastOne2"));
       return;
     }
 
@@ -414,7 +415,7 @@ function PackScreen() {
       const response = await addBundleToCart(resolvedBundleId, addBundlePayload);
 
       if (!response?.success) {
-        throw new Error(response?.message || 'Failed to add bundle to cart');
+        throw new Error(response?.message || i18n.t("services:r2.failedToAddBundleToCart"));
       }
 
 
@@ -433,7 +434,7 @@ function PackScreen() {
         error?.message ||
         'Could not add bundle to cart.'
       );
-      Alert.alert('Add To Cart Failed', message);
+      Alert.alert(i18n.t("services:packScreen.addToCartFailed"), message);
     } finally {
       setIsAddingToCart(false);
     }

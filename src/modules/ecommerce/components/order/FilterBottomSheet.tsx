@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Modal, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAppTheme } from '../../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 // Generate dynamic years based on the current date
 const getDynamicTimeOptions = () => {
@@ -29,6 +31,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function FilterBottomSheet({ visible, onClose, currentTime, currentStatus, onApply }) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme();
   const TIME_OPTIONS = useMemo(() => getDynamicTimeOptions(), []);
   const [selectedTime, setSelectedTime] = useState(currentTime);
@@ -41,13 +44,13 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
         <View style={[styles.handle, { backgroundColor: theme.border }]} />
         
         <View style={styles.header}>
-          <Text style={[styles.title, { color: theme.text }]}>Filter Orders</Text>
+          <Text style={[styles.title, { color: theme.text }]}>{tx("products:filterBottomSheet.filterOrders")}</Text>
           <TouchableOpacity onPress={() => { setSelectedTime('30days'); setSelectedStatus(''); }}>
-            <Text style={styles.reset}>Reset</Text>
+            <Text style={styles.reset}>{tx("products:filterBottomSheet.reset")}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>Order Time</Text>
+        <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>{tx("products:filterBottomSheet.orderTime")}</Text>
         <View style={styles.chipGrid}>
           {TIME_OPTIONS.map((item) => (
             <TouchableOpacity 
@@ -62,18 +65,18 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
                   end={{ x: 1, y: 0 }}
                   style={styles.activeChip}
                 >
-                  <Text style={styles.activeChipText}>{item.label}</Text>
+                  <Text style={styles.activeChipText}>{translateSourceText("products", item.label)}</Text>
                 </LinearGradient>
               ) : (
                 <View style={[styles.chip, { backgroundColor: isDark ? '#111827' : '#F3F4F6', borderColor: theme.border }]}>
-                  <Text style={[styles.chipText, { color: theme.text }]}>{item.label}</Text>
+                  <Text style={[styles.chipText, { color: theme.text }]}>{translateSourceText("products", item.label)}</Text>
                 </View>
               )}
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>Order Status</Text>
+        <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>{tx("products:filterBottomSheet.orderStatus")}</Text>
         <View style={styles.chipGrid}>
           {STATUS_OPTIONS.map((item) => (
             <TouchableOpacity 
@@ -88,11 +91,11 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
                   end={{ x: 1, y: 0 }}
                   style={styles.activeChip}
                 >
-                  <Text style={styles.activeChipText}>{item.label}</Text>
+                  <Text style={styles.activeChipText}>{translateSourceText("products", item.label)}</Text>
                 </LinearGradient>
               ) : (
                 <View style={[styles.chip, { backgroundColor: isDark ? '#111827' : '#F3F4F6', borderColor: theme.border }]}>
-                  <Text style={[styles.chipText, { color: theme.text }]}>{item.label}</Text>
+                  <Text style={[styles.chipText, { color: theme.text }]}>{translateSourceText("products", item.label)}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -106,7 +109,7 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
             end={{ x: 1, y: 0 }}
             style={styles.applyBtn}
           >
-            <Text style={styles.applyBtnText}>Apply Filters</Text>
+            <Text style={styles.applyBtnText}>{tx("products:filterBottomSheet.applyFilters")}</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

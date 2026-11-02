@@ -28,6 +28,8 @@ import { useAlert } from "../alerts";
 import StickyBottomCTA from "../../../../bottombar/StickyBottomCTA";
 import { useStickyBottomCTA } from "../../../../bottombar/hooks/useStickyBottomCTA";
 import { useAppTheme } from "../../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type Route = RouteProp<HomeStackParamList, 'AddressSelect'>;
@@ -54,6 +56,7 @@ type ApiAddress = {
 };
 
 export default function AddressSelectScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
   const insets = useSafeAreaInsets();
@@ -103,7 +106,7 @@ export default function AddressSelectScreen() {
         ""
       );
     } catch {
-      alert.error("Error", "Failed to load addresses");
+      alert.error(i18n.t("products:addressSelectScreen.error"), i18n.t("products:addressSelectScreen.failedToLoadAddresses"));
     } finally {
       setLoading(false);
       setIsInitialLoad(false);
@@ -140,11 +143,11 @@ export default function AddressSelectScreen() {
       await deleteAddress(Number(deletedId));
       rawAddressesRef.current.delete(deletedId);
       queryClient.invalidateQueries({ queryKey: addressesQueryKey }).catch(() => { });
-      alert.success("Deleted", "Address deleted successfully");
+      alert.success(i18n.t("products:addressSelectScreen.deleted"), i18n.t("products:addressSelectScreen.addressDeletedSuccessfully"));
     } catch {
       setAddresses(previousAddresses);
       setSelectedId(previousSelectedId);
-      alert.error("Error", "Could not delete address");
+      alert.error(i18n.t("products:addressSelectScreen.error"), i18n.t("products:addressSelectScreen.couldNotDeleteAddress"));
     }
   };
 
@@ -200,9 +203,9 @@ export default function AddressSelectScreen() {
 
     const success = await setAddressAsDefault(targetId);
     if (success) {
-      alert.success("Default address updated", "This address is now your default");
+      alert.success(i18n.t("products:addressSelectScreen.defaultAddressUpdated"), i18n.t("products:addressSelectScreen.thisAddressIsNowYour"));
     } else {
-      alert.error("Error", "Could not set this address as default");
+      alert.error(i18n.t("products:addressSelectScreen.error"), i18n.t("products:addressSelectScreen.couldNotSetThisAddress"));
     }
   };
 
@@ -221,7 +224,7 @@ export default function AddressSelectScreen() {
     if (selected && !selected.isDefault) {
       const success = await setAddressAsDefault(selectedId);
       if (!success) {
-        alert.error("Error", "Could not save your selected address. Please try again.");
+        alert.error(i18n.t("products:addressSelectScreen.error"), i18n.t("products:addressSelectScreen.couldNotSaveYourSelected"));
         return;
       }
     }
@@ -332,7 +335,7 @@ export default function AddressSelectScreen() {
         },
       });
     } catch {
-      alert.error("Error", "Could not load address details for editing");
+      alert.error(i18n.t("products:addressSelectScreen.error"), i18n.t("products:addressSelectScreen.couldNotLoadAddressDetails"));
     }
   };
 
@@ -344,7 +347,7 @@ export default function AddressSelectScreen() {
   return (
     <SafeAreaView style={[styles.safe, isDark && darkStyles.safe]}>
       <ProductHeadColor
-        title="Select Address"
+        title={tx("products:addressSelectScreen.selectAddress")}
         onBackPress={() => navigation.goBack()}
         showSearch={false}
         isDark={isDark}
@@ -358,7 +361,7 @@ export default function AddressSelectScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search for area, street name..."
+            placeholder={tx("products:addressSelectScreen.searchForAreaStreetName")}
             placeholderTextColor={isDark ? "#71717A" : "#9A9AA5"}
             selectionColor={theme.primary}
             style={[styles.searchInput, isDark && darkStyles.primaryText]}
@@ -381,7 +384,7 @@ export default function AddressSelectScreen() {
                   color={theme.primary}
                 />
               </View>
-              <Text style={[styles.rowTitlePurple, isDark && darkStyles.accentText]}>Add New Address</Text>
+              <Text style={[styles.rowTitlePurple, isDark && darkStyles.accentText]}>{tx("products:addressSelectScreen.addNewAddress")}</Text>
             </View>
 
             <MaterialCommunityIcons
@@ -392,10 +395,10 @@ export default function AddressSelectScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={[styles.sectionTitle, isDark && darkStyles.secondaryText]}>Saved Addresses</Text>
+        <Text style={[styles.sectionTitle, isDark && darkStyles.secondaryText]}>{tx("products:addressSelectScreen.savedAddresses")}</Text>
         {isInitialLoad && loading && (
           <Text style={[styles.loadingText, isDark && darkStyles.secondaryText]}>
-            Loading addresses...
+            {tx("products:addressSelectScreen.loadingAddresses")}
           </Text>
         )}
 
@@ -433,7 +436,7 @@ export default function AddressSelectScreen() {
                         <Text style={[styles.addrTitle, isDark && darkStyles.primaryText]}>{item.title}</Text>
                         {item.isDefault ? (
                           <View style={[styles.defaultPill, isDark && darkStyles.defaultPill]}>
-                            <Text style={[styles.defaultPillText, isDark && darkStyles.secondaryText]}>Default</Text>
+                            <Text style={[styles.defaultPillText, isDark && darkStyles.secondaryText]}>{tx("products:addressSelectScreen.default")}</Text>
                           </View>
                         ) : null}
                       </View>
@@ -482,7 +485,7 @@ export default function AddressSelectScreen() {
                 end={{ x: 1, y: 0.5 }}
                 style={styles.cta}
               >
-                <Text style={styles.ctaText}>Select address</Text>
+                <Text style={styles.ctaText}>{tx("products:addressSelectScreen.selectAddress2")}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -510,7 +513,7 @@ export default function AddressSelectScreen() {
           <View style={[styles.sheetHandle, isDark && darkStyles.sheetHandle]} />
 
           <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, isDark && darkStyles.primaryText]}>Select Option</Text>
+            <Text style={[styles.sheetTitle, isDark && darkStyles.primaryText]}>{tx("products:addressSelectScreen.selectOption")}</Text>
             <TouchableOpacity onPress={closeSheet} style={styles.sheetCloseBtn}>
               <MaterialCommunityIcons name="close" size={20} color={isDark ? "#FFFFFF" : "#1C1C22"} />
             </TouchableOpacity>
@@ -522,7 +525,7 @@ export default function AddressSelectScreen() {
               activeOpacity={0.9}
               onPress={onSetDefaultAddress}
             >
-              <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>Set as Default</Text>
+              <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>{tx("products:addressSelectScreen.setAsDefault")}</Text>
               <MaterialCommunityIcons
                 name="chevron-right"
                 size={22}
@@ -536,7 +539,7 @@ export default function AddressSelectScreen() {
             activeOpacity={0.9}
             onPress={onEditAddress}
           >
-            <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>Edit Address</Text>
+            <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>{tx("products:addressSelectScreen.editAddress")}</Text>
             <MaterialCommunityIcons
               name="chevron-right"
               size={22}
@@ -549,7 +552,7 @@ export default function AddressSelectScreen() {
             activeOpacity={0.9}
             onPress={onDeleteAddress}
           >
-            <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>Delete Address</Text>
+            <Text style={[styles.sheetRowText, isDark && darkStyles.primaryText]}>{tx("products:addressSelectScreen.deleteAddress")}</Text>
             <MaterialCommunityIcons
               name="chevron-right"
               size={22}

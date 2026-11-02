@@ -10,6 +10,7 @@ import { useServiceCartCount } from '../../../hooks/useServiceCartCount';
 import { fetchUserInfo } from "../../../../common/auth/api/AuthAPI";
 import { useAuth } from "../../../../common/auth/context/AuthContext";
 import { useServicesTheme } from "../../../utils/useServicesTheme";
+import i18n from "../../../../../i18n";
 type CartHeadProps = {
   onBackPress?: () => void;
 };
@@ -20,7 +21,7 @@ function CartHead({ onBackPress }: CartHeadProps) {
   const { user, isAuthenticated } = useAuth();
   const authRewardPoints = (user as { rewardPoints?: number } | null)?.rewardPoints;
   const [rewardPoints, setRewardPoints] = useState(0);
-  const placeholder = "Search “ITR Filing”";
+  const placeholder = i18n.t("services:search.itr");
   const totalQuantity = useServiceCartCount();
   const handleCartPress = () => {
     navigation.navigate("CartScreen");

@@ -12,8 +12,10 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
+import { useTranslation } from "react-i18next";
 
 export default function AboutBusScreen() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "AboutBusScreen">>();
   const { bus } = route.params;
@@ -29,7 +31,7 @@ export default function AboutBusScreen() {
           <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>About Bus</Text>
+        <Text style={styles.headerTitle}>{tx("busBooking:aboutBusScreen.aboutBus")}</Text>
 
         <View style={styles.headerSpacer} />
       </View>
@@ -52,9 +54,9 @@ export default function AboutBusScreen() {
           {bus.about ? <Text style={styles.aboutText}>{bus.about}</Text> : null}
         </View>
 
-        <AboutList title="Amenities" items={bus.features} />
-        <AboutList title="Boarding Points" items={bus.boardingPoints} />
-        <AboutList title="Dropping Points" items={bus.droppingPoints} />
+        <AboutList title={tx("busBooking:aboutBusScreen.amenities")} items={bus.features} />
+        <AboutList title={tx("busBooking:aboutBusScreen.boardingPoints")} items={bus.boardingPoints} />
+        <AboutList title={tx("busBooking:aboutBusScreen.droppingPoints")} items={bus.droppingPoints} />
       </ScrollView>
     </SafeAreaView>
   );

@@ -23,6 +23,7 @@ import {
   PROMO_ESTIMATED_ITEM_SIZE,
 } from "../../constants/cardLayout";
 import HomeSectionSkeleton from "../home/HomeSectionSkeleton";
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 const CACHE_TTL_MS = 5 * 60 * 1000;
@@ -61,6 +62,7 @@ const mapMostViewItem = (item: any, index: number) => {
 
 
 function MostView() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const { isDark, theme } = useAppTheme();
   const fetchMostViewData = useCallback(async () => {
@@ -101,13 +103,13 @@ function MostView() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: theme.text }]}>Most Viewed</Text>
+        <Text style={[styles.heading, { color: theme.text }]}>{tx("products:mostView.mostViewed")}</Text>
         <TouchableOpacity
           style={styles.exploreBtn}
           activeOpacity={0.85}
           onPress={handleExplore}
         >
-          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>Explore More</Text>
+          <Text style={[styles.exploreText, { color: isDark ? "#FFFFFF" : "#111827" }]}>{tx("products:mostView.exploreMore")}</Text>
           <MaterialIcons name="arrow-forward-ios" size={14} color={isDark ? "#FFFFFF" : "#111827"} />
         </TouchableOpacity>
       </View>

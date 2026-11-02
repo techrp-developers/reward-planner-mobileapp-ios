@@ -5,6 +5,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import StickyBottomCTA from '../../../../bottombar/StickyBottomCTA'
 import { useStickyBottomCTA } from '../../../../bottombar/hooks/useStickyBottomCTA'
 import { useAppTheme } from '../../../../theme/ThemeContext'
+import { useTranslation } from "react-i18next";
 
 type Props = {
   total: number;
@@ -27,6 +28,7 @@ export default function OrderProcedbutton({
   bottomOffset,
   onLayout,
 }: Props) {
+  const { t: tx } = useTranslation();
   const { isDark, theme } = useAppTheme()
   const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
   const autoSticky = useStickyBottomCTA({ tabBarAware: false });
@@ -54,7 +56,7 @@ export default function OrderProcedbutton({
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.buttonText}>Place Order</Text>
+                <Text style={styles.buttonText}>{tx("products:orderProcedbutton.placeOrder")}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>

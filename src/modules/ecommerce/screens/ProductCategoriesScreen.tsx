@@ -20,6 +20,7 @@ import { normalizeProduct } from "../utils/normalizeProduct";
 import { queryClient } from "../../../query/queryClient";
 import { useAppTheme } from "../../../theme/ThemeContext";
 import type { HomeStackParamList } from "../navigation/types";
+import { useTranslation } from "react-i18next";
 
 type Category = {
   id: number;
@@ -138,6 +139,7 @@ const CategoryItem = React.memo(({ cat, isActive, onPress, theme }: CategoryItem
 CategoryItem.displayName = "CategoryItem";
 
 const ProductCategory = () => {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const pulse = useRef(new Animated.Value(0)).current;
@@ -282,7 +284,7 @@ const ProductCategory = () => {
         </View>
       ) : products.length === 0 ? (
         <View style={styles.emptyWrap}>
-          <Text style={[styles.emptyText, { color: theme.secondaryText }]}>No products found in this category.</Text>
+          <Text style={[styles.emptyText, { color: theme.secondaryText }]}>{tx("products:productCategoriesScreen.noProductsFoundInThis")}</Text>
         </View>
       ) : (
         <ProductGrid

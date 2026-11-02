@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type PaymentKey = "phonepe" | "any_upi" | "card";
 
@@ -10,6 +12,7 @@ const MUTED = "#6B7280";
 const GREEN = "#16A34A";
 
 export default function PaymentOptionsUI() {
+    const { t: tx } = useTranslation();
     const [selected, setSelected] = useState<PaymentKey>("phonepe");
 
     const upiOptions = useMemo(
@@ -33,7 +36,7 @@ export default function PaymentOptionsUI() {
     return (
         <View style={styles.screen}>
             {/* UPI */}
-            <Text style={styles.sectionTitle}>UPI</Text>
+            <Text style={styles.sectionTitle}>{tx("products:paymentOptionsUI.upi")}</Text>
 
             <View style={styles.groupCard}>
                 {upiOptions.map((opt, idx) => {
@@ -53,10 +56,10 @@ export default function PaymentOptionsUI() {
                             <Radio checked={isSelected} />
 
                             <View style={styles.textBlock}>
-                                <Text style={styles.optionTitle}>{opt.title}</Text>
+                                <Text style={styles.optionTitle}>{translateSourceText("products", opt.title)}</Text>
 
                                 {!!opt.subtitle && (
-                                    <Text style={styles.optionSubtitle}>{opt.subtitle}</Text>
+                                    <Text style={styles.optionSubtitle}>{translateSourceText("products", opt.subtitle)}</Text>
                                 )}
 
                                 {!!opt.extra && <Text style={styles.optionExtra}>{opt.extra}</Text>}
@@ -67,7 +70,7 @@ export default function PaymentOptionsUI() {
             </View>
 
             {/* Card */}
-            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>Card</Text>
+            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>{tx("products:paymentOptionsUI.card")}</Text>
 
             <View style={styles.singleCard}>
                 <TouchableOpacity
@@ -82,12 +85,12 @@ export default function PaymentOptionsUI() {
                     <Radio checked={selected === "card"} />
 
                     <View style={styles.textBlock}>
-                        <Text style={styles.optionTitle}>Credit / Debit / ATM Card</Text>
-                        <Text style={styles.optionSubtitle}>Add and secure cards as per RBI guidelines</Text>
+                        <Text style={styles.optionTitle}>{tx("products:paymentOptionsUI.creditDebitAtmCard")}</Text>
+                        <Text style={styles.optionSubtitle}>{tx("products:paymentOptionsUI.addAndSecureCardsAs")}</Text>
 
                         <View style={styles.cardBottomRow}>
-                            <Text style={styles.optionExtraGreen}>Get upto 5% cashback</Text>
-                            <Text style={styles.optionExtraGreen}>  2 more offers available</Text>
+                            <Text style={styles.optionExtraGreen}>{tx("products:paymentOptionsUI.getUpto5Cashback")}</Text>
+                            <Text style={styles.optionExtraGreen}>  {tx("products:r2.moreOffers", { count: 2 })}</Text>
                         </View>
                     </View>
                 </TouchableOpacity>

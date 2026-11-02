@@ -14,6 +14,7 @@ import { useServiceHome } from '../../hooks/useServiceHome';
 import type { ServiceItem } from '../../navigation/type';
 import { useServicesTheme } from '../../utils/useServicesTheme';
 import ServiceGridCard from '../constant/ServiceGridCard';
+import { useTranslation } from "react-i18next";
 
 const HORIZONTAL_PADDING = 16;
 const GRID_COLUMNS = 3;
@@ -22,6 +23,7 @@ const GRID_GAP = 12;
 const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png');
 
 export default function QuickServices() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<any>();
   const servicesTheme = useServicesTheme();
   const { data: homeData, isLoading, error } = useServiceHome();
@@ -44,7 +46,7 @@ export default function QuickServices() {
     return (
       <View style={styles.container}>
         <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>
-          Quick Picks
+          {tx("services:quickServices.quickPicks")}
         </Text>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
@@ -85,7 +87,7 @@ export default function QuickServices() {
           onPress={() => navigation.navigate('ServiceSearch')}
           hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
         >
-          <Text style={[styles.viewAll, { color: servicesTheme.colors.primary }]}>View All</Text>
+          <Text style={[styles.viewAll, { color: servicesTheme.colors.primary }]}>{tx("services:quickServices.viewAll")}</Text>
         </TouchableOpacity>
       </View>
 

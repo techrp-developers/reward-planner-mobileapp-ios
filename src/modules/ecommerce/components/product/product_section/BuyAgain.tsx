@@ -15,6 +15,8 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import OrderHeading from "../../../constants/heading/OrderHeading";
 import ProductCard from "../../../constants/product_cart/ProductCard";
 import { fetchBuyAgainOrders } from "../../../api/OrderApi";
+import { useTranslation } from "react-i18next";
+import { translateSourceText } from "../../../../../i18n/sourceText";
 
 const SORT_OPTIONS = [
   { label: "Recently Bought", value: "recent" },
@@ -24,6 +26,7 @@ const SORT_OPTIONS = [
 ];
 
 function BuyAgain() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation();
 
   const [loading, setLoading] = useState(true);
@@ -99,7 +102,7 @@ function BuyAgain() {
     <SafeAreaView style={styles.safe}>
 
       <OrderHeading
-        title="Buy Again"
+        title={tx("products:buyAgain.buyAgain")}
         onBackPress={() => navigation.goBack()}
       />
 
@@ -120,12 +123,12 @@ function BuyAgain() {
           />
 
           <Text style={styles.sortLabel}>
-            Sort:
+            {tx("products:buyAgain.sort")}
           </Text>
 
           <TouchableOpacity onPress={changeSort}>
             <Text style={styles.activeSort}>
-              {SORT_OPTIONS.find(o => o.value === sortBy)?.label}
+              {translateSourceText("products", SORT_OPTIONS.find(o => o.value === sortBy)?.label)}
             </Text>
           </TouchableOpacity>
 

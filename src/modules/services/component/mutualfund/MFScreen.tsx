@@ -40,6 +40,8 @@ import Lumpsum_Calculator from '../../assete/mutualfund/Lumpsum_Calculator.png';
 import Retirement_Calculator from '../../assete/mutualfund/Retirement_Calculator.png';
 import Up_Calculator from '../../assete/mutualfund/Step-Up_Calculator.png';
 import SWP_Calculator from '../../assete/mutualfund/(SWP)_Calculator.png';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONSTANTS
@@ -137,6 +139,7 @@ interface FooterProps extends Props {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ListHeader = memo<Props>(({ navigation }) => {
+  useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
@@ -151,26 +154,26 @@ const ListHeader = memo<Props>(({ navigation }) => {
         <View style={styles.heroGlowTwo} />
         <View style={styles.heroBadge}>
           <MaterialCommunityIcons name="chart-timeline-variant-shimmer" size={14} color="#FFFFFF" />
-          <Text style={styles.heroBadgeText}>SMART WEALTH TOOLS</Text>
+          <Text style={styles.heroBadgeText}>{i18n.t("services:mFScreen.smartWealthTools")}</Text>
         </View>
         <Text style={styles.heroTitle}>Smart Investment{'\n'}Planner</Text>
         <Text style={styles.heroSubtitle}>
-          Calculate returns, learn the basics, and track your financial future.
+          {i18n.t("services:mFScreen.calculateReturnsLearnTheBasics")}
         </Text>
         <View style={styles.heroStatsRow}>
           <View style={styles.heroStat}>
             <Text style={styles.heroStatValue}>{CALCULATORS.length}</Text>
-            <Text style={styles.heroStatLabel}>Calculators</Text>
+            <Text style={styles.heroStatLabel}>{i18n.t("services:mFScreen.calculators")}</Text>
           </View>
           <View style={styles.heroStatDivider} />
           <View style={styles.heroStat}>
-            <Text style={styles.heroStatValue}>FAQ</Text>
-            <Text style={styles.heroStatLabel}>Guides</Text>
+            <Text style={styles.heroStatValue}>{i18n.t("services:mFScreen.faq")}</Text>
+            <Text style={styles.heroStatLabel}>{i18n.t("services:mFScreen.guides")}</Text>
           </View>
           <View style={styles.heroStatDivider} />
           <View style={styles.heroStat}>
-            <Text style={styles.heroStatValue}>MF</Text>
-            <Text style={styles.heroStatLabel}>Learning</Text>
+            <Text style={styles.heroStatValue}>{i18n.t("services:mFScreen.mf")}</Text>
+            <Text style={styles.heroStatLabel}>{i18n.t("services:mFScreen.learning")}</Text>
           </View>
         </View>
       </LinearGradient>
@@ -180,10 +183,10 @@ const ListHeader = memo<Props>(({ navigation }) => {
       <View style={styles.sectionHeadingRow}>
         <View style={styles.sectionHeadingLeft}>
           <MaterialCommunityIcons name="calculator-variant-outline" size={18} color={servicesTheme.colors.primary} />
-          <Text style={[styles.sectionHeading, { color: servicesTheme.colors.textStrong }]}>MF Calculators</Text>
+          <Text style={[styles.sectionHeading, { color: servicesTheme.colors.textStrong }]}>{i18n.t("services:mFScreen.mfCalculators")}</Text>
         </View>
         <View style={[styles.sectionBadge, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
-          <Text style={[styles.sectionBadgeText, { color: servicesTheme.colors.primary }]}>{CALCULATORS.length} tools</Text>
+          <Text style={[styles.sectionBadgeText, { color: servicesTheme.colors.primary }]}>{i18n.t("services:r2.toolsCount", { count: CALCULATORS.length })}</Text>
         </View>
       </View>
     </>
@@ -195,7 +198,9 @@ const ListHeader = memo<Props>(({ navigation }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ListFooter = memo<FooterProps>(
-  ({ navigation, expanded, hiddenCount, chevronRotate, onToggle }) => (
+  ({ navigation, expanded, hiddenCount, chevronRotate, onToggle }) => {
+    const { t: tx } = useTranslation();
+    return (
     <View>
       {/* View More / Less button */}
       <TouchableOpacity
@@ -218,10 +223,10 @@ const ListFooter = memo<FooterProps>(
           </View>
           <View style={styles.viewMoreTextBlock}>
             <Text style={styles.viewMoreTitle}>
-              {expanded ? 'Show less' : `View all ${CALCULATORS.length} calculators`}
+              {expanded ? tx('services:r2.showLess') : tx('services:r2.viewAllCalculators', { count: CALCULATORS.length })}
             </Text>
             {!expanded && (
-              <Text style={styles.viewMoreSub}>{hiddenCount} more tools available</Text>
+              <Text style={styles.viewMoreSub}>{tx('services:r2.moreToolsAvailable', { count: hiddenCount })}</Text>
             )}
           </View>
           <Animated.View style={{ transform: [{ rotate: chevronRotate }], marginRight: 16 }}>
@@ -237,7 +242,8 @@ const ListFooter = memo<FooterProps>(
       </View>
       <View style={styles.bottomPad} />
     </View>
-  ),
+    );
+  },
 );
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -245,6 +251,7 @@ const ListFooter = memo<FooterProps>(
 // ─────────────────────────────────────────────────────────────────────────────
 
 const MFScreen: React.FC<Props> = ({ navigation }) => {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(false);
   const chevronAnim = useRef(new Animated.Value(0)).current;
@@ -325,13 +332,13 @@ const MFScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
 
         <View style={styles.headerTextBlock}>
-          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Mutual Funds</Text>
-          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>Calculators · Learn · Grow</Text>
+          <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:mFScreen.mutualFunds")}</Text>
+          <Text style={[styles.headerSubtitle, { color: servicesTheme.colors.muted }]}>{tx("services:mFScreen.calculatorsLearnGrow")}</Text>
         </View>
 
         <View style={[styles.badge, { backgroundColor: servicesTheme.colors.surfaceAlt, borderColor: servicesTheme.colors.border }]}>
           <Text style={[styles.badgeCount, { color: servicesTheme.colors.primary }]}>{CALCULATORS.length}</Text>
-          <Text style={[styles.badgeLabel, { color: servicesTheme.colors.primaryDark }]}>Tools</Text>
+          <Text style={[styles.badgeLabel, { color: servicesTheme.colors.primaryDark }]}>{tx("services:mFScreen.tools")}</Text>
         </View>
       </LinearGradient>
 

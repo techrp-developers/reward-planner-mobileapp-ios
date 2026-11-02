@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { rs, fs } from '../../../utils/responsive';
 import { useAppTheme } from '../../../theme/ThemeContext';
+import { useTranslation } from "react-i18next";
 
 type TopTab = 'Product' | 'Services' | 'Payments' | 'DineOut';
 
@@ -46,8 +47,8 @@ const upcomingServices: CategoryItem[] = [
 ];
 
 const hiddenUpcomingServices: CategoryItem[] = [
-  { image: Explore7, tab: 'DineOut', title: 'Community' },
-  { image: Explore8, tab: 'Product', title: 'Expense Tracker' },
+  { image: Explore7, tab: 'DineOut', title: 'dashboard:explore.community' },
+  { image: Explore8, tab: 'Product', title: 'dashboard:explore.expenseTracker' },
 ];
 
 const SHOW_HIDDEN_UPCOMING_SERVICES = false;
@@ -61,6 +62,7 @@ const TAB_TO_MODULE: Record<TopTab, { screen: string; moduleName: TopTab }> = {
 
 function ExploreModule() {
   const { isDark, theme } = useAppTheme();
+  const { t: tr } = useTranslation();
   const { width } = useWindowDimensions();
   const navigation = useNavigation<any>();
   const isNavigatingRef = useRef(false);
@@ -131,7 +133,7 @@ function ExploreModule() {
           <Text style={[styles.backArrow, t.backArrow]}>{'‹'}</Text>
         </TouchableOpacity>
         <Text style={[styles.headerTitle, t.headerTitle]}>
-          Explore Services
+          {tr("dashboard:explore.title")}
         </Text>
         <View style={styles.backBtn} />
       </View>
@@ -161,7 +163,7 @@ function ExploreModule() {
         ))}
 
         <Text style={[styles.sectionTitle, t.sectionTitle]}>
-          Upcoming Services
+          {tr("dashboard:explore.upcoming")}
         </Text>
 
         {upcomingServices.map((item, i) => (
@@ -200,10 +202,10 @@ function ExploreModule() {
               >
                 <View style={styles.hiddenDisabledCardContent}>
                   <Text style={styles.hiddenDisabledCardTitle}>
-                    {item.title}
+                    {item.title ? tr(item.title) : null}
                   </Text>
                   <Text style={styles.hiddenDisabledCardSubtitle}>
-                    Coming Soon
+                    {tr("dashboard:explore.comingSoon")}
                   </Text>
                 </View>
               </TouchableOpacity>

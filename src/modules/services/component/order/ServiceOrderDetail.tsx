@@ -46,6 +46,8 @@ import {
   isServicePaymentVerified,
   verifyServicePayment,
 } from '../../api/ServicepaymentAPI';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 type Nav = NativeStackNavigationProp<HomeStackParamList>;
 type RouteT = RouteProp<HomeStackParamList, 'ServiceOrderDetail'>;
@@ -60,25 +62,25 @@ function getOrderStatusSummary(items: ServiceItem[]): { label: string; color: st
   const total = items.length;
 
   if (total === 0) {
-    return { label: 'Order Placed', color: '#6B7280' };
+    return { label: i18n.t('services:orders.summary.placed'), color: '#6B7280' };
   }
 
   const cancelled = items.filter(item => item.status === 'cancelled').length;
   if (cancelled === total) {
-    return { label: 'Order Cancelled', color: '#DC2626' };
+    return { label: i18n.t('services:orders.summary.cancelled'), color: '#DC2626' };
   }
 
   const completed = items.filter(item => item.status === 'completed').length;
   if (completed === total) {
-    return { label: 'Order Completed', color: '#16A34A' };
+    return { label: i18n.t('services:orders.summary.completed'), color: '#16A34A' };
   }
 
   const confirmed = items.filter(item => item.status !== 'pending_payment').length;
   if (confirmed < total) {
-    return { label: `${confirmed} of ${total} Services Confirmed`, color: '#D97706' };
+    return { label: i18n.t('services:orders.summary.servicesConfirmed', { done: confirmed, total }), color: '#D97706' };
   }
 
-  return { label: `${completed} of ${total} Services Completed`, color: '#2563EB' };
+  return { label: i18n.t('services:orders.summary.servicesCompleted', { done: completed, total }), color: '#2563EB' };
 }
 
 // ── Data transforms ──────────────────────────────────────────────────────────
@@ -102,6 +104,7 @@ function formatDate(dateStr: string): string {
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ServiceOrderDetail() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<Nav>();
   const servicesTheme = useServicesTheme();
   const route = useRoute<RouteT>();
@@ -123,10 +126,10 @@ export default function ServiceOrderDetail() {
       if (res?.success && res?.data) {
         setOrder(res.data as ServiceOrderDetails);
       } else {
-        setError(res?.message || 'Order not found.');
+        setError(res?.message || i18n.t("services:r2.orderNotFound"));
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to load order details.');
+      setError(err?.message || i18n.t("services:r2.failedToLoadOrderDetails"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -177,12 +180,12 @@ export default function ServiceOrderDetail() {
       const res = await getServiceInvoiceDetails(parent_order_id);
 
       if (res.success === false) {
-        Alert.alert('Invoice unavailable', res.message || 'Unable to find invoice for this order.');
+        Alert.alert(i18n.t("services:serviceOrderDetail.invoiceUnavailable"), res.message || i18n.t('services:orders.invoiceNotFound'));
         return;
       }
 
       await Share.open({
-        title: 'Download Invoice',
+        title: i18n.t('services:serviceOrderDetail.downloadInvoice'),
         url: `data:application/pdf;base64,${res.base64}`,
         type: 'application/pdf',
         filename: res.fileName.replace(/\.pdf$/i, ''),
@@ -193,7 +196,7 @@ export default function ServiceOrderDetail() {
     } catch (err: any) {
       Alert.alert(
         'Download failed',
-        err?.message || 'Unable to download invoice. Please try again.'
+        err?.message || i18n.t("services:r2.unableToDownloadInvoicePleaseTry")
       );
     } finally {
       setInvoiceDownloading(false);
@@ -209,7 +212,7 @@ export default function ServiceOrderDetail() {
       const currentStatus = await checkServicePaymentStatus(parent_order_id);
       if (isServicePaymentVerified(currentStatus)) {
         await fetchOrder(true);
-        Alert.alert('Payment confirmed', 'Your payment is already complete. Document upload is now available.');
+        Alert.alert(i18n.t("services:serviceOrderDetail.paymentConfirmed"), i18n.t("services:serviceOrderDetail.yourPaymentIsAlreadyComplete"));
         return;
       }
 
@@ -225,7 +228,7 @@ export default function ServiceOrderDetail() {
         currency: payment.currency || 'INR',
         order_id: payment.orderId,
         name: 'Reward Planners',
-        description: `Service order ${parent_order_id}`,
+        description: i18n.t('services:orders.serviceOrderN', { id: parent_order_id }),
         theme: { color: PURPLE },
       });
 
@@ -243,16 +246,16 @@ export default function ServiceOrderDetail() {
       }
 
       if (!verified) {
-        Alert.alert('Payment processing', 'Your payment is still being confirmed. Please refresh this order shortly.');
+        Alert.alert(i18n.t("services:serviceOrderDetail.paymentProcessing"), i18n.t("services:serviceOrderDetail.yourPaymentIsStillBeing"));
         return;
       }
 
       await fetchOrder(true);
-      Alert.alert('Payment successful', 'You can now upload the required documents.');
+      Alert.alert(i18n.t("services:serviceOrderDetail.paymentSuccessful"), i18n.t("services:serviceOrderDetail.youCanNowUploadThe"));
     } catch (error: any) {
       const message = getServicePaymentError(error, 'Unable to complete payment');
       const cancelled = /cancel|dismiss/i.test(message) || Number(error?.code) === 0;
-      if (!cancelled) Alert.alert('Payment unsuccessful', message);
+      if (!cancelled) Alert.alert(i18n.t("services:serviceOrderDetail.paymentUnsuccessful"), message);
     } finally {
       setPaymentLoading(false);
     }
@@ -268,7 +271,7 @@ export default function ServiceOrderDetail() {
         />
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={servicesTheme.colors.primary} />
-          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>Loading order details…</Text>
+          <Text style={[styles.loadingText, { color: servicesTheme.colors.muted }]}>{tx("services:serviceOrderDetail.loadingOrderDetails")}</Text>
         </View>
       </SafeAreaView>
     );
@@ -283,9 +286,9 @@ export default function ServiceOrderDetail() {
         />
         <View style={styles.centered}>
           <MaterialCommunityIcons name="alert-circle-outline" size={52} color="#DC2626" />
-          <Text style={styles.errorText}>{error || 'Order not found.'}</Text>
+          <Text style={styles.errorText}>{error || i18n.t("services:r2.orderNotFound")}</Text>
           <TouchableOpacity style={styles.retryBtn} onPress={() => fetchOrder()}>
-            <Text style={styles.retryText}>Try Again</Text>
+            <Text style={styles.retryText}>{tx("services:serviceOrderDetail.tryAgain")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -312,7 +315,7 @@ export default function ServiceOrderDetail() {
     allServiceItems[0]?.id ||
     0;
   const primaryService = allServiceItems[0];
-  const primaryTitle = primaryService?.service_name || 'Service Order';
+  const primaryTitle = primaryService?.service_name || i18n.t("services:r2.serviceOrder");
   const primarySubtitle =
     primaryService?.variant_name ||
     `${allServiceItems.length} service${allServiceItems.length === 1 ? '' : 's'}`;
@@ -386,7 +389,7 @@ export default function ServiceOrderDetail() {
             <Text style={[styles.statusSummaryDate, { color: servicesTheme.colors.muted }]}>{formatDate(order.created_at)}</Text>
           </View>
           <Text style={[styles.statusSummaryText, { color: servicesTheme.colors.muted }]}>
-            Track each service below for its individual document and completion timeline.
+            {tx("services:serviceOrderDetail.trackEachServiceBelowFor")}
           </Text>
         </View>
         {/* ── Order summary card ─────────────────────────────────────── */}
@@ -399,7 +402,7 @@ export default function ServiceOrderDetail() {
           >
             <View style={styles.summaryRow}>
               <View>
-                <Text style={styles.orderEyebrow}>SERVICE ORDER</Text>
+                <Text style={styles.orderEyebrow}>{tx("services:serviceOrderDetail.serviceOrder")}</Text>
                 <Text style={styles.orderId}>
                   #{parent_order_id.slice(0, 8).toUpperCase()}
                 </Text>
@@ -421,7 +424,7 @@ export default function ServiceOrderDetail() {
                 <Text style={styles.statValue}>
                   {order.items.length + order.bundles.reduce((s, b) => s + b.items.length, 0)}
                 </Text>
-                <Text style={styles.statLabel}>Services</Text>
+                <Text style={styles.statLabel}>{tx("services:serviceOrderDetail.services")}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
@@ -433,7 +436,7 @@ export default function ServiceOrderDetail() {
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
                 <Text style={styles.statValue}>{order.bundles.length || '—'}</Text>
-                <Text style={styles.statLabel}>Bundles</Text>
+                <Text style={styles.statLabel}>{tx("services:serviceOrderDetail.bundles")}</Text>
               </View>
             </View>
           </LinearGradient>
@@ -441,7 +444,7 @@ export default function ServiceOrderDetail() {
 
         {/* ── Standalone service items ───────────────────────────────── */}
         {hasStandaloneItems && (
-          <SectionCard title={`Services (${order.items.length})`}>
+          <SectionCard title={tx('services:orders.servicesCount', { count: order.items.length })}>
             {order.items.map((item, idx) => (
               <View
                 key={item.id}
@@ -460,7 +463,7 @@ export default function ServiceOrderDetail() {
 
         {/* ── Bundle service items ───────────────────────────────────── */}
         {hasBundles && (
-          <SectionCard title={`Bundles (${order.bundles.length})`}>
+          <SectionCard title={tx('services:orders.bundlesCount', { count: order.bundles.length })}>
             {order.bundles.map((bundle, i) => (
               <ServiceBundleCard
                 key={bundle.bundle_id}
@@ -506,7 +509,7 @@ export default function ServiceOrderDetail() {
         ) : null}
 
         {/* ── Price summary (reused ecommerce component) ────────────── */}
-        <SectionCard title="Payment Summary">
+        <SectionCard title={tx("services:serviceOrderDetail.paymentSummary")}>
           <PriceDetailsCard
             itemTotal={itemSubtotal}
             deliveryFee={0}
@@ -525,8 +528,8 @@ export default function ServiceOrderDetail() {
 
         <YouMayNeedServicesCarousel />
         <RecommendedServicesCarousel
-          title="Top Picks for You"
-          subtitle="Popular services customers choose next"
+          title={tx("services:serviceOrderDetail.topPicksForYou")}
+          subtitle={tx("services:serviceOrderDetail.popularServicesCustomersChooseNext")}
         />
 
         <View style={styles.bottomPad} />
@@ -537,6 +540,7 @@ export default function ServiceOrderDetail() {
 
 // ── Local layout helpers (not exported — presentational only) ─────────────────
 function Header({ onBack, onHelp }: { onBack: () => void; onHelp: () => void }) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
@@ -548,7 +552,7 @@ function Header({ onBack, onHelp }: { onBack: () => void; onHelp: () => void }) 
       >
         <MaterialCommunityIcons name="chevron-left" size={28} color={servicesTheme.colors.text} />
       </TouchableOpacity>
-      <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>Order Details</Text>
+      <Text style={[styles.headerTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceOrderDetail.orderDetails")}</Text>
       <TouchableOpacity activeOpacity={0.85} onPress={onHelp} style={[styles.helpBtn, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
         <MaterialCommunityIcons
           name="chat-outline"
@@ -556,7 +560,7 @@ function Header({ onBack, onHelp }: { onBack: () => void; onHelp: () => void }) 
           color="#EC4899"
           style={styles.helpIcon}
         />
-        <Text style={styles.helpText}>Help</Text>
+        <Text style={styles.helpText}>{tx("services:serviceOrderDetail.help")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -596,6 +600,7 @@ function OrderDocumentsCard({
   onPay: () => void;
   onUpload: () => void;
 }) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const complete = pending === 0;
 
@@ -609,23 +614,23 @@ function OrderDocumentsCard({
         />
       </View>
       <View style={styles.documentsCopy}>
-        <Text style={[styles.documentsTitle, { color: servicesTheme.colors.textStrong }]}>Documents</Text>
+        <Text style={[styles.documentsTitle, { color: servicesTheme.colors.textStrong }]}>{tx("services:serviceOrderDetail.documents")}</Text>
         <Text style={[styles.documentsText, { color: servicesTheme.colors.muted }]}>
           {complete
             ? `${uploaded} of ${total} documents uploaded`
             : !canUpload
-              ? 'Document upload unlocks after payment'
+              ? i18n.t("services:r2.documentUploadUnlocksAfterPayment")
               : `${pending} document${pending > 1 ? 's' : ''} still needed`}
         </Text>
       </View>
       {complete ? (
         <View style={styles.documentsDone}>
           <MaterialCommunityIcons name="check" size={14} color="#16A34A" />
-          <Text style={styles.documentsDoneText}>Complete</Text>
+          <Text style={styles.documentsDoneText}>{tx("services:serviceOrderDetail.complete")}</Text>
         </View>
       ) : canUpload ? (
         <TouchableOpacity style={styles.uploadDocumentsButton} onPress={onUpload}>
-          <Text style={styles.uploadDocumentsText}>Upload</Text>
+          <Text style={styles.uploadDocumentsText}>{tx("services:serviceOrderDetail.upload")}</Text>
           <MaterialCommunityIcons name="arrow-right" size={15} color="#FFF" />
         </TouchableOpacity>
       ) : (
@@ -640,7 +645,7 @@ function OrderDocumentsCard({
           ) : (
             <>
               <MaterialCommunityIcons name="credit-card-outline" size={15} color="#FFFFFF" />
-              <Text style={styles.payNowText}>Pay now</Text>
+              <Text style={styles.payNowText}>{tx("services:serviceOrderDetail.payNow")}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -659,11 +664,12 @@ function InvoiceDownloadRow({
   downloading: boolean;
   onDownload: () => void;
 }) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
 
   return (
     <View style={[styles.invoiceRow, { backgroundColor: servicesTheme.colors.surface, borderColor: servicesTheme.colors.border }]}>
-      <Text style={[styles.invoiceText, { color: servicesTheme.colors.text }]}>Save a copy of your order</Text>
+      <Text style={[styles.invoiceText, { color: servicesTheme.colors.text }]}>{tx("services:serviceOrderDetail.saveACopyOfYour")}</Text>
 
       <TouchableOpacity
         style={[styles.invoiceButton, downloading && styles.invoiceButtonDisabled]}
@@ -674,7 +680,7 @@ function InvoiceDownloadRow({
         {downloading ? (
           <ActivityIndicator size="small" color={servicesTheme.colors.primary} />
         ) : (
-          <Text style={[styles.invoiceButtonText, { color: servicesTheme.colors.primary }]}>Download Invoice</Text>
+          <Text style={[styles.invoiceButtonText, { color: servicesTheme.colors.primary }]}>{tx("services:serviceOrderDetail.downloadInvoice")}</Text>
         )}
       </TouchableOpacity>
     </View>

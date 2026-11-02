@@ -2,6 +2,7 @@ import axios from "axios";
 import { getAuthHeaders, clearAuthToken } from "../../common/auth/api/AuthAPI";
 
 import { BASE_API_URL } from './api';
+import i18n from "../../../i18n";
 
 const SERVICE_API_BASE = BASE_API_URL.includes('/v1')
   ? BASE_API_URL
@@ -71,7 +72,7 @@ export const addServiceToCart = async ({
     );
 
     if (res?.data?.success === false) {
-      throw new Error(String(res?.data?.message || 'Unable to add service to cart'));
+      throw new Error(String(res?.data?.message || i18n.t("services:r2.unableToAddServiceToCart")));
     }
 
     return res.data;
@@ -192,7 +193,7 @@ export const removeServiceCartItem = async (cartItemId: number) => {
     );
 
     if (res?.data?.success === false) {
-      throw new Error(String(res?.data?.message || 'Unable to remove cart item'));
+      throw new Error(String(res?.data?.message || i18n.t("services:r2.unableToRemoveCartItem")));
     }
 
     return res.data;
@@ -221,7 +222,7 @@ export const clearServiceCart = async () => {
     const res = await axios.delete(url, { headers });
 
     if (res?.data?.success === false) {
-      throw new Error(String(res?.data?.message || 'Unable to clear cart'));
+      throw new Error(String(res?.data?.message || i18n.t("services:r2.unableToClearCart")));
     }
 
     return res.data;

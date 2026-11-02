@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import type { ServiceItem, ServiceDetailBundle } from '../../api/OrderAPI';
 import ServiceOrderItemCard from './ServiceOrderItemCard';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
 
 type Props = {
   bundle: ServiceDetailBundle;
@@ -22,6 +23,7 @@ export default function ServiceBundleCard({
   onCancellationDetailsItem,
   onFeedbackItem,
 }: Props) {
+  const { t: tx } = useTranslation();
   const servicesTheme = useServicesTheme();
   const [expanded, setExpanded] = useState(true);
 
@@ -47,7 +49,7 @@ export default function ServiceBundleCard({
         </LinearGradient>
 
         <View style={[styles.totalRow, { borderBottomColor: servicesTheme.colors.divider }]}>
-          <Text style={[styles.totalLabel, { color: servicesTheme.colors.muted }]}>Bundle Total</Text>
+          <Text style={[styles.totalLabel, { color: servicesTheme.colors.muted }]}>{tx("services:serviceBundleCard.bundleTotal")}</Text>
           <Text style={[styles.totalAmount, { color: servicesTheme.colors.textStrong }]}>
             ₹{bundle.bundle_total.toLocaleString('en-IN')}
           </Text>

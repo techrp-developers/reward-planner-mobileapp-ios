@@ -15,11 +15,14 @@ import Card from './Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const LimitedImage = require('../../assete/service/Limited_offer.png');
 const fallbackImg = require('../../assete/gov_documet/domacile_certificate.png');
 
 export default function LimitedOffer() {
+  const { t: tx } = useTranslation();
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
   const { data, isLoading, error } = useServiceHome();
@@ -55,8 +58,8 @@ export default function LimitedOffer() {
   return (
     <View style={styles.wrapper}>
       <View style={styles.headerRow}>
-        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>Limited Time Offers</Text>
-        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>Grab them before they're gone</Text>
+        <Text style={[styles.heading, { color: servicesTheme.colors.textStrong }]}>{tx("services:limitedOffer.limitedTimeOffers")}</Text>
+        <Text style={[styles.subheading, { color: servicesTheme.colors.muted }]}>{tx("services:limitedOffer.grabThemBeforeTheyRe")}</Text>
       </View>
 
       <View style={styles.shadowWrap}>
@@ -93,7 +96,7 @@ export default function LimitedOffer() {
                   key={`${item.service_id}-${item.variant_id}`}
                   title={item.title || item.name}
                   image={getImageSource(item)}
-                  price={Number(item.price) > 0 ? `₹${item.price}` : 'Get Quote'}
+                  price={Number(item.price) > 0 ? `₹${item.price}` : i18n.t("services:r2.getQuote")}
                   oldPrice={item.mrp ? `${item.mrp}` : `${item.price}`}
                   rating={item.rating}
                   users={reviews}

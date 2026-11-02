@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { AppStackParamList } from "../../../navigation/RootNavigator";
 import { useAppTheme } from "../../../theme/ThemeContext";
+import { useTranslation } from "react-i18next";
 
 type Nav = NativeStackNavigationProp<AppStackParamList, "TrackOrders">;
 
@@ -64,6 +65,7 @@ const OrderSectionCard = ({
 export default function TrackOrderScreen() {
   const navigation = useNavigation<Nav>();
   const { isDark } = useAppTheme();
+  const { t } = useTranslation();
 
   const colors = {
     rootGradient: isDark
@@ -108,7 +110,7 @@ export default function TrackOrderScreen() {
             >
               <MaterialCommunityIcons name="arrow-left" size={20} color={colors.backIcon} />
             </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.headerText }]}>All Orders</Text>
+            <Text style={[styles.headerTitle, { color: colors.headerText }]}>{t("dashboard:orders.title")}</Text>
             <View style={styles.headerSpacer} />
           </View>
 
@@ -121,17 +123,17 @@ export default function TrackOrderScreen() {
             <View style={styles.heroIcon}>
               <MaterialCommunityIcons name="clipboard-list-outline" size={28} color="#FFFFFF" />
             </View>
-            <Text style={styles.heroTitle}>One place for every order</Text>
+            <Text style={styles.heroTitle}>{t("dashboard:orders.heroTitle")}</Text>
             <Text style={styles.heroSubtitle}>
-              View product purchases, service bookings, bill payments, and future order types from one place.
+              {t("dashboard:orders.heroSubtitle")}
             </Text>
           </LinearGradient>
 
-          <Text style={[styles.sectionLabel, { color: colors.muted }]}>ORDER CATEGORIES</Text>
+          <Text style={[styles.sectionLabel, { color: colors.muted }]}>{t("dashboard:orders.categories")}</Text>
 
           <OrderSectionCard
-            title="Shopping Orders"
-            subtitle="Track your ecommerce product orders"
+            title={t("dashboard:orders.shopping")}
+            subtitle={t("dashboard:orders.shoppingSub")}
             icon="shopping-outline"
             iconBg={colors.iconBlueBg}
             iconColor="#4F46E5"
@@ -144,8 +146,8 @@ export default function TrackOrderScreen() {
           />
 
           <OrderSectionCard
-            title="Service Orders"
-            subtitle="View booked services and their progress"
+            title={t("dashboard:orders.service")}
+            subtitle={t("dashboard:orders.serviceSub")}
             icon="briefcase-check-outline"
             iconBg={colors.iconGreenBg}
             iconColor="#059669"
@@ -158,8 +160,8 @@ export default function TrackOrderScreen() {
           />
 
           <OrderSectionCard
-            title="BBPS Orders"
-            subtitle="Open your recharge and bill payment history"
+            title={t("dashboard:orders.bbps")}
+            subtitle={t("dashboard:orders.bbpsSub")}
             icon="receipt-text-check-outline"
             iconBg={colors.iconOrangeBg}
             iconColor="#EA580C"
@@ -177,18 +179,18 @@ export default function TrackOrderScreen() {
               { backgroundColor: colors.infoCard, borderColor: colors.border },
             ]}
           >
-            <Text style={[styles.infoTitle, { color: colors.text }]}>What you can manage here</Text>
+            <Text style={[styles.infoTitle, { color: colors.text }]}>{t("dashboard:orders.manageTitle")}</Text>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons name="check-circle-outline" size={18} color="#4F46E5" />
-              <Text style={[styles.infoText, { color: colors.body }]}>Product orders, service bookings, and BBPS transactions</Text>
+              <Text style={[styles.infoText, { color: colors.body }]}>{t("dashboard:orders.manage1")}</Text>
             </View>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons name="check-circle-outline" size={18} color="#4F46E5" />
-              <Text style={[styles.infoText, { color: colors.body }]}>Status, payment details, invoices, and recent updates</Text>
+              <Text style={[styles.infoText, { color: colors.body }]}>{t("dashboard:orders.manage2")}</Text>
             </View>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons name="check-circle-outline" size={18} color="#4F46E5" />
-              <Text style={[styles.infoText, { color: colors.body }]}>A quick route to each module's dedicated order list</Text>
+              <Text style={[styles.infoText, { color: colors.body }]}>{t("dashboard:orders.manage3")}</Text>
             </View>
           </View>
         </ScrollView>

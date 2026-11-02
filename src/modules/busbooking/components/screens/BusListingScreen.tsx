@@ -33,6 +33,9 @@ import {
   type BusListingBus,
   type BusSortId,
 } from "../../utils/busListingFilters";
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
+import { translateSourceText } from "../../../../i18n/sourceText";
 
 type ListingRouteProp = RouteProp<
   BusBookingStackParamList,
@@ -202,7 +205,7 @@ const normalizeBusCard = (
       "VehicleType",
       "coachType",
       "CoachType",
-    ]) ?? "Bus Service"
+    ]) ?? i18n.t("busBooking:r2.busService")
   );
 
   const departure = toTimeLabel(
@@ -345,6 +348,7 @@ const SORT_LABELS: Record<BusSortId, string> = {
 };
 
 export default function BusListingScreen() {
+  const { t: tx } = useTranslation();
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -540,8 +544,8 @@ const handleOpenSeatSelection =
       if (!traceId) {
 
         showPopup({
-          title: "Seat Layout Error",
-          message: "TraceId is missing. Please search buses again.",
+          title: i18n.t("busBooking:busListingScreen.msg.seatLayoutError"),
+          message: i18n.t("busBooking:busListingScreen.msg.traceidIsMissingPleaseSearch"),
           variant: "error",
         });
 
@@ -556,8 +560,8 @@ const handleOpenSeatSelection =
       ) {
 
         showPopup({
-          title: "Seat Layout Error",
-          message: "SrdvIndex is missing for this bus.",
+          title: i18n.t("busBooking:busListingScreen.msg.seatLayoutError"),
+          message: i18n.t("busBooking:busListingScreen.msg.srdvindexIsMissingForThis"),
           variant: "error",
         });
 
@@ -572,8 +576,8 @@ const handleOpenSeatSelection =
       ) {
 
         showPopup({
-          title: "Seat Layout Error",
-          message: "ResultIndex is missing for this bus.",
+          title: i18n.t("busBooking:busListingScreen.msg.seatLayoutError"),
+          message: i18n.t("busBooking:busListingScreen.msg.resultindexIsMissingForThis"),
           variant: "error",
         });
 
@@ -690,8 +694,8 @@ const handleOpenSeatSelection =
 
 
         showPopup({
-          title: "Unable to Load Seats",
-          message: error?.message || "Unable to fetch seat layout.",
+          title: i18n.t("busBooking:busListingScreen.msg.unableToLoadSeats"),
+          message: error?.message || i18n.t("busBooking:r2.unableToFetchSeatLayout"),
           variant: "error",
         });
 
@@ -745,7 +749,7 @@ const handleOpenSeatSelection =
           <Text style={styles.resultsText}>{listingBuses.length} Buses found</Text>
           {allBuses.length > 1 ? (
             <TouchableOpacity activeOpacity={0.85} onPress={handleCycleSort}>
-              <Text style={styles.sortText}>Sort by: {SORT_LABELS[sortId]}</Text>
+              <Text style={styles.sortText}>{i18n.t("busBooking:r2.sortBy", { label: translateSourceText("busBooking", SORT_LABELS[sortId]) })}</Text>
             </TouchableOpacity>
           ) : null}
         </View>
@@ -771,7 +775,7 @@ const handleOpenSeatSelection =
                     isSelected ? styles.filterChipTextActive : null,
                   ]}
                 >
-                  {item.label}
+                  {translateSourceText("busBooking", item.label)}
                 </Text>
               </TouchableOpacity>
             );
@@ -788,12 +792,12 @@ const handleOpenSeatSelection =
                   color="#D61A33"
                 />
               </View>
-              <Text style={styles.emptyStateTitle}>No buses found</Text>
+              <Text style={styles.emptyStateTitle}>{tx("busBooking:busListingScreen.noBusesFound")}</Text>
               <Text style={styles.emptyStateMessage}>
-                {emptyStateMessage || "Buses not found for this route."}
+                {emptyStateMessage || i18n.t("busBooking:r2.busesNotFoundForThisRoute")}
               </Text>
               <Text style={styles.emptyStateHint}>
-                Try another date or choose a different route.
+                {tx("busBooking:busListingScreen.tryAnotherDateOrChoose")}
               </Text>
             </View>
           ) : null}
@@ -815,7 +819,7 @@ const handleOpenSeatSelection =
                         <Text style={styles.operatorText}>{item.operator}</Text>
                         {item.topRated ? (
                           <View style={styles.topRatedBadge}>
-                            <Text style={styles.topRatedText}>TOP RATED</Text>
+                            <Text style={styles.topRatedText}>{tx("busBooking:busListingScreen.topRated")}</Text>
                           </View>
                         ) : null}
                       </View>
@@ -933,7 +937,7 @@ item.id ? (
           : null,
       ]}
     >
-      Loading...
+      {tx("busBooking:busListingScreen.loading")}
     </Text>
 
   </View>
@@ -950,7 +954,7 @@ item.id ? (
         : null,
     ]}
   >
-    View Seats
+    {tx("busBooking:busListingScreen.viewSeats")}
   </Text>
 
 )}
@@ -968,7 +972,7 @@ item.id ? (
                     activeOpacity={0.8}
                     onPress={() => handleOpenAboutBus(item)}
                   >
-                    <Text style={styles.aboutBusLink}>About Bus</Text>
+                    <Text style={styles.aboutBusLink}>{tx("busBooking:busListingScreen.aboutBus")}</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>

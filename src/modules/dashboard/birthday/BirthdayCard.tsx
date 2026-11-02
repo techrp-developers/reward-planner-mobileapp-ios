@@ -13,6 +13,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { fs, rs } from '../../../utils/responsive';
 import type { BirthdayEmployee } from './types';
+import { useTranslation } from "react-i18next";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -30,12 +31,16 @@ const Avatar = memo(({ name, photo }: { name: string; photo?: string | null }) =
 
   return (
     // Gold-warm gradient ring — contrasts beautifully with the purple card
-    <LinearGradient
-      colors={['#E0E7FF', '#818CF8', '#4F46E5']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.avatarRing, { width: RING_SIZE, height: RING_SIZE, borderRadius: RING_SIZE / 2 }]}
-    >
+    <View style={[styles.avatarRing, { width: RING_SIZE, height: RING_SIZE, borderRadius: RING_SIZE / 2 }]}>
+      {/* LinearGradient 2.8 is a legacy view on Fabric: keep it childless so
+          iOS lays out the avatar inside the ring. */}
+      <LinearGradient
+        pointerEvents="none"
+        colors={['#E0E7FF', '#818CF8', '#4F46E5']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
       <View style={[styles.avatarInner, { width: AVATAR_SIZE, height: AVATAR_SIZE, borderRadius: AVATAR_SIZE / 2 }]}>
         {photo ? (
           <Image
@@ -47,7 +52,7 @@ const Avatar = memo(({ name, photo }: { name: string; photo?: string | null }) =
           <Text style={styles.initialsText}>{initials}</Text>
         )}
       </View>
-    </LinearGradient>
+    </View>
   );
 });
 
@@ -122,21 +127,24 @@ const BirthdayCard = memo(({
   }, [floatAnim]);
 
   const translateY = floatAnim.interpolate({ inputRange: [0, 1], outputRange: [0, -5] });
+  const { t: tr } = useTranslation();
 
   const message =
     employee.message ??
-    `Wishing you a year filled with success, happiness, and everything you deserve.`;
+    tr("dashboard:birthday.defaultMessage");
 
   return (
     <Animated.View style={[styles.wrapper, { width: cardWidth, transform: [{ translateY }] }]}>
-      <LinearGradient
-        colors={isDark
-          ? ['#09090B', '#111827', '#18181B']
-          : ['#111827', '#1E1B4B', '#312E81']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.card}
-      >
+      <View style={[styles.card, { backgroundColor: isDark ? '#111827' : '#1E1B4B' }]}>
+        <LinearGradient
+          pointerEvents="none"
+          colors={isDark
+            ? ['#09090B', '#111827', '#18181B']
+            : ['#111827', '#1E1B4B', '#312E81']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
         {/* ── Decorative background blobs ─────────────────────────────── */}
         <View style={styles.blobTopRight} />
         <View style={styles.blobBottomLeft} />
@@ -154,12 +162,14 @@ const BirthdayCard = memo(({
             {/* Avatar + department badge */}
             <View style={styles.avatarSection}>
               <Avatar name={employee.name} photo={employee.photo} />
-              <View style={styles.deptBadge}>
-                <MaterialCommunityIcons name="domain" size={fs(9)} color="rgba(255,255,255,0.7)" />
-                <Text style={styles.deptBadgeText} numberOfLines={1}>
-                  {employee.department}
-                </Text>
-              </View>
+              {!!employee.department?.trim() && (
+                <View style={styles.deptBadge}>
+                  <MaterialCommunityIcons name="domain" size={fs(9)} color="rgba(255,255,255,0.7)" />
+                  <Text style={styles.deptBadgeText} numberOfLines={1}>
+                    {employee.department}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Text content */}
@@ -167,15 +177,17 @@ const BirthdayCard = memo(({
               <View style={styles.chipRow}>
                 <View style={styles.chip}>
                   <MaterialCommunityIcons name="cake-variant" size={fs(12)} color="#C7D2FE" />
-                  <Text style={styles.chipText}>Happy Birthday!</Text>
+                  <Text style={styles.chipText}>{tr("dashboard:birthday.happy")}</Text>
                 </View>
               </View>
               <Text style={styles.nameText} numberOfLines={1}>
                 {employee.name}
               </Text>
-              <Text style={styles.designationText} numberOfLines={1}>
-                {employee.designation}
-              </Text>
+              {!!employee.designation?.trim() && (
+                <Text style={styles.designationText} numberOfLines={1}>
+                  {employee.designation}
+                </Text>
+              )}
 
               <View style={styles.separator} />
 
@@ -192,7 +204,7 @@ const BirthdayCard = memo(({
           <MaterialCommunityIcons name="cake-variant-outline" size={rs(36)} color="rgba(255,255,255,0.08)" />
         </View>
 
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 });
@@ -203,16 +215,18 @@ export default BirthdayCard;
 
 const styles = StyleSheet.create({
   wrapper: {
-    // width set inline; shadow on wrapper so it's visible outside card bounds
+    // width set inline. A solid background gives iOS a rounded shape to cast
+    // the shadow from, instead of a grey block behind the card.
     borderRadius: rs(20),
+    backgroundColor: '#1E1B4B',
     ...Platform.select({
       ios: {
         shadowColor: '#111827',
-        shadowOffset: { width: 0, height: rs(10) },
-        shadowOpacity: 0.45,
-        shadowRadius: rs(20),
+        shadowOffset: { width: 0, height: rs(6) },
+        shadowOpacity: 0.25,
+        shadowRadius: rs(12),
       },
-      android: { elevation: 12 },
+      android: { elevation: 8 },
     }),
   },
 
@@ -248,14 +262,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   glass: {
-    margin: rs(2),
-    borderRadius: rs(18),
+    margin: rs(6),
+    borderRadius: rs(16),
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.10)',
     paddingHorizontal: rs(14),
-    paddingTop: rs(10),
-    paddingBottom: rs(12),
+    paddingVertical: rs(14),
   },
 
   // ── Celebration chip ─────────────────────────────────────────────────────────
@@ -294,11 +307,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: rs(6),
     flexShrink: 0,
-    marginTop: rs(8),
   },
   avatarRing: {
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   avatarInner: {
     backgroundColor: '#111827',
@@ -335,7 +348,9 @@ const styles = StyleSheet.create({
   // ── Text section ─────────────────────────────────────────────────────────────
   textSection: {
     flex: 1,
+    minWidth: 0,
     justifyContent: 'center',
+    gap: rs(2),
   },
   nameText: {
     fontSize: fs(17),
@@ -348,7 +363,6 @@ const styles = StyleSheet.create({
     fontSize: fs(11),
     fontWeight: '500',
     color: 'rgba(255,255,255,0.65)',
-    marginTop: rs(2),
   },
   separator: {
     height: 1,

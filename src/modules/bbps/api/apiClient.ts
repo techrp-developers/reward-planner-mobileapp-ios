@@ -1,5 +1,6 @@
 import { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import api from "../../common/auth/api/axios";
+import i18n from "../../../i18n";
 
 /**
  * BBPS diagnostics layer.
@@ -74,7 +75,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status: null,
       kind: "TIMEOUT_ERROR",
-      message: "The request timed out. Please check your connection and try again.",
+      message: i18n.t("payments:api.timeout"),
       error: { code: error.code, message: error.message },
     };
   }
@@ -84,7 +85,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status: null,
       kind: "NETWORK_ERROR",
-      message: "Network error. Please check your internet connection and try again.",
+      message: i18n.t("payments:api.network"),
       error: { code: error.code, message: error.message },
     };
   }
@@ -98,7 +99,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status,
       kind: "UNAUTHORIZED",
-      message: backendMessage || "Session expired. Please log in again.",
+      message: backendMessage || i18n.t("payments:api.sessionExpired"),
       error: data,
     };
   }
@@ -108,7 +109,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status,
       kind: "VALIDATION_ERROR",
-      message: backendMessage || "The backend rejected this request as invalid.",
+      message: backendMessage || i18n.t("payments:api.rejected"),
       error: data,
     };
   }
@@ -118,7 +119,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status,
       kind: "BAD_REQUEST",
-      message: backendMessage || "Invalid request.",
+      message: backendMessage || i18n.t("payments:api.invalid"),
       error: data,
     };
   }
@@ -128,7 +129,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
       success: false,
       status,
       kind: "SERVER_ERROR",
-      message: backendMessage || "Server error. Please try again later.",
+      message: backendMessage || i18n.t("payments:api.server"),
       error: data,
     };
   }
@@ -137,7 +138,7 @@ export const classifyAxiosError = (error: AxiosError): NormalizedApiError => {
     success: false,
     status,
     kind: "UNKNOWN_ERROR",
-    message: backendMessage || "Something went wrong.",
+    message: backendMessage || i18n.t("payments:api.generic"),
     error: data ?? { code: error.code, message: error.message },
   };
 };

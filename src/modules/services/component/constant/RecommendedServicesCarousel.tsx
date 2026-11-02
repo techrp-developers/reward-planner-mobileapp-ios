@@ -7,6 +7,8 @@ import Card from './Card';
 import { HomeStackParamList, type ServiceItem } from '../../navigation/type';
 import { useServiceHome } from '../../hooks/useServiceHome';
 import { useServicesTheme } from '../../utils/useServicesTheme';
+import { useTranslation } from "react-i18next";
+import i18n from "../../../../i18n";
 
 const fallbackImg = require('../../assete/gov_documet/aadhar card.png');
 
@@ -16,11 +18,14 @@ type RecommendedServicesCarouselProps = {
 };
 
 const RecommendedServicesCarousel = ({
-  title = 'Recommended for you',
-  subtitle = "Picked based on what's popular",
+  title,
+  subtitle,
 }: RecommendedServicesCarouselProps) => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const servicesTheme = useServicesTheme();
+  const { t: tx } = useTranslation();
+  title ??= tx('services:recommended.title');
+  subtitle ??= tx('services:recommended.subtitle');
   const { data, isLoading, error } = useServiceHome();
 
   const services = useMemo((): ServiceItem[] => {
@@ -69,7 +74,7 @@ const RecommendedServicesCarousel = ({
               key={`${item.service_id}-${item.variant_id}`}
               title={item.name}
               image={imageSource}
-              price={item.price > 0 ? `₹${item.price}` : 'Get Quote'}
+              price={item.price > 0 ? `₹${item.price}` : i18n.t("services:r2.getQuote")}
               oldPrice={
                 item.mrp && item.mrp > item.price
                   ? `₹${item.mrp}`
