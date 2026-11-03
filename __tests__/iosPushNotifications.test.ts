@@ -1,4 +1,4 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import { AppState, Platform } from 'react-native';
 import fs from 'fs';
 import path from 'path';
@@ -361,6 +361,32 @@ describe('tap routing', () => {
     mountApp(true);
     flushPendingNotification();
     expect(nav.dispatch).not.toHaveBeenCalled();
+  });
+
+  it('opens a collection or promotion on its products screen with the CRM banner', () => {
+    const params = { productIds: '1125,77', title: 'Festive picks', bannerUrl: 'https://cdn.rewardplanners.com/public/notifications/a.jpg' };
+    openFromNotification({
+      notification_id: '41',
+      destination_type: 'product_collection',
+      target_route: JSON.stringify({ path: ['App', 'Home', 'ProductModule', 'CampaignProducts'], params }),
+    }, 'background');
+    expect(nav.dispatch).toHaveBeenCalledTimes(1);
+    expect(nav.dispatch.mock.calls[0][0].payload).toMatchObject({
+      name: 'App',
+      params: { screen: 'Home', params: { screen: 'ProductModule', params: { screen: 'CampaignProducts', params } } },
+    });
+  });
+
+  it('says so once when a chosen destination cannot be opened, and lands in the inbox', () => {
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    openFromNotification({ notification_id: '42', target_route: JSON.stringify({ path: ['App', 'Home', 'ProductModule', 'Removed'] }) }, 'background');
+    expect(nav.dispatch.mock.calls[0][0].payload).toMatchObject({ name: 'App', params: { screen: 'Notification' } });
+    expect(alert).toHaveBeenCalledTimes(1);
+
+    alert.mockClear();
+    openFromNotification({ notification_id: '43' }, 'background');
+    expect(alert).not.toHaveBeenCalled();
+    alert.mockRestore();
   });
 
   it('sends a service notification to its details screen', () => {

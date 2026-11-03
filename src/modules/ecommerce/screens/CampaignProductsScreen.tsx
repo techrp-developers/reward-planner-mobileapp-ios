@@ -1,7 +1,8 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
     Animated,
     FlatList,
+    Image,
     StyleSheet,
     Text,
     View,
@@ -18,6 +19,7 @@ import ProductCard from '../constants/product_cart/ProductCard';
 import SkeletonBox from '../../services/component/constant/SkeletonBox';
 import { getCampaignProducts } from '../api/CampaignAPI';
 import { cmsApi } from '../../../config/cmsApiClient';
+import { api } from '../../common/auth/api/axios';
 import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import { normalizeProduct } from '../utils/normalizeProduct';
 import type { HomeStackParamList } from '../navigation/types';
@@ -48,6 +50,27 @@ const getCmsContentProducts = async (contentId: number) => {
     }));
 };
 
+const collectionProductsQueryKey = (ids: string[]) =>
+    ['ecommerce', 'collection-products', ids.join(',')] as const;
+
+const MAX_COLLECTION_PRODUCTS = 50;
+
+// "12,34,56" -> ['12','34','56']: positive ids only, deduplicated, CRM order kept.
+export const parseProductIds = (value: unknown): string[] => {
+    if (typeof value !== 'string') return [];
+    const ids = value.split(',').map(part => part.trim()).filter(part => /^[1-9]\d{0,9}$/.test(part));
+    return [...new Set(ids)].slice(0, MAX_COLLECTION_PRODUCTS);
+};
+
+// Only the backend's own asset host may supply the promotional banner.
+export const bannerImageUri = (value: unknown): string | null =>
+    typeof value === 'string' && /^https:\/\/cdn\.rewardplanners\.com\/[^\s]+$/i.test(value) ? value : null;
+
+const getCollectionProducts = async (ids: string[]) => {
+    const { data } = await api.get('/v1/product/by-ids', { params: { ids: ids.join(',') } });
+    return normalizeCampaignProducts(data);
+};
+
 const normalizeCampaignProducts = (response: any) => {
     const products = Array.isArray(response?.data) ? response.data : [];
 
@@ -74,18 +97,25 @@ export default function CampaignProductsScreen() {
     const cardWidth = (width - 44) / 2;
     const campaignId = route.params.campaignId;
     const contentId = route.params.contentId;
+    const productIds = useMemo(() => parseProductIds(route.params.productIds), [route.params.productIds]);
     const title = route.params.title || i18n.t("products:r2.campaignProducts");
+    const [bannerFailed, setBannerFailed] = useState(false);
+    const banner = bannerFailed ? null : bannerImageUri(route.params.bannerUrl);
 
     const { data: products = [], isLoading, error } = useQuery({
-        queryKey: contentId
-            ? cmsContentProductsQueryKey(contentId)
-            : campaignProductsQueryKey(campaignId ?? ''),
-        queryFn: async () => contentId
-            ? getCmsContentProducts(contentId)
-            : normalizeCampaignProducts(await getCampaignProducts(Number(campaignId))),
-        enabled: contentId
+        queryKey: productIds.length
+            ? collectionProductsQueryKey(productIds)
+            : contentId
+                ? cmsContentProductsQueryKey(contentId)
+                : campaignProductsQueryKey(campaignId ?? ''),
+        queryFn: async () => productIds.length
+            ? getCollectionProducts(productIds)
+            : contentId
+                ? getCmsContentProducts(contentId)
+                : normalizeCampaignProducts(await getCampaignProducts(Number(campaignId))),
+        enabled: productIds.length > 0 || (contentId
             ? Number.isFinite(contentId) && contentId > 0
-            : Number.isFinite(Number(campaignId)) && Number(campaignId) > 0,
+            : Number.isFinite(Number(campaignId)) && Number(campaignId) > 0),
         staleTime: 5 * 60 * 1000,
     });
 
@@ -119,6 +149,16 @@ export default function CampaignProductsScreen() {
                         paddingBottom: TAB_BAR_HEIGHT + Math.max(insets.bottom, 0) + 16,
                     }]}
                     showsVerticalScrollIndicator={false}
+                    ListHeaderComponent={banner ? (
+                        <Image
+                            testID="campaign-banner"
+                            source={{ uri: banner }}
+                            style={[styles.banner, { backgroundColor: theme.card }]}
+                            resizeMode="cover"
+                            accessibilityLabel={title}
+                            onError={() => setBannerFailed(true)}
+                        />
+                    ) : null}
                     renderItem={({ item }) => (
                         <ProductCard
                             item={item}
@@ -127,7 +167,8 @@ export default function CampaignProductsScreen() {
                             onProductPress={(productId, product) => navigation.navigate('ProductDescription', {
                                 productId,
                                 variantId: product.variant_id,
-                                campaignId: Number(contentId ?? campaignId),
+                                // A collection is not a priced campaign.
+                                ...(productIds.length ? {} : { campaignId: Number(contentId ?? campaignId) }),
                             })}
                         />
                     )}
@@ -146,6 +187,8 @@ const styles = StyleSheet.create({
     screen: { flex: 1 },
     listContent: { flexGrow: 1, paddingHorizontal: 16, paddingTop: 12 },
     row: { justifyContent: 'space-between', marginBottom: 12 },
+    // Notification images are 2:1 (1200x600).
+    banner: { width: '100%', aspectRatio: 2, borderRadius: 16, marginBottom: 16 },
     skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', padding: 16 },
     skeletonCard: { borderRadius: 14, padding: 6, marginBottom: 12 },
     skeletonText: { marginTop: 8 },

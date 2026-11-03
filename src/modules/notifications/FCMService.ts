@@ -12,7 +12,7 @@ import {
   getInitialNotification,
 } from '@react-native-firebase/messaging';
 import type { RemoteMessage } from '@react-native-firebase/messaging';
-import { requestNotifications, checkNotifications, RESULTS } from 'react-native-permissions';
+import { requestNotifications, checkNotifications, openSettings, RESULTS } from 'react-native-permissions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 import notifee, { EventType } from '@notifee/react-native';
@@ -107,6 +107,26 @@ export async function requestPushPermission(): Promise<string> {
 
 export async function openNotificationSettings(): Promise<void> {
   await Linking.openSettings();
+}
+
+export type NotificationPermissionDetail = { status: string; provisional: boolean };
+
+// Read-only status for the settings screen, on both platforms. Android reports
+// 'blocked' when the app's notifications are off in system settings; iOS
+// 'denied' means not asked yet. Provisional ("deliver quietly") reads as granted.
+export async function getNotificationPermissionDetail(): Promise<NotificationPermissionDetail> {
+  const { status, settings } = await checkNotifications();
+  if (Platform.OS === 'ios') diagnostics.permission = status;
+  return { status, provisional: Platform.OS === 'ios' && settings?.provisional === true };
+}
+
+// The app's own notification page where the OS offers one, else app settings.
+export async function openDeviceNotificationSettings(): Promise<void> {
+  try {
+    await openSettings('notifications');
+  } catch {
+    await Linking.openSettings();
+  }
 }
 
 // Bumped by every session start/stop so an in-flight registration from a

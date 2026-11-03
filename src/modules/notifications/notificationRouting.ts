@@ -1,4 +1,5 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
+import i18n from '../../i18n';
 import { CommonActions } from '@react-navigation/native';
 import { navigationRef } from '../../navigation/navigationRef';
 import {
@@ -30,6 +31,8 @@ const ALLOWED_ROUTES = new Set([
   'App/Chat/ChatInbox',
   'App/Home/ProductModule/Home',
   'App/Home/ProductModule/Category',
+  // Collections, offer campaigns and promotional banners (productIds | campaignId | contentId).
+  'App/Home/ProductModule/CampaignProducts',
   'App/Home/ServicesModule/Home',
   'App/Home/ServicesModule/ServiceDescription',
   'App/Home/ServicesModule/ServiceOrderDetail',
@@ -146,10 +149,19 @@ export function openFromNotification(
   const externalUrl = data.destination_type === 'external' ? parseExternalUrl(data.action_url) : null;
   const target = parseNotificationRoute(data.target_route);
   const route = target ?? parseNotificationRoute(data.fallback_route) ?? INBOX;
+  // A destination was chosen but this app cannot open it (removed, unknown or
+  // not allowed): land somewhere safe and say so, once.
+  const unavailable = !target && !externalUrl && Boolean(data.target_route || data.destination_type === 'external');
   if (externalUrl) {
     Linking.openURL(externalUrl).catch(() => navigationRef.dispatch(toNestedAction(route)));
   } else {
     navigationRef.dispatch(toNestedAction(route));
+  }
+  if (unavailable) {
+    Alert.alert(
+      i18n.t('dashboard:notifications.unavailableTitle'),
+      i18n.t('dashboard:notifications.unavailableBody'),
+    );
   }
 
   // Analytics and read state never delay navigation. The backend answers 404

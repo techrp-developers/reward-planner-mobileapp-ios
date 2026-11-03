@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, TurboModuleRegistry } from 'react-native';
 
 export type ApiEnvironment = 'local' | 'live';
 
@@ -9,8 +9,24 @@ const isLocalEnvironment = (environment: ApiEnvironment) => environment === 'loc
 const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT) &&
   (Platform.OS !== 'ios' || __DEV__);
 
-// For a physical iPhone, replace localhost with your Mac's LAN IP.
-export const IOS_LOCAL_SERVER_URL = 'http://192.168.1.247:5057';
+// Fallback for a physical iPhone when the Metro host is unknown: your Mac's LAN IP.
+const IOS_FALLBACK_SERVER_URL = 'http://192.168.1.209:5057';
+
+// A debug iPhone loads its JS from Metro on the Mac that also runs the local
+// backend, so reuse that host. This keeps working when the Mac's LAN IP changes.
+function metroHost(): string | null {
+  if (!__DEV__) return null;
+  try {
+    const scriptURL = TurboModuleRegistry.get<any>('SourceCode')?.getConstants?.()?.scriptURL;
+    const host = typeof scriptURL === 'string' ? scriptURL.match(/^https?:\/\/([^/:]+)/i)?.[1] : null;
+    return host && host !== 'localhost' && host !== '127.0.0.1' ? host : null;
+  } catch {
+    return null;
+  }
+}
+
+const IOS_METRO_HOST = Platform.OS === 'ios' ? metroHost() : null;
+export const IOS_LOCAL_SERVER_URL = IOS_METRO_HOST ? `http://${IOS_METRO_HOST}:5057` : IOS_FALLBACK_SERVER_URL;
 
 const LOCAL_SERVER_URL = Platform.select({
   // Physical Android device connected over USB. Run:

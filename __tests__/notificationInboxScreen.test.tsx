@@ -2,8 +2,9 @@ import React from 'react';
 import { Image, Text, TouchableOpacity } from 'react-native';
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 
+let mockIsDark = false;
 jest.mock('../src/theme/ThemeContext', () => ({
-  useAppTheme: () => ({ isDark: false, theme: { text: '#000', secondaryText: '#333' } }),
+  useAppTheme: () => ({ isDark: mockIsDark, theme: { text: '#000', secondaryText: '#333' } }),
 }));
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: ({ children }: any) => children }));
 jest.mock('@react-navigation/native', () => {
@@ -63,6 +64,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => mounted?.unmount());
   mounted = null;
+  mockIsDark = false;
 });
 
 it('fetches once when the screen opens and shows the rows', async () => {
@@ -136,4 +138,47 @@ it('falls back to text when the image fails to load', async () => {
   await act(async () => images(tree)[0].props.onError());
   expect(images(tree)).toHaveLength(0);
   expect(visibleText(tree)).toContain('Inbox row');
+});
+
+const byTestId = (tree: ReactTestRenderer, id: string) =>
+  tree.root.findAll((node) => node.props.testID === id && typeof node.type !== 'string');
+
+it('lays a campaign with an image out image-first: image, title, message, time', async () => {
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl, category: 'marketing' } }] });
+  const tree = await renderScreen();
+  const [card] = byTestId(tree, 'notification-feature-card');
+  expect(card).toBeTruthy();
+  const order = card.findAll((node) => node.type === Image || node.type === Text).map((node) =>
+    node.type === Image ? 'image' : String(node.props.children));
+  expect(order[0]).toBe('image');
+  expect(order.slice(1, 3)).toEqual(['Inbox row', 'Body']);
+  expect(card.props.accessibilityLabel).toContain('Inbox row. Body');
+  expect(byTestId(tree, 'notification-unread')).toHaveLength(1);
+  expect(byTestId(tree, 'notification-thumbnail')).toHaveLength(0);
+});
+
+it('gives a transactional row with an image a small left thumbnail instead', async () => {
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl, category: 'transactional' } }] });
+  const tree = await renderScreen();
+  expect(byTestId(tree, 'notification-feature-card')).toHaveLength(0);
+  expect(byTestId(tree, 'notification-thumbnail')).toHaveLength(1);
+  expect(images(tree)).toHaveLength(1);
+});
+
+it('drops the image box entirely when the image fails, keeping the text', async () => {
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl } }] });
+  const tree = await renderScreen();
+  await act(async () => images(tree)[0].props.onError());
+  expect(byTestId(tree, 'notification-feature-card')).toHaveLength(0);
+  expect(images(tree)).toHaveLength(0);
+  expect(visibleText(tree)).toContain('Body');
+});
+
+it('uses the dark placeholder in dark mode', async () => {
+  mockIsDark = true;
+  fetchInbox.mockResolvedValue({ success: true, data: [{ ...item, metadata: { image_url: imageUrl } }] });
+  const tree = await renderScreen();
+  const wrap = images(tree)[0].parent!;
+  const flat = Object.assign({}, ...[wrap.props.style].flat(Infinity).filter(Boolean));
+  expect(flat.backgroundColor).toBe('#27272A');
 });

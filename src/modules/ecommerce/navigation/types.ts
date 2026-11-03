@@ -28,7 +28,9 @@ export type HomeStackParamList = {
   OrderReceipt:  undefined;
   Explore : undefined;
   ProductScreen: { source: ProductCollectionSource } | undefined;
-  CampaignProducts: { campaignId?: number | string; contentId?: number; title?: string };
+  // productIds: a notification collection (comma-separated, CRM order). bannerUrl:
+  // the promotion's CDN image, shown above the products.
+  CampaignProducts: { campaignId?: number | string; contentId?: number; productIds?: string; bannerUrl?: string; title?: string };
   ReviewScreen: {
     product_id: number;
     variant_id: number;

@@ -332,6 +332,47 @@ function Notification() {
     const imageUri = failedImages.has(item.notification_id)
       ? null
       : notificationImageUri(item.metadata?.image_url);
+    const imageFirst = Boolean(imageUri) && item.metadata?.category !== "transactional";
+    const time = formatNotificationTime(item.created_at);
+
+    // Design C: campaigns, offers and launches lead with their image. The
+    // placeholder holds the 2:1 space so the list does not jump while loading.
+    if (imageFirst) {
+      return (
+        <TouchableOpacity
+          testID="notification-feature-card"
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={`${item.title}. ${item.message}. ${time}`}
+          style={[styles.featureCard, themed.card, unread && themed.unreadCard]}
+          onPress={() => handleNotificationPress(item)}
+          onLongPress={() => handleDeleteNotification(item)}
+        >
+          <View style={[styles.featureImageWrap, themed.imagePlaceholder]}>
+            <Image
+              testID="notification-image"
+              source={{ uri: imageUri! }}
+              style={styles.featureImage}
+              resizeMode="cover"
+              accessibilityIgnoresInvertColors
+              onError={() => handleImageError(item.notification_id)}
+            />
+          </View>
+          <View style={styles.featureBody}>
+            <View style={styles.featureTitleRow}>
+              <Text style={[styles.featureTitle, themed.text]} numberOfLines={2}>
+                {item.title}
+              </Text>
+              {unread ? <View testID="notification-unread" style={styles.featureUnreadDot} /> : null}
+            </View>
+            <Text style={[styles.message, themed.mutedText]} numberOfLines={2}>
+              {item.message}
+            </Text>
+            <Text style={[styles.featureTime, themed.mutedText]}>{time}</Text>
+          </View>
+        </TouchableOpacity>
+      );
+    }
 
     return (
       <TouchableOpacity
@@ -345,18 +386,29 @@ function Notification() {
         onPress={() => handleNotificationPress(item)}
         onLongPress={() => handleDeleteNotification(item)}
       >
-        <View
-          style={[
-            styles.iconWrap,
-            { backgroundColor: metaBackground, borderColor: metaBorder },
-          ]}
-        >
-          <MaterialCommunityIcons
-            name={getIconName(item.icon, item.module)}
-            size={21}
-            color={meta.color}
+        {imageUri ? (
+          <Image
+            testID="notification-thumbnail"
+            source={{ uri: imageUri }}
+            style={[styles.thumbnail, themed.imagePlaceholder]}
+            resizeMode="cover"
+            accessibilityIgnoresInvertColors
+            onError={() => handleImageError(item.notification_id)}
           />
-        </View>
+        ) : (
+          <View
+            style={[
+              styles.iconWrap,
+              { backgroundColor: metaBackground, borderColor: metaBorder },
+            ]}
+          >
+            <MaterialCommunityIcons
+              name={getIconName(item.icon, item.module)}
+              size={21}
+              color={meta.color}
+            />
+          </View>
+        )}
 
         <View style={styles.contentWrap}>
           <View style={styles.metaRow}>
@@ -365,7 +417,7 @@ function Notification() {
                 {meta.label}
               </Text>
             </View>
-            <Text style={[styles.time, themed.mutedText]}>{formatNotificationTime(item.created_at)}</Text>
+            <Text style={[styles.time, themed.mutedText]}>{time}</Text>
           </View>
           <View style={styles.titleRow}>
             <Text style={[styles.title, themed.text]} numberOfLines={1}>
@@ -375,16 +427,6 @@ function Notification() {
           <Text style={[styles.message, themed.mutedText]} numberOfLines={2}>
             {item.message}
           </Text>
-          {imageUri ? (
-            <Image
-              testID="notification-image"
-              source={{ uri: imageUri }}
-              style={[styles.notificationImage, themed.imagePlaceholder]}
-              resizeMode="cover"
-              accessibilityIgnoresInvertColors
-              onError={() => handleImageError(item.notification_id)}
-            />
-          ) : null}
         </View>
 
         <View style={styles.cardAction}>
@@ -525,11 +567,59 @@ function notificationImageUri(value: unknown): string | null {
 }
 
 const styles = StyleSheet.create({
-  notificationImage: {
+  // Images arrive as 1200x600 (2:1) from the backend's image pipeline.
+  featureCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ECE8F4",
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  featureImageWrap: {
     width: "100%",
     aspectRatio: 2,
-    borderRadius: 10,
+  },
+  featureImage: {
+    width: "100%",
+    height: "100%",
+  },
+  featureBody: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
+  },
+  featureTitleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 4,
+  },
+  featureTitle: {
+    flex: 1,
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#1F1738",
+    fontWeight: "600",
+  },
+  featureUnreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#6D5AE6",
+    marginTop: 7,
+  },
+  featureTime: {
     marginTop: 8,
+    fontSize: 12,
+    color: "#9B92A9",
+    fontWeight: "500",
+  },
+  thumbnail: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    marginRight: 12,
   },
   safe: {
     flex: 1,
