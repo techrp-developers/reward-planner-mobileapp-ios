@@ -21,6 +21,9 @@ const REFRESH_TOKEN_KEY = "@rewardsplanners_refresh_token";
 const DEVICE_ID_KEY = "@rewardsplanners_device_id";
 
 type AuthUser = {
+  // /v1/auth/user-info returns the id as "userId"; "user_id" is kept for
+  // responses that still use the database column name.
+  userId?: number;
   user_id: number;
   name?: string;
   email?: string;

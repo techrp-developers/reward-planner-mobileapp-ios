@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { api } from "../../auth/api/axios";
+import { splashLog } from "./splashDiagnostics";
 import type {
   SplashCampaign, SplashFrequencyRule, SplashNavigationTarget, SplashPageKey,
   SplashResolvedData, SplashSlotKey, SplashSource,
@@ -144,21 +145,46 @@ export async function getResolvedSplash({ pageKey, slotKey, scope, signal }: {
   const platform = Platform.OS;
   if (platform !== "ios" && platform !== "android") return null;
   const key = cacheKey(scope, pageKey, slotKey, platform);
+  const requestedAt = Date.now();
   try {
-    const requestedAt = Date.now();
+    splashLog("API_REQUEST_STARTED", { pageKey, slotKey, platform });
     const response = await api.get("/content/splashscreens/resolved", {
       params: { page_key: pageKey, slot_key: slotKey, platform },
       timeout: REQUEST_TIMEOUT_MS,
       signal,
     });
     const data = parseSplashResponse(response.data);
+    splashLog("API_RESPONSE_RECEIVED", {
+      status: response.status,
+      elapsedMs: Date.now() - requestedAt,
+      valid: Boolean(data),
+      source: data?.source,
+      platform: data?.platform,
+      audience: data?.audience,
+      contentId: data?.campaign?.content_id,
+      frequency: data?.campaign?.display.frequency_rule,
+      displaySeconds: data?.campaign?.display.display_seconds,
+      cacheTtl: data?.cache_ttl_seconds,
+      startsAt: data?.campaign?.starts_at,
+      expiresAt: data?.campaign?.expires_at,
+      serverTime: data?.server_time,
+    });
     if (!data) return null;
     const midpoint = requestedAt + (Date.now() - requestedAt) / 2;
     const resolved = { data, offsetMs: time(data.server_time)! - midpoint };
     await writeCache(key, resolved);
     return resolved;
   } catch (error: any) {
-    if (signal?.aborted || error?.name === "CanceledError") return null;
-    return readCache(key);
+    const cancelled = Boolean(signal?.aborted || error?.name === "CanceledError");
+    splashLog("API_REQUEST_FAILED", {
+      elapsedMs: Date.now() - requestedAt,
+      cancelled,
+      status: error?.response?.status ?? null,
+      code: error?.code ?? null,
+    });
+    if (cancelled) return null;
+    const cached = await readCache(key);
+    if (cached) splashLog("API_RESPONSE_RECEIVED", { fromCache: true, contentId: cached.data.campaign?.content_id });
+    return cached;
   }
 }

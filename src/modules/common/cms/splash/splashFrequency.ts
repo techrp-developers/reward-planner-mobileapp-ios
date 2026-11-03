@@ -47,3 +47,16 @@ export async function markSplashShown(key: string, rule: SplashFrequencyRule, se
 export function resetSplashSessionForTests(): void {
   seenThisSession.clear();
 }
+
+/**
+ * Development only: forget which launch campaigns were shown, and their cached
+ * responses. Removes only the splash keys, never other stored data.
+ */
+export async function resetSplashHistoryForDev(): Promise<number> {
+  if (!__DEV__) return 0;
+  seenThisSession.clear();
+  const keys = (await AsyncStorage.getAllKeys()).filter((key) =>
+    key.startsWith(STORAGE_PREFIX) || key.startsWith("@rp_cms_splash_cache:v1:"));
+  if (keys.length) await AsyncStorage.multiRemove(keys);
+  return keys.length;
+}

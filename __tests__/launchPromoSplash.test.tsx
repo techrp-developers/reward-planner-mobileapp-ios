@@ -6,6 +6,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 jest.mock('../src/theme/ThemeContext', () => ({ useAppTheme: () => ({ isDark: false }) }));
 jest.mock('react-native-safe-area-context', () => ({ useSafeAreaInsets: () => ({ top: 20, right: 0, bottom: 0, left: 0 }) }));
 jest.mock('../src/modules/common/auth/api/axios', () => ({ api: { get: jest.fn() } }));
+jest.mock('../src/modules/common/cms/splash/splashArtworkCache', () => ({
+  cachedArtwork: jest.fn(async () => null),
+  downloadArtwork: jest.fn(async () => null),
+}));
 jest.mock('../src/modules/notifications/notificationRouting', () => ({
   ...jest.requireActual('../src/modules/notifications/notificationRouting'),
   openNotificationRoute: jest.fn(() => true),
@@ -22,11 +26,13 @@ import {
   LAUNCH_PROMO_BUDGET_MS,
   LaunchPresentationProvider,
   LaunchScreen,
+  employeeScope,
   resetLaunchPresentationForTests,
   useLaunchPresentation,
 } from '../src/modules/common/cms/splash/launchPresentation';
 import { runSplashActionWhenReady } from '../src/modules/common/cms/splash/splashNavigation';
 import { navigationRef } from '../src/navigation/navigationRef';
+import { cachedArtwork, downloadArtwork } from '../src/modules/common/cms/splash/splashArtworkCache';
 
 const get = api.get as jest.Mock;
 const HOUR = 3600_000;
@@ -61,6 +67,20 @@ beforeEach(async () => {
   resetSplashSessionForTests();
   resetLaunchPresentationForTests();
   (Platform as { OS: string }).OS = 'ios';
+});
+
+describe('employee scope', () => {
+  it('reads the id the profile API actually returns ("userId")', () => {
+    expect(employeeScope(true, { userId: 3 } as any)).toBe('u3');
+  });
+  it('still accepts the database name, and ignores anything else', () => {
+    expect(employeeScope(true, { user_id: 3 })).toBe('u3');
+    expect(employeeScope(true, { userId: '7' } as any)).toBe('u7');
+    expect(employeeScope(false, { userId: 3 } as any)).toBeNull();
+    expect(employeeScope(true, null)).toBeNull();
+    expect(employeeScope(true, { userId: 0 } as any)).toBeNull();
+    expect(employeeScope(true, { userId: 'abc' } as any)).toBeNull();
+  });
 });
 
 describe('response contract', () => {
@@ -269,6 +289,25 @@ describe('launch presentation', () => {
     expect(appShown()).toBe(true);
     expect(has(SplashScreen)).toBe(false);
     expect(has(PromotionalSplashScreen)).toBe(false);
+  });
+
+  it('opens the artwork from disk on later launches, without the network', async () => {
+    get.mockResolvedValue({ data: realResponse() });
+    (cachedArtwork as jest.Mock).mockResolvedValueOnce('file:///cache/rp-launch-artwork/a.png');
+    await render(starting);
+    await render(ready);
+    expect(downloadArtwork).not.toHaveBeenCalled();
+    expect(Image.prefetch).not.toHaveBeenCalled();
+    expect(artwork().props.imageUri).toBe('file:///cache/rp-launch-artwork/a.png');
+  });
+
+  it('downloads to disk on the first launch and shows the local file', async () => {
+    get.mockResolvedValue({ data: realResponse() });
+    (downloadArtwork as jest.Mock).mockResolvedValueOnce('file:///cache/rp-launch-artwork/a.png');
+    await render(starting);
+    await render(ready);
+    expect(downloadArtwork).toHaveBeenCalledWith('https://cdn.rewardplanners.com/public/content-zone-entries/21/a.png');
+    expect(artwork().props.imageUri).toBe('file:///cache/rp-launch-artwork/a.png');
   });
 
   it('shows a CMS default on the same launch layer', async () => {

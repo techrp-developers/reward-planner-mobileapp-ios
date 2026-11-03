@@ -3,6 +3,7 @@ import { Animated, AppState, BackHandler, Image, Pressable, StatusBar, StyleShee
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import type { SplashCampaign } from "./splashTypes";
+import { splashLog } from "./splashDiagnostics";
 
 // Close when the artwork has not appeared by then, even though it was prefetched.
 const IMAGE_LOAD_TIMEOUT_MS = 3000;
@@ -11,6 +12,8 @@ export const ARTWORK_FADE_MS = 250;
 
 type Props = {
   campaign: SplashCampaign;
+  /** A local file of the artwork when cached on disk; defaults to its CDN URL. */
+  imageUri?: string;
   /** serverNow ≈ Date.now() + offsetMs */
   offsetMs: number;
   /** The artwork has finished fading in: count the display now. Called once. */
@@ -28,7 +31,7 @@ type Props = {
  * duration timer starts only once the image is visible, and every exit path
  * (skip, timeout, tap, failure, expiry, background, back) closes exactly once.
  */
-export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, onClose, onAction }: Props) {
+export default function PromotionalSplashScreen({ campaign, imageUri, offsetMs, onShown, onClose, onAction }: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   // loaded: the image decoded and the fade started. visible: the fade finished,
@@ -44,16 +47,17 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
   // Never trap the employee: artwork that cannot be skipped always times out.
   const autoDismiss = display.auto_dismiss || !display.dismissible;
 
-  const finish = useCallback((action: boolean) => {
+  const finish = useCallback((action: boolean, reason: string) => {
     if (closedRef.current) return;
     closedRef.current = true;
+    splashLog("CAMPAIGN_CLOSED", { reason, action: action && Boolean(onAction) });
     if (action && onAction) onAction();
     else onClose();
   }, [onAction, onClose]);
 
   useEffect(() => {
     if (loaded) return undefined;
-    const timer = setTimeout(() => finish(false), IMAGE_LOAD_TIMEOUT_MS);
+    const timer = setTimeout(() => finish(false, "image_load_timeout"), IMAGE_LOAD_TIMEOUT_MS);
     return () => clearTimeout(timer);
   }, [finish, loaded]);
 
@@ -63,9 +67,11 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
   const handleLoad = useCallback(() => {
     if (closedRef.current || loadedRef.current) return;
     loadedRef.current = true;
+    splashLog("ARTWORK_IMAGE_LOADED");
     setLoaded(true);
     Animated.timing(opacity, { toValue: 1, duration: ARTWORK_FADE_MS, useNativeDriver: true }).start(({ finished }) => {
       // An interrupted fade never counts as shown.
+      splashLog("FADE_COMPLETED", { finished });
       if (!finished || closedRef.current || shownRef.current) return;
       shownRef.current = true;
       setVisible(true);
@@ -75,7 +81,7 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
 
   useEffect(() => {
     if (!visible || !autoDismiss) return undefined;
-    const timer = setTimeout(() => finish(false), display.display_seconds * 1000);
+    const timer = setTimeout(() => finish(false, "auto_dismiss"), display.display_seconds * 1000);
     return () => clearTimeout(timer);
   }, [autoDismiss, display.display_seconds, finish, visible]);
 
@@ -85,16 +91,16 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
     if (!Number.isFinite(expires)) return undefined;
     const remaining = expires - (Date.now() + offsetMs);
     if (remaining <= 0) {
-      finish(false);
+      finish(false, "expired");
       return undefined;
     }
-    const timer = setTimeout(() => finish(false), Math.min(remaining, 2 ** 31 - 1));
+    const timer = setTimeout(() => finish(false, "expired"), Math.min(remaining, 2 ** 31 - 1));
     return () => clearTimeout(timer);
   }, [campaign.expires_at, finish, offsetMs]);
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (state) => {
-      if (state !== "active") finish(false);
+      if (state !== "active") finish(false, "app_background");
     });
     return () => subscription.remove();
   }, [finish]);
@@ -102,14 +108,14 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
   // Android back acts as Skip when skipping is allowed.
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (display.dismissible) finish(false);
+      if (display.dismissible) finish(false, "hardware_back");
       return true;
     });
     return () => subscription.remove();
   }, [display.dismissible, finish]);
 
   const label = campaign.cta_text || campaign.title || t("common:actions.close");
-  const source = { uri: campaign.image_url };
+  const source = { uri: imageUri || campaign.image_url };
 
   return (
     <Animated.View style={[styles.screen, { opacity }]}>
@@ -120,7 +126,7 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
         testID="promo-splash-artwork"
         style={StyleSheet.absoluteFill}
         disabled={!onAction}
-        onPress={() => finish(true)}
+        onPress={() => finish(true, "artwork_tap")}
         accessibilityRole={onAction ? "button" : "image"}
         accessibilityLabel={label}
       >
@@ -131,7 +137,7 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
           style={styles.artwork}
           accessibilityIgnoresInvertColors
           onLoad={handleLoad}
-          onError={() => finish(false)}
+          onError={() => finish(false, "image_error")}
         />
       </Pressable>
       {display.dismissible && visible ? (
@@ -139,7 +145,7 @@ export default function PromotionalSplashScreen({ campaign, offsetMs, onShown, o
           testID="promo-splash-skip"
           accessibilityRole="button"
           accessibilityLabel={t("common:actions.skip")}
-          onPress={() => finish(false)}
+          onPress={() => finish(false, "skip")}
           hitSlop={8}
           style={[styles.skip, { top: insets.top + 12, right: insets.right + 16 }]}
         >

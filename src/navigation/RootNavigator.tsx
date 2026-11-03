@@ -17,8 +17,10 @@ import NotificationPermissionSheet from "../modules/notifications/NotificationPe
 import {
   LaunchPresentationProvider,
   LaunchScreen,
+  employeeScope,
   useLaunchPresentation,
 } from "../modules/common/cms/splash/launchPresentation";
+import { splashLog } from "../modules/common/cms/splash/splashDiagnostics";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
 import { OtaUpdatePrompt } from "../modules/common/versionupdate/OtaUpdatePrompt";
 import { useUpdateGates } from "../modules/common/versionupdate/useUpdateGates";
@@ -374,7 +376,7 @@ export default function RootNavigator() {
   // replaces it, so the app opens straight after the artwork. It may hold the
   // Splash route only when the next screen is the app itself; login, language,
   // terms and update prompts are never delayed, and showSplash is unchanged.
-  const promoScope = isAuthenticated && user?.user_id ? `u${user.user_id}` : null;
+  const promoScope = employeeScope(isAuthenticated, user);
   const launch = useLaunchPresentation({
     scope: promoScope,
     startupDone: !showSplash,
@@ -382,6 +384,12 @@ export default function RootNavigator() {
       !storeUpdate.visible && !otaPrompt.visible,
   });
   const showLaunch = showSplash || launch.holding;
+  const appOpen = !showLaunch && isAuthenticated && !needsLanguage && termsAccepted === true;
+  useEffect(() => {
+    if (appOpen) splashLog("MAIN_APP_OPENED", { phase: launch.phase });
+    // Logged when the app screen appears, not on every phase change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appOpen]);
 
   // Only surface the first-login reward popup once the user has actually
   // reached the authenticated app (past Splash/TermsGate), so it doesn't

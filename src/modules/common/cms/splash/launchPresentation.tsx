@@ -3,7 +3,9 @@ import { Image, StyleSheet, View } from "react-native";
 import SplashScreen from "../../auth/screens/SplashScreen";
 import PromotionalSplashScreen from "./PromotionalSplashScreen";
 import { getResolvedSplash, isCampaignLive } from "./splashApi";
-import { isSplashDue, markSplashShown, splashSeenKey } from "./splashFrequency";
+import { isSplashDue, markSplashShown, resetSplashHistoryForDev, splashSeenKey } from "./splashFrequency";
+import { registerSplashDevMenu, splashLog } from "./splashDiagnostics";
+import { cachedArtwork, downloadArtwork } from "./splashArtworkCache";
 import { runSplashActionWhenReady, splashAction } from "./splashNavigation";
 import type { SplashCampaign } from "./splashTypes";
 
@@ -25,7 +27,8 @@ export const LAUNCH_PROMO_BUDGET_MS = 1500;
 export type LaunchPhase =
   | "initializing" | "resolving_campaign" | "campaign_ready" | "campaign_visible" | "finished";
 
-type Prepared = { campaign: SplashCampaign; offsetMs: number; seenKey: string };
+// imageUri: the artwork's local file when cached on disk, else its CDN URL.
+type Prepared = { campaign: SplashCampaign; offsetMs: number; seenKey: string; imageUri: string };
 
 export type LaunchPresentation = {
   phase: LaunchPhase;
@@ -40,20 +43,67 @@ export type LaunchPresentation = {
 // re-logins and remounts never show it again until the app is relaunched.
 const attempted = new Set<string>();
 
+splashLog("LAUNCH_STARTED");
+registerSplashDevMenu(async () => {
+  attempted.clear();
+  await resetSplashHistoryForDev();
+});
+
+/**
+ * Per-employee scope for display history and caching ("u<id>"), or null.
+ * /v1/auth/user-info returns the id as "userId"; "user_id" is the database
+ * name some payloads still use. Reading only "user_id" left the scope null,
+ * so the launch campaign was never requested.
+ */
+export function employeeScope(
+  authenticated: boolean,
+  user: { userId?: unknown; user_id?: unknown } | null | undefined,
+): string | null {
+  const id = Number(user?.userId ?? user?.user_id);
+  return authenticated && Number.isSafeInteger(id) && id > 0 ? `u${id}` : null;
+}
+
 /** Fetch, check and download the artwork. Null means "no promotion". */
 async function prepare(scope: string, signal: AbortSignal): Promise<Prepared | null> {
+  const startedAt = Date.now();
+  const skip = (reason: string) => {
+    splashLog("CAMPAIGN_SKIPPED", { reason, elapsedMs: Date.now() - startedAt });
+    return null;
+  };
   const resolved = await getResolvedSplash({ pageKey: PAGE_KEY, slotKey: SLOT_KEY, scope, signal });
-  const campaign = resolved?.data.campaign;
-  if (!resolved || !campaign || signal.aborted) return null;
+  if (signal.aborted) return skip("aborted");
+  if (!resolved) return skip("no_response");
+  const campaign = resolved.data.campaign;
+  if (!campaign) return skip(`source_${resolved.data.source}`);
   const serverNow = Date.now() + resolved.offsetMs;
-  if (!isCampaignLive(campaign, serverNow)) return null;
+  if (!isCampaignLive(campaign, serverNow)) return skip("not_live");
   const seenKey = splashSeenKey(scope, PAGE_KEY, SLOT_KEY, campaign);
   // A campaign already seen today stays hidden; the backend's choice is never
   // swapped for another default.
-  if (!(await isSplashDue(seenKey, campaign.display.frequency_rule, serverNow))) return null;
-  // Uses the platform's image cache, so a later launch reuses the download.
-  const loaded = await Image.prefetch(campaign.image_url).catch(() => false);
-  return loaded && !signal.aborted ? { campaign, offsetMs: resolved.offsetMs, seenKey } : null;
+  const due = await isSplashDue(seenKey, campaign.display.frequency_rule, serverNow);
+  splashLog("FREQUENCY_CHECK", { rule: campaign.display.frequency_rule, due });
+  if (!due) return skip("already_seen");
+  const prefetchStarted = Date.now();
+  // Disk first: instant on every launch after the first download.
+  let imageUri = await cachedArtwork(campaign.image_url).catch(() => null);
+  let source = "disk";
+  if (!imageUri) {
+    source = "network";
+    splashLog("IMAGE_PREFETCH_STARTED", { source });
+    // Not cancelled by a timeout: the file is kept for the next launch.
+    imageUri = await downloadArtwork(campaign.image_url).catch(() => null);
+  }
+  if (!imageUri) {
+    // Disk cache unavailable: fall back to the platform image cache.
+    source = "platform_cache";
+    const loaded = await Image.prefetch(campaign.image_url).catch(() => false);
+    imageUri = loaded ? campaign.image_url : null;
+  }
+  splashLog("IMAGE_PREFETCH_FINISHED", { ok: Boolean(imageUri), source, elapsedMs: Date.now() - prefetchStarted });
+  if (signal.aborted) return skip("aborted");
+  if (!imageUri) return skip("image_prefetch_failed");
+  splashLog("CAMPAIGN_READY", { contentId: campaign.content_id, totalMs: Date.now() - startedAt });
+  return { campaign, offsetMs: resolved.offsetMs, seenKey, imageUri };
 }
 
 export function useLaunchPresentation({ scope, startupDone, eligible }: {
@@ -72,6 +122,7 @@ export function useLaunchPresentation({ scope, startupDone, eligible }: {
 
   // Start as soon as the employee is known: this runs during the logo splash.
   useEffect(() => {
+    if (scope) splashLog("AUTH_SCOPE_READY", { signedIn: true, alreadyAttempted: attempted.has(scope) });
     if (!scope) {
       requestRef.current?.abort.abort();
       requestRef.current = null;
@@ -88,10 +139,12 @@ export function useLaunchPresentation({ scope, startupDone, eligible }: {
   }, [scope]);
 
   useEffect(() => {
+    splashLog("STARTUP_GATES", { startupDone, eligible, signedIn: Boolean(scope), phase });
     if (!startupDone || !scope || phase !== "initializing") return undefined;
     // Login, language or terms come next, or this launch already had its turn:
     // never hold them back and never show the promotion later.
     if (!eligible || attempted.has(scope)) {
+      splashLog("CAMPAIGN_SKIPPED", { reason: !eligible ? "not_eligible_next_screen" : "already_attempted_this_launch" });
       if (scope) attempted.add(scope);
       requestRef.current?.abort.abort();
       setPhase("finished");
@@ -100,18 +153,21 @@ export function useLaunchPresentation({ scope, startupDone, eligible }: {
     attempted.add(scope);
     const request = requestRef.current?.scope === scope ? requestRef.current : null;
     let live = true;
-    const giveUp = () => {
+    const waitStarted = Date.now();
+    const giveUp = (reason: string) => {
       if (!live) return;
       live = false;
+      if (reason !== "not_prepared") splashLog("CAMPAIGN_SKIPPED", { reason, waitedMs: Date.now() - waitStarted });
       request?.abort.abort();
       setPhase("finished");
     };
-    const budget = setTimeout(giveUp, LAUNCH_PROMO_BUDGET_MS);
+    const budget = setTimeout(() => giveUp("startup_budget_exceeded"), LAUNCH_PROMO_BUDGET_MS);
     setPhase("resolving_campaign");
     (request?.promise ?? Promise.resolve(null)).then((prepared) => {
       if (!live) return;
       clearTimeout(budget);
-      if (!prepared) return giveUp();
+      if (!prepared) return giveUp("not_prepared");
+      splashLog("LAUNCH_HOLDING", { waitedMs: Date.now() - waitStarted });
       live = false;
       campaignRef.current = prepared;
       setCampaign(prepared);
@@ -121,7 +177,7 @@ export function useLaunchPresentation({ scope, startupDone, eligible }: {
     // give up for this launch rather than leave the Splash route held.
     return () => {
       clearTimeout(budget);
-      giveUp();
+      giveUp("interrupted");
     };
     // phase is read only to start once; transitions are driven from here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,6 +187,7 @@ export function useLaunchPresentation({ scope, startupDone, eligible }: {
   const onShown = useCallback(() => {
     const prepared = campaignRef.current;
     if (!prepared || finishedRef.current) return;
+    splashLog("CAMPAIGN_SHOWN", { contentId: prepared.campaign.content_id });
     setPhase("campaign_visible");
     markSplashShown(prepared.seenKey, prepared.campaign.display.frequency_rule, Date.now() + prepared.offsetMs)
       .catch(() => {});
@@ -185,6 +242,7 @@ export function LaunchScreen() {
         <View testID="launch-artwork-layer" style={StyleSheet.absoluteFill}>
           <PromotionalSplashScreen
             campaign={launch.campaign.campaign}
+            imageUri={launch.campaign.imageUri}
             offsetMs={launch.campaign.offsetMs}
             onShown={launch.onShown}
             onClose={() => launch.finish(false)}
