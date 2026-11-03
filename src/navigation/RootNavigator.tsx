@@ -14,6 +14,11 @@ import {
   shouldOfferPushPermission,
 } from "../modules/notifications/FCMService";
 import NotificationPermissionSheet from "../modules/notifications/NotificationPermissionSheet";
+import {
+  LaunchPresentationProvider,
+  LaunchScreen,
+  useLaunchPresentation,
+} from "../modules/common/cms/splash/launchPresentation";
 import { AppUpdateModal } from "../modules/common/versionupdate/AppUpdateModal";
 import { OtaUpdatePrompt } from "../modules/common/versionupdate/OtaUpdatePrompt";
 import { useUpdateGates } from "../modules/common/versionupdate/useUpdateGates";
@@ -23,7 +28,6 @@ import { RewardModal } from "../modules/common/reward/RewardModal";
 import { StepTrackerProvider } from "../modules/step_counter/context/StepTrackerContext";
 
 import MainLayout from "./MainLayout";
-import SplashScreen from "../modules/common/auth/screens/SplashScreen";
 import TermsGateScreen from "../modules/common/auth/screens/TermsGateScreen";
 import LoginScreen from "../modules/common/auth/screens/LoginScreen";
 import OTPScreen from "../modules/common/auth/screens/OTPScreen";
@@ -339,7 +343,7 @@ function AppNavigator() {
 //    └─ App  (normal app flow)
 
 export default function RootNavigator() {
-  const { isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
+  const { user, isAuthenticated, isInitializing, termsAccepted, firstLoginReward, markFirstLoginRewardShown } = useAuth();
   const { status: languageStatus } = useAppLanguage();
   const { storeUpdate, onStoreUpdateLater, otaPrompt, onOtaUpdate, onOtaLater } = useUpdateGates();
   const fcmUnsubscribeRef = useRef<(() => void) | null>(null);
@@ -366,16 +370,29 @@ export default function RootNavigator() {
   const showSplash = isInitializing || isCheckingTerms || isLoadingLanguage;
   const needsLanguage = isAuthenticated && languageStatus === "needs-selection";
 
+  // The CMS launch campaign renders on the same Splash route as the logo and
+  // replaces it, so the app opens straight after the artwork. It may hold the
+  // Splash route only when the next screen is the app itself; login, language,
+  // terms and update prompts are never delayed, and showSplash is unchanged.
+  const promoScope = isAuthenticated && user?.user_id ? `u${user.user_id}` : null;
+  const launch = useLaunchPresentation({
+    scope: promoScope,
+    startupDone: !showSplash,
+    eligible: isAuthenticated && !needsLanguage && termsAccepted === true &&
+      !storeUpdate.visible && !otaPrompt.visible,
+  });
+  const showLaunch = showSplash || launch.holding;
+
   // Only surface the first-login reward popup once the user has actually
   // reached the authenticated app (past Splash/TermsGate), so it doesn't
   // stack on top of those gates.
   const showRewardModal =
-    !showSplash && !needsLanguage && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
+    !showLaunch && !needsLanguage && isAuthenticated && termsAccepted === true && firstLoginReward !== null;
 
   // Ask once, on the app itself, and never over another prompt. A user who said
   // no can change their mind from Notification settings.
   const canOfferPushPermission =
-    !showSplash && !needsLanguage && isAuthenticated && termsAccepted === true &&
+    !showLaunch && !needsLanguage && isAuthenticated && termsAccepted === true &&
     !showRewardModal && !storeUpdate.visible && !otaPrompt.visible;
   useEffect(() => {
     if (!canOfferPushPermission) return;
@@ -394,8 +411,8 @@ export default function RootNavigator() {
     <RootStack.Navigator
       screenOptions={{ ...defaultScreenOptions, animation: "none", freezeOnBlur: false }}
     >
-      {showSplash ? (
-        <RootStack.Screen name="Splash" component={SplashScreen} />
+      {showLaunch ? (
+        <RootStack.Screen name="Splash" component={LaunchScreen} />
       ) : !isAuthenticated ? (
         <RootStack.Screen name="Auth" component={AuthNavigator} />
       ) : needsLanguage ? (
@@ -418,7 +435,7 @@ export default function RootNavigator() {
 
   return (
     <>
-      {navigator}
+      <LaunchPresentationProvider value={launch}>{navigator}</LaunchPresentationProvider>
       <AppUpdateModal
         visible={storeUpdate.visible}
         forceUpdate={storeUpdate.forceUpdate}
