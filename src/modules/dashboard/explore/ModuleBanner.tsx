@@ -1,9 +1,9 @@
+import CmsImage from '../../common/cms/CmsImage';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
   StyleSheet,
-  Image,
   useWindowDimensions,
   type ViewStyle,
 } from 'react-native';
@@ -80,7 +80,7 @@ export default function ModuleBanner() {
       >
         {banners.map((banner) => (
           <View key={banner.campaign_id} style={[styles.banner, { width }]}>
-            <Image
+            <CmsImage
               source={{ uri: banner.banner_image }}
               style={[styles.bannerImage, { height: bannerHeight }]}
               resizeMode="cover"

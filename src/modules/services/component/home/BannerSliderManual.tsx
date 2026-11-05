@@ -1,3 +1,4 @@
+import CmsImage from '../../../common/cms/CmsImage';
 import React, { useState, useMemo } from 'react';
 import {
   View,
@@ -6,7 +7,6 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -108,7 +108,7 @@ export default function BannerSliderManual() {
             activeOpacity={0.85}
             onPress={() => handleBannerPress(banner)}
           >
-            <Image
+            <CmsImage
               source={{ uri: banner.image_url }}
               style={styles.bannerImage}
               resizeMode="cover"

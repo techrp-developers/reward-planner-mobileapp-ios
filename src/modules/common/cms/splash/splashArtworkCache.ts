@@ -50,7 +50,9 @@ export function downloadArtwork(url: string): Promise<string | null> {
   const partial = `${path}.part`;
   const task = (async () => {
     if (!(await ReactNativeBlobUtil.fs.isDir(dir()))) await ReactNativeBlobUtil.fs.mkdir(dir());
-    const response = await ReactNativeBlobUtil.config({ path: partial }).fetch("GET", url);
+    const existingUri = await cachedArtwork(url);
+    if (existingUri) return existingUri;
+    const response = await ReactNativeBlobUtil.config({ path: partial, timeout: 15000 }).fetch("GET", url);
     const info = response.info();
     const headers = info.headers ?? {};
     const type = String(headers["Content-Type"] ?? headers["content-type"] ?? "");

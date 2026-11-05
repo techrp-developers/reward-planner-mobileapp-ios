@@ -1,3 +1,4 @@
+import CmsImage from '../modules/common/cms/CmsImage';
 import React from "react";
 import {
   View,
@@ -6,7 +7,6 @@ import {
   StatusBar,
   TouchableOpacity,
   Animated,
-  Image as RNImage,
   ScrollView,
   useWindowDimensions,
 } from "react-native";
@@ -390,7 +390,7 @@ const TopIconWithLabel = React.memo(
                 },
               ]}
             >
-              <RNImage
+              <CmsImage
                 source={{ uri: imageUrl }}
                 style={{ width: gradientInnerSize, height: gradientInnerSize }}
                 resizeMode="contain"
@@ -408,7 +408,7 @@ const TopIconWithLabel = React.memo(
               />
             </LinearGradient>
           ) : (
-            <RNImage
+            <CmsImage
               source={{ uri: imageUrl }}
               style={{ width: iconSize, height: iconSize }}
               resizeMode="contain"

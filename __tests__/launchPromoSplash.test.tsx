@@ -63,6 +63,7 @@ const campaignOf = (campaign: Record<string, any> = {}) => parseSplashResponse(r
 
 beforeEach(async () => {
   jest.clearAllMocks();
+  get.mockReset();
   await AsyncStorage.clear();
   resetSplashSessionForTests();
   resetLaunchPresentationForTests();
@@ -136,6 +137,14 @@ describe('request', () => {
       params: { page_key: 'app_launch', slot_key: 'promo_splash', platform: os },
     }));
     expect(get.mock.calls[0][1].params).not.toHaveProperty('audience');
+  });
+
+  it('reuses the valid server-bounded snapshot without another launch request', async () => {
+    get.mockResolvedValue({ data: realResponse() });
+    await getResolvedSplash({ pageKey: 'app_launch', slotKey: 'promo_splash', scope: 'u3' });
+    const cached = await getResolvedSplash({ pageKey: 'app_launch', slotKey: 'promo_splash', scope: 'u3' });
+    expect(cached?.data.campaign?.content_id).toBe(21);
+    expect(get).toHaveBeenCalledTimes(1);
   });
 
   it('uses a still-valid cached result when offline, and never an expired one', async () => {

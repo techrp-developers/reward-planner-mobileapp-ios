@@ -1,7 +1,7 @@
+import CmsImage from '../../../common/cms/CmsImage';
 import React from 'react';
 import {
   FlatList,
-  Image,
   ImageResizeMode,
   Linking,
   NativeScrollEvent,
@@ -169,7 +169,7 @@ function OffersBanner({
             onPress={handlePress}
             style={[styles.slide, fullWidth && styles.fullWidthSlide, { width: itemWidth, aspectRatio }]}
           >
-            <Image
+            <CmsImage
               source={{ uri: item.imageUrl }}
               style={StyleSheet.absoluteFill}
               resizeMode={resizeMode}

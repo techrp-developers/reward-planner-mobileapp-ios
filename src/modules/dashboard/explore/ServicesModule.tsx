@@ -1,10 +1,10 @@
+import CmsImage from '../../common/cms/CmsImage';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   View,
   Text,
   ScrollView,
-  Image,
   TouchableOpacity,
   StyleSheet,
   useWindowDimensions,
@@ -108,7 +108,7 @@ const ServiceCard = React.memo(
           ]}
         >
           {iconUrl ? (
-            <Image source={{ uri: iconUrl }} style={{ width: iconSize, height: iconSize }} resizeMode="contain" />
+            <CmsImage source={{ uri: iconUrl }} style={{ width: iconSize, height: iconSize }} resizeMode="contain" />
           ) : FallbackIcon ? (
             <FallbackIcon width={iconSize} height={iconSize} />
           ) : null}

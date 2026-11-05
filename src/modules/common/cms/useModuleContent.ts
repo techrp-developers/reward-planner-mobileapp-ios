@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useCmsQuery } from './useCmsQuery';
 import { useIsFocused } from '@react-navigation/native';
 import { fetchResolvedZones, CmsModuleKey } from './cmsContentApi';
 
@@ -12,12 +12,7 @@ export const moduleContentQueryKey = (module: CmsModuleKey) =>
 export const useModuleContent = (module: CmsModuleKey) => {
   const isFocused = useIsFocused();
 
-  const query = useQuery({
-    queryKey: moduleContentQueryKey(module),
-    queryFn: () => fetchResolvedZones(module),
-    staleTime: 5 * 60 * 1000,
-    enabled: isFocused,
-  });
+  const query = useCmsQuery(`resolved:${module}`, () => fetchResolvedZones(module), isFocused);
 
   return {
     ...query,

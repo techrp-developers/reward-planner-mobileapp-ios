@@ -1,3 +1,4 @@
+import CmsImage from '../../../common/cms/CmsImage';
 import { useTranslation } from "react-i18next";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -71,7 +72,7 @@ const OfferSlideImage = React.memo(({ uri }: { uri: string | null | undefined })
       ]}
     >
       {showImage ? (
-        <RNImage
+        <CmsImage
           source={{ uri: uri as string }}
           style={StyleSheet.absoluteFill}
           resizeMode="contain"
@@ -599,7 +600,7 @@ export default function OfferHome({ module = "product" }: Props) {
         <View style={styles.flashContentRow}>
           <View style={styles.flashLeft}>
             {flashSalesPoster ? (
-              <RNImage source={{ uri: flashSalesPoster }} style={styles.flashPosterImage} resizeMode="contain" />
+              <CmsImage source={{ uri: flashSalesPoster }} style={styles.flashPosterImage} resizeMode="contain" />
             ) : (
               <View style={styles.placeholderFlash}>
                 <RNImage

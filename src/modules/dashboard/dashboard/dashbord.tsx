@@ -1,3 +1,4 @@
+import CmsImage from '../../common/cms/CmsImage';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
@@ -5,7 +6,6 @@ import {
   ScrollView,
   AppState,
   Platform,
-  ImageBackground,
   Linking,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -31,8 +31,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchWalletBalance } from '../../ecommerce/api/WalleteAPI';
 import { useDashboardLayout } from '../../common/cms/useDashboardLayout';
 import type { MainDashboardSectionKey } from '../../common/cms/dashboardLayout';
-import { fetchResolvedZones, type CmsOffersBannerEntry } from '../../common/cms/cmsContentApi';
-import { moduleContentQueryKey } from '../../common/cms/useModuleContent';
+import { type CmsOffersBannerEntry } from '../../common/cms/cmsContentApi';
+import { useModuleContent } from '../../common/cms/useModuleContent';
 import { parseCmsColor, cmsSolidColor } from '../../common/cms/cmsColor';
 import { API_V1_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import CmsBannerGallery from '../../ecommerce/components/home/CmsBannerGallery';
@@ -184,13 +184,7 @@ function Dashbord() {
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
-  const { data: mobileDashboardContent } = useQuery({
-    queryKey: moduleContentQueryKey('mobile_dashboard'),
-    queryFn: () => fetchResolvedZones('mobile_dashboard'),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
+  const { moduleContent: mobileDashboardContent } = useModuleContent('mobile_dashboard');
   const rewardPoints = Number(walletBalanceResponse?.data?.balance ?? 0);
   const mobileDashboardBackground = mobileDashboardContent?.navbar_background ?? null;
   const mobileDashboardImageUrl =
@@ -496,13 +490,12 @@ function Dashbord() {
 
     if (mobileDashboardImageUrl) {
       return (
-        <ImageBackground
+        <View
           key={key}
-          source={{ uri: mobileDashboardImageUrl }}
-          resizeMode="contain"
           style={[styles.topSection, { backgroundColor: cmsSolidColor(mobileDashboardBackground?.color_value) || '#241936' }]}
-          imageStyle={styles.topSectionImage}
         >
+          <CmsImage source={{ uri: mobileDashboardImageUrl }} resizeMode="contain"
+            style={[StyleSheet.absoluteFill, styles.topSectionImage]} />
           <LinearGradient
             colors={isDark ? ['rgba(9,9,11,0.70)', 'rgba(17,24,39,0.54)'] : ['rgba(17,24,39,0.56)', 'rgba(49,46,129,0.36)']}
             start={{ x: 0, y: 0 }}
@@ -511,7 +504,7 @@ function Dashbord() {
             pointerEvents="none"
           />
           {headerContent}
-        </ImageBackground>
+        </View>
       );
     }
 

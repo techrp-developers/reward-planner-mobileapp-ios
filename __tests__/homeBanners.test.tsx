@@ -154,3 +154,13 @@ it('includes the tallest visible offer when three cards share the viewport', asy
   });
   expect(StyleSheet.flatten(renderer!.root.findByType(ScrollView).props.style).height).toBeCloseTo(tileWidth * 2);
 });
+
+it('shows the primary banner image when its gallery has no active images', async () => {
+  const entry = {
+    ...banner(390, 'single', 'primary-fallback'),
+    image_url: 'primary-fallback-wide',
+    images: [{ image_id: 1, image_url: 'inactive-wide', sort_order: 1, is_active: 0 as any }],
+  };
+  await act(async () => { renderer = create(<CmsBannerGallery banner={entry} fallbackRatio={2} />); });
+  expect(renderer!.root.findByType(Image).props.source.uri).toBe('primary-fallback-wide');
+});

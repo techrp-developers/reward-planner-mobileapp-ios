@@ -1,3 +1,5 @@
+import { getCmsImageUri } from '../../../common/cms/cmsImageCache';
+import CmsImage from '../../../common/cms/CmsImage';
 import React from 'react';
 import { Image, View, Text, ScrollView, TouchableOpacity, StyleSheet, useWindowDimensions, type StyleProp, type ViewStyle } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
@@ -17,11 +19,14 @@ function measure(uri: string) {
   if (ratios.has(uri)) return Promise.resolve(ratios.get(uri)!);
   if (pending.has(uri)) return pending.get(uri)!;
   const request = new Promise<number | null>(resolve => {
-    Image.getSize(uri, (width, height) => {
+    void getCmsImageUri(uri).then(localUri => Image.getSize(localUri, (width, height) => {
       const ratio = width > 0 && height > 0 && Number.isFinite(width / height) ? width / height : null;
-      if (ratio) ratios.set(uri, ratio);
+      if (ratio) {
+        ratios.set(uri, ratio);
+        if (ratios.size > 200) ratios.delete(ratios.keys().next().value!);
+      }
       resolve(ratio);
-    }, () => resolve(null));
+    }, () => resolve(null))).catch(() => resolve(null));
   }).finally(() => pending.delete(uri));
   pending.set(uri, request);
   return request;
@@ -54,7 +59,8 @@ export default function CmsBannerGallery({
   const scroller = React.useRef<ScrollView>(null);
   const width = measuredWidth ?? Math.max(0, screenWidth - inset * 2);
   const images = React.useMemo(() => {
-    const gallery = banner?.images?.length ? banner.images.filter(image => Number(image.is_active) === 1)
+    const activeImages = banner?.images?.filter(image => Number(image.is_active) === 1 && image.image_url) ?? [];
+    const gallery = activeImages.length ? activeImages
       : banner?.image_url ? [{ image_id: 0, image_url: banner.image_url, sort_order: 0, is_active: 1 }] : [];
     return gallery.slice().sort((a, b) => a.sort_order - b.sort_order)
       .map(image => ({ ...image, image_url: normalizeLocalCmsImageUrl(image.image_url) || '' }))
@@ -100,7 +106,9 @@ export default function CmsBannerGallery({
   const identity = `${banner?.content_id}-${mode}-${visibleItems}-${images.map(image => image.image_url).join('|')}`;
   React.useEffect(() => {
     let active = true;
-    Promise.all(images.map(image => measure(image.image_url))).then(() => { if (active) updateRatios(); });
+    images.forEach(image => {
+      void measure(image.image_url).then(() => { if (active) updateRatios(); });
+    });
     return () => { active = false; };
   }, [images]);
   React.useEffect(() => { setPage(0); setFailed({}); position.current = home; }, [identity]);
@@ -129,7 +137,7 @@ export default function CmsBannerGallery({
   const tile = (image: typeof images[number], tileWidth: number, copy = 0) => (
     <TouchableOpacity key={`${copy}-${image.image_id}-${image.image_url}`} disabled={!onPress} onPress={onPress}
       accessibilityLabel={banner.title} style={{ width: tileWidth, aspectRatio: ratioFor(image.image_url) }}>
-      {!failed[image.image_url] && <Image source={{ uri: image.image_url }} resizeMode="contain" style={StyleSheet.absoluteFill}
+      {!failed[image.image_url] && <CmsImage source={{ uri: image.image_url }} resizeMode="contain" style={StyleSheet.absoluteFill}
         onError={() => setFailed(previous => ({ ...previous, [image.image_url]: true }))} />}
     </TouchableOpacity>
   );

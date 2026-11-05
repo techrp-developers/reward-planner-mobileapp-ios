@@ -1,7 +1,7 @@
+import CmsImage from '../modules/common/cms/CmsImage';
 import React from "react";
 import {
   Animated,
-  Image,
   StyleSheet,
   View,
 } from "react-native";
@@ -85,7 +85,7 @@ export default function Navbar_Background({
           <View style={[StyleSheet.absoluteFill, { backgroundColor: bgColor }]} />
         ) : null}
         {showImage ? (
-          <Image
+          <CmsImage
             source={{ uri: imageUrl as string }}
             style={StyleSheet.absoluteFill}
             // Fill the complete navbar frame, including the iOS safe area,

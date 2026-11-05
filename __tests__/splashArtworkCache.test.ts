@@ -31,7 +31,7 @@ it('saves an image download under a stable name, through a temporary file', asyn
   const fetch = fetchWith(200, 'image/png');
   const uri = await downloadArtwork(url);
   expect(fetch).toHaveBeenCalledWith('GET', url);
-  expect(ReactNativeBlobUtil.config).toHaveBeenCalledWith({ path: expect.stringMatching(/\.png\.part$/) });
+  expect(ReactNativeBlobUtil.config).toHaveBeenCalledWith({ path: expect.stringMatching(/\.png\.part$/), timeout: 15000 });
   expect(fs.mv).toHaveBeenCalledWith(expect.stringMatching(/\.part$/), uri!.replace('file://', ''));
   expect(uri).toBe(await (async () => { fs.exists.mockResolvedValue(true); return cachedArtwork(url); })());
 });

@@ -1,5 +1,7 @@
+import { saveCmsSnapshot } from './cmsSnapshotCache';
+import { warmCmsImages } from './cmsImageCache';
 import { cmsApi } from '../../../config/cmsApiClient';
-import { API_BASE_URL, normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
+import { normalizeLocalCmsImageUrl } from '../../../config/apiConfig';
 import { CMS_MODULE_KEYS, type CmsModuleKey } from './moduleMapping';
 
 export type { CmsModuleKey } from './moduleMapping';
@@ -91,8 +93,6 @@ const normalizeZoneEntry = <T extends CmsZoneEntry | CmsOffersBannerEntry>(
   }
 
   const normalizedImageUrl = normalizeLocalCmsImageUrl(entry.image_url);
-  console.log('[CMS] Image URL before normalize:', entry.image_url);
-  console.log('[CMS] Image URL after normalize:', normalizedImageUrl);
 
   return {
     ...entry,
@@ -112,60 +112,42 @@ const normalizeResolvedZones = (
   brand_promotional_banner: normalizeZoneEntry(zones?.brand_promotional_banner) as CmsOffersBannerEntry | null,
 });
 
-export const fetchResolvedModules = async (): Promise<CmsModule[]> => {
-  const path = '/content/resolved/modules';
-  console.log('[CMS] Fetching modules from:', `${API_BASE_URL}${path}`);
-  try {
-    const response = await cmsApi.get<CmsModulesResponse>(path);
-    console.log('[CMS] Raw modules response:', JSON.stringify(response.data));
-    const mapped = Array.isArray(response.data.data) ? response.data.data.map(normalizeModule) : [];
-    console.log('[CMS] Mapped modules result:', JSON.stringify(mapped));
-    return mapped;
-  } catch (error: any) {
-    console.log('[CMS] Fetch failed:', {
-      message: error?.message,
-      code: error?.code,
-      status: error?.response?.status,
-      url: error?.config?.url,
-    });
-    throw error;
-  }
-};
+const pending = new Map<string, Promise<unknown>>();
+function fetchCms<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const existing = pending.get(key);
+  if (existing) return existing as Promise<T>;
+  const request = load().then(data => {
+    saveCmsSnapshot(key, data);
+    return data;
+  }).finally(() => pending.delete(key));
+  pending.set(key, request);
+  return request;
+}
 
-export const fetchResolvedNavbar = async (): Promise<CmsNavbarBackgroundMap> => {
-  const path = '/content/resolved/navbar';
-  console.log('[CMS] Fetching navbar from:', `${API_BASE_URL}${path}`);
-  try {
-    const response = await cmsApi.get<CmsResolvedNavbarResponse>(path);
-    console.log('[CMS] Raw navbar response:', JSON.stringify(response.data));
-    const raw = response.data.data ?? {};
+export const fetchResolvedModules = (): Promise<CmsModule[]> => fetchCms('modules', async () => {
+  const { data } = await cmsApi.get<CmsModulesResponse>('/content/resolved/modules');
+  if (data.success === false) throw new Error(data.message || 'Unable to load CMS modules');
+  const modules = Array.isArray(data.data) ? data.data.map(normalizeModule) : [];
+  warmCmsImages(modules.filter(module => Number(module.is_active) === 1).flatMap(module =>
+    [module.icon_url, module.active_icon_url, module.dashboard_icon_url]));
+  return modules;
+});
 
-    const map: CmsNavbarBackgroundMap = {};
-    CMS_MODULE_KEYS.forEach((key) => {
-      const entry = raw[key] ?? null;
-      console.log(`[CMS] ${key} raw entry:`, JSON.stringify(entry));
-      map[key] = normalizeZoneEntry(entry);
-      console.log(`[CMS] ${key} normalized entry:`, JSON.stringify(map[key]));
-    });
+export const fetchResolvedNavbar = (): Promise<CmsNavbarBackgroundMap> => fetchCms('navbar', async () => {
+  const { data } = await cmsApi.get<CmsResolvedNavbarResponse>('/content/resolved/navbar');
+  if (data.success === false) throw new Error(data.message || 'Unable to load CMS navbar');
+  const map: CmsNavbarBackgroundMap = {};
+  CMS_MODULE_KEYS.forEach(key => { map[key] = normalizeZoneEntry(data.data?.[key]); });
+  warmCmsImages(Object.values(map).map(entry => entry?.image_url));
+  return map;
+});
 
-    console.log('[CMS] Mapped navbar result:', JSON.stringify(map));
-    return map;
-  } catch (error: any) {
-    console.log('[CMS] Fetch failed:', {
-      message: error?.message,
-      code: error?.code,
-      status: error?.response?.status,
-      url: error?.config?.url,
-    });
-    throw error;
-  }
-};
-
-export const fetchResolvedZones = async (
-  module: CmsModuleKey,
-): Promise<CmsResolvedZones> => {
-  const { data } = await cmsApi.get<CmsResolvedZonesResponse>(
-    `/content/resolved/${module}`,
-  );
-  return normalizeResolvedZones(data.data);
-};
+export const fetchResolvedZones = (module: CmsModuleKey): Promise<CmsResolvedZones> =>
+  fetchCms(`resolved:${module}`, async () => {
+    const { data } = await cmsApi.get<CmsResolvedZonesResponse>(`/content/resolved/${module}`);
+    if (data.success === false) throw new Error(data.message || 'Unable to load CMS content');
+    const zones = normalizeResolvedZones(data.data);
+    // Warm the first image in each zone. Visible galleries request the rest.
+    warmCmsImages(Object.values(zones).map(entry => entry?.images?.find(image => Number(image.is_active) === 1)?.image_url || entry?.image_url));
+    return zones;
+  });

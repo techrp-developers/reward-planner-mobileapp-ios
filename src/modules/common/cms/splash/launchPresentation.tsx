@@ -80,12 +80,15 @@ async function prepare(scope: string, signal: AbortSignal): Promise<Prepared | n
   const seenKey = splashSeenKey(scope, PAGE_KEY, SLOT_KEY, campaign);
   // A campaign already seen today stays hidden; the backend's choice is never
   // swapped for another default.
-  const due = await isSplashDue(seenKey, campaign.display.frequency_rule, serverNow);
+  const [due, cachedUri] = await Promise.all([
+    isSplashDue(seenKey, campaign.display.frequency_rule, serverNow),
+    cachedArtwork(campaign.image_url).catch(() => null),
+  ]);
   splashLog("FREQUENCY_CHECK", { rule: campaign.display.frequency_rule, due });
   if (!due) return skip("already_seen");
   const prefetchStarted = Date.now();
   // Disk first: instant on every launch after the first download.
-  let imageUri = await cachedArtwork(campaign.image_url).catch(() => null);
+  let imageUri = cachedUri;
   let source = "disk";
   if (!imageUri) {
     source = "network";

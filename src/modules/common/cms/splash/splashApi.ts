@@ -133,8 +133,8 @@ async function readCache(key: string, now = Date.now()): Promise<ResolvedSplash 
 /**
  * The selected campaign for one page/slot. The shared API client sends the
  * employee's access token, so the backend's optionalAuth picks the signed-in
- * audience; it never sends `audience` itself. Falls back to a still-valid
- * cached result when the request fails, and to null otherwise.
+ * audience; it never sends `audience` itself. Reuses a result only within the
+ * server's TTL, next-change time and campaign expiry, scoped to the employee.
  */
 export async function getResolvedSplash({ pageKey, slotKey, scope, signal }: {
   pageKey: SplashPageKey;
@@ -145,6 +145,14 @@ export async function getResolvedSplash({ pageKey, slotKey, scope, signal }: {
   const platform = Platform.OS;
   if (platform !== "ios" && platform !== "android") return null;
   const key = cacheKey(scope, pageKey, slotKey, platform);
+  // A valid server-bounded snapshot avoids putting a network round trip on
+  // every launch. Expired/scheduled changes always resolve against the API.
+  const cached = await readCache(key);
+  if (signal?.aborted) return null;
+  if (cached) {
+    splashLog("API_RESPONSE_RECEIVED", { fromCache: true, contentId: cached.data.campaign?.content_id });
+    return cached;
+  }
   const requestedAt = Date.now();
   try {
     splashLog("API_REQUEST_STARTED", { pageKey, slotKey, platform });
@@ -183,8 +191,8 @@ export async function getResolvedSplash({ pageKey, slotKey, scope, signal }: {
       code: error?.code ?? null,
     });
     if (cancelled) return null;
-    const cached = await readCache(key);
-    if (cached) splashLog("API_RESPONSE_RECEIVED", { fromCache: true, contentId: cached.data.campaign?.content_id });
-    return cached;
+    const fallback = await readCache(key);
+    if (fallback) splashLog("API_RESPONSE_RECEIVED", { fromCache: true, contentId: fallback.data.campaign?.content_id });
+    return fallback;
   }
 }
