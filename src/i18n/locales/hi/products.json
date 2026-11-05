@@ -749,6 +749,9 @@
     "productFallback": "प्रोडक्ट",
     "bestseller": "बेस्टसेलर",
     "receiptNotFound": "रसीद नहीं मिली",
+    "continueShopping": "खरीदारी जारी रखें",
+    "viewOrderDetails": "ऑर्डर विवरण देखें",
+    "backToHome": "होम पर वापस जाएं",
     "billDetails": "बिल विवरण",
     "priceDetails": "कीमत विवरण",
     "itemTotal": "आइटम कुल",
@@ -854,5 +857,20 @@
     "anonymous": "अज्ञात",
     "paymentCancelled": "भुगतान रद्द किया गया",
     "moreOffers": "{{count}} और ऑफ़र उपलब्ध हैं"
+  },
+  "deliveryOptions": {
+    "title": "डिलीवरी विकल्प",
+    "standard": "स्टैंडर्ड डिलीवरी",
+    "quick": "क्विक डिलीवरी",
+    "free": "मुफ़्त",
+    "updating": "डिलीवरी और कुल राशि अपडेट हो रही है…",
+    "estimatePending": "अनुमानित डिलीवरी तारीख की पुष्टि की जाएगी",
+    "deliveryBy": "{{date}} तक डिलीवरी",
+    "days_one": "लगभग {{count}} दिन में",
+    "days_other": "लगभग {{count}} दिनों में",
+    "unverified": "अभी डिलीवरी विकल्पों की पुष्टि नहीं हो सकी। ऑर्डर देने से पहले फिर से कोशिश करें।",
+    "unavailable": "इस पते पर डिलीवरी उपलब्ध नहीं है। कृपया दूसरा पता चुनें।",
+    "quoteChanged": "डिलीवरी शुल्क बदल गया है। अपडेट की गई कुल राशि देखें और फिर कोशिश करें।",
+    "shippingFee": "डिलीवरी शुल्क"
   }
 }

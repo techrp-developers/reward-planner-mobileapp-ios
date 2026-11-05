@@ -2,8 +2,16 @@
 import api from "../../common/auth/api/axios";
 
 /* ================= TYPES ================= */
+import type { DeliveryPreference } from '../utils/checkoutDelivery';
+export type { DeliveryChoice, DeliveryPreference } from '../utils/checkoutDelivery';
+
+// The checkout API validates delivery_preference as cheapest|fastest; older
+// deployments ignore the unknown param and quote their default courier.
+const deliveryParams = (preference?: DeliveryPreference) =>
+  preference === undefined ? {} : { delivery_preference: preference };
 
 export type CartOrderPayload = {
+  delivery_preference?: DeliveryPreference;
   address_id: number;
   expected_total: number;
   expected_redeemable: number;
@@ -11,10 +19,12 @@ export type CartOrderPayload = {
 };
 
 export type BuyNowPayload = {
+  delivery_preference?: DeliveryPreference;
   product_id: number;
   variant_id: number;
-  campaign_id?: number;
   quantity: number;
+  campaign_id?: number | null;
+  content_id?: number | null;
   address_id: number;
 
   expected_total: number;
@@ -35,10 +45,10 @@ export const addCartOrder = async (payload?: CartOrderPayload) => {
 /**
  * Fetch cart checkout preview
  */
-export const fetchCheckoutCart = async (useRewards = true, addressId?: number) => {
+export const fetchCheckoutCart = async (useRewards = true, addressId?: number, deliveryPreference?: DeliveryPreference) => {
   try {
     const res = await api.get("/v1/checkout/get-cart", {
-      params: { use_rewards: useRewards, address_id: addressId },
+      params: { use_rewards: useRewards, address_id: addressId, ...deliveryParams(deliveryPreference) },
     });
     return res.data;
   } catch (error: any) {
@@ -76,10 +86,21 @@ export const fetchBuyNowCheckout = async (
   qty: number,
   useRewards = true,
   addressId?: number,
-  campaignId?: number
+  campaignId?: number | null,
+  contentId?: number | null,
+  deliveryPreference?: DeliveryPreference,
 ) => {
   const res = await api.get("/v1/checkout/get-buy-now", {
-    params: { product_id, variant_id, qty, use_rewards: useRewards, address_id: addressId, campaign_id: campaignId },
+    params: {
+      product_id,
+      variant_id,
+      qty,
+      campaign_id: campaignId ?? undefined,
+      content_id: contentId ?? undefined,
+      use_rewards: useRewards,
+      address_id: addressId,
+      ...deliveryParams(deliveryPreference),
+    },
   });
   return res.data;
 };

@@ -42,7 +42,7 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
       <Pressable style={styles.overlay} onPress={onClose} />
       <View style={[styles.sheet, { backgroundColor: theme.card }]}>
         <View style={[styles.handle, { backgroundColor: theme.border }]} />
-        
+
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.text }]}>{tx("products:filterBottomSheet.filterOrders")}</Text>
           <TouchableOpacity onPress={() => { setSelectedTime('30days'); setSelectedStatus(''); }}>
@@ -53,7 +53,7 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
         <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>{tx("products:filterBottomSheet.orderTime")}</Text>
         <View style={styles.chipGrid}>
           {TIME_OPTIONS.map((item) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={item.value}
               onPress={() => setSelectedTime(item.value)}
               activeOpacity={0.8}
@@ -79,7 +79,7 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
         <Text style={[styles.sectionLabel, { color: theme.secondaryText }]}>{tx("products:filterBottomSheet.orderStatus")}</Text>
         <View style={styles.chipGrid}>
           {STATUS_OPTIONS.map((item) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={item.value}
               onPress={() => setSelectedStatus(item.value)}
               activeOpacity={0.8}
@@ -119,10 +119,10 @@ export default function FilterBottomSheet({ visible, onClose, currentTime, curre
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' },
-  sheet: { 
-    backgroundColor: '#FFF', 
-    borderTopLeftRadius: 28, 
-    borderTopRightRadius: 28, 
+  sheet: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     padding: 24,
     paddingBottom: 40
   },
@@ -132,16 +132,16 @@ const styles = StyleSheet.create({
   reset: { color: '#EF4444', fontWeight: '700', fontSize: 14 },
   sectionLabel: { fontSize: 14, fontWeight: '700', color: '#6B7280', marginBottom: 12, marginTop: 10 },
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  chip: { 
-    paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, 
-    backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#F0F0F0' 
-  },
-  activeChip: { 
+  chip: {
     paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12,
+    backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#F0F0F0'
+  },
+  activeChip: {
+    borderRadius: 12,
     borderWidth: 1, borderColor: 'transparent'
   },
   chipText: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
-  activeChipText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
+  activeChipText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13, paddingVertical: 10, paddingHorizontal: 16 },
   applyBtnWrap: {
     borderRadius: 16,
     marginTop: 10,

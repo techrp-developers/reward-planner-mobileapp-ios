@@ -8,6 +8,7 @@ import {
   Platform,
   Image,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
@@ -21,9 +22,18 @@ import { Trans, useTranslation } from "react-i18next";
 interface OrderReceiptProps {
   orderId: number;
   receiptData?: any;
+  onBack?: () => void;
+  onContinueShopping?: () => void;
+  onViewOrder?: () => void;
 }
 
-export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps) {
+export default function OrderReceipt({
+  orderId,
+  receiptData,
+  onBack,
+  onContinueShopping,
+  onViewOrder,
+}: OrderReceiptProps) {
   const [receipt, setReceipt] = useState<any>(receiptData ?? null);
   const [loading, setLoading] = useState(!receiptData);
   const { isDark, theme } = useAppTheme();
@@ -101,7 +111,20 @@ export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps
         style={styles.container}
       >
         <View style={[styles.sheet, { backgroundColor: theme.background }]}>
-          <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
+          <View style={styles.sheetHeader}>
+            {onBack ? (
+              <Pressable
+                onPress={onBack}
+                hitSlop={12}
+                accessibilityRole="button"
+                accessibilityLabel={tx("products:order.backToHome")}
+                style={[styles.backBtn, { backgroundColor: isDark ? "#1F2937" : "#F3F4F6" }]}
+              >
+                <MaterialIcons name="arrow-back" size={22} color={theme.text} />
+              </Pressable>
+            ) : null}
+            <View style={[styles.dragHandle, { backgroundColor: theme.border }]} />
+          </View>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             <Text style={styles.deliveryDate}>Arriving {deliveryDate}</Text>
@@ -172,6 +195,34 @@ export default function OrderReceipt({ orderId, receiptData }: OrderReceiptProps
               <Trans i18nKey="products:order.note" components={{ b: <Text style={[styles.noteBold, { color: theme.text }]} /> }} />
             </Text>
           </ScrollView>
+
+          {onContinueShopping || onViewOrder ? (
+            <View style={[styles.actions, { borderTopColor: theme.border }]}>
+              {onContinueShopping ? (
+                <Pressable onPress={onContinueShopping} accessibilityRole="button" style={styles.primaryBtnOuter}>
+                  <LinearGradient
+                    colors={["#8665FF", "#5B47A3"]}
+                    start={{ x: 0, y: 0.5 }}
+                    end={{ x: 1, y: 0.5 }}
+                    style={styles.primaryBtn}
+                  >
+                    <Text style={styles.primaryBtnText}>{tx("products:order.continueShopping")}</Text>
+                  </LinearGradient>
+                </Pressable>
+              ) : null}
+              {onViewOrder ? (
+                <Pressable
+                  onPress={onViewOrder}
+                  accessibilityRole="button"
+                  style={[styles.secondaryBtn, { borderColor: isDark ? "#B9A5FF" : "#7551E9" }]}
+                >
+                  <Text style={[styles.secondaryBtnText, { color: isDark ? "#B9A5FF" : "#7551E9" }]}>
+                    {tx("products:order.viewOrderDetails")}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
         </View>
       </LinearGradient>
     </SafeAreaView>
@@ -361,5 +412,55 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "#22C55E",
     fontWeight: "600",
+  },
+  sheetHeader: {
+    justifyContent: "center",
+  },
+  backBtn: {
+    position: "absolute",
+    left: 0,
+    top: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+  actions: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 10,
+  },
+  primaryBtnOuter: {
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  primaryBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // Button padding sits on the Text: iOS did not apply it on the gradient.
+  primaryBtnText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "700",
+    textAlign: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+  },
+  secondaryBtn: {
+    borderWidth: 1.5,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  secondaryBtnText: {
+    fontSize: 15,
+    fontWeight: "700",
+    textAlign: "center",
+    paddingVertical: 13,
+    paddingHorizontal: 20,
   },
 });

@@ -51,8 +51,9 @@ export default function OrderProcedbutton({
             <Text style={[styles.items, { color: theme.secondaryText }]}>{count} items selected</Text>
           </View>
 
-          <TouchableOpacity activeOpacity={0.85} onPress={onPlaceOrder} disabled={loading || disabled}>
-            <LinearGradient colors={['#8665FF', '#5B47A3']} style={[styles.button, (loading || disabled) ? styles.disabledButton : null]}>
+          <TouchableOpacity activeOpacity={0.85} onPress={onPlaceOrder} disabled={loading || disabled}
+            accessibilityRole="button" accessibilityState={{ disabled: loading || disabled, busy: loading }}>
+            <LinearGradient colors={['#8665FF', '#5B47A3']} style={[styles.button, disabled && !loading ? styles.disabledButton : null]}>
               {loading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
@@ -124,8 +125,9 @@ const styles = StyleSheet.create({
 
     borderRadius: 12,
   },
+  // Must read as not tappable; 0.8 looked identical to the enabled state.
   disabledButton: {
-    opacity: 0.8,
+    opacity: 0.45,
   },
   buttonText: {
     color: '#fff',

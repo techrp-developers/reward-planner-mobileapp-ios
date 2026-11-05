@@ -42,6 +42,7 @@ export type HomeStackParamList = {
   SearchScreen: undefined;
     WishList: undefined;
   OrderStepUI: {
+    content_id?: number;
     mode?: 'cart' | 'buy_now';
     product_id?: number;
     variant_id?: number;

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { formatCurrency } from '../../utils/formatCurrency'
 import React, { useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
@@ -16,21 +17,11 @@ type Props = {
 // API fields: price = sale price, mrp = original price
 const toNum = (v: any) => Number(String(v ?? "0").replace(/[^\d.]/g, "")) || 0;
 
-const formatDeliveryDate = (dateStr: string | null | undefined): string | null => {
+const formatDeliveryDate = (dateStr: string | null | undefined, locale: string): string | null => {
   if (!dateStr) return null;
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString("en-IN", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-};
-
-const getFallbackDeliveryDate = (): string => {
-  const d = new Date();
-  d.setDate(d.getDate() + 5);
-  return d.toLocaleDateString("en-IN", {
+  return d.toLocaleDateString(locale, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -45,11 +36,12 @@ export default function CheckoutItemCart({
   onPress,
 }: Props) {
   const { isDark, theme } = useAppTheme();
-  // Delivery date: use API value if available, fallback to +5 days
+  const { t, i18n } = useTranslation('products');
+  // Only show a date supplied by the checkout quote.
   const deliveryText = useMemo(() => {
-    const formatted = formatDeliveryDate(item?.estimated_delivery_date);
-    return `Delivery by ${formatted ?? getFallbackDeliveryDate()}`;
-  }, [item?.estimated_delivery_date]);
+    const formatted = formatDeliveryDate(item?.estimated_delivery_date, i18n.language || 'en-IN');
+    return formatted ? t('deliveryOptions.deliveryBy', { date: formatted }) : t('deliveryOptions.estimatePending');
+  }, [item?.estimated_delivery_date, t, i18n.language]);
 
   // Return/replace policy from API
   const isReturnable = item?.is_returnable === 1 || item?.is_returnable === true;

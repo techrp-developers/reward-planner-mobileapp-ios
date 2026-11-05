@@ -749,6 +749,9 @@
     "productFallback": "Product",
     "bestseller": "Bestseller",
     "receiptNotFound": "Receipt not found",
+    "continueShopping": "Continue Shopping",
+    "viewOrderDetails": "View Order Details",
+    "backToHome": "Back to home",
     "billDetails": "Bill Details",
     "priceDetails": "Price Details",
     "itemTotal": "Item Total",
@@ -854,5 +857,20 @@
     "anonymous": "Anonymous",
     "paymentCancelled": "Payment cancelled",
     "moreOffers": "{{count}} more offers available"
+  },
+  "deliveryOptions": {
+    "title": "Delivery options",
+    "standard": "Standard Delivery",
+    "quick": "Quick Delivery",
+    "free": "Free",
+    "updating": "Updating delivery and total…",
+    "estimatePending": "Estimated delivery date will be confirmed",
+    "deliveryBy": "Delivery by {{date}}",
+    "days_one": "Estimated in {{count}} day",
+    "days_other": "Estimated in {{count}} days",
+    "unverified": "Delivery options cannot be confirmed right now. Please try again before placing your order.",
+    "unavailable": "Delivery is unavailable for this address. Please choose another address.",
+    "quoteChanged": "Your delivery quote changed. Please review the updated total and try again.",
+    "shippingFee": "Shipping fee"
   }
 }

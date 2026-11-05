@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { CommonActions, useNavigation, useRoute } from "@react-navigation/native";
 import OrderReceipt from "./OrderReceipt";
 import { fetchOrderReceipt } from "../../ecommerce/api/OrderApi";
 import { useTranslation } from "react-i18next";
@@ -31,6 +31,19 @@ export default function OrderConfirmScreen() {
   const [receipt, setReceipt] = useState<any>(null);
 
   const slideAnim = useRef(new Animated.Value(height)).current;
+
+  // Leaving the confirmation never returns to checkout: the order is placed.
+  const goHome = useCallback(() => {
+    navigation.dispatch(
+      CommonActions.reset({ index: 0, routes: [{ name: "Home" }] }),
+    );
+  }, [navigation]);
+
+  const viewOrder = useCallback(() => {
+    navigation.dispatch(
+      CommonActions.navigate({ name: "OrderConfirmedScreen", params: { order_id } }),
+    );
+  }, [navigation, order_id]);
 
   /* ---------------- LOAD RECEIPT ---------------- */
   const loadReceipt = useCallback(async () => {
@@ -124,7 +137,7 @@ export default function OrderConfirmScreen() {
               <Text style={styles.rewardHeader}>{tx("products:order.earnedHeader")}</Text>
 
               <Pressable
-                onPress={() => navigation.navigate("Home" as never)}
+                onPress={goHome}
                 style={styles.rewardBtnOuter}
               >
                 <LinearGradient
@@ -180,7 +193,13 @@ export default function OrderConfirmScreen() {
               { transform: [{ translateY: slideAnim }] },
             ]}
           >
-            <OrderReceipt orderId={order_id} receiptData={receipt} />
+            <OrderReceipt
+              orderId={order_id}
+              receiptData={receipt}
+              onBack={goHome}
+              onContinueShopping={goHome}
+              onViewOrder={viewOrder}
+            />
           </Animated.View>
         )}
       </LinearGradient>
@@ -259,18 +278,21 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
   },
+  // Padding lives on the Text children: on iOS the gradient's own padding was
+  // not applied, which compressed the button to the text height.
   rewardBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 20,
   },
-  coinIcon: { fontSize: 16, marginRight: 8 },
+  coinIcon: { fontSize: 16, paddingLeft: 20, paddingRight: 8, paddingVertical: 14 },
   rewardBtnText: {
     fontSize: 14,
     fontWeight: "700",
     color: "#FFFFFF",
+    flexShrink: 1,
+    paddingRight: 20,
+    paddingVertical: 14,
   },
   receiptWrap: {
     position: "absolute",

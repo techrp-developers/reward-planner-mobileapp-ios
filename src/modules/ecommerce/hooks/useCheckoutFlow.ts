@@ -41,9 +41,9 @@ export function useCheckoutFlow() {
       const params = input.mode === 'buy_now' ? validateBuyNowParams(input) : { mode: 'cart' as const };
       if (params.mode === 'buy_now') {
         __DEV__ && console.log('[BUY NOW] starting preview', params);
-        const response = validateBuyNowPreview(await fetchBuyNowCheckout(
-          params.product_id!, params.variant_id!, params.qty!, true, undefined, params.campaign_id,
-        ));
+        const response = validateBuyNowPreview(await (params.content_id !== undefined
+          ? fetchBuyNowCheckout(params.product_id!, params.variant_id!, params.qty!, true, undefined, params.campaign_id, params.content_id)
+          : fetchBuyNowCheckout(params.product_id!, params.variant_id!, params.qty!, true, undefined, params.campaign_id)));
         if (!isCurrent()) return;
         queryClient.setQueryData(checkoutPreviewQueryKey(params), response);
         __DEV__ && console.log('[BUY NOW] preview ready; navigating to checkout');

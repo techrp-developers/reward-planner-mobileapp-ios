@@ -1266,10 +1266,10 @@
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				FFBC76254624AF14DFA10824 /* Embed App Extensions */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				4247546CEABB30977ECA621C /* Copy verified vendor dSYMs */,
 				584CB81316966E82261342C9 /* [CP] Embed Pods Frameworks */,
 				AD9CFA0CB00C38FA1E2BDEF4 /* [CP] Copy Pods Resources */,
 				37C74C3F6C6CADD0034A7033 /* [CP-User] [RNFB] Core Configuration */,
+				4247546CEABB30977ECA621C /* Copy verified vendor dSYMs */,
 			);
 			buildRules = (
 			);
@@ -2454,7 +2454,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.2;
+				MARKETING_VERSION = 6.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -2495,7 +2495,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 6.2;
+				MARKETING_VERSION = 6.3;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -2513,11 +2513,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 71B0E7CF8BB310BF4C0FBD37 /* Pods-NotificationService.debug.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -2526,7 +2528,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 6.2;
+				MARKETING_VERSION = 6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mpstech.rewardsplanners.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2688,11 +2690,15 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AEE262B94A7DABC476AD598E /* Pods-NotificationService.release.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_EXPLICIT_MODULES = NO;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = W2JCTWQZLY;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = NotificationService/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -2701,7 +2707,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 6.2;
+				MARKETING_VERSION = 6.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mpstech.rewardsplanners.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

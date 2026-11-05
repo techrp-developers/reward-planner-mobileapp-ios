@@ -1,3 +1,4 @@
+import type { DeliveryPreference } from '../api/CheckoutApi';
 import { queryClient } from "../../../query/queryClient";
 import { fetchProductDetailsByID } from "../api/ProductApi";
 import { fetchCartItems } from "../api/CartApi";
@@ -19,7 +20,13 @@ export const checkoutPreviewQueryKey = (params?: {
   campaign_id?: number;
   qty?: number;
   use_rewards?: boolean;
+  address_id?: number | string;
+  delivery_preference?: DeliveryPreference;
+  content_id?: number | string;
 }) => {
+  const scope = params?.address_id !== undefined || params?.delivery_preference !== undefined || params?.content_id !== undefined
+    ? [{ address_id: String(params?.address_id ?? ''), delivery_preference: params?.delivery_preference ?? 'cheapest', content_id: String(params?.content_id ?? '') }]
+    : [];
   const useRewards = params?.use_rewards ?? true;
 
   if (params?.mode === "buy_now") {
@@ -32,10 +39,11 @@ export const checkoutPreviewQueryKey = (params?: {
       String(params?.campaign_id ?? ""),
       String(params?.qty ?? 1),
       useRewards,
+      ...scope,
     ] as const;
   }
 
-  return ["ecommerce", "checkout-preview", "cart", useRewards] as const;
+  return ["ecommerce", "checkout-preview", "cart", useRewards, ...scope] as const;
 };
 
 export const productDetailsQueryKey = (productId: number | string, campaignId?: number | string) => [
@@ -108,6 +116,7 @@ export const prefetchCheckoutPreview = (params?: {
   product_id?: number | string;
   variant_id?: number | string;
   campaign_id?: number;
+  content_id?: number;
   qty?: number;
   use_rewards?: boolean;
 }) => {
@@ -129,10 +138,13 @@ export const prefetchCheckoutPreview = (params?: {
         product_id: productId,
         variant_id: variantId,
         campaign_id: params?.campaign_id,
+        content_id: params?.content_id,
         qty,
         use_rewards: useRewards,
       }),
-      queryFn: () => fetchBuyNowCheckout(productId, variantId, qty, useRewards, undefined, params?.campaign_id),
+      queryFn: () => params?.content_id !== undefined
+        ? fetchBuyNowCheckout(productId, variantId, qty, useRewards, undefined, params?.campaign_id, params.content_id)
+        : fetchBuyNowCheckout(productId, variantId, qty, useRewards, undefined, params?.campaign_id),
       staleTime: CART_STALE_TIME,
     });
   }
@@ -149,6 +161,7 @@ export const prefetchCheckoutScreenData = async (params?: {
   product_id?: number | string;
   variant_id?: number | string;
   campaign_id?: number;
+  content_id?: number;
   qty?: number;
   use_rewards?: boolean;
 }) => {
