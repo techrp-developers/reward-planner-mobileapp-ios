@@ -812,7 +812,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
   return (
     <View style={[styles.wrapper, { paddingTop: insets.top }]}>
       <StatusBar
-        barStyle={isScrolledWhite ? "dark-content" : isDark ? "light-content" : "dark-content"}
+        barStyle={navbarIconColor === "#FFFFFF" ? "light-content" : "dark-content"}
         translucent
         backgroundColor="transparent"
       />
@@ -937,7 +937,7 @@ export default function Navbar({ activeModule, onModuleChange }: NavbarProps) {
                 moduleKey={module.module_key}
                 label={localizedModuleLabel(module)}
                 activeTint={isScrolledWhite ? (module.active_color || "#B77900") : (module.active_color || activeThemeColor)}
-                inactiveTint={isScrolledWhite ? "#111827" : isDark ? "#FFFFFF" : (module.normal_color || navbarIconColor)}
+                inactiveTint={isScrolledWhite ? "#111827" : isDark ? "#E4E4E7" : (activeBanner?.imageUrl || activeBanner?.bgColor) ? navbarIconColor : (module.normal_color || navbarIconColor)}
                 gradientStart={module.gradient_start_color}
                 gradientEnd={module.gradient_end_color}
                 itemWidth={tabItemWidth}

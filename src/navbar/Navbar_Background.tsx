@@ -60,7 +60,8 @@ export default function Navbar_Background({
   const previousBanner = banners[previousTab];
   const hasVisibleImage = (banner: typeof currentBanner) =>
     Boolean(banner?.imageUrl && !failedImages[banner.imageUrl]);
-  const showOverlay = hasVisibleImage(currentBanner) || hasVisibleImage(previousBanner);
+  const showOverlay = hasVisibleImage(currentBanner) || hasVisibleImage(previousBanner) ||
+    Boolean(currentBanner?.bgFill || previousBanner?.bgFill);
   // CMS colors have no dark variant; use the dark surface and dim artwork
   // so the navbar remains readable in either theme.
   const defaultBgColor = isDark ? "#09090B" : "#FFFFFF";
@@ -69,8 +70,8 @@ export default function Navbar_Background({
     const banner = banners[tab];
     const imageUrl = banner?.imageUrl;
     const showImage = Boolean(imageUrl && !failedImages[imageUrl]);
-    const bgColor = isDark ? defaultBgColor : banner?.bgColor ?? defaultBgColor;
-    const gradient = !isDark && banner?.bgFill?.isGradient ? banner.bgFill : null;
+    const bgColor = banner?.bgColor ?? defaultBgColor;
+    const gradient = banner?.bgFill?.isGradient ? banner.bgFill : null;
 
     return (
       <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
@@ -115,7 +116,9 @@ export default function Navbar_Background({
         {previousTab !== activeTab ? renderLayer(previousTab, 1) : null}
         {renderLayer(activeTab, previousTab === activeTab ? 1 : fade)}
         {isDark && showOverlay ? (
-          <View style={[StyleSheet.absoluteFill, styles.darkImageOverlay]} />
+          <LinearGradient testID="cms-navbar-dark-overlay" pointerEvents="none"
+            colors={['rgba(9,9,11,0.28)', 'rgba(9,9,11,0.48)']}
+            start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
         ) : null}
         <Animated.View
           style={[StyleSheet.absoluteFill, { backgroundColor: defaultBgColor, opacity: scrolledBackgroundOpacity }]}
@@ -129,8 +132,5 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     overflow: "hidden",
-  },
-  darkImageOverlay: {
-    backgroundColor: "rgba(9,9,11,0.6)",
   },
 });

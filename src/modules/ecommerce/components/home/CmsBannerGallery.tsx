@@ -1,3 +1,5 @@
+import CmsArtworkOverlay from '../../../common/cms/CmsArtworkOverlay';
+import { useAppTheme } from '../../../../theme/ThemeContext';
 import { getCmsImageUri } from '../../../common/cms/cmsImageCache';
 import CmsImage from '../../../common/cms/CmsImage';
 import React from 'react';
@@ -50,6 +52,7 @@ type Props = {
 export default function CmsBannerGallery({
   banner, fallbackRatio, inset = 0, visibleItems = 1, onPress, slider = false, autoplayMs = AUTOPLAY_MS, style,
 }: Props) {
+  const { isDark } = useAppTheme();
   const { width: screenWidth } = useWindowDimensions();
   const [measuredWidth, setMeasuredWidth] = React.useState<number | null>(null);
   const [page, setPage] = React.useState(0);
@@ -139,6 +142,7 @@ export default function CmsBannerGallery({
       accessibilityLabel={banner.title} style={{ width: tileWidth, aspectRatio: ratioFor(image.image_url) }}>
       {!failed[image.image_url] && <CmsImage source={{ uri: image.image_url }} resizeMode="contain" style={StyleSheet.absoluteFill}
         onError={() => setFailed(previous => ({ ...previous, [image.image_url]: true }))} />}
+      {!failed[image.image_url] && <CmsArtworkOverlay />}
     </TouchableOpacity>
   );
   let body: React.ReactNode;
@@ -179,7 +183,8 @@ export default function CmsBannerGallery({
         onMomentumScrollEnd={event => settle(event.nativeEvent.contentOffset.x)}>
         {slides.map(image => tile(image, slideWidth, image.copy))}
       </ScrollView>{count > 1 && <View style={styles.dots}>{images.map((image, index) =>
-        <View key={`${image.image_id}-${index}`} style={[styles.dot, index === currentPage ? styles.dotActive : styles.dotIdle]} />)}</View>}</>;
+        <View key={`${image.image_id}-${index}`} style={[styles.dot, index === currentPage ? styles.dotActive : styles.dotIdle,
+          isDark && (index === currentPage ? styles.darkDotActive : styles.darkDotIdle)]} />)}</View>}</>;
     }
   }
   return <View style={[{ paddingHorizontal: inset }, style]}><View onLayout={event => setMeasuredWidth(event.nativeEvent.layout.width)}>{body}</View></View>;
@@ -191,4 +196,6 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#852BAF' },
   dotIdle: { opacity: 0.3 },
   dotActive: { width: 16 },
+  darkDotActive: { backgroundColor: '#C4B5FD' },
+  darkDotIdle: { backgroundColor: '#71717A', opacity: 0.7 },
 });

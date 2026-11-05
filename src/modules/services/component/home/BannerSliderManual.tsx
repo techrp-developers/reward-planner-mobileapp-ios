@@ -1,3 +1,4 @@
+import CmsArtworkOverlay from '../../../common/cms/CmsArtworkOverlay';
 import CmsImage from '../../../common/cms/CmsImage';
 import React, { useState, useMemo } from 'react';
 import {
@@ -113,6 +114,7 @@ export default function BannerSliderManual() {
               style={styles.bannerImage}
               resizeMode="cover"
             />
+            <CmsArtworkOverlay />
           </TouchableOpacity>
         ))}
       </ScrollView>

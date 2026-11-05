@@ -1,3 +1,4 @@
+import CmsArtworkOverlay from '../../../common/cms/CmsArtworkOverlay';
 import CmsImage from '../../../common/cms/CmsImage';
 import { useTranslation } from "react-i18next";
 
@@ -82,6 +83,7 @@ const OfferSlideImage = React.memo(({ uri }: { uri: string | null | undefined })
           }}
         />
       ) : null}
+      {showImage && <CmsArtworkOverlay />}
     </View>
   );
 });

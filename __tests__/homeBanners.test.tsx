@@ -5,6 +5,8 @@ import CmsBannerGallery from '../src/modules/ecommerce/components/home/CmsBanner
 import NavbarBackground from '../src/navbar/Navbar_Background';
 
 let mockWidth = 390;
+let mockIsDark = false;
+jest.mock('../src/theme/ThemeContext', () => ({ useAppTheme: () => ({ isDark: mockIsDark }) }));
 jest.mock('react-native', () => {
   const actual = jest.requireActual('react-native');
   const mocked = Object.create(actual);
@@ -24,6 +26,7 @@ const banner = (width: number, mode: string, zone = 'main') => ({
   ],
 });
 beforeEach(() => {
+  mockIsDark = false;
   jest.spyOn(console, 'error').mockImplementation(() => {});
   jest.spyOn(Image, 'getSize').mockImplementation((uri, success) => { success(uri.endsWith('wide') ? 2048 : 720, uri.endsWith('wide') ? 1008 : 900); });
 });
@@ -163,4 +166,32 @@ it('shows the primary banner image when its gallery has no active images', async
   };
   await act(async () => { renderer = create(<CmsBannerGallery banner={entry} fallbackRatio={2} />); });
   expect(renderer!.root.findByType(Image).props.source.uri).toBe('primary-fallback-wide');
+});
+
+it('keeps banner images visible and adds a non-interactive overlay only in dark mode', async () => {
+  const entry = banner(390, 'single', 'theme');
+  await act(async () => { renderer = create(<CmsBannerGallery banner={entry} fallbackRatio={2} />); });
+  const overlays = () => renderer!.root.findAllByType(View).filter(view => view.props.testID === 'cms-artwork-dark-overlay');
+  expect(overlays()).toHaveLength(0);
+  mockIsDark = true;
+  await act(async () => renderer!.update(<CmsBannerGallery banner={entry} fallbackRatio={2} />));
+  expect(renderer!.root.findAllByType(Image)).toHaveLength(1);
+  expect(overlays()).toHaveLength(1);
+  expect(overlays()[0].props.pointerEvents).toBe('none');
+  expect(StyleSheet.flatten(overlays()[0].props.style).backgroundColor).toBe('rgba(9,9,11,0.16)');
+  mockIsDark = false;
+  await act(async () => renderer!.update(<CmsBannerGallery banner={entry} fallbackRatio={2} />));
+  expect(overlays()).toHaveLength(0);
+});
+
+it('retains navbar artwork with a gentle gradient overlay in dark mode', async () => {
+  const props = { activeTab: 'Product' as any, banners: { Product: { imageUrl: 'theme-navbar', bgColor: '#552211' } } as any,
+    insetsTop: 47, scrollY: new Animated.Value(0) };
+  await act(async () => { renderer = create(<NavbarBackground {...props} isDark />); });
+  expect(renderer!.root.findAllByType(Image)).toHaveLength(1);
+  const overlays = () => renderer!.root.findAll(node => node.props.testID === 'cms-navbar-dark-overlay');
+  expect(overlays()[0].props.pointerEvents).toBe('none');
+  await act(async () => renderer!.update(<NavbarBackground {...props} isDark={false} />));
+  expect(overlays()).toHaveLength(0);
+  expect(renderer!.root.findAllByType(Image)).toHaveLength(1);
 });

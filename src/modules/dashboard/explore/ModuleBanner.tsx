@@ -1,3 +1,4 @@
+import CmsArtworkOverlay from '../../common/cms/CmsArtworkOverlay';
 import CmsImage from '../../common/cms/CmsImage';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -80,11 +81,14 @@ export default function ModuleBanner() {
       >
         {banners.map((banner) => (
           <View key={banner.campaign_id} style={[styles.banner, { width }]}>
-            <CmsImage
-              source={{ uri: banner.banner_image }}
-              style={[styles.bannerImage, { height: bannerHeight }]}
-              resizeMode="cover"
-            />
+            <View style={styles.artwork}>
+              <CmsImage
+                source={{ uri: banner.banner_image }}
+                style={[styles.bannerImage, { height: bannerHeight }]}
+                resizeMode="cover"
+              />
+              <CmsArtworkOverlay />
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -112,6 +116,7 @@ const styles = StyleSheet.create({
     marginTop: rs(12),
   },
 
+  artwork: { borderRadius: rs(18), overflow: 'hidden' },
   bannerImage: {
     width: '100%',
     borderRadius: rs(18),

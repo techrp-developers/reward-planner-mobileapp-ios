@@ -1,3 +1,4 @@
+import CmsArtworkOverlay from '../../../common/cms/CmsArtworkOverlay';
 import CmsImage from '../../../common/cms/CmsImage';
 import React from 'react';
 import {
@@ -180,6 +181,7 @@ function OffersBanner({
                 }));
               }}
             />
+            <CmsArtworkOverlay />
           </TouchableOpacity>
         )}
       />
