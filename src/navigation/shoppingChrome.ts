@@ -6,8 +6,9 @@ const FULL_SCREEN_SHOPPING_ROUTES = new Set([
   'OrderConfirm', 'OrderConfirmedScreen', 'OrderReceipt',
 ]);
 
-// Multi-step insurance flows have their own bottom Continue button.
+// Cart, checkout and multi-step insurance flows own their bottom actions.
 const FULL_SCREEN_SERVICES_ROUTES = new Set([
+  'CartScreen', 'ServiceCheckoutScreen',
   'Health', 'SuperTopUp', 'PersonalAccident',
 ]);
 

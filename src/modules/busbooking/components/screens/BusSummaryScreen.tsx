@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ActivityIndicator,
@@ -215,6 +216,7 @@ const getPointAddress = (
 */
 
 export default function BusSummaryScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const {
     popup,
     showPopup,
@@ -831,7 +833,7 @@ if (
           <MaterialCommunityIcons
             name="chevron-left"
             size={28}
-            color="#77737B"
+            color={busTheme.isDark ? busTheme.muted : "#77737B"}
           />
 
         </TouchableOpacity>
@@ -970,7 +972,7 @@ if (
               <MaterialCommunityIcons
                 name="map-marker-outline"
                 size={22}
-                color="#FFC7CD"
+                color={busTheme.isDark ? busTheme.muted : "#FFC7CD"}
               />
 
 
@@ -984,7 +986,7 @@ if (
               <MaterialCommunityIcons
                 name="map-marker-outline"
                 size={22}
-                color="#C8102E"
+                color={busTheme.isDark ? busTheme.accent : "#C8102E"}
               />
 
             </View>
@@ -1284,7 +1286,7 @@ if (
                     <MaterialCommunityIcons
                       name="account-outline"
                       size={19}
-                      color="#D31637"
+                      color={busTheme.isDark ? busTheme.accent : "#D31637"}
                     />
 
                   </View>
@@ -1339,7 +1341,7 @@ if (
                   <MaterialCommunityIcons
                     name="pencil-outline"
                     size={18}
-                    color="#9A93A0"
+                    color={busTheme.isDark ? busTheme.muted : "#9A93A0"}
                   />
 
                 </View>
@@ -1640,13 +1642,11 @@ if (
 |--------------------------------------------------------------------------
 */
 
-const styles =
-  StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
 
     safeArea: {
       flex: 1,
-      backgroundColor:
-        "#FBF8F5",
+      backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F5",
     },
 
 
@@ -1690,7 +1690,7 @@ const styles =
 
 
     routeTitle: {
-      color: "#343038",
+      color: busTheme.isDark ? busTheme.text : "#343038",
       fontSize: 17,
       fontWeight: "700",
     },
@@ -1698,7 +1698,7 @@ const styles =
 
     routeMeta: {
       marginTop: 2,
-      color: "#8B8590",
+      color: busTheme.isDark ? busTheme.muted : "#8B8590",
       fontSize: 11,
       fontWeight: "600",
     },
@@ -1800,7 +1800,7 @@ const styles =
 
 
     pointLabel: {
-      color: "#5F5A64",
+      color: busTheme.isDark ? busTheme.text : "#5F5A64",
       fontSize: 12,
       fontWeight: "500",
     },
@@ -1808,7 +1808,7 @@ const styles =
 
     pointTitle: {
       marginTop: 4,
-      color: "#3C3841",
+      color: busTheme.isDark ? busTheme.text : "#3C3841",
       fontSize: 16,
       fontWeight: "700",
     },
@@ -1816,7 +1816,7 @@ const styles =
 
     pointAddress: {
       marginTop: 3,
-      color: "#8B8590",
+      color: busTheme.isDark ? busTheme.muted : "#8B8590",
       fontSize: 12,
       fontWeight: "500",
       lineHeight: 17,
@@ -1825,7 +1825,7 @@ const styles =
 
     pointTime: {
       marginTop: 4,
-      color: "#57525C",
+      color: busTheme.isDark ? busTheme.text : "#57525C",
       fontSize: 16,
       fontWeight: "600",
     },
@@ -1844,7 +1844,7 @@ const styles =
 
 
     sectionTitle: {
-      color: "#403B45",
+      color: busTheme.isDark ? busTheme.text : "#403B45",
       fontSize: 17,
       fontWeight: "700",
       marginBottom: 12,
@@ -1863,8 +1863,7 @@ const styles =
       borderWidth: 1,
       borderColor:
         "#E84153",
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       paddingHorizontal: 18,
       paddingVertical: 18,
       flexDirection: "row",
@@ -1886,7 +1885,7 @@ const styles =
 
     selectedSeatLabel: {
       marginTop: 8,
-      color: "#3D3841",
+      color: busTheme.isDark ? busTheme.text : "#3D3841",
       fontSize: 12,
       fontWeight: "800",
     },
@@ -1895,8 +1894,7 @@ const styles =
     selectedSeatDivider: {
       width: 1,
       height: 88,
-      backgroundColor:
-        "#B7AEB4",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#B7AEB4",
       marginHorizontal: 18,
     },
 
@@ -1908,12 +1906,10 @@ const styles =
     */
 
     passengerListCard: {
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       borderRadius: 16,
       borderWidth: 1,
-      borderColor:
-        "#ECE2DD",
+      borderColor: busTheme.isDark ? busTheme.border : "#ECE2DD",
       overflow: "hidden",
       paddingVertical: 6,
     },
@@ -1929,8 +1925,7 @@ const styles =
 
     passengerRowBorder: {
       borderBottomWidth: 1,
-      borderBottomColor:
-        "#F0E8E3",
+      borderBottomColor: busTheme.isDark ? busTheme.border : "#F0E8E3",
     },
 
 
@@ -1938,8 +1933,7 @@ const styles =
       width: 42,
       height: 42,
       borderRadius: 21,
-      backgroundColor:
-        "#FFEDEF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFEDEF",
       alignItems: "center",
       justifyContent: "center",
       marginRight: 12,
@@ -1952,7 +1946,7 @@ const styles =
 
 
     passengerName: {
-      color: "#3D3841",
+      color: busTheme.isDark ? busTheme.text : "#3D3841",
       fontSize: 15,
       fontWeight: "700",
     },
@@ -1960,7 +1954,7 @@ const styles =
 
     passengerMeta: {
       marginTop: 3,
-      color: "#948E99",
+      color: busTheme.isDark ? busTheme.muted : "#948E99",
       fontSize: 12,
       fontWeight: "500",
     },
@@ -1975,12 +1969,10 @@ const styles =
     pointsCard: {
       marginTop: 18,
       marginHorizontal: 12,
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       borderRadius: 16,
       borderWidth: 1,
-      borderColor:
-        "#ECE2DD",
+      borderColor: busTheme.isDark ? busTheme.border : "#ECE2DD",
       paddingHorizontal: 16,
       paddingVertical: 18,
     },
@@ -2002,13 +1994,11 @@ const styles =
     },
 
     pointsIconActive: {
-      backgroundColor:
-        "#FDECEF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FDECEF",
     },
 
     pointsIconDisabled: {
-      backgroundColor:
-        "#EFEDEF",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#EFEDEF",
     },
 
 
@@ -2018,7 +2008,7 @@ const styles =
 
 
     pointsCardTitle: {
-      color: "#403B45",
+      color: busTheme.isDark ? busTheme.text : "#403B45",
       fontSize: 15,
       fontWeight: "700",
     },
@@ -2026,7 +2016,7 @@ const styles =
 
     pointsCardSubtext: {
       marginTop: 2,
-      color: "#99929A",
+      color: busTheme.isDark ? busTheme.muted : "#99929A",
       fontSize: 12,
       fontWeight: "500",
     },
@@ -2036,8 +2026,7 @@ const styles =
       width: 42,
       height: 24,
       borderRadius: 12,
-      backgroundColor:
-        "#D7D3D8",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#D7D3D8",
       paddingHorizontal: 2,
       justifyContent: "center",
     },
@@ -2048,8 +2037,7 @@ const styles =
     },
 
     pointsToggleTrackDisabled: {
-      backgroundColor:
-        "#D7D3D8",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#D7D3D8",
     },
 
 
@@ -2057,8 +2045,7 @@ const styles =
       width: 20,
       height: 20,
       borderRadius: 10,
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       alignSelf: "flex-start",
     },
 
@@ -2077,7 +2064,7 @@ const styles =
 
 
     pointsBalanceText: {
-      color: "#7A747C",
+      color: busTheme.isDark ? busTheme.muted : "#7A747C",
       fontSize: 12,
       fontWeight: "500",
       lineHeight: 18,
@@ -2085,13 +2072,13 @@ const styles =
 
 
     pointsAppliedText: {
-      color: "#7A747C",
+      color: busTheme.isDark ? busTheme.muted : "#7A747C",
       fontSize: 14,
       fontWeight: "700",
     },
 
     pointsAppliedTextActive: {
-      color: "#D31637",
+      color: busTheme.isDark ? busTheme.accent : "#D31637",
     },
 
 
@@ -2105,19 +2092,17 @@ const styles =
       marginTop: 18,
       marginHorizontal: 12,
       marginBottom: 12,
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       borderRadius: 16,
       borderWidth: 1,
-      borderColor:
-        "#ECE2DD",
+      borderColor: busTheme.isDark ? busTheme.border : "#ECE2DD",
       paddingHorizontal: 16,
       paddingVertical: 18,
     },
 
 
     fareCardTitle: {
-      color: "#403B45",
+      color: busTheme.isDark ? busTheme.text : "#403B45",
       fontSize: 16,
       fontWeight: "700",
       marginBottom: 14,
@@ -2134,14 +2119,14 @@ const styles =
 
 
     fareLabel: {
-      color: "#6F6A73",
+      color: busTheme.isDark ? busTheme.muted : "#6F6A73",
       fontSize: 13,
       fontWeight: "500",
     },
 
 
     fareValue: {
-      color: "#3D3841",
+      color: busTheme.isDark ? busTheme.text : "#3D3841",
       fontSize: 14,
       fontWeight: "700",
     },
@@ -2156,22 +2141,21 @@ const styles =
     rpBadge: {
       marginLeft: 8,
       borderRadius: 10,
-      backgroundColor:
-        "#FFF0D2",
+      backgroundColor: busTheme.isDark ? busTheme.warningSurface : "#FFF0D2",
       paddingHorizontal: 8,
       paddingVertical: 4,
     },
 
 
     rpBadgeText: {
-      color: "#D69200",
+      color: busTheme.isDark ? busTheme.warning : "#D69200",
       fontSize: 10,
       fontWeight: "700",
     },
 
 
     discountValue: {
-      color: "#D31637",
+      color: busTheme.isDark ? busTheme.accent : "#D31637",
       fontSize: 14,
       fontWeight: "700",
     },
@@ -2179,8 +2163,7 @@ const styles =
 
     fareDivider: {
       height: 1,
-      backgroundColor:
-        "#F0E8E3",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#F0E8E3",
       marginBottom: 14,
     },
 
@@ -2194,7 +2177,7 @@ const styles =
 
 
     totalLabel: {
-      color: "#7A747C",
+      color: busTheme.isDark ? busTheme.muted : "#7A747C",
       fontSize: 11,
       fontWeight: "700",
     },
@@ -2202,7 +2185,7 @@ const styles =
 
     totalValue: {
       marginTop: 4,
-      color: "#2D2831",
+      color: busTheme.isDark ? busTheme.text : "#2D2831",
       fontSize: 22,
       fontWeight: "800",
     },
@@ -2215,7 +2198,7 @@ const styles =
 
 
     earnedLabel: {
-      color: "#7A747C",
+      color: busTheme.isDark ? busTheme.muted : "#7A747C",
       fontSize: 11,
       fontWeight: "700",
     },
@@ -2223,7 +2206,7 @@ const styles =
 
     earnedValue: {
       marginTop: 4,
-      color: "#D31637",
+      color: busTheme.isDark ? busTheme.accent : "#D31637",
       fontSize: 13,
       fontWeight: "700",
     },
@@ -2239,11 +2222,9 @@ const styles =
       paddingHorizontal: 12,
       paddingTop: 12,
       paddingBottom: 16,
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
       borderTopWidth: 1,
-      borderTopColor:
-        "#EFE6E1",
+      borderTopColor: busTheme.isDark ? busTheme.border : "#EFE6E1",
     },
 
 
@@ -2277,7 +2258,7 @@ const styles =
     footerNote: {
       marginTop: 10,
       textAlign: "center",
-      color: "#9A93A0",
+      color: busTheme.isDark ? busTheme.muted : "#9A93A0",
       fontSize: 11,
       fontWeight: "500",
       lineHeight: 16,

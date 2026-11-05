@@ -1,17 +1,8 @@
 import React from "react";
+import { useBusTheme } from "../utils/useBusTheme";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import BookingHomeScreen from "../components/screens/BookingHomeScreen";
-import BusListingScreen from "../components/screens/BusListingScreen";
-import AllFilterScreen from "../components/screens/AllFilterScreen";
-import AboutBusScreen from "../components/screens/AboutBusScreen";
-import SeatSelectionScreen from "../components/screens/SeatSelectionScreen";
-import PassengerDetailsScreen from "../components/screens/PassengerDetailsScreen";
-import BoardingDroppingSelectionScreen from "../components/screens/BoardingDroppingSelectionScreen";
-import BusSummaryScreen from "../components/screens/BusSummaryScreen";
-import PaymentScreen from "../components/screens/PaymentScreen";
-import BusOrdersScreen from "../components/screens/BusOrdersScreen";
-import BusOrderDetailScreen from "../components/screens/BusOrderDetailScreen";
 import type { BusListingFacets } from "../utils/busListingFilters";
 
 export type BusBookingStackParamList = {
@@ -107,6 +98,7 @@ PaymentScreen: {
 const Stack = createNativeStackNavigator<BusBookingStackParamList>();
 
 export default function BusBookingStack() {
+  const busTheme = useBusTheme();
   return (
     <Stack.Navigator
       initialRouteName="DineOutModule"
@@ -114,28 +106,29 @@ export default function BusBookingStack() {
         headerShown: false,
         animation: "slide_from_right",
         gestureEnabled: true,
+        contentStyle: { backgroundColor: busTheme.background },
       }}
     >
       <Stack.Screen name="DineOutModule" component={BookingHomeScreen} />
       <Stack.Screen name="BookingHomeScreen" component={BookingHomeScreen} />
-      <Stack.Screen name="BusListingScreen" component={BusListingScreen} />
-      <Stack.Screen name="AllFilterScreen" component={AllFilterScreen} />
-      <Stack.Screen name="AboutBusScreen" component={AboutBusScreen} />
-      <Stack.Screen name="SeatSelectionScreen" component={SeatSelectionScreen} />
+      <Stack.Screen name="BusListingScreen" getComponent={() => require("../components/screens/BusListingScreen").default} />
+      <Stack.Screen name="AllFilterScreen" getComponent={() => require("../components/screens/AllFilterScreen").default} />
+      <Stack.Screen name="AboutBusScreen" getComponent={() => require("../components/screens/AboutBusScreen").default} />
+      <Stack.Screen name="SeatSelectionScreen" getComponent={() => require("../components/screens/SeatSelectionScreen").default} />
       <Stack.Screen
         name="PassengerDetailsScreen"
-        component={PassengerDetailsScreen}
+        getComponent={() => require("../components/screens/PassengerDetailsScreen").default}
       />
       <Stack.Screen
         name="BoardingDroppingSelectionScreen"
-        component={BoardingDroppingSelectionScreen}
+        getComponent={() => require("../components/screens/BoardingDroppingSelectionScreen").default}
       />
-      <Stack.Screen name="BusSummaryScreen" component={BusSummaryScreen} />
-      <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
-      <Stack.Screen name="BusOrdersScreen" component={BusOrdersScreen} />
+      <Stack.Screen name="BusSummaryScreen" getComponent={() => require("../components/screens/BusSummaryScreen").default} />
+      <Stack.Screen name="PaymentScreen" getComponent={() => require("../components/screens/PaymentScreen").default} />
+      <Stack.Screen name="BusOrdersScreen" getComponent={() => require("../components/screens/BusOrdersScreen").default} />
       <Stack.Screen
         name="BusOrderDetailScreen"
-        component={BusOrderDetailScreen}
+        getComponent={() => require("../components/screens/BusOrderDetailScreen").default}
       />
     </Stack.Navigator>
   );

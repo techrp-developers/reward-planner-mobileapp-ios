@@ -1,3 +1,4 @@
+import { createBusLookupCache } from "../utils/busLookupCache";
 import { getAuthHeaders } from "../../common/auth/api/AuthAPI";
 import api from "../../common/auth/api/axios";
 import { API_BASE_URL } from "../../../config/apiConfig";
@@ -599,7 +600,7 @@ export const getBusBalanceApi = async (): Promise<BusProviderBalanceResponse> =>
 |--------------------------------------------------------------------------
 */
 
-export const searchCitiesApi = async (
+const fetchCities = async (
   query: string
 ): Promise<City[]> => {
   const authHeaders = await getAuthHeaders();
@@ -658,6 +659,14 @@ export const searchCitiesApi = async (
   return result.data || [];
 };
 
+
+// Repeated city lookups share one request and keep bounded, short-lived data.
+const cityLookupCache = createBusLookupCache<City[]>(10 * 60_000, 50);
+export const searchCitiesApi = (query: string): Promise<City[]> => {
+  const normalized = query.trim().toLowerCase();
+  if (normalized.length < 2) return Promise.resolve([]);
+  return cityLookupCache(normalized, () => fetchCities(normalized));
+};
 
 /*
 |--------------------------------------------------------------------------
@@ -1957,7 +1966,7 @@ export const getBusCancellationStatusApi = async (
 |--------------------------------------------------------------------------
 */
 
-export const getPopularBusRoutesApi = async (): Promise<BusPopularRoute[]> => {
+const fetchPopularBusRoutes = async (): Promise<BusPopularRoute[]> => {
   try {
     const response = await api.get(
       `${BUS_BOOKING_BASE_URL}/api/busbooking/popular-routes`,
@@ -1969,3 +1978,7 @@ export const getPopularBusRoutesApi = async (): Promise<BusPopularRoute[]> => {
     throw toBusApiError(error, "Unable to load popular routes");
   }
 };
+
+const popularRoutesCache = createBusLookupCache<BusPopularRoute[]>(5 * 60_000, 1);
+export const getPopularBusRoutesApi = (): Promise<BusPopularRoute[]> =>
+  popularRoutesCache('popular-routes', fetchPopularBusRoutes);

@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 
 import {
@@ -160,6 +161,7 @@ const formatJourneyDateLabel = (journeyDate: string) => {
 };
 
 export default function BookingHomeScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -361,71 +363,43 @@ const openCityPicker = (
   setCityModalVisible(true);
 };
 
-const handleCitySearch = async (
-  text: string
-) => {
-  console.log("[BusBooking][Home] City search input", {
-    cityPickerType,
-    text,
-  });
-
+const handleCitySearch = (text: string) => {
+  // Invalidate older responses immediately, including during the debounce.
+  citySearchRequest.current += 1;
   setCitySearchText(text);
-  const requestId = ++citySearchRequest.current;
+  setCityResults([]);
+  setCityLoading(text.trim().length >= 2);
+};
 
-  if (text.trim().length < 2) {
-    console.log("[BusBooking][Home] City search skipped", {
-      reason: "less_than_2_characters",
-      text,
-    });
-
-    setCityResults([]);
+React.useEffect(() => {
+  const query = citySearchText.trim();
+  if (!cityModalVisible || query.length < 2) {
     setCityLoading(false);
-
     return;
   }
 
+  const requestId = ++citySearchRequest.current;
+  let active = true;
+  const timer = setTimeout(() => {
+    searchCitiesApi(query)
+      .then(cities => {
+        if (active && requestId === citySearchRequest.current) setCityResults(cities);
+      })
+      .catch((error: any) => {
+        if (active && requestId === citySearchRequest.current) {
+          showPopup({ title: "City Search", message: error.message || "Unable to search cities", variant: "error" });
+        }
+      })
+      .finally(() => {
+        if (active && requestId === citySearchRequest.current) setCityLoading(false);
+      });
+  }, 250);
 
-  try {
-
-    setCityLoading(true);
-
-    const cities =
-      await searchCitiesApi(
-        text.trim()
-      );
-
-    console.log("[BusBooking][Home] City search success", {
-      cityPickerType,
-      query: text.trim(),
-      resultCount: cities.length,
-      cities,
-    });
-
-    if (requestId === citySearchRequest.current) {
-      setCityResults(cities);
-    }
-
-  } catch (error: any) {
-    if (requestId !== citySearchRequest.current) return;
-    console.log("[BusBooking][Home] City search failed", {
-      cityPickerType,
-      query: text.trim(),
-      error: error?.message || error,
-    });
-
-    showPopup({
-      title: "City Search",
-      message: error.message || "Unable to search cities",
-      variant: "error",
-    });
-
-  } finally {
-
-    if (requestId === citySearchRequest.current) {
-      setCityLoading(false);
-    }
-  }
-};
+  return () => {
+    active = false;
+    clearTimeout(timer);
+  };
+}, [cityModalVisible, citySearchText, showPopup]);
 
 const handleSelectCity = (city: City) => {
 
@@ -635,8 +609,8 @@ const handleSearchBuses = async () => {
       updatedAt: new Date().toISOString(),
     };
 
-    await saveRecentSearch(recentSearchPayload);
-    setRecentSearches(await loadRecentSearches());
+    // Local history must not delay opening results or turn a successful search into an error.
+    void saveRecentSearch(recentSearchPayload).catch(() => {});
 
 
     console.log(
@@ -824,7 +798,7 @@ const handleSearchBuses = async () => {
   <MaterialCommunityIcons
     name="map-marker-radius-outline"
     size={20}
-    color="#444444"
+    color={busTheme.isDark ? busTheme.text : "#444444"}
   />
 
   <View style={styles.routeTextWrap}>
@@ -898,7 +872,7 @@ const handleSearchBuses = async () => {
   <MaterialCommunityIcons
     name="map-marker-check-outline"
     size={20}
-    color="#444444"
+    color={busTheme.isDark ? busTheme.text : "#444444"}
   />
 
   <View style={styles.routeTextWrap}>
@@ -942,7 +916,7 @@ const handleSearchBuses = async () => {
             <MaterialCommunityIcons
               name="calendar-month-outline"
               size={18}
-              color="#444444"
+              color={busTheme.isDark ? busTheme.text : "#444444"}
             />
             <View style={styles.dateJourneyTextWrap}>
               <Text style={styles.dateJourneyLabel}>Date of Journey</Text>
@@ -964,7 +938,7 @@ const handleSearchBuses = async () => {
             <MaterialCommunityIcons
               name="chevron-right"
               size={22}
-              color="#666666"
+              color={busTheme.isDark ? busTheme.text : "#666666"}
             />
           </View>
         </TouchableOpacity>
@@ -976,7 +950,7 @@ const handleSearchBuses = async () => {
           <MaterialCommunityIcons
             name="face-woman"
             size={24}
-            color="#CE1538"
+            color={busTheme.isDark ? busTheme.accent : "#CE1538"}
           />
           <View style={styles.womenBookingText}>
             <Text style={styles.womenBookingTitle}>Booking for Women</Text>
@@ -1093,7 +1067,7 @@ const handleSearchBuses = async () => {
               <MaterialCommunityIcons
                 name="ticket-confirmation-outline"
                 size={14}
-                color="#9CA3AF"
+                color={busTheme.isDark ? busTheme.muted : "#9CA3AF"}
               />
               <Text style={styles.ticketText}>
                 {nextJourney.ticketNo
@@ -1114,7 +1088,7 @@ const handleSearchBuses = async () => {
             <MaterialCommunityIcons
               name="ticket-confirmation-outline"
               size={20}
-              color="#E11D48"
+              color={busTheme.isDark ? busTheme.accent : "#E11D48"}
             />
           </View>
           <View style={styles.historyTextWrap}>
@@ -1125,7 +1099,7 @@ const handleSearchBuses = async () => {
                 : "No upcoming trips right now"}
             </Text>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={22} color="#374151" />
+          <MaterialCommunityIcons name="chevron-right" size={22} color={busTheme.isDark ? busTheme.text : "#374151"} />
         </TouchableOpacity>
       )}
 
@@ -1143,7 +1117,7 @@ const handleSearchBuses = async () => {
               onPress={() => applyRecentSearch(item)}
             >
               <View style={styles.historyIconBox}>
-                <MaterialCommunityIcons name="history" size={20} color="#E11D48" />
+                <MaterialCommunityIcons name="history" size={20} color={busTheme.isDark ? busTheme.accent : "#E11D48"} />
               </View>
               <View style={styles.historyTextWrap}>
                 <Text style={styles.historyRoute}>
@@ -1157,7 +1131,7 @@ const handleSearchBuses = async () => {
           ))
         ) : (
           <View style={styles.historyEmptyCard}>
-            <MaterialCommunityIcons name="clock-outline" size={18} color="#C8102E" />
+            <MaterialCommunityIcons name="clock-outline" size={18} color={busTheme.isDark ? busTheme.accent : "#C8102E"} />
             <Text style={styles.historyEmptyText}>
               Your recent bus searches will appear here after you search a route.
             </Text>
@@ -1183,7 +1157,7 @@ const handleSearchBuses = async () => {
                 style={styles.routeCard}
                 onPress={() => applyPopularRoute(item)}
               >
-                <MaterialCommunityIcons name="bus" size={20} color="#E11D48" />
+                <MaterialCommunityIcons name="bus" size={20} color={busTheme.isDark ? busTheme.accent : "#E11D48"} />
                 <Text style={styles.popularRouteCity} numberOfLines={1}>
                   {item.sourceCity}
                 </Text>
@@ -1237,7 +1211,7 @@ const handleSearchBuses = async () => {
           <MaterialCommunityIcons
             name="close"
             size={25}
-            color="#333333"
+            color={busTheme.isDark ? busTheme.text : "#333333"}
           />
 
         </TouchableOpacity>
@@ -1250,7 +1224,7 @@ const handleSearchBuses = async () => {
         <MaterialCommunityIcons
           name="magnify"
           size={21}
-          color="#777777"
+          color={busTheme.isDark ? busTheme.muted : "#777777"}
         />
 
         <TextInput
@@ -1260,7 +1234,7 @@ const handleSearchBuses = async () => {
             handleCitySearch
           }
           placeholder="Search city"
-          placeholderTextColor="#9CA3AF"
+          placeholderTextColor={busTheme.isDark ? busTheme.muted : "#9CA3AF"}
           style={styles.citySearchInput}
           autoFocus
         />
@@ -1269,7 +1243,7 @@ const handleSearchBuses = async () => {
 
       </View>
       <View style={styles.citySearchProgress}>
-        {cityLoading ? <ActivityIndicator size="small" color="#C8102E" /> : null}
+        {cityLoading ? <ActivityIndicator size="small" color={busTheme.isDark ? busTheme.accent : "#C8102E"} /> : null}
       </View>
 
       {
@@ -1305,7 +1279,7 @@ const handleSearchBuses = async () => {
             <MaterialCommunityIcons
               name="map-marker-outline"
               size={21}
-              color="#C8102E"
+              color={busTheme.isDark ? busTheme.accent : "#C8102E"}
             />
 
             <View style={styles.cityResultText}>
@@ -1383,7 +1357,7 @@ const handleSearchBuses = async () => {
           <MaterialCommunityIcons
             name="close"
             size={25}
-            color="#333333"
+            color={busTheme.isDark ? busTheme.text : "#333333"}
           />
 
         </TouchableOpacity>
@@ -1483,21 +1457,21 @@ const handleSearchBuses = async () => {
     </>
   );
 }
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F8F5F1",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#F8F5F1",
   },
   content: {
     paddingHorizontal: 14,
     paddingTop: 10,
   },
   searchCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 24,
     padding: 0,
     borderWidth: 1.2,
-    borderColor: "#D4D4D8",
+    borderColor: busTheme.isDark ? busTheme.border : "#D4D4D8",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 14,
@@ -1522,13 +1496,13 @@ const styles = StyleSheet.create({
   },
   routePlaceholder: {
     marginLeft: 14,
-    color: "#595959",
+    color: busTheme.isDark ? busTheme.text : "#595959",
     fontSize: 18,
     fontWeight: "500",
   },
   routeDivider: {
     height: 1,
-    backgroundColor: "#E4E4E7",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E4E4E7",
     marginLeft: 56,
     marginRight: 56,
   },
@@ -1544,7 +1518,7 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     backgroundColor: "#D61A33",
     borderWidth: 3,
-    borderColor: "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     shadowColor: "#000000",
@@ -1556,7 +1530,7 @@ const styles = StyleSheet.create({
   dateJourneyRow: {
     minHeight: 92,
     borderTopWidth: 1,
-    borderTopColor: "#E4E4E7",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#E4E4E7",
     paddingHorizontal: 18,
     flexDirection: "row",
     alignItems: "center",
@@ -1564,10 +1538,10 @@ const styles = StyleSheet.create({
   },
   womenBookingRow: {
     minHeight: 56,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 16,
     borderWidth: 1.2,
-    borderColor: "#D4D4D8",
+    borderColor: busTheme.isDark ? busTheme.border : "#D4D4D8",
     paddingHorizontal: 16,
     flexDirection: "row",
     alignItems: "center",
@@ -1591,13 +1565,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#CE1538",
   },
   customSwitchTrackInactive: {
-    backgroundColor: "#E4E4E7",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E4E4E7",
   },
   customSwitchThumb: {
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     shadowColor: "#000",
     shadowOpacity: 0.2,
     shadowRadius: 2,
@@ -1621,13 +1595,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   womenBookingTitle: {
-    color: "#222222",
+    color: busTheme.isDark ? busTheme.text : "#222222",
     fontSize: 17,
     fontWeight: "700",
   },
   womenBookingSub: {
     marginTop: 2,
-    color: "#71717A",
+    color: busTheme.isDark ? busTheme.muted : "#71717A",
     fontSize: 11,
     fontWeight: "500",
   },
@@ -1639,19 +1613,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   dateJourneyLabel: {
-    color: "#222222",
+    color: busTheme.isDark ? busTheme.text : "#222222",
     fontSize: 14,
     fontWeight: "500",
   },
   dateJourneyValue: {
-    color: "#222222",
+    color: busTheme.isDark ? busTheme.text : "#222222",
     fontSize: 18,
     fontWeight: "700",
     marginTop: 3,
   },
   dateJourneyHint: {
     marginTop: 4,
-    color: "#9CA3AF",
+    color: busTheme.isDark ? busTheme.muted : "#9CA3AF",
     fontSize: 12,
     fontWeight: "500",
   },
@@ -1664,13 +1638,13 @@ const styles = StyleSheet.create({
     minWidth: 96,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#FCE7EA",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCE7EA",
     paddingHorizontal: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   dateBadgeText: {
-    color: "#C8102E",
+    color: busTheme.isDark ? busTheme.accent : "#C8102E",
     fontSize: 12,
     fontWeight: "700",
   },
@@ -1683,13 +1657,13 @@ const styles = StyleSheet.create({
     minWidth: 82,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#FFCED1",
+    backgroundColor: busTheme.isDark ? busTheme.accentSurface : "#FFCED1",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
   },
   dateActionPillText: {
-    color: "#444444",
+    color: busTheme.isDark ? busTheme.text : "#444444",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -1727,12 +1701,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   sectionTitle: {
-    color: "#333333",
+    color: busTheme.isDark ? busTheme.text : "#333333",
     fontSize: 18,
     fontWeight: "800",
   },
   sectionAction: {
-    color: "#C8102E",
+    color: busTheme.isDark ? busTheme.accent : "#C8102E",
     fontSize: 14,
     fontWeight: "700",
   },
@@ -1744,7 +1718,7 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 14,
-    backgroundColor: "#E8E7E6",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E8E7E6",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1753,7 +1727,7 @@ const styles = StyleSheet.create({
   },
   dateChipDay: {
     fontSize: 9,
-    color: "#7C7C7C",
+    color: busTheme.isDark ? busTheme.muted : "#7C7C7C",
     fontWeight: "700",
   },
   dateChipDayActive: {
@@ -1762,7 +1736,7 @@ const styles = StyleSheet.create({
   dateChipDate: {
     marginTop: 4,
     fontSize: 24,
-    color: "#3F3F46",
+    color: busTheme.isDark ? busTheme.text : "#3F3F46",
     fontWeight: "800",
     lineHeight: 26,
   },
@@ -1770,10 +1744,10 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   journeyCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: busTheme.isDark ? busTheme.border : "#E5E7EB",
     padding: 14,
   },
   journeyTopRow: {
@@ -1782,13 +1756,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   tonightBadge: {
-    backgroundColor: "#FEE2E2",
+    backgroundColor: busTheme.isDark ? busTheme.accentSurface : "#FEE2E2",
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
   tonightBadgeText: {
-    color: "#EF4444",
+    color: busTheme.isDark ? busTheme.accent : "#EF4444",
     fontSize: 9,
     fontWeight: "800",
   },
@@ -1796,24 +1770,24 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   departureTime: {
-    color: "#4B5563",
+    color: busTheme.isDark ? busTheme.text : "#4B5563",
     fontSize: 16,
     fontWeight: "700",
   },
   departureLabel: {
-    color: "#A1A1AA",
+    color: busTheme.isDark ? busTheme.muted : "#A1A1AA",
     fontSize: 9,
     fontWeight: "700",
   },
   journeyRoute: {
     marginTop: 8,
-    color: "#3F3F46",
+    color: busTheme.isDark ? busTheme.text : "#3F3F46",
     fontSize: 18,
     fontWeight: "800",
   },
   journeyDivider: {
     height: 1,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E5E7EB",
     marginVertical: 14,
   },
   journeyBottomRow: {
@@ -1827,12 +1801,12 @@ const styles = StyleSheet.create({
   },
   ticketText: {
     marginLeft: 6,
-    color: "#71717A",
+    color: busTheme.isDark ? busTheme.muted : "#71717A",
     fontSize: 12,
     fontWeight: "500",
   },
   viewDetailsText: {
-    color: "#C8102E",
+    color: busTheme.isDark ? busTheme.accent : "#C8102E",
     fontSize: 12,
     fontWeight: "800",
     letterSpacing: 0.8,
@@ -1841,7 +1815,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   historyCard: {
-    backgroundColor: "#FCEBEC",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCEBEC",
     borderRadius: 14,
     padding: 12,
     flexDirection: "row",
@@ -1851,7 +1825,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: "#FAD4D7",
+    backgroundColor: busTheme.isDark ? busTheme.accentSurface : "#FAD4D7",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1860,21 +1834,21 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   historyRoute: {
-    color: "#3F3F46",
+    color: busTheme.isDark ? busTheme.text : "#3F3F46",
     fontSize: 15,
     fontWeight: "700",
   },
   historyMeta: {
     marginTop: 2,
-    color: "#A1A1AA",
+    color: busTheme.isDark ? busTheme.muted : "#A1A1AA",
     fontSize: 10,
     fontWeight: "500",
   },
   historyEmptyCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#F3DADF",
+    borderColor: busTheme.isDark ? busTheme.border : "#F3DADF",
     paddingHorizontal: 14,
     paddingVertical: 16,
     flexDirection: "row",
@@ -1883,12 +1857,12 @@ const styles = StyleSheet.create({
   historyEmptyText: {
     flex: 1,
     marginLeft: 10,
-    color: "#8A8A8A",
+    color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
     fontSize: 12,
     lineHeight: 18,
   },
   viewAllText: {
-    color: "#2563EB",
+    color: busTheme.isDark ? busTheme.info : "#2563EB",
     fontSize: 14,
     fontWeight: "700",
   },
@@ -1899,27 +1873,27 @@ const styles = StyleSheet.create({
   },
   routeCard: {
     width: 150,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: busTheme.isDark ? busTheme.border : "#E5E7EB",
     padding: 14,
   },
   popularRouteCity: {
     marginTop: 6,
-    color: "#333333",
+    color: busTheme.isDark ? busTheme.text : "#333333",
     fontSize: 15,
     fontWeight: "800",
   },
   popularRouteTo: {
     marginTop: 4,
-    color: "#9CA3AF",
+    color: busTheme.isDark ? busTheme.muted : "#9CA3AF",
     fontSize: 11,
     fontWeight: "700",
   },
   popularRouteFare: {
     marginTop: 10,
-    color: "#C8102E",
+    color: busTheme.isDark ? busTheme.accent : "#C8102E",
     fontSize: 12,
     fontWeight: "700",
   },
@@ -1930,26 +1904,26 @@ const styles = StyleSheet.create({
 
 routeLabel: {
   fontSize: 12,
-  color: "#8A8A8A",
+  color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
   fontWeight: "500",
 },
 
 routeValue: {
   marginTop: 3,
   fontSize: 20,
-  color: "#222222",
+  color: busTheme.isDark ? busTheme.text : "#222222",
   fontWeight: "700",
 },
 
 routeValuePlaceholder: {
-  color: "#595959",
+  color: busTheme.isDark ? busTheme.text : "#595959",
   fontWeight: "500",
 },
 
 routeState: {
   marginTop: 3,
   fontSize: 12,
-  color: "#8A8A8A",
+  color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
 },
 
 
@@ -1962,7 +1936,7 @@ routeState: {
 timeJourneyRow: {
   minHeight: 64,
   borderTopWidth: 1.5,
-  borderTopColor: "#D4D4D8",
+  borderTopColor: busTheme.isDark ? busTheme.border : "#D4D4D8",
   paddingHorizontal: 16,
   flexDirection: "row",
   alignItems: "center",
@@ -1979,14 +1953,14 @@ timeJourneyTextWrap: {
 },
 
 timeJourneyLabel: {
-  color: "#555555",
+  color: busTheme.isDark ? busTheme.text : "#555555",
   fontSize: 12,
   fontWeight: "500",
 },
 
 timeJourneyValue: {
   marginTop: 2,
-  color: "#222222",
+  color: busTheme.isDark ? busTheme.text : "#222222",
   fontSize: 17,
   fontWeight: "700",
 },
@@ -2005,7 +1979,7 @@ modalOverlay: {
 },
 
   cityModal: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 18,
@@ -2013,7 +1987,7 @@ modalOverlay: {
   },
 
   dateModal: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     paddingTop: 14,
@@ -2029,14 +2003,14 @@ modalHeader: {
   paddingBottom: 18,
   paddingTop: 8,
   borderBottomWidth: 1,
-  borderBottomColor: "#ECECEC",
+  borderBottomColor: busTheme.isDark ? busTheme.border : "#ECECEC",
   marginBottom: 0,
   },
 
   modalTitle: {
     fontSize: 24,
     fontWeight: "800",
-    color: "#1F1F22",
+    color: busTheme.isDark ? busTheme.text : "#1F1F22",
   },
   calendarHeaderRow: {
     flexDirection: "row",
@@ -2047,14 +2021,14 @@ modalHeader: {
     paddingBottom: 10,
   },
   calendarMonthTitle: {
-    color: "#1F1F22",
+    color: busTheme.isDark ? busTheme.text : "#1F1F22",
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 18,
   },
   calendarMonthSubtitle: {
     marginTop: 4,
-    color: "#8A8A8A",
+    color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
     fontSize: 12,
     fontWeight: "500",
   },
@@ -2062,12 +2036,12 @@ modalHeader: {
     height: 32,
     borderRadius: 16,
     paddingHorizontal: 14,
-    backgroundColor: "#FFF1F3",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF1F3",
     alignItems: "center",
     justifyContent: "center",
   },
   calendarTodayButtonText: {
-    color: "#C8102E",
+    color: busTheme.isDark ? busTheme.accent : "#C8102E",
     fontSize: 11,
     fontWeight: "700",
   },
@@ -2076,14 +2050,14 @@ modalHeader: {
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#ECECEC",
+    borderBottomColor: busTheme.isDark ? busTheme.border : "#ECECEC",
   },
   calendarWeekCell: {
     width: "14.285%",
     alignItems: "center",
   },
   calendarWeekText: {
-    color: "#7A7A80",
+    color: busTheme.isDark ? busTheme.muted : "#7A7A80",
     fontSize: 12,
     fontWeight: "500",
   },
@@ -2116,15 +2090,15 @@ modalHeader: {
   },
   calendarDateChipDate: {
     fontSize: 18,
-    color: "#1F1F22",
+    color: busTheme.isDark ? busTheme.text : "#1F1F22",
     fontWeight: "500",
     lineHeight: 20,
   },
   calendarDateChipDateDisabled: {
-    color: "#C6C6CC",
+    color: busTheme.isDark ? busTheme.muted : "#C6C6CC",
   },
   calendarDateChipDateWeekend: {
-    color: "#D43C52",
+    color: busTheme.isDark ? busTheme.accent : "#D43C52",
   },
   calendarDateChipDateSelected: {
     color: "#FFFFFF",
@@ -2138,7 +2112,7 @@ citySearchBox: {
   height: 48,
   borderRadius: 14,
   borderWidth: 1,
-  borderColor: "#D4D4D8",
+  borderColor: busTheme.isDark ? busTheme.border : "#D4D4D8",
   paddingHorizontal: 14,
   flexDirection: "row",
   alignItems: "center",
@@ -2148,13 +2122,13 @@ citySearchInput: {
   flex: 1,
   marginLeft: 8,
   fontSize: 16,
-  color: "#222222",
+  color: busTheme.isDark ? busTheme.text : "#222222",
 },
 
 cityHelpText: {
   textAlign: "center",
   marginTop: 30,
-  color: "#9CA3AF",
+  color: busTheme.isDark ? busTheme.muted : "#9CA3AF",
 },
 
 cityResultRow: {
@@ -2162,7 +2136,7 @@ cityResultRow: {
   flexDirection: "row",
   alignItems: "center",
   borderBottomWidth: 1,
-  borderBottomColor: "#EEEEEE",
+  borderBottomColor: busTheme.isDark ? busTheme.border : "#EEEEEE",
 },
 
 cityResultText: {
@@ -2172,19 +2146,19 @@ cityResultText: {
 cityResultName: {
   fontSize: 16,
   fontWeight: "700",
-  color: "#222222",
+  color: busTheme.isDark ? busTheme.text : "#222222",
 },
 
 cityResultState: {
   fontSize: 12,
-  color: "#8A8A8A",
+  color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
   marginTop: 2,
 },
 
 cityEmptyText: {
   textAlign: "center",
   marginTop: 40,
-  color: "#8A8A8A",
+  color: busTheme.isDark ? busTheme.muted : "#8A8A8A",
 },
 
 timeGrid: {
@@ -2197,7 +2171,7 @@ timeChip: {
   minHeight: 44,
   borderRadius: 12,
   borderWidth: 1,
-  borderColor: "#E5E7EB",
+  borderColor: busTheme.isDark ? busTheme.border : "#E5E7EB",
   alignItems: "center",
   justifyContent: "center",
 },
@@ -2208,7 +2182,7 @@ timeChipSelected: {
 },
 
 timeChipText: {
-  color: "#333333",
+  color: busTheme.isDark ? busTheme.text : "#333333",
   fontSize: 13,
   fontWeight: "600",
 },

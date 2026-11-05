@@ -3,7 +3,7 @@ import { Platform, TurboModuleRegistry } from 'react-native';
 export type ApiEnvironment = 'local' | 'live';
 
 // Change only this value to switch every app API call.
-export const API_ENVIRONMENT: ApiEnvironment = 'local';
+export const API_ENVIRONMENT: ApiEnvironment = 'live';
 
 const isLocalEnvironment = (environment: ApiEnvironment) => environment === 'local';
 const IS_LOCAL_ENVIRONMENT = isLocalEnvironment(API_ENVIRONMENT) &&

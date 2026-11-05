@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ScrollView,
@@ -14,6 +15,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import type { BusBookingStackParamList } from "../../navigation/BusBookingStack";
 
 export default function AboutBusScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "AboutBusScreen">>();
   const { bus } = route.params;
@@ -26,7 +28,7 @@ export default function AboutBusScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#77737B"} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>About Bus</Text>
@@ -45,7 +47,7 @@ export default function AboutBusScreen() {
 
           <View style={styles.routeRow}>
             <Text style={styles.routeText}>{bus.from}</Text>
-            <MaterialCommunityIcons name="arrow-right" size={16} color="#3D7CFF" />
+            <MaterialCommunityIcons name="arrow-right" size={16} color={busTheme.isDark ? busTheme.info : "#3D7CFF"} />
             <Text style={styles.routeText}>{bus.to}</Text>
           </View>
 
@@ -62,6 +64,7 @@ export default function AboutBusScreen() {
 
 // Shown only when the provider sent this information for the bus.
 function AboutList({ title, items }: { title: string; items?: string[] }) {
+  const { styles } = useBusStyles(createStyles);
   if (!Array.isArray(items) || items.length === 0) {
     return null;
   }
@@ -78,26 +81,26 @@ function AboutList({ title, items }: { title: string; items?: string[] }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   listCard: {
     marginTop: 12,
   },
   listTitle: {
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 15,
     fontWeight: "700",
     marginBottom: 4,
   },
   listItem: {
     marginTop: 6,
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 13,
     fontWeight: "500",
     lineHeight: 19,
   },
   safeArea: {
     flex: 1,
-    backgroundColor: "#FBF8F4",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F4",
   },
   header: {
     paddingHorizontal: 12,
@@ -115,7 +118,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 17,
     fontWeight: "700",
     marginRight: 38,
@@ -130,20 +133,20 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     padding: 18,
   },
   operatorText: {
-    color: "#4A4A50",
+    color: busTheme.isDark ? busTheme.text : "#4A4A50",
     fontSize: 18,
     fontWeight: "700",
   },
   subtitleText: {
     marginTop: 4,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -155,13 +158,13 @@ const styles = StyleSheet.create({
   },
   routeText: {
     flex: 1,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 14,
     fontWeight: "600",
   },
   aboutText: {
     marginTop: 18,
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 14,
     lineHeight: 22,
     fontWeight: "500",

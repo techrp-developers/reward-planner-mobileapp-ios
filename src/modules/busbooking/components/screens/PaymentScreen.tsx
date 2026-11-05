@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 
 import {
@@ -58,6 +59,7 @@ import {
 */
 
 export default function PaymentScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const {
     popup,
     showPopup,
@@ -635,7 +637,7 @@ export default function PaymentScreen() {
           <MaterialCommunityIcons
             name="chevron-left"
             size={30}
-            color="#484249"
+            color={busTheme.isDark ? busTheme.text : "#484249"}
           />
 
         </TouchableOpacity>
@@ -659,7 +661,7 @@ export default function PaymentScreen() {
           <MaterialCommunityIcons
             name="shield-check"
             size={23}
-            color="#139B73"
+            color={busTheme.isDark ? busTheme.success : "#139B73"}
           />
 
         </View>
@@ -730,7 +732,7 @@ export default function PaymentScreen() {
             <MaterialCommunityIcons
               name="bus"
               size={20}
-              color="#D31637"
+              color={busTheme.isDark ? busTheme.accent : "#D31637"}
             />
 
 
@@ -819,7 +821,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="map-marker-outline"
                 size={20}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -875,7 +877,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="map-marker-check-outline"
                 size={20}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -931,7 +933,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="account-multiple-outline"
                 size={20}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -1009,7 +1011,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="cellphone"
                 size={22}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -1065,7 +1067,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="credit-card-outline"
                 size={22}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -1121,7 +1123,7 @@ export default function PaymentScreen() {
               <MaterialCommunityIcons
                 name="bank-outline"
                 size={22}
-                color="#D31637"
+                color={busTheme.isDark ? busTheme.accent : "#D31637"}
               />
 
             </View>
@@ -1172,7 +1174,7 @@ export default function PaymentScreen() {
           <MaterialCommunityIcons
             name="shield-lock-outline"
             size={28}
-            color="#139B73"
+            color={busTheme.isDark ? busTheme.success : "#139B73"}
           />
 
 
@@ -1225,7 +1227,7 @@ export default function PaymentScreen() {
             <MaterialCommunityIcons
               name="check-circle"
               size={34}
-              color="#139B73"
+              color={busTheme.isDark ? busTheme.success : "#139B73"}
             />
 
 
@@ -1440,7 +1442,7 @@ export default function PaymentScreen() {
           <MaterialCommunityIcons
             name="lock-outline"
             size={13}
-            color="#8D8790"
+            color={busTheme.isDark ? busTheme.muted : "#8D8790"}
           />
 
 
@@ -1476,16 +1478,14 @@ export default function PaymentScreen() {
 |--------------------------------------------------------------------------
 */
 
-const styles =
-  StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
 
     safeArea: {
 
       flex:
         1,
 
-      backgroundColor:
-        "#FBF8F5",
+      backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F5",
     },
 
 
@@ -1503,8 +1503,7 @@ const styles =
       alignItems:
         "center",
 
-      backgroundColor:
-        "#FBF8F5",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FBF8F5",
     },
 
 
@@ -1538,8 +1537,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#312C34",
+      color: busTheme.isDark ? busTheme.text : "#312C34",
     },
 
 
@@ -1584,8 +1582,7 @@ const styles =
       padding:
         20,
 
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
 
       borderRadius:
         18,
@@ -1593,8 +1590,7 @@ const styles =
       borderWidth:
         1,
 
-      borderColor:
-        "#EBE2DE",
+      borderColor: busTheme.isDark ? busTheme.border : "#EBE2DE",
     },
 
 
@@ -1609,8 +1605,7 @@ const styles =
       letterSpacing:
         1.1,
 
-      color:
-        "#9A939B",
+      color: busTheme.isDark ? busTheme.muted : "#9A939B",
     },
 
 
@@ -1625,8 +1620,7 @@ const styles =
       fontWeight:
         "800",
 
-      color:
-        "#29242C",
+      color: busTheme.isDark ? busTheme.text : "#29242C",
     },
 
 
@@ -1654,8 +1648,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#403A43",
+      color: busTheme.isDark ? busTheme.text : "#403A43",
     },
 
 
@@ -1670,8 +1663,7 @@ const styles =
       fontSize:
         13,
 
-      color:
-        "#8E8791",
+      color: busTheme.isDark ? busTheme.muted : "#8E8791",
     },
 
 
@@ -1683,8 +1675,7 @@ const styles =
       padding:
         18,
 
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
 
       borderRadius:
         18,
@@ -1692,8 +1683,7 @@ const styles =
       borderWidth:
         1,
 
-      borderColor:
-        "#EBE2DE",
+      borderColor: busTheme.isDark ? busTheme.border : "#EBE2DE",
     },
 
 
@@ -1708,8 +1698,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#353039",
+      color: busTheme.isDark ? busTheme.text : "#353039",
     },
 
 
@@ -1737,8 +1726,7 @@ const styles =
       borderRadius:
         12,
 
-      backgroundColor:
-        "#FFF0F2",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF0F2",
 
       alignItems:
         "center",
@@ -1763,8 +1751,7 @@ const styles =
       fontSize:
         11,
 
-      color:
-        "#A29BA4",
+      color: busTheme.isDark ? busTheme.muted : "#A29BA4",
     },
 
 
@@ -1779,8 +1766,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#3D3740",
+      color: busTheme.isDark ? busTheme.text : "#3D3740",
     },
 
 
@@ -1792,8 +1778,7 @@ const styles =
       marginLeft:
         55,
 
-      backgroundColor:
-        "#F1EBE8",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#F1EBE8",
     },
 
 
@@ -1811,15 +1796,13 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#353039",
+      color: busTheme.isDark ? busTheme.text : "#353039",
     },
 
 
     paymentMethodsCard: {
 
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
 
       borderRadius:
         18,
@@ -1827,8 +1810,7 @@ const styles =
       borderWidth:
         1,
 
-      borderColor:
-        "#EBE2DE",
+      borderColor: busTheme.isDark ? busTheme.border : "#EBE2DE",
 
       overflow:
         "hidden",
@@ -1862,8 +1844,7 @@ const styles =
       borderRadius:
         12,
 
-      backgroundColor:
-        "#FFF0F2",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF0F2",
 
       alignItems:
         "center",
@@ -1891,8 +1872,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#3A343D",
+      color: busTheme.isDark ? busTheme.text : "#3A343D",
     },
 
 
@@ -1907,8 +1887,7 @@ const styles =
       lineHeight:
         17,
 
-      color:
-        "#96909A",
+      color: busTheme.isDark ? busTheme.muted : "#96909A",
     },
 
 
@@ -1920,8 +1899,7 @@ const styles =
       marginLeft:
         74,
 
-      backgroundColor:
-        "#F0E9E6",
+      backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#F0E9E6",
     },
 
 
@@ -1942,14 +1920,12 @@ const styles =
       borderRadius:
         16,
 
-      backgroundColor:
-        "#EEFBF7",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#EEFBF7",
 
       borderWidth:
         1,
 
-      borderColor:
-        "#CBEDE2",
+      borderColor: busTheme.isDark ? busTheme.border : "#CBEDE2",
     },
 
 
@@ -1971,8 +1947,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#08745E",
+      color: busTheme.isDark ? busTheme.success : "#08745E",
     },
 
 
@@ -1987,8 +1962,7 @@ const styles =
       lineHeight:
         17,
 
-      color:
-        "#60887F",
+      color: busTheme.isDark ? busTheme.muted : "#60887F",
     },
 
 
@@ -2009,14 +1983,12 @@ const styles =
       borderRadius:
         16,
 
-      backgroundColor:
-        "#EDFFF8",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#EDFFF8",
 
       borderWidth:
         1,
 
-      borderColor:
-        "#C6EBDD",
+      borderColor: busTheme.isDark ? busTheme.border : "#C6EBDD",
     },
 
 
@@ -2038,8 +2010,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#08745E",
+      color: busTheme.isDark ? busTheme.success : "#08745E",
     },
 
 
@@ -2051,8 +2022,7 @@ const styles =
       fontSize:
         12,
 
-      color:
-        "#58766F",
+      color: busTheme.isDark ? busTheme.text : "#58766F",
     },
 
 
@@ -2067,8 +2037,7 @@ const styles =
       fontWeight:
         "600",
 
-      color:
-        "#58766F",
+      color: busTheme.isDark ? busTheme.text : "#58766F",
     },
 
 
@@ -2092,8 +2061,7 @@ const styles =
       borderRadius:
         14,
 
-      backgroundColor:
-        "#F3EEEE",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#F3EEEE",
     },
 
 
@@ -2102,8 +2070,7 @@ const styles =
       fontSize:
         12,
 
-      color:
-        "#8D858D",
+      color: busTheme.isDark ? busTheme.muted : "#8D858D",
     },
 
 
@@ -2115,8 +2082,7 @@ const styles =
       fontWeight:
         "700",
 
-      color:
-        "#4E464E",
+      color: busTheme.isDark ? busTheme.text : "#4E464E",
     },
 
 
@@ -2131,14 +2097,12 @@ const styles =
       paddingBottom:
         14,
 
-      backgroundColor:
-        "#FFFFFF",
+      backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
 
       borderTopWidth:
         1,
 
-      borderTopColor:
-        "#EEE6E2",
+      borderTopColor: busTheme.isDark ? busTheme.border : "#EEE6E2",
     },
 
 
@@ -2218,7 +2182,6 @@ const styles =
       fontSize:
         11,
 
-      color:
-        "#8D8790",
+      color: busTheme.isDark ? busTheme.muted : "#8D8790",
     },
   });

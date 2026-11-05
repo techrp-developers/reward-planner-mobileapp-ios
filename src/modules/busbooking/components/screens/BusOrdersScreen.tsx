@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ActivityIndicator,
@@ -28,6 +29,7 @@ import {
 const PAGE_SIZE = 20;
 
 export default function BusOrdersScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
 
@@ -129,7 +131,7 @@ export default function BusOrdersScreen() {
         ) : null}
 
         <View style={styles.metaRow}>
-          <MaterialCommunityIcons name="calendar-blank-outline" size={15} color="#8A848A" />
+          <MaterialCommunityIcons name="calendar-blank-outline" size={15} color={busTheme.isDark ? busTheme.muted : "#8A848A"} />
           <Text style={styles.metaText}>
             {formatBusDate(item.departureTime || item.journeyDate)}
             {item.departureTime ? `, ${formatBusTime(item.departureTime)}` : ""}
@@ -137,7 +139,7 @@ export default function BusOrdersScreen() {
         </View>
 
         <View style={styles.metaRow}>
-          <MaterialCommunityIcons name="seat-passenger" size={15} color="#8A848A" />
+          <MaterialCommunityIcons name="seat-passenger" size={15} color={busTheme.isDark ? busTheme.muted : "#8A848A"} />
           <Text style={styles.metaText}>
             {item.seats.length > 0
               ? `Seat ${item.seats.join(", ")}`
@@ -152,7 +154,7 @@ export default function BusOrdersScreen() {
             <MaterialCommunityIcons
               name="ticket-confirmation-outline"
               size={14}
-              color="#9CA3AF"
+              color={busTheme.isDark ? busTheme.muted : "#9CA3AF"}
             />
             <Text style={styles.ticketText} numberOfLines={1}>
               {item.ticketNo ? `Ticket: ${item.ticketNo}` : item.orderRef}
@@ -172,18 +174,18 @@ export default function BusOrdersScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#77737B"} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Bus Bookings</Text>
       </View>
 
       {loading ? (
         <View style={styles.centerState}>
-          <ActivityIndicator size="large" color="#D31637" />
+          <ActivityIndicator size="large" color={busTheme.isDark ? busTheme.accent : "#D31637"} />
         </View>
       ) : error && orders.length === 0 ? (
         <View style={styles.centerState}>
-          <MaterialCommunityIcons name="alert-circle-outline" size={34} color="#C81E3A" />
+          <MaterialCommunityIcons name="alert-circle-outline" size={34} color={busTheme.isDark ? busTheme.accent : "#C81E3A"} />
           <Text style={styles.stateTitle}>Could not load bookings</Text>
           <Text style={styles.stateMessage}>{error}</Text>
           <TouchableOpacity
@@ -215,7 +217,7 @@ export default function BusOrdersScreen() {
           }
           ListEmptyComponent={
             <View style={styles.centerState}>
-              <MaterialCommunityIcons name="bus-clock" size={36} color="#D31637" />
+              <MaterialCommunityIcons name="bus-clock" size={36} color={busTheme.isDark ? busTheme.accent : "#D31637"} />
               <Text style={styles.stateTitle}>No bus bookings yet</Text>
               <Text style={styles.stateMessage}>
                 Tickets you book will appear here.
@@ -224,7 +226,7 @@ export default function BusOrdersScreen() {
           }
           ListFooterComponent={
             loadingMore ? (
-              <ActivityIndicator style={styles.footerLoader} color="#D31637" />
+              <ActivityIndicator style={styles.footerLoader} color={busTheme.isDark ? busTheme.accent : "#D31637"} />
             ) : null
           }
         />
@@ -233,10 +235,10 @@ export default function BusOrdersScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FBF8F4",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F4",
   },
   header: {
     paddingHorizontal: 12,
@@ -254,7 +256,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 17,
     fontWeight: "700",
     marginRight: 38,
@@ -275,14 +277,14 @@ const styles = StyleSheet.create({
   },
   stateTitle: {
     marginTop: 12,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 16,
     fontWeight: "700",
     textAlign: "center",
   },
   stateMessage: {
     marginTop: 6,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
     lineHeight: 19,
@@ -303,10 +305,10 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     padding: 16,
     marginBottom: 12,
   },
@@ -317,12 +319,12 @@ const styles = StyleSheet.create({
   },
   routeText: {
     flex: 1,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 16,
     fontWeight: "700",
   },
   routeArrow: {
-    color: "#D31637",
+    color: busTheme.isDark ? busTheme.accent : "#D31637",
   },
   statusPill: {
     paddingHorizontal: 10,
@@ -335,7 +337,7 @@ const styles = StyleSheet.create({
   },
   operatorText: {
     marginTop: 4,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -347,7 +349,7 @@ const styles = StyleSheet.create({
   },
   metaText: {
     flex: 1,
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -355,7 +357,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginBottom: 12,
     height: 1,
-    backgroundColor: "#F0EBE4",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#F0EBE4",
   },
   cardBottomRow: {
     flexDirection: "row",
@@ -370,12 +372,12 @@ const styles = StyleSheet.create({
   },
   ticketText: {
     flex: 1,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 12,
     fontWeight: "600",
   },
   amountText: {
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 15,
     fontWeight: "700",
   },

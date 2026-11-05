@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from 'react';
 import {
   ActivityIndicator,
@@ -39,6 +40,7 @@ type PointRowProps = {
 };
 
 function PointRow({ item, isSelected, onPress }: PointRowProps) {
+  const { styles } = useBusStyles(createStyles);
   return (
     <TouchableOpacity
       activeOpacity={0.88}
@@ -104,6 +106,7 @@ const mapPointToUi = (
 };
 
 export default function BoardingDroppingSelectionScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
 
@@ -393,7 +396,7 @@ export default function BoardingDroppingSelectionScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="arrow-left" size={30} color="#222222" />
+          <MaterialCommunityIcons name="arrow-left" size={30} color={busTheme.isDark ? busTheme.text : "#222222"} />
         </TouchableOpacity>
 
         <View style={styles.headerTextWrap}>
@@ -449,7 +452,7 @@ export default function BoardingDroppingSelectionScreen() {
 
       {loadingPoints ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#D93746" />
+          <ActivityIndicator size="large" color={busTheme.isDark ? busTheme.accent : "#D93746"} />
 
           <Text style={styles.loadingText}>
             Loading boarding and dropping points...
@@ -460,7 +463,7 @@ export default function BoardingDroppingSelectionScreen() {
           <MaterialCommunityIcons
             name="alert-circle-outline"
             size={36}
-            color="#D93746"
+            color={busTheme.isDark ? busTheme.accent : "#D93746"}
           />
 
           <Text style={styles.errorText}>{pointsError}</Text>
@@ -551,20 +554,20 @@ export default function BoardingDroppingSelectionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F5F5FB',
+    backgroundColor: busTheme.isDark ? busTheme.background : '#F5F5FB',
   },
   header: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: busTheme.isDark ? busTheme.surface : '#FFFFFF',
     paddingHorizontal: 18,
     paddingTop: 10,
     paddingBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#E6E6EC',
+    borderBottomColor: busTheme.isDark ? busTheme.border : '#E6E6EC',
   },
   backButton: {
     width: 36,
@@ -577,23 +580,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerTitle: {
-    color: '#1E1E22',
+    color: busTheme.isDark ? busTheme.text : '#1E1E22',
     fontSize: 17,
     fontWeight: '800',
   },
   headerSubtitle: {
     marginTop: 3,
-    color: '#7D7B83',
+    color: busTheme.isDark ? busTheme.muted : '#7D7B83',
     fontSize: 12,
     fontWeight: '500',
   },
   tabsWrap: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: busTheme.isDark ? busTheme.surface : '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
-    borderBottomColor: '#E9E8EF',
+    borderBottomColor: busTheme.isDark ? busTheme.border : '#E9E8EF',
   },
   tabButton: {
     width: '50%',
@@ -603,7 +606,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
   },
   tabTitle: {
-    color: '#26242B',
+    color: busTheme.isDark ? busTheme.text : '#26242B',
     fontSize: 16,
     fontWeight: '700',
   },
@@ -612,7 +615,7 @@ const styles = StyleSheet.create({
   },
   tabSubtitle: {
     marginTop: 4,
-    color: '#717079',
+    color: busTheme.isDark ? busTheme.muted : '#717079',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -634,7 +637,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   selectedCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: busTheme.isDark ? busTheme.surface : '#FFFFFF',
     borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -654,16 +657,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 18,
     paddingBottom: 16,
-    color: '#202026',
+    color: busTheme.isDark ? busTheme.text : '#202026',
     fontSize: 16,
     fontWeight: '500',
   },
   selectedDivider: {
     height: 1,
-    backgroundColor: '#E8E6EB',
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : '#E8E6EB',
   },
   listCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: busTheme.isDark ? busTheme.surface : '#FFFFFF',
     borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#000000',
@@ -674,7 +677,7 @@ const styles = StyleSheet.create({
   },
   listDivider: {
     height: 1,
-    backgroundColor: '#E8E6EB',
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : '#E8E6EB',
   },
   pointRow: {
     flexDirection: 'row',
@@ -684,7 +687,7 @@ const styles = StyleSheet.create({
   },
   pointTime: {
     width: 58,
-    color: '#1E1D23',
+    color: busTheme.isDark ? busTheme.text : '#1E1D23',
     fontSize: 18,
     fontWeight: '500',
     marginTop: 2,
@@ -694,7 +697,7 @@ const styles = StyleSheet.create({
     paddingRight: 14,
   },
   pointTitle: {
-    color: '#222127',
+    color: busTheme.isDark ? busTheme.text : '#222127',
     fontSize: 16,
     lineHeight: 38 / 1.6,
     fontWeight: '800',
@@ -704,13 +707,13 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     borderWidth: 1.8,
-    borderColor: '#4A4850',
+    borderColor: busTheme.isDark ? busTheme.border : '#4A4850',
     marginTop: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioOuterSelected: {
-    borderColor: '#3A3840',
+    borderColor: busTheme.isDark ? busTheme.border : '#3A3840',
   },
   radioInner: {
     width: 10,
@@ -720,13 +723,13 @@ const styles = StyleSheet.create({
   },
   listRowDivider: {
     height: 1,
-    backgroundColor: '#E8E6EB',
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : '#E8E6EB',
     marginLeft: 16,
   },
   bottomBar: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: busTheme.isDark ? busTheme.surface : '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#ECEAF0',
+    borderTopColor: busTheme.isDark ? busTheme.border : '#ECEAF0',
     paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 14,
@@ -755,7 +758,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 14,
 
-    color: '#65636B',
+    color: busTheme.isDark ? busTheme.text : '#65636B',
 
     fontSize: 14,
 
@@ -767,7 +770,7 @@ const styles = StyleSheet.create({
   errorText: {
     marginTop: 12,
 
-    color: '#D93746',
+    color: busTheme.isDark ? busTheme.accent : '#D93746',
 
     fontSize: 14,
 

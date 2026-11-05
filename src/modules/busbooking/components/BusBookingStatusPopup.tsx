@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../utils/useBusTheme";
 import React from "react";
 import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -58,6 +59,7 @@ export default function BusBookingStatusPopup({
   buttonText = "OK",
   onClose,
 }: Props) {
+  const { styles } = useBusStyles(createStyles);
   const config = variantConfig[variant];
 
   return (
@@ -138,7 +140,7 @@ export const useBusBookingPopup = () => {
   };
 };
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.42)",
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     borderRadius: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 22,
     paddingTop: 24,
     paddingBottom: 18,
@@ -165,14 +167,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    color: "#25222A",
+    color: busTheme.isDark ? busTheme.text : "#25222A",
     fontSize: 20,
     fontWeight: "800",
     textAlign: "center",
   },
   message: {
     marginTop: 10,
-    color: "#66616D",
+    color: busTheme.isDark ? busTheme.text : "#66616D",
     fontSize: 14,
     fontWeight: "500",
     lineHeight: 21,

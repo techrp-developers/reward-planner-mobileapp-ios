@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ActivityIndicator,
@@ -167,6 +168,7 @@ const createBlockRefId = () =>
     .padStart(3, "0")}`;
 
 export default function PassengerDetailsScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "PassengerDetailsScreen">>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -583,7 +585,7 @@ export default function PassengerDetailsScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#77737B"} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Passenger Details</Text>
@@ -638,7 +640,7 @@ export default function PassengerDetailsScreen() {
                     onPress={() => removeQuickSelect(item)}
                     style={styles.quickSelectDeleteButton}
                   >
-                    <MaterialCommunityIcons name="delete-outline" size={14} color="#D31637" />
+                    <MaterialCommunityIcons name="delete-outline" size={14} color={busTheme.isDark ? busTheme.accent : "#D31637"} />
                     <Text style={styles.quickSelectDeleteText}>Delete</Text>
                   </TouchableOpacity>
                 ) : null}
@@ -647,7 +649,7 @@ export default function PassengerDetailsScreen() {
           </ScrollView>
         ) : (
           <View style={styles.quickSelectEmptyCard}>
-            <MaterialCommunityIcons name="account-clock-outline" size={18} color="#B45362" />
+            <MaterialCommunityIcons name="account-clock-outline" size={18} color={busTheme.isDark ? busTheme.accent : "#B45362"} />
             <Text style={styles.quickSelectEmptyText}>
               Travellers you enter in this booking will appear here for quick reuse.
             </Text>
@@ -699,10 +701,10 @@ export default function PassengerDetailsScreen() {
                     placeholder="Enter first name"
                     autoCapitalize="words"
                     autoCorrect={false}
-                    placeholderTextColor="#B7B0B8"
+                    placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                     style={styles.input}
                   />
-                  <MaterialCommunityIcons name="account-outline" size={18} color="#A7A0A8" />
+                  <MaterialCommunityIcons name="account-outline" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                 </View>
 
                 <Text style={styles.fieldLabel}>*Last Name</Text>
@@ -713,10 +715,10 @@ export default function PassengerDetailsScreen() {
                     placeholder="Enter last name"
                     autoCapitalize="words"
                     autoCorrect={false}
-                    placeholderTextColor="#B7B0B8"
+                    placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                     style={styles.input}
                   />
-                  <MaterialCommunityIcons name="account-outline" size={18} color="#A7A0A8" />
+                  <MaterialCommunityIcons name="account-outline" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                 </View>
 
                 <View style={styles.rowFields}>
@@ -726,7 +728,7 @@ export default function PassengerDetailsScreen() {
                       value={passenger.age}
                       onChangeText={(value) => updatePassenger(index, "age", normalizeAge(value))}
                       placeholder="Enter your age"
-                      placeholderTextColor="#B7B0B8"
+                      placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                       keyboardType="number-pad"
                       maxLength={3}
                       style={styles.inputSolo}
@@ -767,12 +769,12 @@ export default function PassengerDetailsScreen() {
                     value={passenger.email}
                     onChangeText={(value) => updatePassenger(index, "email", value)}
                     placeholder="Enter your Email ID here"
-                    placeholderTextColor="#B7B0B8"
+                    placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     style={styles.input}
                   />
-                  <MaterialCommunityIcons name="email-outline" size={18} color="#A7A0A8" />
+                  <MaterialCommunityIcons name="email-outline" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                 </View>
 
                 <Text style={styles.fieldLabel}>*Phone number</Text>
@@ -783,13 +785,13 @@ export default function PassengerDetailsScreen() {
                       updatePassenger(index, "phone", normalizePhoneNumber(value))
                     }
                     placeholder="Enter your phone number"
-                    placeholderTextColor="#B7B0B8"
+                    placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                     keyboardType="phone-pad"
                     maxLength={10}
                     style={styles.input}
                   />
 
-                  <MaterialCommunityIcons name="phone-outline" size={18} color="#A7A0A8" />
+                  <MaterialCommunityIcons name="phone-outline" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                 </View>
 
                 <Text style={styles.fieldLabel}>*Address</Text>
@@ -798,12 +800,12 @@ export default function PassengerDetailsScreen() {
                     value={passenger.address}
                     onChangeText={(value) => updatePassenger(index, "address", value)}
                     placeholder="Enter your address"
-                    placeholderTextColor="#B7B0B8"
+                    placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                     multiline
                     style={[styles.input, styles.inputMultiline]}
                   />
 
-                  <MaterialCommunityIcons name="map-marker-outline" size={18} color="#A7A0A8" />
+                  <MaterialCommunityIcons name="map-marker-outline" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                 </View>
 
                 {idProofRequired ? (
@@ -814,14 +816,14 @@ export default function PassengerDetailsScreen() {
                         value={passenger.idType}
                         onChangeText={(value) => updatePassenger(index, "idType", value)}
                         placeholder="Enter ID type"
-                        placeholderTextColor="#B7B0B8"
+                        placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                         style={styles.input}
                       />
 
                       <MaterialCommunityIcons
                         name="card-account-details-outline"
                         size={18}
-                        color="#A7A0A8"
+                        color={busTheme.isDark ? busTheme.muted : "#A7A0A8"}
                       />
                     </View>
 
@@ -831,11 +833,11 @@ export default function PassengerDetailsScreen() {
                         value={passenger.idNumber}
                         onChangeText={(value) => updatePassenger(index, "idNumber", value)}
                         placeholder="Enter ID number"
-                        placeholderTextColor="#B7B0B8"
+                        placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B7B0B8"}
                         style={styles.input}
                       />
 
-                      <MaterialCommunityIcons name="identifier" size={18} color="#A7A0A8" />
+                      <MaterialCommunityIcons name="identifier" size={18} color={busTheme.isDark ? busTheme.muted : "#A7A0A8"} />
                     </View>
                   </>
                 ) : null}
@@ -867,7 +869,7 @@ export default function PassengerDetailsScreen() {
           <View style={styles.bottomFareWrap}>
             <Text style={styles.bottomFare}>Rs {totalFare.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</Text>
             <View style={styles.addIconBox}>
-              <MaterialCommunityIcons name="plus" size={14} color="#6D6A72" />
+              <MaterialCommunityIcons name="plus" size={14} color={busTheme.isDark ? busTheme.muted : "#6D6A72"} />
             </View>
           </View>
         </View>
@@ -907,10 +909,10 @@ export default function PassengerDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FBF8F5",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F5",
   },
   scroll: {
     flex: 1,
@@ -934,7 +936,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 17,
     fontWeight: "700",
   },
@@ -960,10 +962,10 @@ const styles = StyleSheet.create({
   pageIntroCard: {
     marginTop: 16,
     marginHorizontal: 12,
-    backgroundColor: "#FFF7F8",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF7F8",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#F3D7DC",
+    borderColor: busTheme.isDark ? busTheme.border : "#F3D7DC",
     padding: 14,
   },
   pageIntroHeader: {
@@ -976,32 +978,32 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   pageIntroTitle: {
-    color: "#332D33",
+    color: busTheme.isDark ? busTheme.text : "#332D33",
     fontSize: 17,
     fontWeight: "800",
   },
   pageIntroSubtitle: {
     marginTop: 4,
-    color: "#7B6670",
+    color: busTheme.isDark ? busTheme.muted : "#7B6670",
     fontSize: 13,
     lineHeight: 19,
   },
   pageIntroHint: {
     marginTop: 12,
-    color: "#A04A5B",
+    color: busTheme.isDark ? busTheme.accent : "#A04A5B",
     fontSize: 12,
     fontWeight: "600",
   },
   seatBadge: {
     borderRadius: 999,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 12,
     paddingVertical: 8,
     alignItems: "center",
     justifyContent: "center",
   },
   seatBadgeText: {
-    color: "#BF1431",
+    color: busTheme.isDark ? busTheme.accent : "#BF1431",
     fontSize: 12,
     fontWeight: "800",
   },
@@ -1013,12 +1015,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   quickHeaderTitle: {
-    color: "#4B4650",
+    color: busTheme.isDark ? busTheme.text : "#4B4650",
     fontSize: 16,
     fontWeight: "700",
   },
   quickHeaderMeta: {
-    color: "#8C5B66",
+    color: busTheme.isDark ? busTheme.muted : "#8C5B66",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -1035,15 +1037,15 @@ const styles = StyleSheet.create({
     minHeight: 58,
     paddingHorizontal: 12,
     borderRadius: 12,
-    backgroundColor: "#FFF0F2",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF0F2",
     borderWidth: 1,
-    borderColor: "#F6D1D8",
+    borderColor: busTheme.isDark ? busTheme.border : "#F6D1D8",
     flexDirection: "row",
     alignItems: "center",
   },
   quickSelectChipActive: {
     borderColor: "#D31637",
-    backgroundColor: "#FFE9EE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFE9EE",
   },
   quickAvatar: {
     width: 34,
@@ -1063,13 +1065,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   quickSelectText: {
-    color: "#CB1733",
+    color: busTheme.isDark ? busTheme.accent : "#CB1733",
     fontSize: 14,
     fontWeight: "700",
   },
   quickSelectMeta: {
     marginTop: 2,
-    color: "#8A6A74",
+    color: busTheme.isDark ? busTheme.muted : "#8A6A74",
     fontSize: 11,
     fontWeight: "500",
   },
@@ -1081,12 +1083,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
-    backgroundColor: "#FFF1F4",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF1F4",
     borderWidth: 1,
-    borderColor: "#F4C8D0",
+    borderColor: busTheme.isDark ? busTheme.border : "#F4C8D0",
   },
   quickSelectDeleteText: {
-    color: "#D31637",
+    color: busTheme.isDark ? busTheme.accent : "#D31637",
     fontSize: 11,
     fontWeight: "700",
   },
@@ -1097,15 +1099,15 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#F1DADF",
-    backgroundColor: "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#F1DADF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     flexDirection: "row",
     alignItems: "center",
   },
   quickSelectEmptyText: {
     flex: 1,
     marginLeft: 10,
-    color: "#8A6D75",
+    color: busTheme.isDark ? busTheme.muted : "#8A6D75",
     fontSize: 12,
     lineHeight: 18,
   },
@@ -1120,25 +1122,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   passengerTitle: {
-    color: "#4A4650",
+    color: busTheme.isDark ? busTheme.text : "#4A4650",
     fontSize: 16,
     fontWeight: "700",
   },
   passengerSeatWrap: {
     borderRadius: 999,
-    backgroundColor: "#FCEBED",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCEBED",
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   passengerSeatText: {
-    color: "#C21331",
+    color: busTheme.isDark ? busTheme.accent : "#C21331",
     fontSize: 11,
     fontWeight: "800",
   },
   formCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E8DFD9",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8DFD9",
     borderRadius: 14,
     padding: 12,
     shadowColor: "#000000",
@@ -1162,29 +1164,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formSectionTitle: {
-    color: "#35303A",
+    color: busTheme.isDark ? busTheme.text : "#35303A",
     fontSize: 15,
     fontWeight: "800",
   },
   formSectionSubtitle: {
     marginTop: 2,
-    color: "#8A8590",
+    color: busTheme.isDark ? busTheme.muted : "#8A8590",
     fontSize: 12,
     lineHeight: 17,
   },
   activeFormBadge: {
     borderRadius: 999,
-    backgroundColor: "#FFF1F3",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF1F3",
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   activeFormBadgeText: {
-    color: "#C40F2A",
+    color: busTheme.isDark ? busTheme.accent : "#C40F2A",
     fontSize: 11,
     fontWeight: "800",
   },
   fieldLabel: {
-    color: "#59535D",
+    color: busTheme.isDark ? busTheme.text : "#59535D",
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 8,
@@ -1192,9 +1194,9 @@ const styles = StyleSheet.create({
   inputWrap: {
     minHeight: 42,
     borderWidth: 1,
-    borderColor: "#EFE6E0",
+    borderColor: busTheme.isDark ? busTheme.border : "#EFE6E0",
     borderRadius: 8,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 10,
     flexDirection: "row",
     alignItems: "center",
@@ -1207,7 +1209,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: "#3D3840",
+    color: busTheme.isDark ? busTheme.text : "#3D3840",
     fontSize: 13,
     paddingVertical: 0,
   },
@@ -1231,11 +1233,11 @@ const styles = StyleSheet.create({
   inputSolo: {
     height: 42,
     borderWidth: 1,
-    borderColor: "#EFE6E0",
+    borderColor: busTheme.isDark ? busTheme.border : "#EFE6E0",
     borderRadius: 8,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 10,
-    color: "#3D3840",
+    color: busTheme.isDark ? busTheme.text : "#3D3840",
     fontSize: 13,
   },
   genderRow: {
@@ -1248,8 +1250,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#CEC5C8",
-    backgroundColor: "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#CEC5C8",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1258,7 +1260,7 @@ const styles = StyleSheet.create({
     borderColor: "#C40F2A",
   },
   genderChipText: {
-    color: "#8D8690",
+    color: busTheme.isDark ? busTheme.muted : "#8D8690",
     fontSize: 13,
     fontWeight: "700",
   },
@@ -1273,14 +1275,14 @@ const styles = StyleSheet.create({
   checkboxText: {
     flex: 1,
     marginLeft: 8,
-    color: "#B1AAB3",
+    color: busTheme.isDark ? busTheme.muted : "#B1AAB3",
     fontSize: 10,
     lineHeight: 14,
   },
   bottomBar: {
     borderTopWidth: 1,
-    borderTopColor: "#EEE7E2",
-    backgroundColor: "#FFFFFF",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#EEE7E2",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 14,
@@ -1292,7 +1294,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   bottomSeatCount: {
-    color: "#3F3A43",
+    color: busTheme.isDark ? busTheme.text : "#3F3A43",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -1301,7 +1303,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   bottomFare: {
-    color: "#3C3740",
+    color: busTheme.isDark ? busTheme.text : "#3C3740",
     fontSize: 18,
     fontWeight: "800",
   },
@@ -1310,7 +1312,7 @@ const styles = StyleSheet.create({
     height: 18,
     borderRadius: 3,
     borderWidth: 1,
-    borderColor: "#A7A1AA",
+    borderColor: busTheme.isDark ? busTheme.border : "#A7A1AA",
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,

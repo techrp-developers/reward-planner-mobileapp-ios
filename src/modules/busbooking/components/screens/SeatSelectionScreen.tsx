@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import { getVerifiedAvailableSeats, formatAvailableSeats, isSeatAvailable as toBoolean } from "../../utils/busSeatAvailability";
 import {
@@ -550,6 +551,7 @@ const buildSeatRows = (
 };
 
 export default function SeatSelectionScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "SeatSelectionScreen">>();
  const [
@@ -1191,7 +1193,7 @@ switch (seat.status) {
       default:
         return <ButtonAseat width={48} height={88} />;
     }
-  }, [isSeatRenderedAsSeater]);
+  }, [isSeatRenderedAsSeater, styles.bookedSeatBlockSleeper, styles.bookedSeatFaded]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
@@ -1201,7 +1203,7 @@ switch (seat.status) {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#77737B"} />
         </TouchableOpacity>
 
         <View style={styles.headerTextWrap}>
@@ -1218,7 +1220,7 @@ switch (seat.status) {
       >
         {isWomenBooking && (
           <View style={styles.womenBookingBanner}>
-            <MaterialCommunityIcons name="gender-female" size={16} color="#CE1538" />
+            <MaterialCommunityIcons name="gender-female" size={16} color={busTheme.isDark ? busTheme.accent : "#CE1538"} />
             <Text style={styles.womenBookingBannerText}>
               Ladies Booking preference active (female passenger details default)
             </Text>
@@ -1229,7 +1231,7 @@ switch (seat.status) {
           <Text style={styles.routeLabel}>Route</Text>
           <View style={styles.routeRow}>
             <Text style={styles.routePointText}>{bus.from}</Text>
-            <MaterialCommunityIcons name="arrow-right" size={18} color="#D31637" />
+            <MaterialCommunityIcons name="arrow-right" size={18} color={busTheme.isDark ? busTheme.accent : "#D31637"} />
             <Text style={styles.routePointText}>{bus.to}</Text>
           </View>
         </View>
@@ -1312,7 +1314,7 @@ switch (seat.status) {
               <MaterialCommunityIcons
                 name="steering"
                 size={46}
-                color="#B4B0B5"
+                color={busTheme.isDark ? busTheme.muted : "#B4B0B5"}
               />
             </View>
           </View>
@@ -1518,10 +1520,10 @@ switch (seat.status) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#F3F2F8",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#F3F2F8",
   },
   scroll: {
     flex: 1,
@@ -1547,20 +1549,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   operatorText: {
-    color: "#343038",
+    color: busTheme.isDark ? busTheme.text : "#343038",
     fontSize: 17,
     fontWeight: "700",
   },
   subtitleText: {
     marginTop: 2,
-    color: "#8A8490",
+    color: busTheme.isDark ? busTheme.muted : "#8A8490",
     fontSize: 13,
     fontWeight: "500",
   },
   routeCard: {
     marginTop: 14,
     marginHorizontal: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 12,
@@ -1571,7 +1573,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   routeLabel: {
-    color: "#9D97A1",
+    color: busTheme.isDark ? busTheme.muted : "#9D97A1",
     fontSize: 13,
     fontWeight: "500",
     marginBottom: 8,
@@ -1584,7 +1586,7 @@ const styles = StyleSheet.create({
   },
   routePointText: {
     flex: 1,
-    color: "#423E45",
+    color: busTheme.isDark ? busTheme.text : "#423E45",
     fontSize: 14,
     fontWeight: "700",
     lineHeight: 20,
@@ -1593,7 +1595,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     marginHorizontal: 12,
     borderRadius: 12,
-    backgroundColor: "#F8EAEA",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F8EAEA",
     padding: 4,
     flexDirection: "row",
   },
@@ -1618,7 +1620,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   deckTabTextInactive: {
-    color: "#C61D36",
+    color: busTheme.isDark ? busTheme.accent : "#C61D36",
     fontSize: 13,
     fontWeight: "700",
   },
@@ -1630,39 +1632,39 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   summaryTitle: {
-    color: "#38333B",
+    color: busTheme.isDark ? busTheme.text : "#38333B",
     fontSize: 16,
     fontWeight: "700",
   },
   summaryMeta: {
     marginTop: 4,
-    color: "#8B8691",
+    color: busTheme.isDark ? busTheme.muted : "#8B8691",
     fontSize: 12,
     fontWeight: "500",
   },
   seatLeftBadge: {
-    backgroundColor: "#FFE5E9",
+    backgroundColor: busTheme.isDark ? busTheme.accentSurface : "#FFE5E9",
     borderRadius: 16,
     paddingHorizontal: 10,
     paddingVertical: 7,
   },
   seatLeftText: {
-    color: "#CB1733",
+    color: busTheme.isDark ? busTheme.accent : "#CB1733",
     fontSize: 10,
     fontWeight: "800",
   },
   womenBookingBanner: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FCE7EA",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCE7EA",
     borderRadius: 8,
     padding: 12,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#FCA5A5",
+    borderColor: busTheme.isDark ? busTheme.border : "#FCA5A5",
   },
   womenBookingBannerText: {
-    color: "#CE1538",
+    color: busTheme.isDark ? busTheme.accent : "#CE1538",
     fontSize: 12,
     fontWeight: "600",
     marginLeft: 8,
@@ -1689,12 +1691,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   legendSwatchAvailable: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#9D9A9A",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#9D9A9A",
   },
   legendSwatchSelected: {
     backgroundColor: "#575151",
-    borderColor: "#575151",
+    borderColor: busTheme.isDark ? busTheme.border : "#575151",
   },
   legendSwatchMale: {
     backgroundColor: "#0F4B97",
@@ -1705,15 +1707,15 @@ const styles = StyleSheet.create({
     borderColor: "#E83BA1",
   },
   legendSwatchMaleOutline: {
-    backgroundColor: "#FCEEEE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCEEEE",
     borderColor: "#4B78D1",
   },
   legendSwatchFemaleOutline: {
-    backgroundColor: "#FCEEEE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FCEEEE",
     borderColor: "#FF6AB7",
   },
   legendText: {
-    color: "#554F57",
+    color: busTheme.isDark ? busTheme.text : "#554F57",
     fontSize: 10,
     fontWeight: "500",
   },
@@ -1722,9 +1724,9 @@ const styles = StyleSheet.create({
     width: 330,
     marginTop: 12,
     borderRadius: 22,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#E8E3DE",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E3DE",
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
@@ -1813,18 +1815,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 6,
     right: 8,
-    color: "#6A6670",
+    color: busTheme.isDark ? busTheme.text : "#6A6670",
     fontSize: 8,
     fontWeight: "700",
   },
   seatLabelSeater: {
     marginTop: 4,
-    color: "#6A6670",
+    color: busTheme.isDark ? busTheme.text : "#6A6670",
     fontSize: 8,
     fontWeight: "700",
   },
   seatLabelBooked: {
-    color: "#B55C68",
+    color: busTheme.isDark ? busTheme.accent : "#B55C68",
   },
   bookedSeatFaded: {
     opacity: 0.3,
@@ -1842,19 +1844,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#D98A99",
   },
   seatLabelSelected: {
-    color: "#2F2B31",
+    color: busTheme.isDark ? busTheme.text : "#2F2B31",
   },
   seatLabelSelectedSleeper: {
     color: "#FFFFFF",
   },
   seatFareText: {
     marginTop: 1,
-    color: "#6C666E",
+    color: busTheme.isDark ? busTheme.text : "#6C666E",
     fontSize: 9,
     fontWeight: "500",
   },
   seatFareTextSelected: {
-    color: "#6C666E",
+    color: busTheme.isDark ? busTheme.text : "#6C666E",
   },
   seatGuideSection: {
     marginTop: 18,
@@ -1862,16 +1864,16 @@ const styles = StyleSheet.create({
   },
   seatGuideTitle: {
     textAlign: "center",
-    color: "#343038",
+    color: busTheme.isDark ? busTheme.text : "#343038",
     fontSize: 17,
     fontWeight: "800",
     marginBottom: 12,
   },
   seatGuideCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: "#E9E0DB",
+    borderColor: busTheme.isDark ? busTheme.border : "#E9E0DB",
     overflow: "hidden",
   },
   seatGuideHeaderRow: {
@@ -1880,12 +1882,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "#FFFDFC",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFDFC",
     borderBottomWidth: 1,
-    borderBottomColor: "#EFE6E1",
+    borderBottomColor: busTheme.isDark ? busTheme.border : "#EFE6E1",
   },
   seatGuideHeaderText: {
-    color: "#302B33",
+    color: busTheme.isDark ? busTheme.text : "#302B33",
     fontSize: 15,
     fontWeight: "800",
   },
@@ -1896,7 +1898,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderBottomWidth: 1,
-    borderBottomColor: "#F2EBE6",
+    borderBottomColor: busTheme.isDark ? busTheme.border : "#F2EBE6",
   },
   seatGuideItemRowLast: {
     minHeight: 84,
@@ -1908,15 +1910,15 @@ const styles = StyleSheet.create({
   seatGuideLabel: {
     flex: 1,
     paddingRight: 16,
-    color: "#4A4550",
+    color: busTheme.isDark ? busTheme.text : "#4A4550",
     fontSize: 14,
     fontWeight: "500",
     lineHeight: 20,
   },
   bottomBar: {
     borderTopWidth: 1,
-    borderTopColor: "#EEE7E2",
-    backgroundColor: "#FFFFFF",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#EEE7E2",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     paddingHorizontal: 16,
     paddingTop: 14,
     paddingBottom: 18,
@@ -1925,13 +1927,13 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   bottomLabel: {
-    color: "#A29CA6",
+    color: busTheme.isDark ? busTheme.muted : "#A29CA6",
     fontSize: 10,
     fontWeight: "600",
   },
   bottomFare: {
     marginTop: 4,
-    color: "#3C3740",
+    color: busTheme.isDark ? busTheme.text : "#3C3740",
     fontSize: 28 / 1.5,
     fontWeight: "800",
   },

@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ScrollView,
@@ -85,6 +86,7 @@ const formatBusCount = (count: number) =>
   `${count} ${count === 1 ? "bus" : "buses"} available`;
 
 function FilterCheckbox({ selected }: { selected: boolean }) {
+  const { styles } = useBusStyles(createStyles);
   return (
     <View style={[styles.checkbox, selected ? styles.checkboxSelected : null]}>
       {selected ? <MaterialCommunityIcons name="check" size={13} color="#FFFFFF" /> : null}
@@ -101,6 +103,7 @@ function FilterOptionRow({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { styles } = useBusStyles(createStyles);
   const Icon = OPTION_ICONS[item.id];
 
   return (
@@ -120,10 +123,12 @@ function FilterOptionRow({
 }
 
 function SectionHeader({ title }: { title: string }) {
+  const { styles } = useBusStyles(createStyles);
   return <Text style={styles.sectionTitle}>{title}</Text>;
 }
 
 export default function AllFilterScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation = useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route = useRoute<RouteProp<BusBookingStackParamList, "AllFilterScreen">>();
   const facets: BusListingFacets = route.params.facets;
@@ -266,7 +271,7 @@ export default function AllFilterScreen() {
               {Icon ? (
                 <Icon width={38} height={38} />
               ) : (
-                <MaterialCommunityIcons name="check-decagram-outline" size={34} color="#D7192D" />
+                <MaterialCommunityIcons name="check-decagram-outline" size={34} color={busTheme.isDark ? busTheme.accent : "#D7192D"} />
               )}
 
               <Text style={styles.amenityLabel}>{item.label}</Text>
@@ -286,12 +291,12 @@ export default function AllFilterScreen() {
         <Text style={styles.operatorsTitle}>Bus{"\n"}Operators</Text>
 
         <View style={styles.searchPill}>
-          <MaterialCommunityIcons name="magnify" size={16} color="#8A848A" />
+          <MaterialCommunityIcons name="magnify" size={16} color={busTheme.isDark ? busTheme.muted : "#8A848A"} />
           <TextInput
             value={operatorSearch}
             onChangeText={setOperatorSearch}
             placeholder="Search"
-            placeholderTextColor="#7F7D83"
+            placeholderTextColor={busTheme.isDark ? busTheme.muted : "#7F7D83"}
             style={styles.searchPillInput}
           />
         </View>
@@ -335,12 +340,12 @@ export default function AllFilterScreen() {
     return (
       <View>
       <View style={styles.searchInputWrap}>
-        <MaterialCommunityIcons name="magnify" size={18} color="#8F797A" />
+        <MaterialCommunityIcons name="magnify" size={18} color={busTheme.isDark ? busTheme.muted : "#8F797A"} />
         <TextInput
           value={searchValue}
           onChangeText={onChangeSearch}
           placeholder={placeholder}
-          placeholderTextColor="#C8B7BA"
+          placeholderTextColor={busTheme.isDark ? busTheme.muted : "#C8B7BA"}
           style={styles.searchInput}
         />
       </View>
@@ -449,7 +454,7 @@ export default function AllFilterScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#7A747D" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#7A747D"} />
         </TouchableOpacity>
 
         <Text style={styles.headerTitle}>Filter buses</Text>
@@ -517,17 +522,17 @@ export default function AllFilterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FFFFFF",
   },
   header: {
     height: 64,
     paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   backButton: {
     width: 40,
@@ -538,7 +543,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    color: "#302B31",
+    color: busTheme.isDark ? busTheme.text : "#302B31",
     fontSize: 17,
     fontWeight: "700",
   },
@@ -563,28 +568,28 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: "#E9E6E2",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E9E6E2",
   },
   body: {
     flex: 1,
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   sidebar: {
     width: 138,
-    backgroundColor: "#F4F4F4",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F4F4F4",
     borderRightWidth: 1,
-    borderRightColor: "#EEE9E4",
+    borderRightColor: busTheme.isDark ? busTheme.border : "#EEE9E4",
   },
   sidebarTitle: {
-    color: "#1F1B21",
+    color: busTheme.isDark ? busTheme.text : "#1F1B21",
     fontSize: 15,
     fontWeight: "700",
     paddingLeft: 20,
     paddingRight: 10,
     paddingTop: 16,
     paddingBottom: 16,
-    backgroundColor: "#F1F1F1",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F1F1F1",
   },
   sidebarItem: {
     height: 80,
@@ -592,11 +597,11 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 10,
     borderTopWidth: 1,
-    borderTopColor: "#E9E3DE",
-    backgroundColor: "#F7F7F7",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#E9E3DE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F7F7F7",
   },
   sidebarItemSelected: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   sidebarIndicator: {
     position: "absolute",
@@ -607,20 +612,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#D7192D",
   },
   sidebarItemText: {
-    color: "#554C52",
+    color: busTheme.isDark ? busTheme.text : "#554C52",
     fontSize: 14.5,
     fontWeight: "600",
     lineHeight: 19,
   },
   sidebarItemTextSelected: {
-    color: "#D7192D",
+    color: busTheme.isDark ? busTheme.accent : "#D7192D",
     fontSize: 14.5,
     fontWeight: "600",
     lineHeight: 19,
   },
   contentPane: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   contentPaneInner: {
     paddingLeft: 20,
@@ -629,7 +634,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   sectionTitle: {
-    color: "#2A252B",
+    color: busTheme.isDark ? busTheme.text : "#2A252B",
     fontSize: 15,
     fontWeight: "600",
     letterSpacing: 0.9,
@@ -660,13 +665,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionLabel: {
-    color: "#171319",
+    color: busTheme.isDark ? busTheme.text : "#171319",
     fontSize: 14.5,
     fontWeight: "600",
   },
   optionAvailability: {
     marginTop: 1,
-    color: "#8D878E",
+    color: busTheme.isDark ? busTheme.muted : "#8D878E",
     fontSize: 14.5,
     fontWeight: "600",
   },
@@ -678,7 +683,7 @@ const styles = StyleSheet.create({
     borderColor: "#CDA5AA",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   checkboxSelected: {
     backgroundColor: "#D7192D",
@@ -688,8 +693,8 @@ const styles = StyleSheet.create({
     minHeight: 80,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#F3DED8",
-    backgroundColor: "#FFFDFB",
+    borderColor: busTheme.isDark ? busTheme.border : "#F3DED8",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFDFB",
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 12,
@@ -697,38 +702,38 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   timeCardSelected: {
-    backgroundColor: "#FFF7F7",
-    borderColor: "#F0B0B6",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF7F7",
+    borderColor: busTheme.isDark ? busTheme.border : "#F0B0B6",
   },
   timeIconCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#F5F0EE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F5F0EE",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 11,
   },
   timeIconCircleSelected: {
-    backgroundColor: "#FDEBEC",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FDEBEC",
   },
   timeTextWrap: {
     flex: 1,
     paddingRight: 6,
   },
   timeTitle: {
-    color: "#262128",
+    color: busTheme.isDark ? busTheme.text : "#262128",
     fontSize: 12,
     fontWeight: "500",
     lineHeight: 16,
   },
   timeSubtitle: {
-    color: "#918488",
+    color: busTheme.isDark ? busTheme.muted : "#918488",
     fontSize: 11,
     marginTop: 2,
   },
   timeCount: {
-    color: "#6E676A",
+    color: busTheme.isDark ? busTheme.text : "#6E676A",
     fontSize: 12,
     marginRight: 10,
   },
@@ -745,7 +750,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   amenitiesTitle: {
-    color: "#262128",
+    color: busTheme.isDark ? busTheme.text : "#262128",
     fontSize: 15,
     fontWeight: "500",
     lineHeight: 18,
@@ -754,10 +759,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 13,
-    backgroundColor: "#F3EFEE",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F3EFEE",
   },
   multiSelectText: {
-    color: "#81787E",
+    color: busTheme.isDark ? busTheme.muted : "#81787E",
     fontSize: 12,
     fontWeight: "700",
   },
@@ -771,8 +776,8 @@ const styles = StyleSheet.create({
     minHeight: 115,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#F1DDD8",
-    backgroundColor: "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#F1DDD8",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 8,
@@ -780,8 +785,8 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   amenityCardSelected: {
-    backgroundColor: "#FFF7F7",
-    borderColor: "#F0B0B6",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF7F7",
+    borderColor: busTheme.isDark ? busTheme.border : "#F0B0B6",
   },
   amenityCheckboxWrap: {
     position: "absolute",
@@ -789,7 +794,7 @@ const styles = StyleSheet.create({
     right: 9,
   },
   amenityLabel: {
-    color: "#231F25",
+    color: busTheme.isDark ? busTheme.text : "#231F25",
     fontSize: 12,
     fontWeight: "500",
     textAlign: "center",
@@ -804,7 +809,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   operatorsTitle: {
-    color: "#262128",
+    color: busTheme.isDark ? busTheme.text : "#262128",
     fontSize: 15,
     fontWeight: "500",
     lineHeight: 18,
@@ -813,7 +818,7 @@ const styles = StyleSheet.create({
     height: 40,
     minWidth: 118,
     borderRadius: 15,
-    backgroundColor: "#F3F3F5",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F3F3F5",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -822,7 +827,7 @@ const styles = StyleSheet.create({
   },
   searchPillInput: {
     flex: 1,
-    color: "#7F7D83",
+    color: busTheme.isDark ? busTheme.muted : "#7F7D83",
     fontSize: 13,
     fontWeight: "500",
     paddingVertical: 0,
@@ -840,17 +845,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: "#E9E8EE",
+    borderColor: busTheme.isDark ? busTheme.border : "#E9E8EE",
     overflow: "hidden",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   operatorInitialsCard: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FDECEF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FDECEF",
   },
   operatorInitials: {
-    color: "#B81525",
+    color: busTheme.isDark ? busTheme.accent : "#B81525",
     fontSize: 16,
     fontWeight: "800",
   },
@@ -859,19 +864,19 @@ const styles = StyleSheet.create({
     paddingRight: 10,
   },
   operatorTitle: {
-    color: "#221E24",
+    color: busTheme.isDark ? busTheme.text : "#221E24",
     fontSize: 15,
     fontWeight: "500",
   },
   operatorSubtitle: {
-    color: "#8A7F83",
+    color: busTheme.isDark ? busTheme.muted : "#8A7F83",
     fontSize: 13,
     marginTop: 2,
   },
   searchInputWrap: {
     height: 48,
     borderRadius: 10,
-    backgroundColor: "#F5F2F2",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#F5F2F2",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
@@ -879,13 +884,13 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: "#857A7E",
+    color: busTheme.isDark ? busTheme.muted : "#857A7E",
     fontSize: 15,
     paddingVertical: 0,
     marginLeft: 8,
   },
   listSectionLabel: {
-    color: "#A48386",
+    color: busTheme.isDark ? busTheme.muted : "#A48386",
     fontSize: 16,
     fontWeight: "700",
     marginBottom: 10,
@@ -900,25 +905,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   locationRowSelected: {
-    backgroundColor: "#FDEDED",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FDEDED",
   },
   locationTextWrap: {
     flex: 1,
     paddingRight: 8,
   },
   locationTitle: {
-    color: "#231E23",
+    color: busTheme.isDark ? busTheme.text : "#231E23",
     fontSize: 15,
     fontWeight: "500",
   },
   locationSubtitle: {
-    color: "#82777B",
+    color: busTheme.isDark ? busTheme.muted : "#82777B",
     fontSize: 13,
     marginTop: 2,
     lineHeight: 14,
   },
   locationCount: {
-    color: "#7E6D70",
+    color: busTheme.isDark ? busTheme.muted : "#7E6D70",
     fontSize: 12,
     marginRight: 10,
   },
@@ -934,7 +939,7 @@ const styles = StyleSheet.create({
   },
   otherLocationTitle: {
     flex: 1,
-    color: "#231E23",
+    color: busTheme.isDark ? busTheme.text : "#231E23",
     fontSize: 15,
     fontWeight: "500",
   },
@@ -944,23 +949,23 @@ const styles = StyleSheet.create({
     paddingBottom: 29,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderTopWidth: 1,
-    borderTopColor: "#ECE8E3",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#ECE8E3",
   },
   clearButton: {
     flex: 1,
     height: 44,
     borderRadius: 22,
     borderWidth: 1.3,
-    borderColor: "#1E1A20",
-    backgroundColor: "#FFFFFF",
+    borderColor: busTheme.isDark ? busTheme.border : "#1E1A20",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
   },
   clearButtonText: {
-    color: "#1E1A20",
+    color: busTheme.isDark ? busTheme.text : "#1E1A20",
     fontSize: 15,
     fontWeight: "600",
   },

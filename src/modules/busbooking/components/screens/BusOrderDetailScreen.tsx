@@ -1,3 +1,4 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import {
   ActivityIndicator,
@@ -102,6 +103,7 @@ const getSeatCancellationLabel = (passenger: BusOrderPassenger) => {
 };
 
 export default function BusOrderDetailScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const route =
@@ -372,18 +374,18 @@ export default function BusOrderDetailScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#77737B" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={busTheme.isDark ? busTheme.muted : "#77737B"} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Booking Details</Text>
       </View>
 
       {loading ? (
         <View style={styles.centerState}>
-          <ActivityIndicator size="large" color="#D31637" />
+          <ActivityIndicator size="large" color={busTheme.isDark ? busTheme.accent : "#D31637"} />
         </View>
       ) : !order ? (
         <View style={styles.centerState}>
-          <MaterialCommunityIcons name="alert-circle-outline" size={34} color="#C81E3A" />
+          <MaterialCommunityIcons name="alert-circle-outline" size={34} color={busTheme.isDark ? busTheme.accent : "#C81E3A"} />
           <Text style={styles.stateTitle}>Could not load booking</Text>
           <Text style={styles.stateMessage}>{error}</Text>
           <TouchableOpacity
@@ -447,7 +449,7 @@ export default function BusOrderDetailScreen() {
                 ) : null}
               </View>
 
-              <MaterialCommunityIcons name="arrow-right" size={18} color="#D31637" />
+              <MaterialCommunityIcons name="arrow-right" size={18} color={busTheme.isDark ? busTheme.accent : "#D31637"} />
 
               <View style={[styles.timingBlock, styles.timingBlockRight]}>
                 <Text style={styles.timeText}>{formatBusTime(order.arrivalTime)}</Text>
@@ -575,7 +577,7 @@ export default function BusOrderDetailScreen() {
               value={remarks}
               onChangeText={setRemarks}
               placeholder="Reason for cancellation"
-              placeholderTextColor="#B0AAB3"
+              placeholderTextColor={busTheme.isDark ? busTheme.muted : "#B0AAB3"}
               maxLength={MAX_REMARKS_LENGTH}
               multiline
               editable={!cancelling}
@@ -627,6 +629,7 @@ export default function BusOrderDetailScreen() {
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
+  const { styles } = useBusStyles(createStyles);
   return (
     <View style={styles.detailRow}>
       <Text style={styles.detailLabel}>{label}</Text>
@@ -635,10 +638,10 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FBF8F4",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F4",
   },
   header: {
     paddingHorizontal: 12,
@@ -656,7 +659,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     flex: 1,
     textAlign: "center",
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 17,
     fontWeight: "700",
     marginRight: 38,
@@ -676,14 +679,14 @@ const styles = StyleSheet.create({
   },
   stateTitle: {
     marginTop: 12,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 16,
     fontWeight: "700",
     textAlign: "center",
   },
   stateMessage: {
     marginTop: 6,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
     lineHeight: 19,
@@ -704,15 +707,15 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     padding: 16,
     marginBottom: 12,
   },
   cardTitle: {
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 15,
     fontWeight: "700",
     marginBottom: 6,
@@ -724,12 +727,12 @@ const styles = StyleSheet.create({
   },
   routeText: {
     flex: 1,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 17,
     fontWeight: "700",
   },
   routeArrow: {
-    color: "#D31637",
+    color: busTheme.isDark ? busTheme.accent : "#D31637",
   },
   statusPill: {
     paddingHorizontal: 10,
@@ -742,7 +745,7 @@ const styles = StyleSheet.create({
   },
   operatorText: {
     marginTop: 4,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
   },
@@ -759,19 +762,19 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   timeText: {
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 20,
     fontWeight: "800",
   },
   dateText: {
     marginTop: 2,
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 12,
     fontWeight: "600",
   },
   pointText: {
     marginTop: 4,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 12,
     fontWeight: "500",
     lineHeight: 17,
@@ -786,13 +789,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   detailLabel: {
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 13,
     fontWeight: "500",
   },
   detailValue: {
     flex: 1,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 13,
     fontWeight: "700",
     textAlign: "right",
@@ -807,19 +810,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   passengerName: {
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 14,
     fontWeight: "700",
   },
   passengerMeta: {
     marginTop: 2,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 12,
     fontWeight: "500",
   },
   cancelledText: {
     marginTop: 4,
-    color: "#C77900",
+    color: busTheme.isDark ? busTheme.warning : "#C77900",
     fontSize: 12,
     fontWeight: "600",
   },
@@ -833,13 +836,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   cancelSeatButtonText: {
-    color: "#D31637",
+    color: busTheme.isDark ? busTheme.accent : "#D31637",
     fontSize: 12,
     fontWeight: "700",
   },
   policyText: {
     marginTop: 6,
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 13,
     fontWeight: "500",
     lineHeight: 20,
@@ -855,24 +858,24 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     borderRadius: 24,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     padding: 22,
   },
   modalTitle: {
-    color: "#25222A",
+    color: busTheme.isDark ? busTheme.text : "#25222A",
     fontSize: 18,
     fontWeight: "800",
   },
   modalNotice: {
     marginTop: 8,
-    color: "#C81E3A",
+    color: busTheme.isDark ? busTheme.accent : "#C81E3A",
     fontSize: 13,
     fontWeight: "600",
     lineHeight: 20,
   },
   modalMessage: {
     marginTop: 8,
-    color: "#66616D",
+    color: busTheme.isDark ? busTheme.text : "#66616D",
     fontSize: 13,
     fontWeight: "500",
     lineHeight: 20,
@@ -882,10 +885,10 @@ const styles = StyleSheet.create({
     minHeight: 84,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     paddingHorizontal: 14,
     paddingVertical: 10,
-    color: "#3B3740",
+    color: busTheme.isDark ? busTheme.text : "#3B3740",
     fontSize: 14,
     textAlignVertical: "top",
   },
@@ -899,12 +902,12 @@ const styles = StyleSheet.create({
     minHeight: 44,
     borderRadius: 22,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     alignItems: "center",
     justifyContent: "center",
   },
   modalSecondaryText: {
-    color: "#5B5860",
+    color: busTheme.isDark ? busTheme.text : "#5B5860",
     fontSize: 14,
     fontWeight: "700",
   },

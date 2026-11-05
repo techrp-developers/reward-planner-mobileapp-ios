@@ -1,8 +1,10 @@
+import { useBusStyles, type BusTheme } from "../../utils/useBusTheme";
 import React from "react";
 import { getVerifiedAvailableSeats, formatAvailableSeats as toSeatLabel } from "../../utils/busSeatAvailability";
 
 import {
   ActivityIndicator,
+  FlatList,
   Alert,
   ScrollView,
   StyleSheet,
@@ -345,6 +347,7 @@ const SORT_LABELS: Record<BusSortId, string> = {
 };
 
 export default function BusListingScreen() {
+  const { styles, busTheme } = useBusStyles(createStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<BusBookingStackParamList>>();
   const { popup, showPopup, hidePopup } = useBusBookingPopup();
@@ -691,7 +694,7 @@ const handleOpenSeatSelection =
           onPress={() => navigation.goBack()}
           style={styles.headerIconButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={34} color="#6F6F75" />
+          <MaterialCommunityIcons name="chevron-left" size={34} color={busTheme.isDark ? busTheme.muted : "#6F6F75"} />
         </TouchableOpacity>
 
         <View style={styles.headerTitleWrap}>
@@ -702,11 +705,17 @@ const handleOpenSeatSelection =
         <View style={styles.headerActions} />
       </View>
 
-      <ScrollView
+      <FlatList
         style={styles.scroll}
         contentContainerStyle={styles.content}
+        data={listingBuses}
+        keyExtractor={item => item.id}
+        initialNumToRender={6}
+        maxToRenderPerBatch={6}
+        windowSize={5}
         showsVerticalScrollIndicator={false}
-      >
+        ListHeaderComponent={(
+          <>
         <View style={styles.resultsRow}>
           <Text style={styles.resultsText}>{listingBuses.length} Buses found</Text>
           {allBuses.length > 1 ? (
@@ -744,15 +753,13 @@ const handleOpenSeatSelection =
           })}
         </ScrollView>
 
-        <View style={styles.cardsList}>
-          {listingBuses.length === 0 ? (
+          </>
+        )}
+        ListEmptyComponent={(
+          <View style={styles.cardsList}>
             <View style={styles.emptyStateCard}>
               <View style={styles.emptyStateIconWrap}>
-                <MaterialCommunityIcons
-                  name="bus-alert"
-                  size={28}
-                  color="#D61A33"
-                />
+                <MaterialCommunityIcons name="bus-alert" size={28} color={busTheme.isDark ? busTheme.accent : "#D61A33"} />
               </View>
               <Text style={styles.emptyStateTitle}>No buses found</Text>
               <Text style={styles.emptyStateMessage}>
@@ -762,12 +769,14 @@ const handleOpenSeatSelection =
                 Try another date or choose a different route.
               </Text>
             </View>
-          ) : null}
-
-          {listingBuses.map((item) => {
+          </View>
+        )}
+        ListFooterComponent={<View style={styles.listFooter} />}
+        renderItem={({ item }) => {
             const isHighlighted = selectedBusId === item.id;
 
             return (
+              <View style={styles.cardSlot}>
               <TouchableOpacity
                 key={item.id}
                 activeOpacity={0.9}
@@ -938,10 +947,10 @@ item.id ? (
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
+              </View>
             );
-          })}
-        </View>
-      </ScrollView>
+        }}
+      />
       <BusBookingStatusPopup
         visible={popup.visible}
         title={popup.title}
@@ -954,10 +963,10 @@ item.id ? (
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (busTheme: BusTheme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#FBF8F4",
+    backgroundColor: busTheme.isDark ? busTheme.background : "#FBF8F4",
   },
   header: {
     paddingHorizontal: 14,
@@ -978,13 +987,13 @@ const styles = StyleSheet.create({
     paddingLeft: 6,
   },
   routeTitle: {
-    color: "#3C3C43",
+    color: busTheme.isDark ? busTheme.text : "#3C3C43",
     fontSize: 21,
     fontWeight: "700",
   },
   routeMeta: {
     marginTop: 4,
-    color: "#6D6D73",
+    color: busTheme.isDark ? busTheme.muted : "#6D6D73",
     fontSize: 11,
     fontWeight: "600",
     letterSpacing: 0.3,
@@ -1022,12 +1031,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   resultsText: {
-    color: "#4B4B52",
+    color: busTheme.isDark ? busTheme.text : "#4B4B52",
     fontSize: 13,
     fontWeight: "700",
   },
   sortText: {
-    color: "#446EF2",
+    color: busTheme.isDark ? busTheme.info : "#446EF2",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -1042,23 +1051,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     height: 30,
     borderRadius: 15,
-    backgroundColor: "#FFD8D8",
+    backgroundColor: busTheme.isDark ? busTheme.accentSurface : "#FFD8D8",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#F8BABA",
+    borderColor: busTheme.isDark ? busTheme.border : "#F8BABA",
   },
   filterChipActive: {
     backgroundColor: "#CF1833",
     borderColor: "#CF1833",
   },
   filterChipText: {
-    color: "#8E6D6D",
+    color: busTheme.isDark ? busTheme.muted : "#8E6D6D",
     fontSize: 12,
     fontWeight: "600",
   },
   filterChipTextActive: {
     color: "#FFFFFF",
+  },
+  cardSlot: {
+    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  listFooter: {
+    height: 30,
   },
   cardsList: {
     paddingHorizontal: 12,
@@ -1067,10 +1084,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   emptyStateCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#F3D7DC",
+    borderColor: busTheme.isDark ? busTheme.border : "#F3D7DC",
     paddingHorizontal: 20,
     paddingVertical: 28,
     alignItems: "center",
@@ -1084,20 +1101,20 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#FDECEF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FDECEF",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 14,
   },
   emptyStateTitle: {
-    color: "#2E2E33",
+    color: busTheme.isDark ? busTheme.text : "#2E2E33",
     fontSize: 20,
     fontWeight: "800",
     textAlign: "center",
   },
   emptyStateMessage: {
     marginTop: 10,
-    color: "#5C5C66",
+    color: busTheme.isDark ? busTheme.text : "#5C5C66",
     fontSize: 15,
     fontWeight: "600",
     textAlign: "center",
@@ -1105,17 +1122,17 @@ const styles = StyleSheet.create({
   },
   emptyStateHint: {
     marginTop: 10,
-    color: "#8C8C94",
+    color: busTheme.isDark ? busTheme.muted : "#8C8C94",
     fontSize: 13,
     fontWeight: "500",
     textAlign: "center",
     lineHeight: 20,
   },
   busCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
     borderRadius: 24,
     borderWidth: 1,
-    borderColor: "#E8E2DA",
+    borderColor: busTheme.isDark ? busTheme.border : "#E8E2DA",
     shadowColor: "#000000",
     shadowOpacity: 0.05,
     shadowRadius: 10,
@@ -1146,25 +1163,25 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
   operatorText: {
-    color: "#4A4A50",
+    color: busTheme.isDark ? busTheme.text : "#4A4A50",
     fontSize: 14,
     fontWeight: "700",
   },
   topRatedBadge: {
     marginLeft: 8,
-    backgroundColor: "#97E4FF",
+    backgroundColor: busTheme.isDark ? busTheme.infoSurface : "#97E4FF",
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
   topRatedText: {
-    color: "#0078A6",
+    color: busTheme.isDark ? busTheme.info : "#0078A6",
     fontSize: 8,
     fontWeight: "800",
   },
   subtitleText: {
     marginTop: 4,
-    color: "#8F8F95",
+    color: busTheme.isDark ? busTheme.muted : "#8F8F95",
     fontSize: 11,
     fontWeight: "500",
   },
@@ -1174,7 +1191,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: "#6B6B70",
     borderWidth: 1,
-    borderColor: "#6B6B70",
+    borderColor: busTheme.isDark ? busTheme.border : "#6B6B70",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -1183,7 +1200,7 @@ const styles = StyleSheet.create({
   },
   ratingPillHighlighted: {
     backgroundColor: "#6B6B70",
-    borderColor: "#6B6B70",
+    borderColor: busTheme.isDark ? busTheme.border : "#6B6B70",
   },
   ratingText: {
     color: "#FFFFFF",
@@ -1205,13 +1222,13 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   timeText: {
-    color: "#4A4A50",
+    color: busTheme.isDark ? busTheme.text : "#4A4A50",
     fontSize: 20,
     fontWeight: "800",
   },
   placeText: {
     marginTop: 2,
-    color: "#5E5E63",
+    color: busTheme.isDark ? busTheme.text : "#5E5E63",
     fontSize: 11,
     fontWeight: "500",
   },
@@ -1222,7 +1239,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   durationText: {
-    color: "#8D8D92",
+    color: busTheme.isDark ? busTheme.muted : "#8D8D92",
     fontSize: 9,
     fontWeight: "500",
   },
@@ -1236,7 +1253,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: "#E0E0E0",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E0E0E0",
   },
   durationDotHighlighted: {
     backgroundColor: "#B90F28",
@@ -1244,7 +1261,7 @@ const styles = StyleSheet.create({
   durationLine: {
     flex: 1,
     height: 2,
-    backgroundColor: "#E5E5E8",
+    backgroundColor: busTheme.isDark ? busTheme.surfaceAlt : "#E5E5E8",
   },
   durationLineHighlighted: {
     backgroundColor: "#D31A33",
@@ -1257,13 +1274,13 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   priceText: {
-    color: "#424248",
+    color: busTheme.isDark ? busTheme.text : "#424248",
     fontSize: 17,
     fontWeight: "800",
   },
   seatsText: {
     marginTop: 3,
-    color: "#E0283B",
+    color: busTheme.isDark ? busTheme.accent : "#E0283B",
     fontSize: 10,
     fontWeight: "800",
   },
@@ -1275,14 +1292,14 @@ const styles = StyleSheet.create({
     borderColor: "#FF3550",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFFFFF",
   },
   seatsButtonHighlighted: {
     backgroundColor: "#D61A33",
     borderColor: "#D61A33",
   },
   seatsButtonText: {
-    color: "#E11C35",
+    color: busTheme.isDark ? busTheme.accent : "#E11C35",
     fontSize: 22 / 1.5,
     fontWeight: "700",
   },
@@ -1291,19 +1308,19 @@ const styles = StyleSheet.create({
   },
   highlightFooter: {
     minHeight: 38,
-    backgroundColor: "#FFF2F3",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF2F3",
     paddingHorizontal: 16,
     paddingVertical: 10,
     justifyContent: "center",
     borderTopWidth: 1,
-    borderTopColor: "#F2D5D9",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#F2D5D9",
   },
   highlightFooterSelected: {
-    backgroundColor: "#FFF2F3",
-    borderTopColor: "#F2D5D9",
+    backgroundColor: busTheme.isDark ? busTheme.surface : "#FFF2F3",
+    borderTopColor: busTheme.isDark ? busTheme.border : "#F2D5D9",
   },
   aboutBusLink: {
-    color: "#2D6BFF",
+    color: busTheme.isDark ? busTheme.info : "#2D6BFF",
     fontSize: 13,
     fontWeight: "700",
   },
