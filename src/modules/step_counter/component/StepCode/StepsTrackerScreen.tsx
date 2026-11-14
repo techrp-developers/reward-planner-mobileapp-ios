@@ -1,600 +1,418 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Linking,
-  Platform,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { BackHandler, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import SendIntentAndroid from 'react-native-send-intent';
-import { SdkAvailabilityStatus } from 'react-native-health-connect';
+import { useTranslation } from 'react-i18next';
 
-import { useStepTracker } from './useStepTracker';
-import { BORDER_RADIUS, RESPONSIVE, SPACING } from '../../utils/theme';
-import { useAlert } from '../../../../modules/ecommerce/components/alerts';
-import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
-import { translateSourceText } from "../../../../i18n/sourceText";
-import { Trans } from "react-i18next";
+import {
+  AppIconTile,
+  GradientPrimaryButton,
+  InstructionInfoCard,
+  OnboardingIllustration,
+  OnboardingSuccess,
+  PlatformSelectionCard,
+  SecondaryLink,
+  StepOnboardingScreen,
+  SvgAsset,
+} from './onboarding/components';
+import {
+  AndroidLauncherMock,
+  AndroidPermissionMock,
+  HealthConnectGlyph,
+  IosAppsMock,
+  IosHealthAccessMock,
+  IosSettingsMock,
+} from './onboarding/mocks';
+import { ONBOARDING_ASSETS, warnMissingOnboardingAssets } from './onboarding/assets';
+import { CURRENT_PLATFORM, useOnboardingFlow } from './onboarding/useOnboardingFlow';
+import { OB } from './onboarding/theme';
 
-// ─── Violet Dusk palette ──────────────────────────────────────────────────────
-
-const VD = {
-  accent:      '#8EA2FF',
-  accentDark:  '#B9C4FF',
-  accentFaint: 'rgba(142,162,255,0.12)',
-  accentDim:   'rgba(142,162,255,0.26)',
-  cardBg:      'rgba(255,255,255,0.075)',
-  cardBorder:  'rgba(174,188,255,0.16)',
-  white:       '#FFFFFF',
-  whiteMid:    '#CDD2EA',
-  whiteLow:    '#979EBC',
-  whiteGhost:  'rgba(255,255,255,0.10)',
-  success:     '#9AAEFF',
-  warning:     '#F8B84E',
-  error:       '#F38C9A',
-};
-
-const BG = ['#070A16', '#111735', '#201A3F'];
-
-// ─── Brand colours (on-dark) ──────────────────────────────────────────────────
-
-const BRAND = {
-  hc:      { icon: 'heart-pulse',  bg: 'rgba(230,57,70,0.18)',   tint: '#FF6B7A' },
-  samsung: { icon: 'cellphone',    bg: 'rgba(20,40,160,0.22)',   tint: '#7B9FFF' },
-  google:  { icon: 'google-fit',   bg: 'rgba(52,168,83,0.18)',   tint: '#62D985' },
-  other:   { icon: 'watch-variant', bg: 'rgba(142,162,255,0.14)', tint: '#B9C4FF' },
-};
-
-function hasStepsPermission(permissions: any[]): boolean {
-  return permissions.some(p => {
-    if (typeof p === 'string') {
-      const s = p.toLowerCase();
-      return s.includes('read_steps') || (s.includes('steps') && s.includes('read'));
-    }
-    const recordType = String(p.recordType ?? p.permission?.recordType ?? '').toLowerCase();
-    const accessType = String(p.accessType ?? p.permission?.accessType ?? '').toLowerCase();
-    return recordType === 'steps' && accessType === 'read';
-  });
-}
-
-// ─── Permission guide (animated accordion) ────────────────────────────────────
-
-type GuideStep = { icon: string; title: string; desc: string };
-
-const STEPS: GuideStep[] = [
-  { icon: 'numeric-1-circle-outline', title: 'Open Health Connect',  desc: 'Tap the Health Connect row above to open or install it.' },
-  { icon: 'numeric-2-circle-outline', title: 'App Permissions',      desc: 'Inside Health Connect, tap "App permissions" from the home screen.' },
-  { icon: 'numeric-3-circle-outline', title: 'Find this app',        desc: 'Scroll to Rewards Planners and tap it.' },
-  { icon: 'numeric-4-circle-outline', title: 'Enable Steps',         desc: 'Turn on "Steps" under the Read permissions toggle.' },
-  { icon: 'numeric-5-circle-outline', title: 'Come back here',       desc: 'Return to this screen — the status refreshes automatically.' },
-];
-
-const STEPS_ALREADY_INSTALLED: GuideStep[] = [
-  { icon: 'numeric-1-circle-outline', title: 'Open phone Settings',  desc: 'Go to your phone\'s Settings app.' },
-  { icon: 'numeric-2-circle-outline', title: 'Go to Apps',           desc: 'Tap "Apps" (or "Apps & notifications").' },
-  { icon: 'numeric-3-circle-outline', title: 'Find Reward Planners', desc: 'Search for and tap "Reward Planners" in the app list.' },
-  { icon: 'numeric-4-circle-outline', title: 'Open Permissions',     desc: 'Tap "Permissions" on the app info screen.' },
-  { icon: 'numeric-5-circle-outline', title: 'Allow the toggles',    desc: 'Turn on "Physical activity" and "Health Connect", then come back here.' },
-];
-
-const IOS_STEPS: GuideStep[] = [
-  { icon: 'numeric-1-circle-outline', title: 'Connect Apple Health', desc: 'Tap the Apple Health row above to show the iOS permission sheet.' },
-  { icon: 'numeric-2-circle-outline', title: 'Allow Steps', desc: 'In the Apple permission sheet, enable Steps and tap Allow.' },
-  { icon: 'numeric-3-circle-outline', title: 'Come back here', desc: 'Your step count refreshes automatically when you return.' },
-];
-
-const IOS_SETTINGS_STEPS: GuideStep[] = [
-  { icon: 'numeric-1-circle-outline', title: 'Open the Health app', desc: 'Open Apple Health on your iPhone.' },
-  { icon: 'numeric-2-circle-outline', title: 'Open Sharing', desc: 'Tap Sharing, then Apps and Services.' },
-  { icon: 'numeric-3-circle-outline', title: 'RewardsPlanners', desc: 'Select RewardsPlanners and enable Steps access.' },
-];
-
-const PermissionGuide = ({
-  visible, steps, headerText,
-}: { visible: boolean; steps: GuideStep[]; headerText: string }) => {
-  const hRef  = useRef(new Animated.Value(0));
-  const opRef = useRef(new Animated.Value(0));
-  const h  = hRef.current;
-  const op = opRef.current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(h,  { toValue: visible ? 1 : 0, duration: 300, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
-      Animated.timing(op, { toValue: visible ? 1 : 0, duration: 250, useNativeDriver: false }),
-    ]).start();
-  }, [visible, h, op]);
-
-  return (
-    <Animated.View style={[ss.accordion, { opacity: op, maxHeight: h.interpolate({ inputRange: [0, 1], outputRange: [0, 440] }) }]}>
-      <View style={ss.guide}>
-        <View style={ss.guideHeader}>
-          <MaterialCommunityIcons name="shield-key-outline" size={14} color={VD.warning} />
-          <Text style={ss.guideHeaderText}>{headerText}</Text>
-        </View>
-        {steps.map((s, i) => (
-          <View key={i} style={ss.guideStep}>
-            <View style={ss.guideStepLeft}>
-              <MaterialCommunityIcons name={s.icon} size={22} color={VD.accentDark} />
-              {i < steps.length - 1 && <View style={ss.guideLine} />}
-            </View>
-            <View style={ss.guideStepRight}>
-              <Text style={ss.guideStepTitle}>{translateSourceText("stepCounter", s.title)}</Text>
-              <Text style={ss.guideStepDesc}>{translateSourceText("stepCounter", s.desc)}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-    </Animated.View>
-  );
-};
-
-// ─── Provider card ────────────────────────────────────────────────────────────
-
-type ProviderCardProps = {
-  title:     string;
-  subtitle:  string;
-  iconName:  string;
-  iconBg:    string;
-  iconTint:  string;
-  installed: boolean;
-  connected: boolean;
-  mandatory: boolean;
-  onPress:   () => void;
-};
-
-const ProviderCard = ({
-  title, subtitle, iconName, iconBg, iconTint,
-  installed, connected, mandatory, onPress,
-}: ProviderCardProps) => {
-  const { t: tx } = useTranslation();
-  const statusLabel = connected ? i18n.t("stepCounter:r2.connected") : installed ? 'Open' : i18n.t("stepCounter:r2.install");
-  const statusColor = connected ? VD.success : installed ? VD.accentDark : VD.warning;
-
-  return (
-    <TouchableOpacity
-      style={ss.providerCard}
-      onPress={onPress}
-      activeOpacity={0.78}
-    >
-      <View style={[ss.providerIcon, { backgroundColor: iconBg }]}>
-        <MaterialCommunityIcons name={iconName} size={26} color={iconTint} />
-      </View>
-
-      <View style={ss.providerText}>
-        <View style={ss.providerTitleRow}>
-          <Text style={ss.providerTitle}>{title}</Text>
-          {mandatory && (
-            <View style={ss.requiredBadge}>
-              <Text style={ss.requiredText}>{tx("stepCounter:stepsTrackerScreen.required")}</Text>
-            </View>
-          )}
-        </View>
-        <Text style={ss.providerSubtitle}>{subtitle}</Text>
-      </View>
-
-      <View style={ss.providerAction}>
-        <View style={[ss.statusPill, { backgroundColor: statusColor + '22' }]}>
-          <Text style={[ss.statusText, { color: statusColor }]}>{statusLabel}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+const A = ONBOARDING_ASSETS;
 
 export default function StepsTrackerScreen() {
   const { t: tx } = useTranslation();
-  const {
-    healthConnectStatus, grantedPermissions,
-    healthConnectError, isSetupComplete,
-    openHealthConnect, requestStepsPermission, totalSteps, refreshStatus,
-  } = useStepTracker();
-
+  const t = useCallback((key: string) => tx(`stepCounter:onboarding.${key}`), [tx]);
   const navigation = useNavigation<any>();
-  const alert      = useAlert();
+  const flow = useOnboardingFlow();
+  const { step, tracker } = flow;
+  const navigatingRef = useRef(false);
 
-  const [isGoogleFitInstalled,     setIsGoogleFitInstalled]     = useState(false);
-  const [isSamsungHealthInstalled, setIsSamsungHealthInstalled] = useState(false);
-  const [guideOpen,                setGuideOpen]                = useState(false);
-  const [altGuideOpen,             setAltGuideOpen]              = useState(false);
+  useEffect(() => { warnMissingOnboardingAssets(); }, []);
 
-  const isIOS = Platform.OS === 'ios';
+  const leave = useCallback((action: () => void) => {
+    if (navigatingRef.current) return;
+    navigatingRef.current = true;
+    action();
+  }, []);
 
-  const isHCInstalled = healthConnectStatus !== '0' && healthConnectStatus !== String(SdkAvailabilityStatus.SDK_UNAVAILABLE);
-  const hasStepsPerm  = hasStepsPermission(grantedPermissions);
-  const isHCReady     = healthConnectStatus === String(SdkAvailabilityStatus.SDK_AVAILABLE) && hasStepsPerm;
-  const showGuide     = isHCInstalled && !hasStepsPerm;
-  const canProceed    = isHCReady && (isIOS || totalSteps > 0);
-
-  // Prevent a double-navigation crash: when handleContinue calls
-  // requestStepsPermission(), that sets isSetupComplete = true which would
-  // fire the auto-redirect below at the same time as navigation.navigate('StepForm').
-  // Holding this ref true during the Continue flow suppresses the redirect;
-  // the user lands on StepForm instead and the redirect fires on Dashboard
-  // via isSetupComplete being true on re-entry to StepsTrackerScreen never happens.
-  const continueInProgressRef = useRef(false);
-
-  useEffect(() => { checkApps(); }, []);
-
-  // Auto-redirect for returning users: if setup was already complete (from
-  // AsyncStorage or backend check) and HC is ready, skip the screen entirely.
-  // Suppressed while handleContinue is running to avoid the double-navigation crash.
+  // Returning users whose setup is already complete skip onboarding entirely
+  // (same behaviour as before). Only while still on the first step, so a
+  // fresh completion lands on the success screen instead.
   useEffect(() => {
-    if (isSetupComplete && isHCReady && !continueInProgressRef.current) {
-      navigation.replace('Dashboard');
+    if (step === 'select' && flow.isSetupComplete && flow.ready) {
+      leave(() => navigation.replace('Dashboard'));
     }
-  }, [isSetupComplete, isHCReady, navigation]);
+  }, [step, flow.isSetupComplete, flow.ready, leave, navigation]);
 
-  useEffect(() => { setGuideOpen(showGuide); }, [showGuide]);
+  const backRef = useRef(flow.back);
+  backRef.current = flow.back;
 
-  const checkApps = async () => {
-    if (isIOS) return;
-    try {
-      const fit     = await SendIntentAndroid.isAppInstalled('com.google.android.apps.fitness');
-      const samsung = await SendIntentAndroid.isAppInstalled('com.sec.android.app.shealth');
-      setIsGoogleFitInstalled(fit);
-      setIsSamsungHealthInstalled(samsung);
-    } catch {}
-  };
+  const handleBack = useCallback(() => {
+    if (!backRef.current()) navigation.goBack();
+  }, [navigation]);
 
-  const installHC = async () => {
-    try { await Linking.openURL('market://details?id=com.google.android.apps.healthdata'); }
-    catch { await Linking.openURL('https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata'); }
-  };
-
-  const handleHCPress = () => (isHCInstalled ? openHealthConnect() : installHC());
-
-  const openAppSettings = () => Linking.openSettings();
-
-  const openAppleHealth = async () => {
-    try {
-      await Linking.openURL('x-apple-health://');
-    } catch {
-      alert.info(
-        i18n.t("stepCounter:stepsTrackerScreen.openAppleHealth"),
-        i18n.t("stepCounter:stepsTrackerScreen.openHealthProfilePrivacyApps"),
-      );
-    }
-  };
-
-  const handleOpenApp = async (packageId: string, storeId: string, installed: boolean) => {
-    try {
-      if (installed) {
-        await SendIntentAndroid.openApp(packageId, {});
-      } else {
-        await Linking.openURL(`https://play.google.com/store/apps/details?id=${storeId}`);
-      }
-    } catch {}
-  };
-
-  const handleContinue = useCallback(async () => {
-    // Returning user: setup was already complete (from AsyncStorage or backend
-    // check) and HC is ready. The auto-redirect effect either already fired or
-    // is about to — navigating via Continue would race it and crash. Go to
-    // Dashboard directly so only one navigation is ever in flight.
-    if (isSetupComplete && isHCReady) {
-      navigation.replace('Dashboard');
-      return;
-    }
-
-    if (!isHCReady) {
-      if (isIOS) {
-        continueInProgressRef.current = true;
-        try {
-          const setupReady = await requestStepsPermission();
-          if (setupReady) navigation.navigate('StepForm');
-        } finally {
-          continueInProgressRef.current = false;
-        }
-        return;
-      }
-      alert.warning(
-        !isHCInstalled ? (isIOS ? i18n.t("stepCounter:r2.appleHealthRequired") : i18n.t("stepCounter:r2.healthConnectRequired")) : i18n.t("stepCounter:r2.permissionMissing"),
-        !isHCInstalled
-          ? (isIOS ? i18n.t("stepCounter:r2.appleHealthIsNotAvailableOn") : i18n.t("stepCounter:r2.pleaseInstallHealthConnectToContinue"))
-          : `Please grant Steps permission in ${isIOS ? 'Apple Health' : 'Health Connect'}, then return here.`,
-      );
-      if (isHCInstalled) setGuideOpen(true);
-      return;
-    }
-    if (!isIOS && totalSteps <= 0) {
-      alert.warning(
-        i18n.t("stepCounter:stepsTrackerScreen.noStepsFound"),
-        isIOS
-          ? i18n.t("stepCounter:r2.noStepsIos")
-          : i18n.t("stepCounter:r2.noStepsAndroid"),
-      );
-      refreshStatus();
-      return;
-    }
-    // Block the auto-redirect effect while this async flow is in progress.
-    // requestStepsPermission() sets isSetupComplete = true internally, which
-    // would otherwise fire the redirect at the same time as navigate('StepForm').
-    continueInProgressRef.current = true;
-    try {
-      const setupReady = await requestStepsPermission();
-      if (!setupReady) return;
-      navigation.navigate('StepForm');
-    } finally {
-      continueInProgressRef.current = false;
-    }
-  }, [isHCReady, isHCInstalled, isIOS, totalSteps, requestStepsPermission, navigation, alert, refreshStatus]);
-
-  return (
-    <SafeAreaView style={ss.safe} edges={['top', 'bottom']}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
-
-      <LinearGradient colors={BG} style={ss.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-        <ScrollView
-          contentContainerStyle={[ss.scroll, { paddingHorizontal: RESPONSIVE.horizontalPadding }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <TouchableOpacity style={ss.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.78}>
-            <MaterialCommunityIcons name="chevron-left" size={22} color={VD.accentDark} />
-          </TouchableOpacity>
-
-          <View style={ss.headingGroup}>
-            <Text style={ss.eyebrow}>RP Move</Text>
-            <Text style={ss.title}>{tx("stepCounter:stepsTrackerScreen.connectYourApps")}</Text>
-            <Text style={ss.description}>
-              {isIOS
-                ? i18n.t("stepCounter:r2.connectAppleHealthSoWeCan")
-                : i18n.t("stepCounter:r2.linkYourFitnessAppsSoWe")}
-            </Text>
-          </View>
-
-          {/* Required */}
-          <Text style={ss.sectionLabel}>{tx("stepCounter:stepsTrackerScreen.required")}</Text>
-          <ProviderCard
-            title={isIOS ? 'Apple Health' : 'Health Connect'}
-            subtitle={isIOS ? i18n.t("stepCounter:r2.stepsFromYourIphoneAndApple") : "Google's unified health data platform"}
-            iconName={BRAND.hc.icon} iconBg={BRAND.hc.bg} iconTint={BRAND.hc.tint}
-            installed={isHCInstalled} connected={isHCReady}
-            mandatory onPress={handleHCPress}
-          />
-
-          <TouchableOpacity style={ss.guideToggle} onPress={() => setGuideOpen(v => !v)} activeOpacity={0.7}>
-            <MaterialCommunityIcons name={guideOpen ? 'chevron-up' : 'information-outline'} size={14} color={VD.warning} />
-            <Text style={ss.guideToggleText}>
-              {isHCReady ? i18n.t("stepCounter:r2.viewPermissionDetails") : `How to grant Steps permission`}
-            </Text>
-          </TouchableOpacity>
-
-          <PermissionGuide visible={guideOpen} steps={isIOS ? IOS_STEPS : STEPS} headerText="How to grant Steps permission" />
-
-          {isIOS && (
-            <>
-              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>{tx("stepCounter:stepsTrackerScreen.appleHealthSettings")}</Text>
-              <Text style={ss.sectionHint}>
-                {tx("stepCounter:stepsTrackerScreen.manageStepsAccessInHealth")}
-              </Text>
-              <ProviderCard
-                title={tx("stepCounter:stepsTrackerScreen.healthPermissions")}
-                subtitle={tx("stepCounter:stepsTrackerScreen.manageStepsAccessInApple")}
-                iconName="heart-pulse"
-                iconBg={BRAND.other.bg}
-                iconTint={BRAND.other.tint}
-                installed
-                connected={false}
-                mandatory={false}
-                onPress={openAppleHealth}
-              />
-            </>
-          )}
-
-          {(isIOS || isHCInstalled || isGoogleFitInstalled || isSamsungHealthInstalled) && !hasStepsPerm && (
-            <>
-              <TouchableOpacity style={ss.guideToggle} onPress={() => setAltGuideOpen(v => !v)} activeOpacity={0.7}>
-                <MaterialCommunityIcons name={altGuideOpen ? 'chevron-up' : 'cog-outline'} size={14} color={VD.warning} />
-                <Text style={ss.guideToggleText}>{tx("stepCounter:stepsTrackerScreen.alreadyInstalledTryThisInstead")}</Text>
-              </TouchableOpacity>
-
-              <PermissionGuide
-                visible={altGuideOpen}
-                steps={isIOS ? IOS_SETTINGS_STEPS : STEPS_ALREADY_INSTALLED}
-                headerText={isIOS ? i18n.t("stepCounter:r2.fixPermissionInAppleHealth") : i18n.t("stepCounter:r2.fixPermissionFromPhoneSettings")}
-              />
-
-              {altGuideOpen && (
-                <TouchableOpacity style={ss.settingsBtn} onPress={isIOS ? openAppleHealth : openAppSettings} activeOpacity={0.78}>
-                  <MaterialCommunityIcons name="cog-outline" size={16} color={VD.accentDark} />
-                  <Text style={ss.settingsBtnText}>{isIOS ? 'Open Apple Health' : i18n.t("stepCounter:r2.openAppSettings")}</Text>
-                </TouchableOpacity>
-              )}
-            </>
-          )}
-
-          {!isIOS && (
-            <>
-              {/* Optional fitness apps — launchers, not required selection */}
-              <Text style={[ss.sectionLabel, ss.sectionLabelGap]}>{tx("stepCounter:stepsTrackerScreen.syncAFitnessApp")}</Text>
-              <Text style={ss.sectionHint}>
-                {tx("stepCounter:stepsTrackerScreen.openAnyAppBelowTo")}
-              </Text>
-
-              <ProviderCard
-                title="Samsung Health"
-                subtitle={tx("stepCounter:stepsTrackerScreen.idealForSamsungDevicesSyncs")}
-                iconName={BRAND.samsung.icon} iconBg={BRAND.samsung.bg} iconTint={BRAND.samsung.tint}
-                installed={isSamsungHealthInstalled} connected={false}
-                mandatory={false}
-                onPress={() => handleOpenApp('com.sec.android.app.shealth', 'com.sec.android.app.shealth', isSamsungHealthInstalled)}
-              />
-              <ProviderCard
-                title="Google Fit"
-                subtitle={tx("stepCounter:stepsTrackerScreen.worksOnAllAndroidPhones")}
-                iconName={BRAND.google.icon} iconBg={BRAND.google.bg} iconTint={BRAND.google.tint}
-                installed={isGoogleFitInstalled} connected={false}
-                mandatory={false}
-                onPress={() => handleOpenApp('com.google.android.apps.fitness', 'com.google.android.apps.fitness', isGoogleFitInstalled)}
-              />
-            </>
-          )}
-
-          {/* Other apps note */}
-          <View style={[ss.otherAppsRow, isIOS && ss.sectionLabelGap]}>
-            <View style={[ss.providerIcon, { backgroundColor: BRAND.other.bg, width: 36, height: 36, borderRadius: 10 }]}>
-              <MaterialCommunityIcons name={BRAND.other.icon} size={18} color={BRAND.other.tint} />
-            </View>
-            <Text style={ss.otherAppsText}>
-              <Trans
-                i18nKey={isIOS ? "stepCounter:r2.iosRecorded" : "stepCounter:r2.androidWorksWith"}
-                components={{ b: <Text style={ss.otherAppsHighlight} /> }}
-              />
-            </Text>
-          </View>
-
-          <View style={ss.appTip}>
-            <MaterialCommunityIcons name="lightbulb-outline" size={13} color={VD.accentDark} />
-            <Text style={ss.appTipText}>
-              {isIOS
-                ? i18n.t("stepCounter:r2.tipIos")
-                : i18n.t("stepCounter:r2.tipAndroid")}
-            </Text>
-          </View>
-
-          {!!healthConnectError && (
-            <View style={ss.errorRow}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={13} color={VD.error} />
-              <Text style={ss.errorText}>{healthConnectError}</Text>
-            </View>
-          )}
-
-          {/* CTA */}
-          <TouchableOpacity activeOpacity={0.9} onPress={handleContinue} style={ss.ctaWrap}>
-            <LinearGradient
-              colors={canProceed ? ['#8EA2FF', '#B9C4FF'] : ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.10)']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={ss.cta}
-            >
-              <Text style={[ss.ctaText, !canProceed && ss.ctaTextDim]}>{tx("stepCounter:stepsTrackerScreen.continue")}</Text>
-              <MaterialCommunityIcons name="arrow-right" size={18} color={canProceed ? '#070A16' : VD.whiteLow} />
-            </LinearGradient>
-          </TouchableOpacity>
-
-          <View style={ss.bottomPad} />
-        </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
+  // Hardware back walks the onboarding steps before leaving the screen.
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => backRef.current());
+      return () => sub.remove();
+    }, []),
   );
+
+  // iOS swipe-back would skip the internal steps; allow it only on step 1.
+  useEffect(() => {
+    navigation.setOptions({ gestureEnabled: step === 'select' });
+  }, [navigation, step]);
+
+  const finish = useCallback(() => {
+    if (flow.profileCompleted) leave(() => navigation.replace('Dashboard'));
+    else leave(() => navigation.navigate('StepForm'));
+  }, [flow.profileCompleted, leave, navigation]);
+
+  const common = { progress: flow.progress, onBack: handleBack, backLabel: t('back') };
+
+  switch (step) {
+    // ── Shared: select device ────────────────────────────────────────────────
+    case 'select': {
+      const otherSelected = flow.selected !== CURRENT_PLATFORM;
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('select.title')}
+          subtitle={t('select.subtitle')}
+          footer={
+            <GradientPrimaryButton
+              label={t('continue')}
+              onPress={flow.continueFromSelect}
+              disabled={otherSelected}
+              loading={!flow.statusResolved && !otherSelected}
+            />
+          }
+        >
+          <View accessibilityRole="radiogroup">
+            <PlatformSelectionCard
+              label={t('select.android')}
+              hint={CURRENT_PLATFORM === 'android' ? t('select.thisPhone') : undefined}
+              iconBg="#E9F8EE"
+              icon={
+                A.androidLogo
+                  ? <SvgAsset asset={A.androidLogo} width={38} height={38} />
+                  : <MaterialCommunityIcons name="android" size={38} color="#3DDC84" />
+              }
+              selected={flow.selected === 'android'}
+              onPress={() => flow.setSelected('android')}
+            />
+            <PlatformSelectionCard
+              label={t('select.iphone')}
+              hint={CURRENT_PLATFORM === 'ios' ? t('select.thisPhone') : undefined}
+              iconBg="#F1F2F5"
+              icon={
+                A.appleLogo
+                  ? <SvgAsset asset={A.appleLogo} width={34} height={34} />
+                  : <MaterialCommunityIcons name="apple" size={38} color="#111111" />
+              }
+              selected={flow.selected === 'ios'}
+              onPress={() => flow.setSelected('ios')}
+            />
+          </View>
+          {otherSelected && (
+            <InstructionInfoCard
+              title={t('select.otherTitle')}
+              body={t(CURRENT_PLATFORM === 'ios' ? 'select.otherOnIos' : 'select.otherOnAndroid')}
+            />
+          )}
+        </StepOnboardingScreen>
+      );
+    }
+
+    // ── Android ──────────────────────────────────────────────────────────────
+    case 'install': {
+      const update = flow.hcNeedsUpdate;
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t(update ? 'install.updateTitle' : 'install.title')}
+          subtitle={t(update ? 'install.updateSubtitle' : 'install.subtitle')}
+          footer={
+            <>
+              <GradientPrimaryButton
+                label={t(update ? 'install.updateCta' : 'install.cta')}
+                onPress={flow.openPlayStore}
+                rightIcon="open-in-new"
+                leftIcon={
+                  A.googlePlayIcon
+                    ? <SvgAsset asset={A.googlePlayIcon} width={22} height={22} />
+                    : <MaterialCommunityIcons name="google-play" size={22} color={OB.white} />
+                }
+              />
+              <SecondaryLink
+                label={t('install.alreadyInstalled')}
+                onPress={flow.recheckInstall}
+                disabled={flow.busy}
+              />
+            </>
+          }
+        >
+          <AppIconTile
+            fill
+            source={A.healthConnectIcon}
+            fallback={<HealthConnectGlyph size={72} />}
+            accessibilityLabel={t('install.appName')}
+          />
+          <Text style={s.appName}>{t('install.appName')}</Text>
+          <Text style={s.publisher}>{t('install.publisher')}</Text>
+          <View style={s.facts}>
+            {[
+              [t('install.factFree'), t('install.factFreeLabel')],
+              [t('install.factOfficial'), t('install.factOfficialLabel')],
+              [t('install.factPrivate'), t('install.factPrivateLabel')],
+            ].map(([value, label], i) => (
+              <View key={label} style={[s.fact, i > 0 && s.factDivider]}>
+                <Text style={s.factValue}>{value}</Text>
+                <Text style={s.factLabel} numberOfLines={1}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          {flow.attempted && !flow.sdkAvailable && (
+            <InstructionInfoCard tone="warning" title={t('install.notFoundTitle')} body={t('install.notFound')} />
+          )}
+        </StepOnboardingScreen>
+      );
+    }
+
+    case 'open':
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('open.title')}
+          subtitle={t('open.subtitle')}
+          footer={
+            flow.openedHc ? (
+              <GradientPrimaryButton label={t('continue')} onPress={() => flow.go('permission')} />
+            ) : (
+              <>
+                <GradientPrimaryButton label={t('open.cta')} onPress={flow.launchHealthConnect} loading={flow.busy} />
+                <SecondaryLink label={t('open.skip')} onPress={() => flow.go('permission')} />
+              </>
+            )
+          }
+        >
+          <OnboardingIllustration
+            source={A.androidLauncher}
+            fallback={<AndroidLauncherMock hcLabel={t('install.appName')} />}
+            accessibilityLabel={t('open.illustration')}
+          />
+          <InstructionInfoCard title={t('open.tipTitle')} body={t('open.tip')} />
+        </StepOnboardingScreen>
+      );
+
+    case 'permission': {
+      // Derived from live tracker state, which the context refreshes when the
+      // app returns from the system permission UI or Health Connect.
+      let notice: React.ReactNode = <InstructionInfoCard title={t('permission.tipTitle')} body={t('permission.tip')} />;
+      if (flow.attempted) {
+        const openHc = { label: t('permission.openHealthConnect'), onPress: flow.launchHealthConnect };
+        if (!flow.stepsGranted) {
+          notice = <InstructionInfoCard tone="warning" title={t('permission.deniedTitle')} body={t('permission.denied')} action={openHc} />;
+        } else if (tracker.stepDataState === 'no_source') {
+          notice = <InstructionInfoCard tone="warning" title={t('permission.noSourceTitle')} body={t('permission.noSource')} action={openHc} />;
+        } else {
+          notice = <InstructionInfoCard tone="error" body={tracker.healthConnectError || t('genericError')} />;
+        }
+      }
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('permission.title')}
+          subtitle={t('permission.subtitle')}
+          footer={<GradientPrimaryButton label={t('permission.cta')} onPress={flow.requestAccess} loading={flow.busy} />}
+        >
+          <OnboardingIllustration
+            source={A.androidPermission}
+            fallback={<AndroidPermissionMock stepsLabel={t('permission.steps')} />}
+            accessibilityLabel={t('permission.illustration')}
+          />
+          {notice}
+        </StepOnboardingScreen>
+      );
+    }
+
+    // ── iOS ──────────────────────────────────────────────────────────────────
+    case 'apple': {
+      const unavailable = flow.statusResolved && !flow.sdkAvailable;
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('apple.title')}
+          subtitle={t('apple.subtitle')}
+          footer={
+            <>
+              <GradientPrimaryButton
+                label={t('apple.cta')}
+                onPress={flow.requestAccess}
+                loading={flow.busy}
+                disabled={unavailable}
+              />
+              {!unavailable && <SecondaryLink label={t('apple.manage')} onPress={flow.startRecovery} />}
+            </>
+          }
+        >
+          <AppIconTile
+            source={A.appleHealthIcon}
+            fallback={<MaterialCommunityIcons name="heart" size={76} color="#FF375F" />}
+            accessibilityLabel={t('apple.appName')}
+          />
+          <Text style={s.appName}>{t('apple.appName')}</Text>
+          <View style={s.badge}>
+            <MaterialCommunityIcons name="check-circle" size={16} color={OB.success} />
+            <Text style={s.badgeText}>{t('apple.badge')}</Text>
+          </View>
+          {unavailable ? (
+            <InstructionInfoCard tone="error" title={t('apple.unavailableTitle')} body={t('apple.unavailable')} />
+          ) : flow.attempted ? (
+            <InstructionInfoCard
+              tone="warning"
+              title={t('apple.failedTitle')}
+              body={tracker.healthConnectError || t('genericError')}
+              action={{ label: t('apple.manage'), onPress: flow.startRecovery }}
+            />
+          ) : (
+            <InstructionInfoCard body={t('apple.info')} />
+          )}
+        </StepOnboardingScreen>
+      );
+    }
+
+    case 'settings':
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('settings.title')}
+          subtitle={t('settings.subtitle')}
+          footer={
+            <>
+              <GradientPrimaryButton label={t('next')} onPress={() => flow.go('find')} />
+              <SecondaryLink label={t('allow.openSettings')} onPress={flow.openAppSettings} />
+            </>
+          }
+        >
+          <OnboardingIllustration
+            frame="ios"
+            source={A.iosSettings}
+            fallback={<IosSettingsMock appsLabel={t('settings.apps')} />}
+            accessibilityLabel={t('settings.illustration')}
+          />
+        </StepOnboardingScreen>
+      );
+
+    case 'find':
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('find.title')}
+          subtitle={t('find.subtitle')}
+          footer={<GradientPrimaryButton label={t('next')} onPress={() => flow.go('allow')} />}
+        >
+          <OnboardingIllustration
+            frame="ios"
+            source={A.iosApps}
+            fallback={<IosAppsMock />}
+            accessibilityLabel={t('find.illustration')}
+          />
+          <InstructionInfoCard title={t('find.tipTitle')} body={t('find.tip')} />
+        </StepOnboardingScreen>
+      );
+
+    case 'allow':
+      return (
+        <StepOnboardingScreen
+          {...common}
+          title={t('allow.title')}
+          subtitle={t('allow.subtitle')}
+          footer={
+            <>
+              <GradientPrimaryButton label={t('allow.cta')} onPress={flow.requestAccess} loading={flow.busy} />
+              <SecondaryLink label={t('allow.openSettings')} onPress={flow.openAppSettings} disabled={flow.busy} />
+            </>
+          }
+        >
+          <OnboardingIllustration
+            frame="ios"
+            source={A.iosHealthAccess}
+            fallback={<IosHealthAccessMock stepsLabel={t('allow.steps')} body={t('allow.mockBody')} />}
+            accessibilityLabel={t('allow.illustration')}
+          />
+          {flow.attempted ? (
+            <InstructionInfoCard tone="warning" body={tracker.healthConnectError || t('genericError')} />
+          ) : (
+            <InstructionInfoCard body={t('allow.tip')} />
+          )}
+        </StepOnboardingScreen>
+      );
+
+    // ── Shared: success ──────────────────────────────────────────────────────
+    case 'success':
+      return (
+        <StepOnboardingScreen
+          {...common}
+          footer={
+            <GradientPrimaryButton
+              label={t(flow.profileCompleted ? 'success.dashboard' : 'continue')}
+              onPress={finish}
+              loading={flow.profileCompleted === null}
+            />
+          }
+        >
+          <OnboardingSuccess
+            hero={A.successCheck}
+            title={t('success.title')}
+            body={t('success.body')}
+            rows={[
+              { icon: 'trending-up', color: OB.success, bg: OB.successBg, label: t('success.sync') },
+              { icon: 'star-circle', color: OB.coin, bg: OB.coinBg, label: t('success.coins') },
+            ]}
+          />
+        </StepOnboardingScreen>
+      );
+
+    default:
+      return null;
+  }
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const ss = StyleSheet.create({
-  safe:     { flex: 1, backgroundColor: '#070A16' },
-  gradient: { flex: 1 },
-  scroll:   { alignItems: 'center', paddingTop: SPACING.xl },
-
-  backBtn: {
-    alignSelf: 'flex-start',
-    width: 40, height: 40,
-    borderRadius: BORDER_RADIUS.medium,
-    backgroundColor: VD.whiteGhost,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: SPACING.lg,
+const s = StyleSheet.create({
+  appName: { fontSize: 22, fontWeight: '800', color: OB.text, textAlign: 'center', marginTop: 18 },
+  publisher: { fontSize: 14, color: OB.muted, textAlign: 'center', marginTop: 4, marginBottom: 20 },
+  facts: {
+    flexDirection: 'row',
+    paddingVertical: 4,
+    marginBottom: 20,
   },
-
-  headingGroup: { width: '100%', marginBottom: SPACING.xl },
-  eyebrow: { fontSize: 11, fontWeight: '700', letterSpacing: 0, textTransform: 'uppercase', color: VD.accentDark, marginBottom: 6 },
-  title:   { fontSize: 24, fontWeight: '800', color: VD.white, letterSpacing: 0, lineHeight: 30, marginBottom: 8 },
-  description: { fontSize: 14, color: VD.whiteMid, lineHeight: 21 },
-
-  sectionLabel:    { width: '100%', fontSize: 11, fontWeight: '700', letterSpacing: 0, textTransform: 'uppercase', color: VD.whiteLow, marginBottom: SPACING.sm },
-  sectionLabelGap: { marginTop: SPACING.lg },
-  sectionHint:     { width: '100%', fontSize: 12, color: VD.whiteLow, lineHeight: 18, marginBottom: SPACING.sm, marginTop: -SPACING.xs },
-
-  // Provider card
-  providerCard: {
-    width: '100%', flexDirection: 'row', alignItems: 'center',
-    backgroundColor: VD.cardBg, borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.md, marginBottom: SPACING.sm,
+  fact: { flex: 1, alignItems: 'center', paddingHorizontal: 6 },
+  factDivider: { borderLeftWidth: 1, borderLeftColor: OB.border },
+  factValue: { fontSize: 16, fontWeight: '800', color: OB.text },
+  factLabel: { fontSize: 12, color: OB.muted, marginTop: 2 },
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: 6,
+    backgroundColor: OB.successBg,
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginTop: 10,
+    marginBottom: 22,
   },
-  providerIcon:    { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: SPACING.md, flexShrink: 0 },
-  providerText:    { flex: 1, marginRight: SPACING.sm },
-  providerTitleRow:{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
-  providerTitle:   { fontSize: 14, fontWeight: '700', color: VD.white },
-  providerSubtitle:{ fontSize: 11, color: VD.whiteLow, lineHeight: 16 },
-  providerAction:  { flexShrink: 0 },
-  requiredBadge:   { backgroundColor: 'rgba(248,113,113,0.18)', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  requiredText:    { fontSize: 10, fontWeight: '700', color: VD.error },
-  statusPill:      { borderRadius: 20, paddingHorizontal: 8, paddingVertical: 4 },
-  statusText:      { fontSize: 11, fontWeight: '700' },
-
-  // Other apps row
-  otherAppsRow: {
-    width: '100%', flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
-    backgroundColor: VD.cardBg, borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.md, marginBottom: SPACING.sm,
-  },
-  otherAppsText:      { flex: 1, fontSize: 12, color: VD.whiteLow, lineHeight: 18 },
-  otherAppsHighlight: { color: VD.accentDark, fontWeight: '600' },
-
-  // Guide toggle
-  guideToggle: { width: '100%', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: SPACING.xs, marginBottom: SPACING.xs },
-  guideToggleText: { fontSize: 12, color: VD.warning, fontWeight: '600' },
-
-  // Settings shortcut button
-  settingsBtn: {
-    width: '100%', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: VD.accentFaint, borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    paddingVertical: SPACING.sm, marginBottom: SPACING.md,
-  },
-  settingsBtnText: { fontSize: 13, fontWeight: '700', color: VD.accentDark },
-
-  // Guide accordion
-  accordion: { overflow: 'hidden', width: '100%' },
-  guide: {
-    backgroundColor: 'rgba(251,191,36,0.07)',
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: 'rgba(251,191,36,0.22)',
-    padding: SPACING.md, marginBottom: SPACING.md,
-  },
-  guideHeader:     { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: SPACING.md },
-  guideHeaderText: { fontSize: 12, fontWeight: '700', color: VD.warning, flex: 1 },
-  guideStep:       { flexDirection: 'row', gap: SPACING.sm, paddingBottom: SPACING.md },
-  guideStepLeft:   { alignItems: 'center', width: 22 },
-  guideLine:       { flex: 1, width: 1.5, backgroundColor: VD.accentDim, marginTop: 6 },
-  guideStepRight:  { flex: 1, paddingBottom: SPACING.xs },
-  guideStepTitle:  { fontSize: 13, fontWeight: '700', color: VD.white, marginBottom: 2 },
-  guideStepDesc:   { fontSize: 12, color: VD.whiteLow, lineHeight: 17 },
-
-  // App tip
-  appTip: {
-    width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 8,
-    backgroundColor: VD.accentFaint, borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.md, marginTop: SPACING.xs, marginBottom: SPACING.md,
-  },
-  appTipText: { flex: 1, fontSize: 12, color: VD.whiteLow, lineHeight: 18 },
-
-  // Error
-  errorRow:  { width: '100%', flexDirection: 'row', alignItems: 'flex-start', gap: 6, marginBottom: SPACING.sm },
-  errorText: { flex: 1, fontSize: 12, color: VD.error, fontWeight: '500' },
-
-  // CTA
-  ctaWrap: { width: '100%', marginTop: SPACING.md },
-  cta: {
-    height: 54, borderRadius: BORDER_RADIUS.large,
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-  },
-  ctaText:    { fontSize: 16, fontWeight: '800', color: '#070A16', letterSpacing: 0 },
-  ctaTextDim: { color: VD.whiteLow },
-
-  bottomPad: { height: SPACING.xxl },
+  badgeText: { fontSize: 13.5, fontWeight: '600', color: '#178A49' },
 });

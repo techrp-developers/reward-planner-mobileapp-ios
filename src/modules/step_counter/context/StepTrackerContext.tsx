@@ -83,7 +83,7 @@ const HealthKitManager = NativeModules.HealthKitManager as {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function hasStepsPerm(permissions: any[]): boolean {
+export function hasStepsPerm(permissions: any[]): boolean {
   return permissions.some(p => {
     // Some library versions return raw Android permission strings
     if (typeof p === 'string') {

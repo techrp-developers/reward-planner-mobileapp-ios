@@ -344,5 +344,105 @@
     "streakHeadline": "Your {streak}-day streak has been successfully completed",
     "trailHeadline": "Awesome walk! You explored new ground today",
     "sunriseHeadline": "Early mover! You kicked off the day with strong steps"
+  },
+  "onboarding": {
+    "back": "Go back",
+    "continue": "Continue",
+    "next": "Next",
+    "select": {
+      "title": "Which device do you use?",
+      "subtitle": "We'll show you simple steps to connect your step data.",
+      "android": "Android",
+      "iphone": "iPhone",
+      "thisPhone": "This phone",
+      "otherTitle": "Set up on that phone",
+      "otherOnIos": "You're using an iPhone. To track steps from an Android phone, install Reward Planners on that phone and sign in there.",
+      "otherOnAndroid": "You're using an Android phone. To track steps from an iPhone, install Reward Planners on your iPhone and sign in there."
+    },
+    "install": {
+      "title": "Install Health Connect",
+      "subtitle": "Health Connect safely shares your step data with Reward Planners.",
+      "updateTitle": "Update Health Connect",
+      "updateSubtitle": "A newer version of Health Connect is needed to share your step data.",
+      "appName": "Health Connect",
+      "publisher": "Google LLC",
+      "factFree": "Free",
+      "factFreeLabel": "Price",
+      "factOfficial": "Google",
+      "factOfficialLabel": "Official app",
+      "factPrivate": "Private",
+      "factPrivateLabel": "You control access",
+      "cta": "Get it on Google Play",
+      "updateCta": "Update on Google Play",
+      "alreadyInstalled": "Already installed? Continue",
+      "notFoundTitle": "Health Connect not found yet",
+      "notFound": "Install or update Health Connect from Google Play, then come back here."
+    },
+    "open": {
+      "title": "Open Health Connect",
+      "subtitle": "Open Health Connect to manage your step data.",
+      "tipTitle": "Can't find it?",
+      "tip": "Search for \"Health Connect\" in your app list. On Android 14 and later, it's in Settings › Security & privacy › Privacy › Health Connect.",
+      "cta": "Open Health Connect",
+      "skip": "Skip this step",
+      "illustration": "Phone app list with Health Connect highlighted"
+    },
+    "permission": {
+      "title": "Allow Step Permission",
+      "subtitle": "Allow Reward Planners to read your step count.",
+      "steps": "Steps",
+      "tipTitle": "Only your steps",
+      "tip": "Reward Planners only reads your step count. You can turn this off anytime in Health Connect.",
+      "cta": "Enable Step Access",
+      "deniedTitle": "Steps access is off",
+      "denied": "Turn on Steps for Reward Planners in Health Connect › App permissions, then come back here.",
+      "noSourceTitle": "No step data yet",
+      "noSource": "Steps access is on, but no app is saving steps to Health Connect. Open Google Fit, Samsung Health or your fitness app, turn on Health Connect sync, then try again.",
+      "openHealthConnect": "Open Health Connect",
+      "illustration": "Health Connect permission screen with Steps turned on for Reward Planners"
+    },
+    "apple": {
+      "title": "Use Apple Health",
+      "subtitle": "Your steps are already tracked in the Health app on your iPhone.",
+      "appName": "Apple Health",
+      "badge": "Usually pre-installed",
+      "info": "The Health app comes pre-installed on your iPhone. You don't need to install anything.",
+      "cta": "Connect Apple Health",
+      "manage": "Steps not showing? Manage permissions",
+      "unavailableTitle": "Apple Health unavailable",
+      "unavailable": "Apple Health isn't available on this device, so steps can't be tracked here.",
+      "failedTitle": "Couldn't connect Apple Health"
+    },
+    "settings": {
+      "title": "Open iPhone Settings",
+      "subtitle": "Manage your health permissions in your iPhone's Settings or Health app.",
+      "apps": "Apps",
+      "illustration": "iPhone Settings with Apps highlighted"
+    },
+    "find": {
+      "title": "Find Reward Planners",
+      "subtitle": "Select Reward Planners in the relevant app or Health permissions list.",
+      "tipTitle": "Depends on your iOS version",
+      "tip": "iOS 18 and later: Settings › Apps › Reward Planners › Health.\niOS 17 and earlier: Settings › Reward Planners › Health.\nOr: Health app › your profile › Apps › Reward Planners.",
+      "illustration": "iPhone Apps list with Reward Planners highlighted"
+    },
+    "allow": {
+      "title": "Allow Health Access",
+      "subtitle": "Allow Reward Planners to access your step data.",
+      "steps": "Steps",
+      "mockBody": "Reward Planners would like to access your health data.",
+      "tip": "Turn on \"Steps\", then come back here. For privacy, Apple doesn't tell apps whether read access is on — if your steps stay at 0 after walking, check this setting again.",
+      "cta": "Allow & Continue",
+      "openSettings": "Open Settings",
+      "illustration": "Health Access screen with Steps turned on"
+    },
+    "success": {
+      "title": "All Set!",
+      "body": "Your step data is now connected. Return to the dashboard to see your progress.",
+      "sync": "Steps will sync automatically",
+      "coins": "Hit your goals to earn coins",
+      "dashboard": "Go to Dashboard"
+    },
+    "genericError": "Something went wrong. Please try again."
   }
 }
