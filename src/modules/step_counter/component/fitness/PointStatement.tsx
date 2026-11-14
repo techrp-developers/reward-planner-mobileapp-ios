@@ -30,12 +30,13 @@ import {
 
 import Coin from '../../../../assets/product/rewards.svg';
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 type PointsNavProp = NativeStackNavigationProp<FitnessStackParamList, 'CoinHistory'>;
 
 // Violet Dusk palette — all on-dark, matching Dashboard/CoinHistoryAndPlan
-const VD = {
+const VD_DARK = {
   bg: ['#070A16', '#111735', '#201A3F'],
   accent: '#8EA2FF',
   accentDark: '#B9C4FF',
@@ -53,6 +54,42 @@ const VD = {
   warning: '#F8B84E',
   warningBg: 'rgba(248,184,78,0.12)',
   warningBorder: 'rgba(248,184,78,0.25)',
+  heroGrad: ["#27305F", "#1B2148", "#2A1E50"],
+  heroBorder: "rgba(174,188,255,0.28)",
+  heroText: "rgba(255,255,255,0.76)",
+  heroTextSoft: "rgba(255,255,255,0.7)",
+  glassStrong: "rgba(255,255,255,0.16)",
+  glassMid: "rgba(255,255,255,0.12)",
+  glassBorder: "rgba(255,255,255,0.14)",
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg: ["#F5F9FF", "#EEF4FF", "#F3EEFF"],
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentDim: "rgba(66,107,255,0.22)",
+  accentFaint: "rgba(66,107,255,0.10)",
+  white: "#10152D",
+  whiteMid: "#4A5275",
+  whiteLow: "#777FA5",
+  whiteGhost: "#E3EBFA",
+  cardBg: "#FFFFFF",
+  cardBorder: "#E9EEFA",
+  success: "#16A34A",
+  successBg: "rgba(34,197,94,0.10)",
+  successBorder: "rgba(34,197,94,0.28)",
+  warning: "#C27C00",
+  warningBg: "rgba(245,165,36,0.12)",
+  warningBorder: "rgba(245,165,36,0.30)",
+  heroGrad: ["#E8F0FF", "#EEF2FF", "#F1ECFF"],
+  heroBorder: "#E1E7F7",
+  heroText: "#4A5275",
+  heroTextSoft: "#777FA5",
+  glassStrong: "rgba(66,107,255,0.10)",
+  glassMid: "rgba(66,107,255,0.08)",
+  glassBorder: "rgba(66,107,255,0.16)",
 };
 
 const formatNumber = (value: number) =>
@@ -87,6 +124,7 @@ const formatFullDate = (value: string | null) => {
 };
 
 const PointsStatementScreen: React.FC = () => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<PointsNavProp>();
   const { width } = useWindowDimensions();
@@ -146,7 +184,7 @@ const PointsStatementScreen: React.FC = () => {
   }, [history]);
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -169,7 +207,7 @@ const PointsStatementScreen: React.FC = () => {
             </View>
 
             <LinearGradient
-              colors={['#27305F', '#1B2148', '#2A1E50']}
+              colors={VD.heroGrad}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.balanceGradient}
@@ -241,6 +279,7 @@ const PointsStatementScreen: React.FC = () => {
 };
 
 const TransactionRow = React.memo(({ item }: { item: StepHistoryItem }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   useTranslation(); // re-render memoized content on language change
   const isDebit = item.type === 'debit';
   const dateParts = formatDateParts(item.date);
@@ -282,6 +321,7 @@ const StateBox = React.memo(({
   message: string;
   onRetry?: () => void;
 }) => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   return (
   <View style={styles.stateBox}>
@@ -300,7 +340,7 @@ const StateBox = React.memo(({
 );
 });
 
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: VD.bg[0],
@@ -347,7 +387,7 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
     marginBottom: SPACING.md,
     borderWidth: 1,
-    borderColor: 'rgba(174,188,255,0.28)',
+    borderColor: VD.heroBorder,
   },
   balanceContent: {
     flexDirection: 'row',
@@ -359,7 +399,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.large,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: VD.glassStrong,
     marginRight: SPACING.md,
   },
   balanceTextContainer: {
@@ -367,7 +407,7 @@ const styles = StyleSheet.create({
   },
   balanceTitle: {
     ...TYPOGRAPHY.body,
-    color: 'rgba(255,255,255,0.76)',
+    color: VD.heroText,
   },
   balanceValue: {
     ...TYPOGRAPHY.h2,
@@ -383,13 +423,13 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: BORDER_RADIUS.large,
     padding: SPACING.md,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: VD.glassMid,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.14)',
+    borderColor: VD.glassBorder,
   },
   balanceMiniLabel: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255,255,255,0.7)',
+    color: VD.heroTextSoft,
   },
   balanceMiniValue: {
     ...TYPOGRAPHY.bodyMedium,

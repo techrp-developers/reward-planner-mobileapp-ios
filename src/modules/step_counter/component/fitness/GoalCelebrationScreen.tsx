@@ -28,7 +28,8 @@ import icon_Sunrise_Strider from "../../assets/StepCount/Achivement_icon(1).svg"
 import i18n from "../../../../i18n";
 import { translateSourceText } from "../../../../i18n/sourceText";
 import { Trans } from "react-i18next";
-import { formatNumber } from "../../../../i18n/format";
+import { formatNumber } from "../../../../i18n/format";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export type AchievementCategory = "walking" | "streak" | "trail" | "sunrise";
@@ -235,6 +236,7 @@ const BlastParticle: React.FC<{ angle: number; delay: number; color: string }> =
 
 // ─── Ring Pulse ───────────────────────────────────────────────────────────────
 const RingPulse: React.FC = () => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const scaleRef   = useRef(new Animated.Value(0.5));
   const opacityRef = useRef(new Animated.Value(0.8));
 
@@ -267,7 +269,9 @@ const RingPulse: React.FC = () => {
 };
 
 // ─── Blast Effect ─────────────────────────────────────────────────────────────
-const BlastEffect: React.FC = () => (
+const BlastEffect: React.FC = () => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <View style={styles.blastContainer} pointerEvents="none">
     {Array.from({ length: BLAST_COUNT }).map((_, i) => (
       <BlastParticle
@@ -278,10 +282,12 @@ const BlastEffect: React.FC = () => (
       />
     ))}
   </View>
-);
+  );
+};
 
 // ─── Stats Row ────────────────────────────────────────────────────────────────
 const StatsRow: React.FC<{ summary: NonNullable<GoalSyncData["overallSummary"]> }> = ({ summary }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const stats = [
     { icon: "👣", label: "Steps",    value: summary.steps.toLocaleString() },
     { icon: "🔥", label: i18n.t("stepCounter:r2.calories"), value: `${summary.calories}` },
@@ -312,6 +318,7 @@ const AchievementCard: React.FC<{
   fadeAnim: Animated.Value;
   showBlast: boolean;
 }> = ({ response, achievementIndex, onNext, isLast, scaleAnim, fadeAnim, showBlast }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const category    = detectCategory(response, achievementIndex);
   const config      = ACHIEVEMENT_CONFIG[category];
   const achievement = response.unlockedAchievements?.[achievementIndex];
@@ -388,6 +395,7 @@ const AchievementCard: React.FC<{
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const GoalCelebrationScreen: React.FC<Props> = (props) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const response = isDirectProps(props) ? props.response : props.route.params.response;
 
   // When used as a real navigated screen, "dismiss" means go back to the
@@ -505,7 +513,7 @@ export default GoalCelebrationScreen;
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 // ─── Step counter dark palette ────────────────────────────────────────────────
-const VD = {
+const VD_DARK = {
   bg0:         "#070A16",
   bg1:         "#111735",
   bg2:         "#201A3F",
@@ -522,7 +530,26 @@ const VD = {
   warning:     "#F5B86B",
 };
 
-const styles = StyleSheet.create({
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg0: "#F5F9FF",
+  bg1: "#EEF4FF",
+  bg2: "#F3EEFF",
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  accentDim: "rgba(66,107,255,0.22)",
+  cardBg: "#FFFFFF",
+  cardBorder: "#E9EEFA",
+  white: "#10152D",
+  whiteMid: "#4A5275",
+  whiteLow: "#777FA5",
+  whiteGhost: "#E3EBFA",
+  warning: "#C27C00",
+};
+
+const createStyles = (VD: Palette) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: VD.bg0,

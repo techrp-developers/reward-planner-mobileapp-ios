@@ -1,10 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
-  Easing,
-  Platform,
-  SafeAreaView,
+  Image,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -13,20 +10,16 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from "react-native-svg";
 
 import StatisticsGraph from "./StatisticsGraph";
 import CoinHistoryAndPlan from "./CoinHistoryAndPlan";
-import type { DailyData, StepStats } from "../../navigation/type";
-import {
-  BORDER_RADIUS,
-  RESPONSIVE,
-  SPACING,
-} from "../../utils/theme";
+import type { DailyData } from "../../navigation/type";
 import { fetchUserInfo } from "../../../common/auth/api/AuthAPI";
 import {
   useDashboardQuery,
@@ -36,274 +29,336 @@ import {
 } from "../../api/useFitnessQueries";
 import { useStepTracker } from "../StepCode/useStepTracker";
 import GoalCelebrationScreen from "./GoalCelebrationScreen";
+import { useHideFitnessTabBar } from "./FitnessTabBar";
 import GoalReachedScreen from "./GoalReachedScreen";
 import TodayGoalCompletedScreen from "./TodayGoalCompletedScreen";
 import type { GoalSyncData } from "../../api/Stepsapi";
 import WeeklyGraph from "./WeeklyGraph";
+import { genderFromUserInfo, type UserGender } from "../../utils/userGender";
+import { useStepStyles } from "../../utils/useStepTheme";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const dayFormatter = new Intl.DateTimeFormat("en-US", { weekday: "short" });
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-// Fresh active palette for the step dashboard.
-const VD = {
-  bg0: "#070A16",
-  bg1: "#111735",
-  bg2: "#201A3F",
-  ink: "#F6F7FF",
-  muted: "#A8AEC8",
-  softText: "#8188A6",
-  accent: "#8EA2FF",
-  accentDark: "#EEF1FF",
-  accentDim: "rgba(105,118,178,0.44)",
-  accentFaint: "rgba(142,162,255,0.12)",
+// ─── Theme ────────────────────────────────────────────────────────────────────
+// The hero is a daylight illustration panel, so it keeps its sky colours in
+// both modes; everything below it follows the app light/dark setting.
+const H = {
+  ink: "#10152D",
+  muted: "#777FA5",
+  blue: "#426BFF",
+  purple: "#773CFF",
+  cyan: "#36CFFF",
+  track: "#E3EBFA",
   white: "#FFFFFF",
-  whiteMid: "#CDD2EA",
-  whiteLow: "#979EBC",
-  whiteGhost: "rgba(255,255,255,0.055)",
-  cardBg: "rgba(255,255,255,0.075)",
-  cardSoft: "rgba(255,255,255,0.10)",
-  cardBorder: "rgba(174,188,255,0.16)",
-  success: "#9AAEFF",
-  warning: "#F5B86B",
-  shadow: "#02030A",
+  sky: ["#CFE5FF", "#E4F1FF", "#F5F9FF"],
+  shadow: "#4664A5",
+};
+const GRADIENT = [H.cyan, H.blue, H.purple];
+
+const C_LIGHT = {
+  bg: "#F5F9FF",
+  card: "#FFFFFF",
+  ink: "#10152D",
+  muted: "#777FA5",
+  blue: "#426BFF",
+  purple: "#773CFF",
+  border: "#E9EEFA",
+  shadow: "#4664A5",
+  chip: "#EEF3FF",
+  calorieFg: "#FF743A",
+  calorieBg: "#FFEDE3",
+  distanceFg: "#773CFF",
+  distanceBg: "#EEE9FF",
+  timeFg: "#F5A524",
+  timeBg: "#FFF3D6",
+  streakFg: "#FF3775",
+  streakBg: "#FFE6EE",
+  dot: "#F1F4FB",
+  dotToday: "#EEE9FF",
+  achBg: "#F1ECFF",
+  onAccent: "#FFFFFF",
 };
 
-// ─── Ring Progress ─────────────────────────────────────────────────────────────
+type Palette = typeof C_LIGHT;
+
+const C_DARK: Palette = {
+  bg: "#0B1020",
+  card: "#161C33",
+  ink: "#F2F4FF",
+  muted: "#9AA3C7",
+  blue: "#7B93FF",
+  purple: "#A585FF",
+  border: "rgba(174,188,255,0.14)",
+  shadow: "#02030A",
+  chip: "rgba(123,147,255,0.16)",
+  calorieFg: "#FF8A57",
+  calorieBg: "rgba(255,116,58,0.16)",
+  distanceFg: "#A585FF",
+  distanceBg: "rgba(165,133,255,0.16)",
+  timeFg: "#FFC24D",
+  timeBg: "rgba(245,165,36,0.16)",
+  streakFg: "#FF5C8E",
+  streakBg: "rgba(255,55,117,0.16)",
+  dot: "#1F2744",
+  dotToday: "rgba(165,133,255,0.20)",
+  achBg: "rgba(165,133,255,0.16)",
+  onAccent: "#FFFFFF",
+};
+
+const shadow = (color: string) => ({
+  shadowColor: color,
+  shadowOpacity: 0.08,
+  shadowRadius: 14,
+  shadowOffset: { width: 0, height: 5 },
+  elevation: 3,
+} as const);
+
+const useDashStyles = () => useStepStyles(C_LIGHT, C_DARK, createStyles);
+
+// Static artwork. "default" (other / unknown gender) uses the male runner,
+// matching the welcome banner; there is no neutral illustration yet.
+const HERO_ART: Record<UserGender, { source: number; aspect: number }> = {
+  male: { source: require("../../assets/StepCount/dashboard_runner_male.png"), aspect: 369 / 508 },
+  female: { source: require("../../assets/StepCount/dashboard_runner_female.png"), aspect: 510 / 649 },
+  default: { source: require("../../assets/StepCount/dashboard_runner_male.png"), aspect: 369 / 508 },
+};
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+const localDateKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const parseLocalDate = (key: string) => {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
+};
+
+// Same estimates the app sends in the sync payload (StepTrackerContext
+// buildPayload), so they match what the server stores after the next sync.
+const estimateFromSteps = (steps: number) => ({
+  distance_km: Number((steps * 0.0008).toFixed(2)),
+  calories: Math.round(steps * 0.04),
+  active_minutes: steps > 0 ? Math.max(1, Math.floor(steps / 1000)) : 0,
+});
+
+// ─── Step ring ────────────────────────────────────────────────────────────────
 interface RingProps {
   steps: number;
   goal: number;
-  size?: number;
-  strokeWidth?: number;
+  size: number;
+  numberFmt: Intl.NumberFormat;
 }
 
-const StepRing: React.FC<RingProps> = ({
-  steps,
-  goal,
-  size = 200,
-  strokeWidth = 16,
-}) => {
+const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
   const { t: tx } = useTranslation();
-  const animatedProgress = useRef(new Animated.Value(0)).current;
-  const chargeBrightness = useRef(new Animated.Value(0)).current;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const progress = goal > 0 ? Math.min(steps / goal, 1) : 0;
-  const cx = size / 2;
-  const cy = size / 2;
-
-  const pct = Math.round(progress * 100);
-  const animatedStrokeOffset = animatedProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: [circumference, 0],
-  });
-  const highlightOpacity = chargeBrightness.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.38, 1],
+  const { styles } = useDashStyles();
+  const stroke = Math.round(size * 0.085);
+  const outer = size + 28;
+  const c = outer / 2;
+  const r = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * r;
+  const hasGoal = goal > 0;
+  const percent = hasGoal ? Math.round((steps / goal) * 100) : 0;
+  // Visible fill is clamped; the step count itself is never capped.
+  const fill = hasGoal ? Math.min(steps / goal, 1) : 0;
+  const decoR = size / 2 + 11;
+  const decoDots = [200, 160, 20, -20].map(deg => {
+    const rad = (deg * Math.PI) / 180;
+    return { x: c + decoR * Math.cos(rad), y: c - decoR * Math.sin(rad) };
   });
 
-  useEffect(() => {
-    Animated.timing(animatedProgress, {
-      toValue: progress,
-      duration: 950,
-      easing: Easing.out(Easing.cubic),
-      useNativeDriver: false,
-    }).start();
-  }, [animatedProgress, progress]);
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(chargeBrightness, {
-          toValue: 1,
-          duration: 950,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-        Animated.timing(chargeBrightness, {
-          toValue: 0,
-          duration: 950,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: false,
-        }),
-      ])
-    );
-
-    loop.start();
-    return () => loop.stop();
-  }, [chargeBrightness]);
-
   return (
-    <View style={styles.ringWrap}>
-      <View style={[styles.ringCanvas, { width: size, height: size }]}>
-        <Svg width={size} height={size}>
-          {/* Track */}
+    <View
+      style={{ width: outer, height: outer }}
+      accessible
+      accessibilityRole="progressbar"
+      accessibilityLabel={`${numberFmt.format(steps)} ${tx("stepCounter:dashboard.steps")}`}
+      accessibilityValue={hasGoal ? { text: tx("stepCounter:dashboard.goalProgress", { percent }) } : undefined}
+    >
+      <Svg width={outer} height={outer}>
+        <Defs>
+          <SvgGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <Stop offset="0" stopColor={H.cyan} />
+            <Stop offset="0.45" stopColor={H.blue} />
+            <Stop offset="1" stopColor={H.purple} />
+          </SvgGradient>
+        </Defs>
+        {/* Decorative outer orbit */}
+        <Circle cx={c} cy={c} r={decoR} fill="none" stroke="rgba(66,107,255,0.22)" strokeWidth={1} />
+        {decoDots.map((p, i) => (
+          <Circle key={i} cx={p.x} cy={p.y} r={4} fill={i % 2 ? H.purple : H.blue} />
+        ))}
+        <Circle cx={c} cy={c} r={r} fill="none" stroke={H.track} strokeWidth={stroke} />
+        {fill > 0 && (
           <Circle
-            cx={cx}
-            cy={cy}
-            r={radius}
+            cx={c}
+            cy={c}
+            r={r}
             fill="none"
-            stroke={VD.whiteGhost}
-            strokeWidth={strokeWidth}
-          />
-          {/* Dim full ring */}
-          <Circle
-            cx={cx}
-            cy={cy}
-            r={radius}
-            fill="none"
-            stroke={VD.accentDim}
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${circumference}`}
-            strokeDashoffset={0}
+            stroke="url(#ringGrad)"
+            strokeWidth={stroke}
             strokeLinecap="round"
-            rotation="-90"
-            origin={`${cx},${cy}`}
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={circumference * (1 - fill)}
+            transform={`rotate(-90 ${c} ${c})`}
           />
-          {/* Progress */}
-          <AnimatedCircle
-            cx={cx}
-            cy={cy}
-            r={radius}
-            fill="none"
-            stroke={VD.accent}
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${circumference}`}
-            strokeDashoffset={animatedStrokeOffset}
-            strokeLinecap="round"
-            rotation="-90"
-            origin={`${cx},${cy}`}
-          />
-          {/* Breathing highlight over completed progress */}
-          {progress > 0 && (
-            <AnimatedCircle
-              cx={cx}
-              cy={cy}
-              r={radius}
-              fill="none"
-              stroke={VD.accentDark}
-              strokeWidth={strokeWidth + 6}
-              strokeDasharray={`${circumference}`}
-              strokeDashoffset={animatedStrokeOffset}
-              strokeLinecap="round"
-              opacity={highlightOpacity}
-              rotation="-90"
-              origin={`${cx},${cy}`}
-            />
-          )}
-        </Svg>
+        )}
+      </Svg>
 
-        <View style={styles.ringPctOnRing}>
-          <Text style={styles.ringPct}>{pct}%</Text>
-        </View>
-
-        {/* Center label */}
-        <View style={styles.ringCenter}>
-          <Text style={styles.ringSteps}>
-            {steps.toLocaleString()}
-          </Text>
-          <Text style={styles.ringLabel}>{tx("stepCounter:dashboard.steps")}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.ringGoalText}>
-        Goal: {goal.toLocaleString()} steps
-      </Text>
-    </View>
-  );
-};
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-interface StatCardProps {
-  icon: string; // MaterialCommunityIcons name
-  color: string;
-  value: string;
-  label: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ icon, color, value, label }) => (
-  <View style={styles.statCard}>
-    <View style={[styles.statIconBubble, { backgroundColor: color + "28" }]}>
-      <MaterialCommunityIcons name={icon} size={22} color={color} />
-    </View>
-    <Text style={styles.statValue}>{value}</Text>
-    <Text style={styles.statLabel}>{label}</Text>
-  </View>
-);
-
-// ─── Weekly Bar ───────────────────────────────────────────────────────────────
-// ─── Streak Row ───────────────────────────────────────────────────────────────
-interface StreakProps {
-  streak: number;
-}
-
-const StreakRow: React.FC<StreakProps> = ({ streak }) => {
-  const { t: tx } = useTranslation();
-  const days = ["M", "T", "W", "T", "F", "S", "S"];
-  return (
-    <View style={styles.streakCard}>
-      <View>
-        <Text style={styles.streakNum}>
-          {streak}{" "}
-          <Text style={styles.streakNumSub}>{tx("stepCounter:dashboard.dayStreak")}</Text>
+      <View style={[styles.ringInner, { width: size - stroke * 2 - 8, height: size - stroke * 2 - 8, top: 14 + stroke + 4, left: 14 + stroke + 4 }]}>
+        <MaterialCommunityIcons name="shoe-print" size={Math.round(size * 0.13)} color={H.blue} />
+        <Text
+          style={[styles.ringSteps, { fontSize: Math.round(size * 0.21) }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          maxFontSizeMultiplier={1.2}
+        >
+          {numberFmt.format(steps)}
         </Text>
-        <Text style={styles.streakSub}>{tx("stepCounter:dashboard.keepItGoing")}</Text>
+        <Text style={styles.ringLabel} maxFontSizeMultiplier={1.3}>
+          {tx("stepCounter:dashboard.steps")}
+        </Text>
+        <Text style={styles.ringGoal} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
+          {hasGoal ? (
+            <>
+              <Text style={styles.ringGoalStrong}>{numberFmt.format(steps)}</Text>
+              {" "}
+              {tx("stepCounter:dashboard.goalSuffix", { goal: numberFmt.format(goal) })}
+            </>
+          ) : (
+            tx("stepCounter:dashboard.noGoal")
+          )}
+        </Text>
       </View>
-      <View style={styles.streakDots}>
-        {days.map((d, i) => {
-          const done = i < streak;
-          return (
-            <View
-              key={i}
-              style={[styles.streakDot, done && styles.streakDotDone]}
-            >
-              <Text
-                style={[
-                  styles.streakDotText,
-                  done && { color: VD.white },
-                ]}
-              >
-                {done ? "✓" : d}
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+
+      {hasGoal && (
+        <LinearGradient colors={GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ringPill}>
+          <Text style={styles.ringPillText} maxFontSizeMultiplier={1.2}>{percent}%</Text>
+        </LinearGradient>
+      )}
     </View>
   );
-};
+});
 
+// ─── Hero art ─────────────────────────────────────────────────────────────────
+const HeroArt = React.memo(({ gender, width }: { gender: UserGender; width: number }) => {
+  const art = HERO_ART[gender];
+  const { styles } = useDashStyles();
+  return (
+    <Image
+      source={art.source}
+      style={[styles.heroArt, { width, height: width / art.aspect }]}
+      resizeMode="contain"
+      accessibilityIgnoresInvertColors
+    />
+  );
+});
 
-// Single tappable entry point into the achievements screen — kept as a plain
-// promo card rather than a multi-shield preview (Streak/Trail/Sunrise groups
-// were removed from the backend; with only "Walking" left, a 4-icon row
-// would look sparse), opens AchievementCard directly on tap.
-const AchievementsTeaser: React.FC<{ onPress: () => void }> = ({ onPress }) => (
-  <TouchableOpacity style={styles.achTeaserCard} onPress={onPress} activeOpacity={0.85}>
-    <View style={styles.achTeaserIconWrap}>
-      <MaterialCommunityIcons name="trophy-outline" size={26} color={VD.accentDark} />
+// ─── Stat card ────────────────────────────────────────────────────────────────
+const StatCard = React.memo(
+  ({ icon, color, bg, value, unit, label }: {
+    icon: string; color: string; bg: string; value: string; unit: string; label: string;
+  }) => {
+    const { styles } = useDashStyles();
+    return (
+    <View style={styles.statCard} accessible accessibilityLabel={`${label}: ${value} ${unit}`}>
+      <View style={[styles.statIcon, { backgroundColor: bg }]}>
+        <MaterialCommunityIcons name={icon} size={22} color={color} />
+      </View>
+      <View style={styles.statText}>
+        <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
+          {value}
+        </Text>
+        <Text style={styles.statUnit} numberOfLines={1} maxFontSizeMultiplier={1.3}>{unit}</Text>
+      </View>
     </View>
-    <View style={styles.achTeaserCopy}>
-      <Text style={styles.achTeaserTitle}>{i18n.t("stepCounter:dashboard.achievements")}</Text>
-      <Text style={styles.achTeaserSub}>{i18n.t("stepCounter:dashboard.seeYourUnlockedMilestonesAnd")}</Text>
-    </View>
-    <MaterialCommunityIcons name="chevron-right" size={22} color={VD.softText} />
-  </TouchableOpacity>
+    );
+  },
 );
+
+// ─── Streak card ──────────────────────────────────────────────────────────────
+// Weekday circles come from the dated weekly-progress data (steps ≥ goal for
+// that date — the same rule the backend calendar uses), never from the
+// streak count. Without a goal they stay neutral.
+const StreakCard = React.memo(
+  ({ streak, days, stacked }: { streak: number; days: DailyData[]; stacked: boolean }) => {
+    const { t: tx, i18n: i18nInstance } = useTranslation();
+    const { palette: C, styles } = useDashStyles();
+    const lang = i18nInstance.language;
+    const narrow = useMemo(() => new Intl.DateTimeFormat(lang, { weekday: "narrow" }), [lang]);
+    return (
+      <View style={[styles.card, styles.streakCard, stacked && styles.streakStacked]}>
+        <View style={styles.streakLeft}>
+          <View style={styles.streakIcon}>
+            <MaterialCommunityIcons name="fire" size={28} color={C.streakFg} />
+          </View>
+          <View style={styles.flexShrink}>
+            <Text style={styles.streakValue} maxFontSizeMultiplier={1.3}>
+              {streak}{" "}
+              <Text style={styles.streakUnit}>{tx("stepCounter:dashboard.dayStreak")}</Text>
+            </Text>
+            <Text style={styles.streakMsg}>
+              {streak > 0 ? tx("stepCounter:dashboard.keepItGoing") : tx("stepCounter:dashboard.startStreak")}
+            </Text>
+          </View>
+        </View>
+        {days.length > 0 && (
+          <View style={styles.streakDots}>
+            {days.map(d => {
+              const label = narrow.format(parseLocalDate(d.key ?? ""));
+              return (
+                <View
+                  key={d.key}
+                  style={[styles.streakDot, d.done && styles.streakDotDone, !d.done && d.isToday && styles.streakDotToday]}
+                  accessible
+                  accessibilityLabel={`${d.day} ${d.date}, ${tx(d.done ? "stepCounter:dashboard.goalMet" : "stepCounter:dashboard.goalNotMet")}`}
+                >
+                  {d.done ? (
+                    <MaterialCommunityIcons name="check" size={14} color={C.onAccent} />
+                  ) : (
+                    <Text style={[styles.streakDotText, d.isToday && styles.streakDotTextToday]}>{label}</Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
+    );
+  },
+);
+
+const AchievementsTeaser: React.FC<{ onPress: () => void }> = ({ onPress }) => {
+  const { palette: C, styles } = useDashStyles();
+  return (
+  <TouchableOpacity style={[styles.card, styles.achCard]} onPress={onPress} activeOpacity={0.85} accessibilityRole="button">
+    <View style={styles.achIcon}>
+      <MaterialCommunityIcons name="trophy-outline" size={26} color={C.purple} />
+    </View>
+    <View style={styles.flex}>
+      <Text style={styles.achTitle}>{i18n.t("stepCounter:dashboard.achievements")}</Text>
+      <Text style={styles.achSub}>{i18n.t("stepCounter:dashboard.seeYourUnlockedMilestonesAnd")}</Text>
+    </View>
+    <MaterialCommunityIcons name="chevron-right" size={22} color={C.muted} />
+  </TouchableOpacity>
+  );
+};
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const Dashboard: React.FC = () => {
   const { t: tx } = useTranslation();
-  const today = useMemo(() => new Date(), []);
   const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>();
+  const lang = i18n.language;
+  const { palette: C, styles, isDark } = useDashStyles();
 
-  const contentMaxWidth = Math.min(
-    width - RESPONSIVE.horizontalPadding * 2,
-    560
-  );
+  // Kept in state and refreshed on focus so the header/week roll over at midnight.
+  const [today, setToday] = useState(() => new Date());
+
+  const pad = width < 360 ? 16 : 20;
+  const contentWidth = Math.min(width - pad * 2, 560);
+  const ringSize = Math.round(Math.max(160, Math.min(contentWidth * 0.5, 220)));
+  const heroArtWidth = Math.min(width * 0.56, 300);
 
   const handleGoHome = useCallback(() => {
     navigation.getParent()?.navigate("Dashboard");
@@ -323,34 +378,19 @@ const Dashboard: React.FC = () => {
 
   const {
     steps: liveSteps,
-    loading: stepsLoading,
+    stepDataState,
     celebrationData,
     dismissCelebration,
     refreshSteps,
-    isSetupComplete,
   } = useStepTracker();
 
   useFocusEffect(useCallback(() => {
+    setToday(prev => (localDateKey(prev) === localDateKey(new Date()) ? prev : new Date()));
     void refreshSteps();
     const interval = setInterval(() => { void refreshSteps(); }, 60_000);
     return () => clearInterval(interval);
   }, [refreshSteps]));
 
-  // If Health Connect is uninstalled while the user is on the Dashboard (or on
-  // a fresh install where HC is gone), the context resets isSetupComplete to
-  // false. Redirect back to onboarding so the user is prompted to reinstall HC
-  // rather than seeing a broken Dashboard with 0 steps and no explanation.
-  // The ref guards against a false redirect during the initial async restore
-  // (isSetupComplete starts as false, becomes true after AsyncStorage/network
-  // resolves — we only want to redirect when it transitions true → false).
-  const setupWasReadyRef = useRef(false);
-  useEffect(() => {
-    if (isSetupComplete) {
-      setupWasReadyRef.current = true;
-    } else if (setupWasReadyRef.current) {
-      navigation.replace('StepWelcome');
-    }
-  }, [isSetupComplete, navigation]);
 
   // Goal completion shows two overlays in sequence: GoalReachedScreen (quick
   // "Target Reached!" recap) first, then Continue advances to the fuller
@@ -372,89 +412,85 @@ const Dashboard: React.FC = () => {
 
   const handleDismissSummary = useCallback(() => setSummaryData(null), []);
 
+  // The celebrations are full-screen; keep the RP Move tab bar out of the way.
+  useHideFitnessTabBar(!!celebrationData || !!goalReachedData || !!summaryData);
+
   const dashboardQuery = useDashboardQuery();
   const summaryQuery = useTodaySummaryQuery();
   const weeklyQuery = useWeeklyProgressQuery();
   const streakQuery = useFitnessStreakQuery();
 
   // ── Derived data ──────────────────────────────────────────────────────────
-  const firstName = useMemo(() => {
-    const u = userInfoQuery.data;
-    const name =
-      u?.user?.first_name || u?.user?.name || u?.name || "Name";
-    return String(name).split(/\s+/)[0] || "Name";
-  }, [userInfoQuery.data]);
-
-  const dashboardSteps = useMemo(
-    () => ({
-      todaySteps: dashboardQuery.data?.data?.today_steps || 0,
-      goalSteps: dashboardQuery.data?.data?.goal_steps || 0,
-    }),
-    [dashboardQuery.data]
+  const numberFmt = useMemo(() => new Intl.NumberFormat(lang), [lang]);
+  const decimalFmt = useMemo(
+    () => new Intl.NumberFormat(lang, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    [lang],
+  );
+  const dateLabel = useMemo(
+    () => new Intl.DateTimeFormat(lang, { weekday: "long", month: "short", day: "numeric" }).format(today),
+    [lang, today],
   );
 
-  const summary = useMemo(() => {
-    const d = summaryQuery.data?.data;
-    const toNum = (v: unknown) => { const x = Number(v); return Number.isFinite(x) ? x : 0; };
-    return {
-      steps: toNum(d?.steps),
-      goal_steps: toNum(d?.goal_steps),
-      distance_km: toNum(d?.distance_km),
-      calories: toNum(d?.calories),
-      active_minutes: toNum(d?.active_minutes),
-    };
-  }, [summaryQuery.data]);
+  const firstName = useMemo(() => {
+    const u = userInfoQuery.data;
+    const name = u?.user?.first_name || u?.user?.name || u?.name;
+    return name ? String(name).trim().split(/\s+/)[0] : null;
+  }, [userInfoQuery.data]);
 
-  const weeklyData = useMemo<DailyData[]>(() => {
-    const goalSteps = dashboardSteps.goalSteps || summary.goal_steps || 1;
-    const items = weeklyQuery.data?.data || [];
-    return items.map((item) => {
-      const date = new Date(`${item.date}T00:00:00`);
-      const progress = goalSteps > 0 ? item.steps / goalSteps : 0;
-      return {
-        day: dayFormatter.format(date),
-        date: date.getDate(),
-        progress,
-        done: progress >= 1,
-      };
-    });
-  }, [dashboardSteps.goalSteps, summary.goal_steps, weeklyQuery.data]);
+  // Render the hero only once user-info has settled so the wrong runner never flashes.
+  const heroGender = userInfoQuery.isPending ? null : genderFromUserInfo(userInfoQuery.data);
 
-  const stepStats: StepStats = useMemo(() => {
-    const currentSteps = liveSteps || summary.steps || dashboardSteps.todaySteps;
-    const goalSteps = summary.goal_steps || dashboardSteps.goalSteps || 1;
-    const distanceKm = liveSteps ? Number((liveSteps * 0.0008).toFixed(2)) : summary.distance_km;
-    const calories = liveSteps ? Math.round(liveSteps * 0.04) : summary.calories;
-    const activeMinutes = liveSteps ? Math.max(1, Math.floor(liveSteps / 1000)) : summary.active_minutes;
+  const server = summaryQuery.data?.data ?? null;
+  const dashboardData = dashboardQuery.data?.data ?? null;
+  // A successful health read is authoritative even at 0 steps — never let a
+  // valid 0 fall back to a stale server value.
+  const liveReadOk = stepDataState === "ok" || stepDataState === "no_steps_today";
 
-    return {
-      currentSteps,
-      goalSteps,
-      distance_km: distanceKm || 0,
-      active_minutes: activeMinutes || 0,
-      calories: calories || 0,
-    };
-  }, [dashboardSteps, liveSteps, summary]);
+  const currentSteps = liveReadOk ? liveSteps : (server?.steps ?? dashboardData?.today_steps ?? 0);
+  const goalSteps = server?.goal_steps || dashboardData?.goal_steps || 0;
 
-  const streakCount: number =
-    (streakQuery.data?.data as any)?.current_streak ?? 0;
+  const metrics = useMemo(() => {
+    // Prefer the server's stored metrics; only when live steps are ahead of
+    // the last sync use the same estimate the next sync will store.
+    if (server && server.steps >= currentSteps) {
+      return { calories: server.calories, distance_km: server.distance_km, active_minutes: server.active_minutes };
+    }
+    return estimateFromSteps(currentSteps);
+  }, [server, currentSteps]);
 
-  const isLoading =
-    (stepsLoading && !liveSteps && !summary.steps && !dashboardSteps.todaySteps) ||
-    (dashboardQuery.isLoading && !dashboardSteps.todaySteps) ||
-    (summaryQuery.isLoading && !summary.steps);
+  const weekDays = useMemo<DailyData[]>(() => {
+    const items = weeklyQuery.data?.data ?? [];
+    const todayKey = localDateKey(today);
+    const fmt = new Intl.DateTimeFormat(lang, { weekday: "short" });
+    return items
+      .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date))
+      .map(item => {
+        const date = parseLocalDate(item.date);
+        const isToday = item.date === todayKey;
+        // Today's bar uses the same live count as the ring.
+        const steps = isToday ? currentSteps : item.steps;
+        const ratio = goalSteps > 0 ? steps / goalSteps : 0;
+        return {
+          key: item.date,
+          day: fmt.format(date),
+          date: date.getDate(),
+          progress: ratio,
+          percent: Math.round(ratio * 100),
+          done: goalSteps > 0 && steps >= goalSteps,
+          isToday,
+        };
+      });
+  }, [weeklyQuery.data, today, lang, currentSteps, goalSteps]);
+
+  const streakCount = Number(streakQuery.data?.data?.current_streak) || 0;
+
+  const hasAnyData = liveReadOk || Boolean(server) || Boolean(dashboardData);
+  const isLoading = !hasAnyData && (summaryQuery.isPending || dashboardQuery.isPending);
 
   const errorMsg =
     dashboardQuery.data?.message ||
     summaryQuery.data?.message ||
-    weeklyQuery.data?.message ||
-    streakQuery.data?.message ||
-    (dashboardQuery.error ||
-      summaryQuery.error ||
-      weeklyQuery.error ||
-      streakQuery.error
-      ? i18n.t("stepCounter:r2.failedToLoadDashboard")
-      : "");
+    (dashboardQuery.error || summaryQuery.error ? i18n.t("stepCounter:r2.failedToLoadDashboard") : "");
 
   const handleRetry = useCallback(() => {
     refreshSteps();
@@ -464,151 +500,110 @@ const Dashboard: React.FC = () => {
     streakQuery.refetch();
   }, [dashboardQuery, refreshSteps, summaryQuery, weeklyQuery, streakQuery]);
 
-  const dateLabel = useMemo(
-    () =>
-      today.toLocaleDateString("en-US", {
-        weekday: "long",
-        month: "short",
-        day: "numeric",
-      }),
-    [today]
-  );
+  const handleViewMore = useCallback(() => navigation.navigate("PlanProcess"), [navigation]);
+  const handleAchievements = useCallback(() => navigation.navigate("AchievementCard"), [navigation]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content"
-      />
+    <View style={styles.root}>
+      {/* The hero is always a light sky panel, so status-bar icons stay dark over it. */}
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      <LinearGradient
-        colors={[VD.bg0, VD.bg1, VD.bg2]}
-        style={styles.gradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={[
-            styles.scrollContent,
-            { paddingHorizontal: RESPONSIVE.horizontalPadding },
-          ]}
-        >
-          <View style={[styles.content, { maxWidth: contentMaxWidth }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+        {/* ── Hero ── */}
+        <View style={[styles.hero, isDark && styles.heroDark, { paddingTop: insets.top + 12, paddingHorizontal: pad, minHeight: insets.top + 12 + heroArtWidth / HERO_ART.male.aspect }]}>
+          <LinearGradient colors={H.sky} style={StyleSheet.absoluteFill} />
+          {heroGender && <HeroArt gender={heroGender} width={heroArtWidth} />}
 
-            {/* ── Header ── */}
-            <View style={styles.headerRow}>
-              <View style={styles.headerLeft}>
-                <Text style={styles.eyebrow}>{tx("stepCounter:dashboard.todaySMovement")}</Text>
-                <Text style={styles.greetingTitle}>Hello {firstName}</Text>
-                <Text style={styles.subText}>{dateLabel}</Text>
+          <View style={styles.heroHeader}>
+            <View style={styles.flexShrink}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{tx("stepCounter:dashboard.rpMove")}</Text>
               </View>
-              <TouchableOpacity
-                style={styles.navHomeBtn}
-                onPress={handleGoHome}
-                activeOpacity={0.75}
-              >
-                <MaterialCommunityIcons
-                  name="home-variant-outline"
-                  size={22}
-                  color="#070A16"
-                />
-              </TouchableOpacity>
+              <Text style={styles.hello} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.25}>
+                {firstName ? tx("stepCounter:dashboard.hello", { name: firstName }) : tx("stepCounter:dashboard.helloNoName")}
+              </Text>
+              <Text style={styles.date} maxFontSizeMultiplier={1.3}>{dateLabel}</Text>
             </View>
+            <TouchableOpacity
+              style={styles.homeBtn}
+              onPress={handleGoHome}
+              activeOpacity={0.75}
+              accessibilityRole="button"
+              accessibilityLabel={tx("stepCounter:dashboard.home")}
+            >
+              <MaterialCommunityIcons name="home-variant-outline" size={22} color={H.ink} />
+            </TouchableOpacity>
+          </View>
 
-            {/* ── Loading / Error / Content ── */}
+          {!isLoading && !(errorMsg && !hasAnyData) && (
+            <View style={styles.ringWrap}>
+              <StepRing steps={currentSteps} goal={goalSteps} size={ringSize} numberFmt={numberFmt} />
+            </View>
+          )}
+        </View>
+
+        <View style={[styles.body, { paddingHorizontal: pad }]}>
+          <View style={[styles.content, { maxWidth: contentWidth }]}>
             {isLoading ? (
-              <View style={styles.stateBox}>
-                <ActivityIndicator color={VD.accent} size="large" />
-                <Text style={styles.stateText}>
-                  {tx("stepCounter:dashboard.loadingYourMovement")}
-                </Text>
+              <View style={[styles.card, styles.stateBox]}>
+                <ActivityIndicator color={C.blue} size="large" />
+                <Text style={styles.stateText}>{tx("stepCounter:dashboard.loadingYourMovement")}</Text>
               </View>
-            ) : errorMsg && !stepStats.currentSteps ? (
-              <View style={styles.stateBox}>
+            ) : errorMsg && !hasAnyData ? (
+              <View style={[styles.card, styles.stateBox]}>
                 <Text style={styles.stateText}>{errorMsg}</Text>
-                <TouchableOpacity onPress={handleRetry} style={styles.retryBtn}>
+                <TouchableOpacity onPress={handleRetry} style={styles.retryBtn} accessibilityRole="button">
                   <Text style={styles.retryText}>{tx("stepCounter:dashboard.retry")}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
               <>
-                {/* Step Ring */}
-                <StepRing
-                  steps={stepStats.currentSteps}
-                  goal={stepStats.goalSteps}
-                  size={Math.min(contentMaxWidth * 0.6, 210)}
-                  strokeWidth={18}
-                />
-
-                {/* Stat Grid */}
-                <View style={styles.statGrid}>
+                <View style={styles.statRow}>
                   <StatCard
                     icon="fire"
-                    color="#F97316"
-                    value={Math.round(Number(stepStats.calories) || 0).toString()}
-                    label={tx("stepCounter:dashboard.kcal")}
+                    color={C.calorieFg}
+                    bg={C.calorieBg}
+                    value={numberFmt.format(Math.round(metrics.calories))}
+                    unit={tx("stepCounter:dashboard.kcal")}
+                    label={tx("stepCounter:dashboard.calories")}
                   />
                   <StatCard
-                    icon="map-marker-distance"
-                    color={VD.accent}
-                    value={(Number(stepStats.distance_km) || 0).toFixed(1)}
-                    label={tx("stepCounter:dashboard.km")}
+                    icon="map-marker"
+                    color={C.distanceFg}
+                    bg={C.distanceBg}
+                    value={decimalFmt.format(metrics.distance_km)}
+                    unit={tx("stepCounter:dashboard.km")}
+                    label={tx("stepCounter:dashboard.distance")}
                   />
                   <StatCard
-                    icon="clock-fast"
-                    color={VD.success}
-                    value={Math.round(Number(stepStats.active_minutes) || 0).toString()}
-                    label={tx("stepCounter:dashboard.min")}
+                    icon="clock-outline"
+                    color={C.timeFg}
+                    bg={C.timeBg}
+                    value={numberFmt.format(Math.round(metrics.active_minutes))}
+                    unit={tx("stepCounter:dashboard.min")}
+                    label={tx("stepCounter:dashboard.activeTime")}
                   />
                 </View>
 
-                {/* Weekly Bars */}
-                {weeklyData.length > 0 && (
-                  <WeeklyGraph
-                    weeklyData={weeklyData}
-                    onViewMore={() => navigation.navigate("PlanProcess")}
-                  />
-                )}
+                {weekDays.length > 0 && <WeeklyGraph weeklyData={weekDays} onViewMore={handleViewMore} />}
 
-                {/* Streak */}
-                <StreakRow streak={streakCount} />
+                <StreakCard streak={streakCount} days={weekDays} stacked={contentWidth < 400} />
 
-                {/* Achievements entry point */}
-                <AchievementsTeaser onPress={() => navigation.navigate("AchievementCard")} />
+                <AchievementsTeaser onPress={handleAchievements} />
 
-                {/* Divider label */}
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerLabel}>{tx("stepCounter:dashboard.statistics")}</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                {/* Statistics Graph (your existing component) */}
-                <View style={styles.glassCard}>
+                <View style={styles.card}>
                   <StatisticsGraph />
                 </View>
 
-                {/* Divider label */}
-                <View style={styles.dividerRow}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerLabel}>{tx("stepCounter:dashboard.coinsPlan")}</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                {/* Coin History (your existing component) */}
-                <View style={styles.glassCard}>
+                <View style={styles.card}>
                   <CoinHistoryAndPlan />
                 </View>
               </>
             )}
-
-            <View style={{ height: SPACING.xxl }} />
           </View>
-        </ScrollView>
-      </LinearGradient>
+        </View>
+      </ScrollView>
 
       {/* ── Celebration overlay ── */}
       {celebrationData && (
@@ -642,394 +637,138 @@ const Dashboard: React.FC = () => {
           />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 export default React.memo(Dashboard);
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: VD.bg0,
-  },
-  gradient: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: "center",
-    paddingTop: Platform.OS === "android" ? SPACING.xl + 8 : SPACING.md,
-    paddingBottom: SPACING.xxl,
-  },
-  content: {
-    width: "100%",
-  },
+const createStyles = (C: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: C.bg },
+  flex: { flex: 1 },
+  flexShrink: { flexShrink: 1 },
 
-  // ── Header ──
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: SPACING.lg,
+  // ── Hero ──
+  hero: { overflow: "hidden", paddingBottom: 40 },
+  // Dark mode: the light hero reads as a rounded panel on the dark page.
+  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28, paddingBottom: 48, marginBottom: 8 },
+  heroArt: { position: "absolute", right: 0, bottom: 0 },
+  heroHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
+  badge: {
+    alignSelf: "flex-start",
+    backgroundColor: "rgba(255,255,255,0.85)",
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    marginBottom: 10,
   },
-  headerLeft: {
-    flex: 1,
-    marginRight: SPACING.md,
-  },
-  eyebrow: {
-    fontSize: 11,
-    fontWeight: "800",
-    letterSpacing: 0,
-    textTransform: "uppercase",
-    color: VD.accentDark,
-    marginBottom: 4,
-  },
-  greetingTitle: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: VD.ink,
-    lineHeight: 32,
-  },
-  subText: {
-    fontSize: 13,
-    color: VD.muted,
-    marginTop: 2,
-    fontWeight: "500",
-  },
-  navHomeBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: BORDER_RADIUS.medium,
-    backgroundColor: VD.white,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
+  badgeText: { fontSize: 12, fontWeight: "800", color: H.blue, letterSpacing: 0.6, textTransform: "uppercase" },
+  hello: { fontSize: 30, lineHeight: 36, fontWeight: "800", color: H.ink },
+  date: { fontSize: 15, fontWeight: "600", color: H.muted, marginTop: 2 },
+  homeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.9)",
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 3,
+    ...shadow(H.shadow),
   },
 
   // ── Ring ──
-  ringWrap: {
-    alignItems: "center",
-    backgroundColor: VD.cardBg,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    borderRadius: BORDER_RADIUS.xl,
-    paddingVertical: SPACING.xl,
-    marginBottom: SPACING.lg,
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.12,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 4,
-  },
-  ringCanvas: {
+  ringWrap: { marginTop: 14, marginLeft: -14, alignSelf: "flex-start" },
+  ringInner: {
+    position: "absolute",
+    borderRadius: 999,
+    backgroundColor: H.white,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 10,
+    ...shadow(H.shadow),
   },
-  ringPctOnRing: {
+  ringSteps: { fontWeight: "900", color: H.ink, marginTop: 2 },
+  ringLabel: { fontSize: 13, fontWeight: "800", color: H.blue, letterSpacing: 0.8, textTransform: "uppercase" },
+  ringGoal: { fontSize: 12, color: H.muted, marginTop: 4 },
+  ringGoalStrong: { color: H.purple, fontWeight: "800" },
+  ringPill: {
     position: "absolute",
     top: 2,
     alignSelf: "center",
-    backgroundColor: "#111735",
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: VD.accentDark,
-    paddingHorizontal: 13,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     paddingVertical: 5,
-    shadowColor: VD.accent,
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  ringCenter: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    minWidth: 64,
     alignItems: "center",
-    justifyContent: "center",
   },
-  ringSteps: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: VD.ink,
-    letterSpacing: 0,
-    lineHeight: 42,
-  },
-  ringLabel: {
-    fontSize: 11,
-    color: VD.softText,
-    textTransform: "uppercase",
-    letterSpacing: 0,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-  ringPct: {
-    fontSize: 14,
-    color: VD.accentDark,
-    fontWeight: "900",
-  },
-  ringGoalText: {
-    fontSize: 13,
-    color: VD.muted,
-    marginTop: 10,
-    fontWeight: "500",
+  ringPillText: { fontSize: 16, fontWeight: "800", color: H.white },
+
+  // ── Body ──
+  body: { marginTop: -22, alignItems: "center" },
+  content: { width: "100%" },
+  card: {
+    backgroundColor: C.card,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: C.border,
+    marginBottom: 16,
+    overflow: "hidden",
+    ...shadow(C.shadow),
   },
 
-  // ── Stat Grid ──
-  statGrid: {
-    flexDirection: "row",
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
+  statRow: { flexDirection: "row", gap: 10, marginBottom: 16 },
   statCard: {
     flex: 1,
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    paddingVertical: SPACING.md,
-    alignItems: "center",
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-  statIconBubble: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: VD.ink,
-    lineHeight: 22,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: VD.muted,
-    fontWeight: "500",
-    marginTop: 2,
-  },
-
-  // ── Weekly bars ──
-  weekCard: {
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
-  },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: VD.muted,
-    textTransform: "uppercase",
-    letterSpacing: 0,
-    marginBottom: SPACING.sm,
-  },
-  barsRow: {
+    minWidth: 0,
     flexDirection: "row",
-    alignItems: "flex-end",
-    height: 64,
-    gap: 6,
-  },
-  barCol: {
-    flex: 1,
     alignItems: "center",
-    gap: 4,
-    height: "100%",
+    gap: 8,
+    backgroundColor: C.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: C.border,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+    ...shadow(C.shadow),
   },
-  barBg: {
-    flex: 1,
-    width: "100%",
-    backgroundColor: VD.whiteGhost,
-    borderRadius: 4,
-    justifyContent: "flex-end",
-    overflow: "hidden",
-  },
-  barFill: {
-    width: "100%",
-    borderRadius: 4,
-  },
-  barDay: {
-    fontSize: 9,
-    color: VD.muted,
-    fontWeight: "500",
-  },
+  statIcon: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  statText: { flex: 1, minWidth: 0 },
+  statValue: { fontSize: 20, fontWeight: "800", color: C.ink },
+  statUnit: { fontSize: 13, color: C.muted, fontWeight: "600" },
 
   // ── Streak ──
-  streakCard: {
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-  streakNum: {
-    fontSize: 24,
-    fontWeight: "900",
-    color: VD.ink,
-  },
-  streakNumSub: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: VD.muted,
-  },
-  streakSub: {
-    fontSize: 12,
-    color: VD.muted,
-    marginTop: 2,
-    fontWeight: "500",
-  },
-  streakDots: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: SPACING.md,
-  },
+  streakCard: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, gap: 12 },
+  streakStacked: { flexDirection: "column", alignItems: "stretch" },
+  streakLeft: { flexDirection: "row", alignItems: "center", gap: 12, flexShrink: 1 },
+  streakIcon: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.streakBg, alignItems: "center", justifyContent: "center" },
+  streakValue: { fontSize: 30, fontWeight: "900", color: C.ink },
+  streakUnit: { fontSize: 17, fontWeight: "600", color: C.muted },
+  streakMsg: { fontSize: 13, color: C.muted, marginTop: 2 },
+  streakDots: { flexDirection: "row", justifyContent: "space-between", gap: 4 },
   streakDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: VD.cardSoft,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: C.dot,
     alignItems: "center",
     justifyContent: "center",
   },
-  streakDotDone: {
-    backgroundColor: VD.accent,
-    borderColor: VD.accent,
-  },
-  streakDotText: {
-    fontSize: 10,
-    color: VD.muted,
-    fontWeight: "700",
-  },
+  streakDotDone: { backgroundColor: C.purple },
+  streakDotToday: { backgroundColor: C.dotToday, borderWidth: 1.5, borderColor: C.purple },
+  streakDotText: { fontSize: 12, fontWeight: "700", color: C.muted },
+  streakDotTextToday: { color: C.purple },
 
-  // ── Achievements teaser ──
-  achTeaserCard: {
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    padding: SPACING.md,
-    marginTop: SPACING.md,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-  achTeaserIconWrap: {
-    width: 44, height: 44, borderRadius: 12,
-    backgroundColor: VD.accentFaint,
-    alignItems: "center", justifyContent: "center",
-  },
-  achTeaserCopy: { flex: 1 },
-  achTeaserTitle: { fontSize: 15, fontWeight: "700", color: VD.ink },
-  achTeaserSub: { fontSize: 12, color: VD.muted, marginTop: 2 },
+  // ── Achievements ──
+  achCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
+  achIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: C.achBg, alignItems: "center", justifyContent: "center" },
+  achTitle: { fontSize: 16, fontWeight: "800", color: C.ink },
+  achSub: { fontSize: 13, color: C.muted, marginTop: 2 },
 
-  // ── Divider ──
-  dividerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
-    marginBottom: SPACING.md,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 0.5,
-    backgroundColor: VD.cardBorder,
-  },
-  dividerLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: VD.muted,
-    textTransform: "uppercase",
-    letterSpacing: 0,
-  },
+  // ── States ──
+  stateBox: { minHeight: 200, alignItems: "center", justifyContent: "center", padding: 24 },
+  stateText: { fontSize: 14, color: C.muted, textAlign: "center", marginTop: 10, fontWeight: "500" },
+  retryBtn: { marginTop: 14, minHeight: 44, justifyContent: "center", paddingHorizontal: 20, borderRadius: 14, backgroundColor: C.chip },
+  retryText: { fontSize: 14, fontWeight: "700", color: C.blue },
 
-  // ── Glass card wrapper for existing components ──
-  glassCard: {
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.xl,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    overflow: "hidden",
-    marginBottom: SPACING.lg,
-    shadowColor: VD.shadow,
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
-  },
-
-  // ── State boxes ──
-  stateBox: {
-    minHeight: 200,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-    padding: SPACING.lg,
-    marginBottom: SPACING.lg,
-  },
-  stateText: {
-    fontSize: 14,
-    color: VD.muted,
-    textAlign: "center",
-    marginTop: SPACING.sm,
-    fontWeight: "500",
-  },
-  retryBtn: {
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.sm,
-    backgroundColor: VD.accentFaint,
-    borderRadius: BORDER_RADIUS.medium,
-    borderWidth: 1,
-    borderColor: VD.cardBorder,
-  },
-  retryText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: VD.accent,
-  },
-
-  // ── Summary overlay ──
-  summaryOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 1000,
-  },
+  summaryOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 },
 });

@@ -2,13 +2,13 @@ import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -30,11 +30,12 @@ import Walking_Enthusiast from "../../assets/StepCount/Walking_Enthusiast.svg";
 import icon_Walking_Enthusiast from "../../assets/StepCount/Achivement_icon(2).svg";
 import { useTranslation } from "react-i18next";
 import { translateSourceText } from "../../../../i18n/sourceText";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 const { width } = Dimensions.get("window");
 
-const VD = {
+const VD_DARK = {
   bg: ["#070A16", "#111735", "#201A3F"],
   ink: "#F6F7FF",
   muted: "#A8AEC8",
@@ -46,6 +47,22 @@ const VD = {
   cardSoft: "rgba(255,255,255,0.10)",
   cardBorder: "rgba(174,188,255,0.16)",
   shadow: "#02030A",
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg: ["#F5F9FF", "#EEF4FF", "#F3EEFF"],
+  ink: "#10152D",
+  muted: "#777FA5",
+  softText: "#8A92B2",
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBg: "#FFFFFF",
+  cardSoft: "#F3F6FD",
+  cardBorder: "#E9EEFA",
+  shadow: "#4664A5",
 };
 
 // Streak Keeper / Trailblazer / Sunrise Strider were removed from the
@@ -150,6 +167,7 @@ type BadgeShieldProps = {
 };
 
 const BadgeShield = ({ data, category }: BadgeShieldProps) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { achieved, label, stepsLeft } = data;
 
   const SmallIcon = getSmallIcon(category);
@@ -199,16 +217,20 @@ type AchievementCardProps = {
   children: React.ReactNode;
 };
 
-const AchievementCard = ({ title, description, children }: AchievementCardProps) => (
+const AchievementCard = ({ title, description, children }: AchievementCardProps) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <View style={styles.card}>
     <Text style={styles.sectionTitle}>{translateSourceText("stepCounter", title)}</Text>
     <Text style={styles.sectionDesc}>{translateSourceText("stepCounter", description)}</Text>
     <View style={styles.badgeGrid}>{children}</View>
   </View>
-);
+  );
+};
 
 /* ---------------- MAIN SCREEN ---------------- */
 export default function AchievementsScreen() {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation();
   const achievementsQuery = useAchievementsQuery();
@@ -242,7 +264,7 @@ export default function AchievementsScreen() {
   }, [achievementsQuery.data]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* HEADER */}
@@ -303,7 +325,7 @@ export default function AchievementsScreen() {
 }
 
 /* ---------------- STYLES ---------------- */
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: VD.bg[0],

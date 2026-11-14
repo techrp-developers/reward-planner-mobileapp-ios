@@ -125,7 +125,14 @@ export type WeeklyPlanItem = {
 };
 
 export type ProfilePlanResponse = {
-  bmi: string;
+  // null until body measurements are saved.
+  bmi: string | null;
+  // Saved profile details; returned by newer servers only.
+  gender?: string | null;
+  age?: number | null;
+  goal_type?: GoalType | null;
+  height_cm?: number | null;
+  weight_kg?: number | null;
   category: string;
   recommended_steps: number;
   recommended_minutes: number;

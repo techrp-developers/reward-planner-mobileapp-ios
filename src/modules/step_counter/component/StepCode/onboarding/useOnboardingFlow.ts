@@ -4,7 +4,6 @@ import { SdkAvailabilityStatus } from 'react-native-health-connect';
 
 import { useStepTracker } from '../useStepTracker';
 import { hasStepsPerm } from '../../../context/StepTrackerContext';
-import { fetchProfileStepStatus } from '../../../api/ProfileAPI';
 
 export type DevicePlatform = 'android' | 'ios';
 
@@ -48,7 +47,6 @@ export function useOnboardingFlow() {
   const [installShown, setInstallShown] = useState(false);
   const [recoveryShown, setRecoveryShown] = useState(false);
   const [openedHc, setOpenedHc] = useState(false);
-  const [profileCompleted, setProfileCompleted] = useState<boolean | null>(null);
   const busyRef = useRef(false);
 
   const step = history[history.length - 1];
@@ -149,17 +147,6 @@ export function useOnboardingFlow() {
     Linking.openSettings().catch(() => {});
   }, []);
 
-  // Decide where "success" leads: the existing flow sends new users to
-  // StepForm; users whose fitness profile is already complete go to Dashboard.
-  useEffect(() => {
-    if (step !== 'success' || profileCompleted !== null) return;
-    let mounted = true;
-    fetchProfileStepStatus().then(res => {
-      if (mounted) setProfileCompleted(Boolean(res.success && res.is_completed));
-    });
-    return () => { mounted = false; };
-  }, [step, profileCompleted]);
-
   // ── Progress (reflects skipped install / optional recovery steps) ────────
 
   const plan = useMemo<OnboardingStep[]>(() => {
@@ -190,7 +177,6 @@ export function useOnboardingFlow() {
     stepsGranted,
     ready,
     isSetupComplete,
-    profileCompleted,
     go,
     back,
     continueFromSelect,

@@ -3,6 +3,11 @@ export interface DailyData {
   date: number;
   progress: number;
   done: boolean;
+  /** YYYY-MM-DD, used as a stable list key. */
+  key?: string;
+  /** Unclamped percentage of the daily goal. */
+  percent?: number;
+  isToday?: boolean;
 }
 
 export interface StepStats {

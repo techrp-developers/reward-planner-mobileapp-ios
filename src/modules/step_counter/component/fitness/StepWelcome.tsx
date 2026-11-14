@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -19,24 +19,58 @@ import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 
 import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
-import { fetchProfileStepStatus } from "../../api/ProfileAPI";
+import { useContinueSetup } from "../../utils/fitnessSetup";
+import { useStepStyles } from "../../utils/useStepTheme";
 import { fetchUserInfo } from "../../../common/auth/api/AuthAPI";
 import MaleBanner from "../../assets/StepCount/step_counter_banner.svg";
 import FemaleBanner from "../../assets/StepCount/step_counter_banner_woman.svg";
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "StepWelcome">;
 
-const C = {
+// The hero banner is a daylight illustration, so its copy keeps these colours
+// in both modes; the rest of the screen follows the app light/dark setting.
+const H = {
   ink: "#0D1733",
   body: "#405273",
   label: "#526FFE",
-  white: "#FFFFFF",
-  screen: "#F3F6FF",
   hero: "#DCE8FF",
+} as const;
+
+const C_LIGHT = {
+  screen: "#F3F6FF",
+  card: "#FFFFFF",
+  body: "#405273",
+  label: "#526FFE",
   divider: "#EDF0F6",
   blue: "#487DFF",
   purple: "#956FF7",
-} as const;
+  onAccent: "#FFFFFF",
+  shadow: "#2B3A7A",
+  steps: ["#6C5CE7", "#EFEDFF"],
+  coins: ["#F2A516", "#FFF6E2"],
+  progress: ["#1FA463", "#E7F7EE"],
+  streak: ["#EF4E5B", "#FFECEE"],
+};
+
+type Palette = typeof C_LIGHT;
+
+const C_DARK: Palette = {
+  screen: "#0B1020",
+  card: "#161C33",
+  body: "#C3C9E4",
+  label: "#8EA2FF",
+  divider: "rgba(174,188,255,0.12)",
+  blue: "#5E86FF",
+  purple: "#A585FF",
+  onAccent: "#FFFFFF",
+  shadow: "#02030A",
+  steps: ["#9D90FF", "rgba(108,92,231,0.20)"],
+  coins: ["#FFC24D", "rgba(242,165,22,0.16)"],
+  progress: ["#3DD68C", "rgba(31,164,99,0.18)"],
+  streak: ["#FF6B76", "rgba(239,78,91,0.18)"],
+};
+
+const useWelcomeStyles = () => useStepStyles(C_LIGHT, C_DARK, createStyles);
 
 // ─── Gender-based banner ─────────────────────────────────────────────────────
 
@@ -97,7 +131,9 @@ type FeatureRowProps = {
 };
 
 const FeatureRow = React.memo(
-  ({ icon, color, iconBg, label, last, rowHeight }: FeatureRowProps) => (
+  ({ icon, color, iconBg, label, last, rowHeight }: FeatureRowProps) => {
+    const { styles } = useWelcomeStyles();
+    return (
     <View style={[styles.featureRow, { minHeight: rowHeight }]}>
       <View style={[styles.featureIconBox, { backgroundColor: iconBg }]}>
         <MaterialCommunityIcons name={icon} size={25} color={color} />
@@ -106,17 +142,18 @@ const FeatureRow = React.memo(
       <Text style={styles.featureLabel}>{label}</Text>
       {!last && <View pointerEvents="none" style={styles.rowDivider} />}
     </View>
-  ),
+    );
+  },
 );
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const StepWelcome = () => {
   const { t: tx } = useTranslation();
+  const { palette: C, styles, isDark } = useWelcomeStyles();
   const navigation = useNavigation<Nav>();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
-  const [checking, setChecking] = useState(true);
   const { data: bannerGender, isPending: genderPending } = useBannerGender();
 
   const compact = height < 740;
@@ -127,31 +164,10 @@ const StepWelcome = () => {
   const rowHeight = compact ? 62 : 68;
 
   const handleBack = useCallback(() => navigation.goBack(), [navigation]);
-  const handleNext = useCallback(
-    () => navigation.navigate("StepsTrackerScreen"),
-    [navigation],
-  );
-
-  useEffect(() => {
-    let mounted = true;
-    const check = async () => {
-      try {
-        const res = await fetchProfileStepStatus();
-        if (!mounted) return;
-        // Route through StepsTrackerScreen, not directly to Dashboard.
-        // StepsTrackerScreen auto-redirects to Dashboard when HC is ready,
-        // or shows the permission/install UI if HC was reinstalled and
-        // permissions were revoked — the right thing to do in either case.
-        if (res.success && res.is_completed) navigation.replace("StepsTrackerScreen");
-      } catch {
-        // status check failed — show the welcome screen anyway
-      } finally {
-        if (mounted) setChecking(false);
-      }
-    };
-    check();
-    return () => { mounted = false; };
-  }, [navigation]);
+  // Continue at the first incomplete stage (health → details → plan), or the
+  // Dashboard when everything is ready, instead of always restarting setup.
+  const { continueSetup, busy: checking } = useContinueSetup();
+  const handleNext = useCallback(() => { void continueSetup(); }, [continueSetup]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
@@ -163,7 +179,7 @@ const StepWelcome = () => {
         bounces={false}
       >
         {/* Hero — fixed size, so the banner never shifts the layout */}
-        <View style={[styles.hero, { height: heroTotalHeight }]}>
+        <View style={[styles.hero, isDark && styles.heroDark, { height: heroTotalHeight }]}>
           {/* While user-info is still loading, keep the plain sky so the
               wrong gender is never shown. */}
           {!genderPending && (
@@ -178,7 +194,7 @@ const StepWelcome = () => {
 
           <View style={[styles.heroContent, { paddingTop: insets.top + 12 }]}>
             <TouchableOpacity style={styles.backBtn} onPress={handleBack} activeOpacity={0.78}>
-              <MaterialCommunityIcons name="chevron-left" size={24} color={C.ink} />
+              <MaterialCommunityIcons name="chevron-left" size={24} color={H.ink} />
             </TouchableOpacity>
 
             <View style={[styles.copy, { width: width * 0.55 }]}>
@@ -198,29 +214,29 @@ const StepWelcome = () => {
           <View style={styles.featureCard}>
             <FeatureRow
               icon="shoe-print"
-              color="#6C5CE7"
-              iconBg="#EFEDFF"
+              color={C.steps[0]}
+              iconBg={C.steps[1]}
               label={i18n.t("stepCounter:r2.tracksYourDailyStepsAutomatically")}
               rowHeight={rowHeight}
             />
             <FeatureRow
               icon="star-circle"
-              color="#F2A516"
-              iconBg="#FFF6E2"
+              color={C.coins[0]}
+              iconBg={C.coins[1]}
               label={i18n.t("stepCounter:r2.earnCoinsForHittingYourStep")}
               rowHeight={rowHeight}
             />
             <FeatureRow
               icon="trending-up"
-              color="#1FA463"
-              iconBg="#E7F7EE"
+              color={C.progress[0]}
+              iconBg={C.progress[1]}
               label={i18n.t("stepCounter:r2.seeYourWeeklyProgressAtA")}
               rowHeight={rowHeight}
             />
             <FeatureRow
               icon="fire"
-              color="#EF4E5B"
-              iconBg="#FFECEE"
+              color={C.streak[0]}
+              iconBg={C.streak[1]}
               label={i18n.t("stepCounter:r2.maintainStreaksForBonusRewards")}
               rowHeight={rowHeight}
               last
@@ -243,11 +259,11 @@ const StepWelcome = () => {
               style={[styles.cta, checking && styles.ctaDisabled]}
             >
               {checking ? (
-                <ActivityIndicator color={C.white} />
+                <ActivityIndicator color={C.onAccent} />
               ) : (
                 <>
                   <Text style={styles.ctaText}>{tx("stepCounter:stepWelcome.letSGetMoving")}</Text>
-                  <MaterialCommunityIcons name="arrow-right" size={20} color={C.white} />
+                  <MaterialCommunityIcons name="arrow-right" size={20} color={C.onAccent} />
                 </>
               )}
             </LinearGradient>
@@ -262,11 +278,13 @@ export default React.memo(StepWelcome);
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const createStyles = (C: Palette) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.screen },
   scroll: { flexGrow: 1, paddingBottom: 20 },
 
-  hero: { width: "100%", overflow: "hidden", backgroundColor: C.hero },
+  hero: { width: "100%", overflow: "hidden", backgroundColor: H.hero },
+  // Dark mode: the light banner reads as a rounded panel on the dark page.
+  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   heroContent: { flex: 1, paddingHorizontal: 20 },
   backBtn: {
     width: 40,
@@ -283,28 +301,28 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.6,
     textTransform: "uppercase",
-    color: C.label,
+    color: H.label,
     marginBottom: 8,
   },
   title: {
     fontSize: 34,
     fontWeight: "900",
-    color: C.ink,
+    color: H.ink,
     lineHeight: 40,
     marginBottom: 10,
   },
   titleCompact: { fontSize: 29, lineHeight: 34 },
-  subtitle: { fontSize: 15, lineHeight: 21, color: C.body },
+  subtitle: { fontSize: 15, lineHeight: 21, color: H.body },
   subtitleCompact: { fontSize: 14, lineHeight: 19 },
 
   body: { paddingHorizontal: 16, marginTop: -28 },
 
   featureCard: {
-    backgroundColor: C.white,
+    backgroundColor: C.card,
     borderRadius: 20,
     paddingHorizontal: 18,
     paddingVertical: 6,
-    shadowColor: "#2B3A7A",
+    shadowColor: C.shadow,
     shadowOpacity: 0.08,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
@@ -353,5 +371,5 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   ctaDisabled: { opacity: 0.6 },
-  ctaText: { fontSize: 17, fontWeight: "800", color: C.white },
+  ctaText: { fontSize: 17, fontWeight: "800", color: C.onAccent },
 });

@@ -13,7 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { OB, OB_LAYOUT, softShadow } from './theme';
+import { OB_DARK, OB_LAYOUT, OB_LIGHT, softShadow, type ObPalette } from './theme';
+import { useStepStyles } from '../../../utils/useStepTheme';
 import type { OnboardingSvg } from './assets';
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
@@ -35,10 +36,11 @@ type StepOnboardingScreenProps = {
 export const StepOnboardingScreen = ({
   progress, onBack, backLabel, title, subtitle, children, footer,
 }: StepOnboardingScreenProps) => {
+  const { palette: OB, styles, isDark } = useObStyles();
   const insets = useSafeAreaInsets();
   return (
     <View style={styles.root}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
       <LinearGradient colors={[OB.bg, OB.bgAlt]} style={StyleSheet.absoluteFill} />
       <View pointerEvents="none" style={[styles.glow, styles.glowTop]} />
       <View pointerEvents="none" style={[styles.glow, styles.glowBottom]} />
@@ -70,7 +72,9 @@ export const StepOnboardingScreen = ({
 
 export const OnboardingHeader = ({
   progress, onBack, backLabel,
-}: Pick<StepOnboardingScreenProps, 'progress' | 'onBack' | 'backLabel'>) => (
+}: Pick<StepOnboardingScreenProps, 'progress' | 'onBack' | 'backLabel'>) => {
+  const { palette: OB, styles } = useObStyles();
+  return (
   <View style={styles.header}>
     <TouchableOpacity
       style={styles.backBtn}
@@ -88,9 +92,12 @@ export const OnboardingHeader = ({
       </View>
     )}
   </View>
-);
+  );
+};
 
-export const OnboardingProgress = ({ index, total }: { index: number; total: number }) => (
+export const OnboardingProgress = ({ index, total }: { index: number; total: number }) => {
+  const { styles } = useObStyles();
+  return (
   <View
     style={styles.progress}
     accessible
@@ -116,7 +123,8 @@ export const OnboardingProgress = ({ index, total }: { index: number; total: num
       );
     })}
   </View>
-);
+  );
+};
 
 // ─── Platform selection ───────────────────────────────────────────────────────
 
@@ -131,7 +139,9 @@ type PlatformSelectionCardProps = {
 
 export const PlatformSelectionCard = ({
   label, hint, icon, iconBg, selected, onPress,
-}: PlatformSelectionCardProps) => (
+}: PlatformSelectionCardProps) => {
+  const { palette: OB, styles } = useObStyles();
+  return (
   <TouchableOpacity
     activeOpacity={0.85}
     onPress={onPress}
@@ -147,7 +157,8 @@ export const PlatformSelectionCard = ({
     </View>
     <MaterialCommunityIcons name="chevron-right" size={24} color={OB.text} />
   </TouchableOpacity>
-);
+  );
+};
 
 // ─── Illustrations ────────────────────────────────────────────────────────────
 
@@ -170,6 +181,7 @@ export const AppIconTile = ({
   fill?: boolean;
   accessibilityLabel: string;
 }) => {
+  const { styles } = useObStyles();
   const inner = fill ? size : size * 0.62;
   return (
     <View
@@ -201,6 +213,7 @@ export const OnboardingIllustration = ({
   accessibilityLabel: string;
   frame?: 'android' | 'ios';
 }) => {
+  const { styles } = useObStyles();
   const { width, height } = useWindowDimensions();
   const frameWidth = Math.min(width - OB_LAYOUT.padding * 2, 320);
   const frameHeight = Math.max(220, Math.min(300, height * 0.36));
@@ -239,11 +252,11 @@ export const OnboardingIllustration = ({
 // ─── Info card ────────────────────────────────────────────────────────────────
 
 type Tone = 'info' | 'warning' | 'error';
-const TONES: Record<Tone, { bg: string; fg: string; icon: string }> = {
+const tones = (OB: ObPalette): Record<Tone, { bg: string; fg: string; icon: string }> => ({
   info: { bg: OB.lavender, fg: OB.lavenderText, icon: 'lightbulb-on-outline' },
   warning: { bg: OB.warningBg, fg: OB.warning, icon: 'alert-circle-outline' },
   error: { bg: OB.errorBg, fg: OB.error, icon: 'close-circle-outline' },
-};
+});
 
 export const InstructionInfoCard = ({
   title, body, tone = 'info', action,
@@ -253,7 +266,8 @@ export const InstructionInfoCard = ({
   tone?: Tone;
   action?: { label: string; onPress: () => void };
 }) => {
-  const t = TONES[tone];
+  const { palette: OB, styles } = useObStyles();
+  const t = tones(OB)[tone];
   return (
     <View
       style={[styles.info, { backgroundColor: t.bg }]}
@@ -286,7 +300,9 @@ export const GradientPrimaryButton = ({
   disabled?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: string | null;
-}) => (
+}) => {
+  const { palette: OB, styles } = useObStyles();
+  return (
   <TouchableOpacity
     activeOpacity={0.88}
     onPress={onPress}
@@ -313,11 +329,14 @@ export const GradientPrimaryButton = ({
       )}
     </LinearGradient>
   </TouchableOpacity>
-);
+  );
+};
 
 export const SecondaryLink = ({
   label, onPress, disabled,
-}: { label: string; onPress: () => void; disabled?: boolean }) => (
+}: { label: string; onPress: () => void; disabled?: boolean }) => {
+  const { styles } = useObStyles();
+  return (
   <TouchableOpacity
     onPress={onPress}
     disabled={disabled}
@@ -327,7 +346,8 @@ export const SecondaryLink = ({
   >
     <Text style={[styles.secondaryText, disabled && styles.disabled]}>{label}</Text>
   </TouchableOpacity>
-);
+  );
+};
 
 // ─── Success ──────────────────────────────────────────────────────────────────
 
@@ -348,6 +368,7 @@ export const OnboardingSuccess = ({
   rows: { icon: string; color: string; bg: string; label: string }[];
   hero?: OnboardingSvg | null;
 }) => {
+  const { palette: OB, styles } = useObStyles();
   const { width } = useWindowDimensions();
   return (
   <View style={styles.success}>
@@ -400,7 +421,7 @@ export const OnboardingSuccess = ({
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-export const styles = StyleSheet.create({
+const createStyles = (OB: ObPalette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: OB.bg },
   flex: { flex: 1 },
   center: { textAlign: 'center' },
@@ -418,7 +439,7 @@ export const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: OB.white,
+    backgroundColor: OB.card,
     borderWidth: 1,
     borderColor: OB.border,
     alignItems: 'center',
@@ -457,7 +478,7 @@ export const styles = StyleSheet.create({
     borderRadius: OB_LAYOUT.cardRadius,
     borderWidth: 1,
     borderColor: OB.border,
-    backgroundColor: OB.white,
+    backgroundColor: OB.card,
     gap: 16,
   },
   platformCardSelected: {
@@ -498,7 +519,7 @@ export const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: OB.white,
+    backgroundColor: OB.card,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -544,9 +565,13 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: OB.border,
-    backgroundColor: OB.white,
+    backgroundColor: OB.card,
     marginBottom: 12,
   },
   featureIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   featureText: { flex: 1, fontSize: 15, color: OB.text, fontWeight: '500' },
 });
+
+function useObStyles() {
+  return useStepStyles(OB_LIGHT, OB_DARK, createStyles);
+}

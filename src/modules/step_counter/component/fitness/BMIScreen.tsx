@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Animated,
+  BackHandler,
   FlatList,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,92 +14,149 @@ import {
   View,
 } from "react-native";
 import Modal from "react-native-modal";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import LinearGradient from "react-native-linear-gradient";
-import { useNavigation } from "@react-navigation/native";
+import Svg, { Path } from "react-native-svg";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
-import { BORDER_RADIUS, RESPONSIVE, SPACING } from "../../utils/theme";
+import { BORDER_RADIUS, SPACING, RESPONSIVE } from "../../utils/theme";
 
-import BMIBanner from "../../assets/StepCount/BMIpage.svg";
-import StepIcon   from "../../assets/StepCount/step_icon.svg";
-import ClockIcon  from "../../assets/StepCount/clock_icon.svg";
-import RewardIcon from "../../../../assets/product/rewards.svg";
+import { selectUserGoal, updateBodyProfile } from "../../api/ProfileAPI";
+import { useInvalidateFitnessQueries, useTodaySummaryQuery } from "../../api/useFitnessQueries";
+import { hasMeasurements, useProfilePlanCache, useProfilePlanQuery } from "../../api/useProfilePlan";
+import { useStepTracker } from "../StepCode/useStepTracker";
+import { useContinueSetup } from "../../utils/fitnessSetup";
 import {
-  fetchProfilePlan,
-  updateBodyProfile,
-  type ProfilePlanResponse,
-  type WeeklyPlanItem,
-} from "../../api/ProfileAPI";
+  DEFAULT_HEIGHT_CM,
+  DEFAULT_WEIGHT_KG,
+  HEIGHT_OPTIONS,
+  WEIGHT_OPTIONS,
+  bmiFrom,
+  nearestOption,
+  optionLabel,
+  type MeasurementOption,
+} from "../../utils/measurements";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 import { translateSourceText } from "../../../../i18n/sourceText";
+import { useStepStyles } from "../../utils/useStepTheme";
+import { GoalHeroArt, goalHeroSize, useGoalHeroKind } from "./GoalHeroArt";
 
-// ─── Measurement picker constants ─────────────────────────────────────────────
+type Nav = NativeStackNavigationProp<FitnessStackParamList, "BMICart" | "MyPlan">;
 
-const heightList = ["4.5 ft", "4.8 ft", "5.0 ft", "5.2 ft", "5.4 ft", "5.6 ft", "5.8 ft", "6.0 ft", "6.2 ft"];
-const weightList = Array.from({ length: 100 }, (_, i) => `${30 + i} kg`);
+// ─── Hero colours ─────────────────────────────────────────────────────────────
+// The hero artwork is a daylight scene, so the hero panel stays light in both
+// themes (same as Dashboard / StepGoal); in dark mode it gets rounded corners.
 
-const parseLeadingNumber = (v: string) => {
-  const n = Number.parseFloat(v.replace(/[^\d.]/g, ""));
-  return Number.isFinite(n) ? n : 0;
+const H = {
+  sky: ["#C9DFFB", "#E2EEFD", "#F3EEFF"],
+  ink: "#10152D",
+  muted: "#5D6588",
+  label: "#4A5275",
+  white: "#FFFFFF",
+  gold: "#F5A623",
+  blue: "#426BFF",
+  wave: "rgba(214,201,255,0.55)",
+  chip: "rgba(255,255,255,0.86)",
 };
 
-const heightFeetToCm = (v: string) => Math.round(parseLeadingNumber(v) * 30.48);
+// ─── Body palette ─────────────────────────────────────────────────────────────
 
-type Nav = NativeStackNavigationProp<FitnessStackParamList, "BMICart">;
-
-// ─── Violet Dusk palette ──────────────────────────────────────────────────────
-
-const VD = {
+const VD_DARK = {
   bg:          ["#070A16", "#111735", "#201A3F"],
   accent:      "#8EA2FF",
   accentDark:  "#B9C4FF",
   accentFaint: "rgba(142,162,255,0.12)",
-  accentDim:   "rgba(142,162,255,0.26)",
-  cardBg:      "rgba(255,255,255,0.075)",
+  cardBg:      "#141A33",
   cardBorder:  "rgba(174,188,255,0.16)",
   white:       "#FFFFFF",
   whiteMid:    "#CDD2EA",
   whiteLow:    "#979EBC",
-  whiteGhost:  "rgba(255,255,255,0.10)",
-  success:     "#9AAEFF",
-  warning:     "#F8B84E",
   error:       "#F38C9A",
+  screen: "#070A16",
+  sheet: "#111735",
+  cta: ["#8EA2FF", "#B9C4FF"],
+  ctaOff: ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.10)"],
+  ctaText: "#070A16",
+  ctaBase: "#8EA2FF",
+  glassFaint: "rgba(255,255,255,0.05)",
+  tile: "rgba(255,255,255,0.05)",
+  tileBorder: "rgba(174,188,255,0.14)",
+  selectedBg: "rgba(142,162,255,0.14)",
+  selectedBorder: "#9B7BFF",
+  check: "#8E6BFF",
+  iconBg: "rgba(142,162,255,0.16)",
+  noteBg: "rgba(142,162,255,0.10)",
+  done: "#34D399",
+  doneBg: "rgba(52,211,153,0.12)",
+  doneBorder: "rgba(52,211,153,0.28)",
+  track: ["#E6B93E", "#4DBA73", "#E8826A", "#D9534F"],
+  shadow: "#000000",
+  elevation: 0,
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg: ["#F3EEFF", "#F5F9FF", "#EFE9FF"],
+  accent: "#3D5AFE",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBg: "#FFFFFF",
+  cardBorder: "#ECEFFA",
+  white: "#10152D",
+  whiteMid: "#4A5275",
+  whiteLow: "#777FA5",
+  error: "#E5484D",
+  screen: "#F5F9FF",
+  sheet: "#FFFFFF",
+  cta: ["#11C5F9", "#426BFF", "#773CFF", "#A334F8"],
+  ctaOff: ["#DCE3F5", "#E4E1F5"],
+  ctaText: "#FFFFFF",
+  ctaBase: "#426BFF",
+  glassFaint: "#F3F6FD",
+  tile: "#FFFFFF",
+  tileBorder: "#E6E9F5",
+  selectedBg: "#F5F1FF",
+  selectedBorder: "#793FFF",
+  check: "#5B2EFF",
+  iconBg: "#EAF0FF",
+  noteBg: "#F3F0FF",
+  done: "#22B25F",
+  doneBg: "#FFFFFF",
+  doneBorder: "#E3F4EA",
+  track: ["#F4C142", "#5CC77D", "#F08A6C", "#E4544F"],
+  shadow: "#5B3FD9",
+  elevation: 3,
 };
 
 // ─── BMI bar constants ────────────────────────────────────────────────────────
 
 const BMI_MIN = 12;
 const BMI_MAX = 40;
-const INDICATOR_WIDTH = 5;
+const KNOB = 22;
 
 const BMI_SEGMENTS = [
-  { label: "Under",  min: 12,   max: 18.5, color: "#FCD34D" },
-  { label: "Normal", min: 18.5, max: 25,   color: "#22C55E" },
-  { label: "Over",   min: 25,   max: 30,   color: "#F97316" },
-  { label: "Obese",  min: 30,   max: 40,   color: "#EF4444" },
-];
+  { label: "Under",  category: "Underweight", min: 12,   max: 18.5, guidance: "guidanceUnder" },
+  { label: "Normal", category: "Normal",      min: 18.5, max: 25,   guidance: "guidanceNormal" },
+  { label: "Over",   category: "Overweight",  min: 25,   max: 30,   guidance: "guidanceOver" },
+  { label: "Obese",  category: "Obese",       min: 30,   max: 40,   guidance: "guidanceObese" },
+] as const;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
 const fmt   = (v: number) => (Number.isFinite(v) ? v.toLocaleString("en-IN") : "0");
 
-const fmtMinutes = (m: number) => {
-  if (m === 60) return "1 hour";
-  if (m > 60 && m % 60 === 0) return `${m / 60} hours`;
-  return `${m} min`;
-};
-
 const toTitle = (v: string) =>
   v.replace(/[_-]/g, " ")
    .replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
 
 const getBmiSegment = (bmi: number, category?: string) => {
-  if (Number.isFinite(bmi)) {
+  if (Number.isFinite(bmi) && bmi > 0) {
     if (bmi < 18.5) return BMI_SEGMENTS[0];
     if (bmi < 25)   return BMI_SEGMENTS[1];
     if (bmi < 30)   return BMI_SEGMENTS[2];
@@ -106,27 +166,12 @@ const getBmiSegment = (bmi: number, category?: string) => {
   return BMI_SEGMENTS.find(s => n.includes(s.label.toLowerCase())) || BMI_SEGMENTS[1];
 };
 
+type GoalOption = { key: string; steps: number };
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const MetricTag = React.memo(({ Icon, label }: { Icon: any; label: string }) => (
-  <View style={ss.tag}>
-    <Icon width={16} height={16} />
-    <Text style={ss.tagText}>{label}</Text>
-  </View>
-));
-
-const WeeklyPlanCard = React.memo(({ item }: { item: WeeklyPlanItem }) => {
-  const { t: tx } = useTranslation();
-  return (
-  <View style={ss.weekBox}>
-    <Text style={ss.weekBoxTitle}>{tx('stepCounter:units.weekN', { n: item.week })}</Text>
-    <Text style={ss.weekBoxSteps}>{fmt(item.steps)}</Text>
-    <Text style={ss.weekBoxLabel}>{tx("stepCounter:bMIScreen.stepsDay")}</Text>
-  </View>
-);
-});
-
 const LoadingState = React.memo(() => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   return (
   <View style={ss.stateBox}>
@@ -137,94 +182,187 @@ const LoadingState = React.memo(() => {
 );
 });
 
-const ErrorState = React.memo(({
-  message, onRetry, onSetupProfile,
-}: { message: string; onRetry: () => void; onSetupProfile?: () => void }) => {
+const ErrorState = React.memo(({ message, onRetry }: { message: string; onRetry: () => void }) => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   useTranslation();
   return (
   <View style={ss.stateBox}>
     <View style={ss.errorIcon}>
       <MaterialCommunityIcons name="alert-circle-outline" size={28} color={VD.error} />
     </View>
-    <Text style={ss.stateTitle}>{onSetupProfile ? i18n.t("stepCounter:r2.setUpPlan") : i18n.t("stepCounter:r2.planUnavailable")}</Text>
-    <Text style={ss.stateText}>
-      {onSetupProfile ? i18n.t("stepCounter:r2.addBodyDetails") : message}
-    </Text>
-    <TouchableOpacity activeOpacity={0.9} onPress={onSetupProfile || onRetry} style={ss.retryBtn}>
-      <Text style={ss.retryText}>{onSetupProfile ? i18n.t("stepCounter:r2.setUpProfile") : i18n.t("common:actions.retry")}</Text>
+    <Text style={ss.stateTitle}>{i18n.t("stepCounter:r2.planUnavailable")}</Text>
+    <Text style={ss.stateText}>{message}</Text>
+    <TouchableOpacity activeOpacity={0.9} onPress={onRetry} style={ss.retryBtn}>
+      <Text style={ss.retryText}>{i18n.t("common:actions.retry")}</Text>
     </TouchableOpacity>
   </View>
   );
 });
 
+const CardHeader = React.memo(({ icon, title }: { icon: string; title: string }) => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
+    <View style={ss.cardHeader}>
+      <MaterialCommunityIcons name={icon} size={20} color={VD.accent} />
+      <Text style={ss.cardTitle} maxFontSizeMultiplier={1.3}>{title}</Text>
+    </View>
+  );
+});
+
+/** Four-colour BMI scale with an animated marker. */
+const BmiMeter = React.memo(({ value }: { value: number }) => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  useTranslation();
+  const anim = useRef(new Animated.Value(0)).current;
+  const [barWidth, setBarWidth] = useState(0);
+
+  const target = useMemo(() => {
+    if (!barWidth || !(value > 0)) return 0;
+    const progress = (clamp(value, BMI_MIN, BMI_MAX) - BMI_MIN) / (BMI_MAX - BMI_MIN);
+    return Math.max(barWidth - KNOB, 0) * progress;
+  }, [barWidth, value]);
+
+  useEffect(() => {
+    Animated.spring(anim, { toValue: target, friction: 8, tension: 80, useNativeDriver: true }).start();
+  }, [anim, target]);
+
+  return (
+    <>
+      <View style={ss.bmiBar} onLayout={e => setBarWidth(e.nativeEvent.layout.width)}>
+        {BMI_SEGMENTS.map((seg, i) => (
+          <View
+            key={seg.label}
+            style={[ss.segment, i > 0 && ss.segmentGap, { backgroundColor: VD.track[i], flex: seg.max - seg.min }]}
+          />
+        ))}
+        {value > 0 && <Animated.View style={[ss.knob, { transform: [{ translateX: anim }] }]} />}
+      </View>
+      <View style={ss.bmiLabelRow}>
+        {BMI_SEGMENTS.map(seg => (
+          <Text key={seg.label} style={[ss.bmiLbl, { flex: seg.max - seg.min }]} numberOfLines={1}>
+            {translateSourceText("stepCounter", seg.label)}
+          </Text>
+        ))}
+      </View>
+    </>
+  );
+});
+
+/** Icon tile + label + "17.56 – Underweight" line used by the BMI cards. */
+const BmiHeadline = React.memo(({ label, value }: { label: string; value: string }) => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
+    <View style={ss.bmiHead}>
+      <View style={ss.bmiIcon}>
+        <MaterialCommunityIcons name="scale-bathroom" size={22} color={VD.accent} />
+      </View>
+      <View style={ss.flex}>
+        <Text style={ss.bmiLabel} maxFontSizeMultiplier={1.3}>{label}</Text>
+        <Text style={ss.bmiValue} maxFontSizeMultiplier={1.2}>{value}</Text>
+      </View>
+    </View>
+  );
+});
+
+const MeasureField = React.memo(({ label, icon, value, onPress }: {
+  label: string; icon: string; value: string; onPress: () => void;
+}) => {
+  const { palette: VD, styles: ss } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
+    <View style={ss.measureCol}>
+      <Text style={ss.measureLabel} maxFontSizeMultiplier={1.3}>{label}</Text>
+      <TouchableOpacity style={ss.measureBox} onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`}>
+        <MaterialCommunityIcons name={icon} size={22} color={VD.accentDark} />
+        <Text style={ss.measureValue} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>{value}</Text>
+        <MaterialCommunityIcons name="chevron-down" size={20} color={VD.whiteMid} />
+      </TouchableOpacity>
+    </View>
+  );
+});
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
+/**
+ * BMICart: the plan + goal step of first-time setup (no tab bar).
+ * MyPlan:  the My Plan tab — create a plan, edit measurements, change goal.
+ */
 const BMIScreen: React.FC = () => {
+  const { palette: VD, styles: ss, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation    = useNavigation<Nav>();
+  const manage        = useRoute().name === "MyPlan";
+  const invalidateFitnessQueries = useInvalidateFitnessQueries();
+  const planQuery     = useProfilePlanQuery();
+  const { fetchFresh } = useProfilePlanCache();
+  const { continueSetup, busy: continuing } = useContinueSetup();
   const { width, height } = useWindowDimensions();
-  const indicatorAnim = useRef(new Animated.Value(0)).current;
+  const insets        = useSafeAreaInsets();
+  const heroKind      = useGoalHeroKind();
+  const scrollRef     = useRef<ScrollView>(null);
 
-  const [profilePlan,   setProfilePlan]   = useState<ProfilePlanResponse | null>(null);
-  const [loading,       setLoading]       = useState(true);
-  const [errorMessage,  setErrorMessage]  = useState("");
-  const [barWidth,      setBarWidth]      = useState(0);
+  const profilePlan = planQuery.data ?? null;
+  const measured = hasMeasurements(profilePlan);
 
-  // ── Recalculate BMI state ─────────────────────────────────────────────────
-  const [showUpdateForm,   setShowUpdateForm]   = useState(false);
-  const [showPicker,       setShowPicker]       = useState(false);
-  const [pickerField,      setPickerField]      = useState<"height" | "weight">("height");
-  const [heightValue,      setHeightValue]      = useState("5.8 ft");
-  const [weightValue,      setWeightValue]      = useState("55 kg");
-  const [updateError,      setUpdateError]      = useState("");
-  const [updating,         setUpdating]         = useState(false);
+  // ── Goal selection ────────────────────────────────────────────────────────
+  const [selectedSteps, setSelectedSteps] = useState<number | null>(null);
+  const [submitting,    setSubmitting]    = useState(false);
+  const [goalSaved,     setGoalSaved]     = useState(false);
+  const submittingRef = useRef(false);
 
-  const pickerItems = pickerField === "height" ? heightList : weightList;
+  // ── Measurements (State B) ────────────────────────────────────────────────
+  const [editing,     setEditing]     = useState(false);
+  const [heightCm,    setHeightCm]    = useState(DEFAULT_HEIGHT_CM);
+  const [weightKg,    setWeightKg]    = useState(DEFAULT_WEIGHT_KG);
+  const [showPicker,  setShowPicker]  = useState(false);
+  const [pickerField, setPickerField] = useState<"height" | "weight">("height");
+  const [saving,      setSaving]      = useState(false);
 
-  const bannerHeight   = Math.min(Math.max(height * 0.32, 220), 320);
-  const contentPadding = width >= 768 ? 34 : 20;
+  const pad = RESPONSIVE.horizontalPadding;
 
-  const load = useCallback(async () => {
-    setLoading(true); setErrorMessage("");
-    const res = await fetchProfilePlan();
-    if (res.success && res.data) setProfilePlan(res.data);
-    else setErrorMessage(res.message || i18n.t("stepCounter:r2.failedToFetchProfilePlan"));
-    setLoading(false);
-  }, []);
+  // ── Today's activity for the "create a plan" hero ─────────────────────────
+  const { steps: liveSteps } = useStepTracker();
+  const summaryQuery = useTodaySummaryQuery();
+  const activeMinutes = summaryQuery.data?.success ? summaryQuery.data.data?.active_minutes ?? 0 : 0;
 
-  useEffect(() => { load(); }, [load]);
+  const openMeasurements = useCallback(() => {
+    // Start from the saved values when the server returns them.
+    setHeightCm(nearestOption(HEIGHT_OPTIONS, profilePlan?.height_cm)?.value ?? DEFAULT_HEIGHT_CM);
+    setWeightKg(nearestOption(WEIGHT_OPTIONS, profilePlan?.weight_kg)?.value ?? DEFAULT_WEIGHT_KG);
+    setEditing(true);
+    requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: 0, animated: false }));
+  }, [profilePlan?.height_cm, profilePlan?.weight_kg]);
 
-  const openPicker = useCallback((field: "height" | "weight") => {
-    setPickerField(field);
-    setShowPicker(true);
-  }, []);
+  const closeMeasurements = useCallback(() => setEditing(false), []);
 
-  const handlePickerSelect = useCallback((value: string) => {
-    if (pickerField === "height") setHeightValue(value);
-    else setWeightValue(value);
-    setShowPicker(false);
-  }, [pickerField]);
+  // Back leaves the measurement form first when a plan exists to return to.
+  useFocusEffect(useCallback(() => {
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (editing && measured) { setEditing(false); return true; }
+      return false;
+    });
+    return () => sub.remove();
+  }, [editing, measured]));
 
-  const handleUpdateMeasurements = useCallback(async () => {
-    setUpdateError("");
-    setUpdating(true);
+  const handleGeneratePlan = useCallback(async () => {
+    setSaving(true);
     try {
-      const res = await updateBodyProfile({
-        height_cm: heightFeetToCm(heightValue),
-        weight_kg: Math.round(parseLeadingNumber(weightValue)),
-      });
+      const res = await updateBodyProfile({ height_cm: heightCm, weight_kg: weightKg });
       if (!res.success) {
-        setUpdateError(res.message || "Update failed");
+        Alert.alert(tx("stepCounter:bMIScreen.updateMeasurements"), res.message);
         return;
       }
-      setShowUpdateForm(false);
-      load();
+      // The saved goal stays as it is; only BMI and the recommendation change.
+      await fetchFresh();
+      invalidateFitnessQueries();
+      setGoalSaved(false);
+      setEditing(false);
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ y: 0, animated: true }));
     } catch (e: any) {
-      setUpdateError(e?.message || "Update failed");
+      Alert.alert(tx("stepCounter:bMIScreen.updateMeasurements"), e?.message || i18n.t("stepCounter:r2.failedToFetchProfilePlan"));
     } finally {
-      setUpdating(false);
+      setSaving(false);
     }
-  }, [heightValue, weightValue, load]);
+  }, [fetchFresh, heightCm, invalidateFitnessQueries, tx, weightKg]);
 
   const bmi = useMemo(() => {
     const value  = Number(profilePlan?.bmi ?? 0);
@@ -232,254 +370,399 @@ const BMIScreen: React.FC = () => {
     return {
       value,
       label:    Number.isFinite(value) && value > 0 ? value.toFixed(2) : "--",
-      category: profilePlan?.category ? toTitle(profilePlan.category) : seg.label,
-      color:    seg.color,
-      goal:     profilePlan?.goal || "Your Goal",
-      steps:    profilePlan?.recommended_steps ?? 0,
-      minutes:  profilePlan?.recommended_minutes ?? 0,
+      category: profilePlan?.category ? toTitle(profilePlan.category) : seg.category,
+      guidance: seg.guidance,
       plan:     profilePlan?.weekly_plan ?? [],
       currentGoal: profilePlan?.current_goal ?? null,
     };
   }, [profilePlan]);
 
-  const isProfileMissing = errorMessage === "Profile not found";
+  // Live preview while choosing measurements; the plan itself comes from the server.
+  const preview = useMemo(() => {
+    const value = bmiFrom(heightCm, weightKg);
+    return { value, label: value > 0 ? value.toFixed(2) : "--", category: getBmiSegment(value).category };
+  }, [heightCm, weightKg]);
 
-  const goalSetDateLabel = useMemo(() => {
-    if (!bmi.currentGoal) return "";
-    const date = new Date(`${bmi.currentGoal.start_date}T00:00:00`);
-    if (Number.isNaN(date.getTime())) return "";
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "2-digit", year: "numeric" }).format(date);
-  }, [bmi.currentGoal]);
+  // Goal options are the weekly plan targets (or the single recommendation).
+  const goals = useMemo<GoalOption[]>(() => {
+    if (bmi.plan.length > 0) return bmi.plan.map(item => ({ key: `${item.week}-${item.steps}`, steps: item.steps }));
+    if (profilePlan?.recommended_steps) return [{ key: "recommended", steps: profilePlan.recommended_steps }];
+    return [];
+  }, [bmi.plan, profilePlan?.recommended_steps]);
 
-  const indicatorTarget = useMemo(() => {
-    if (!barWidth || !Number.isFinite(bmi.value)) return 0;
-    const usable   = Math.max(barWidth - INDICATOR_WIDTH, 0);
-    const progress = (clamp(bmi.value, BMI_MIN, BMI_MAX) - BMI_MIN) / (BMI_MAX - BMI_MIN);
-    return usable * progress;
-  }, [barWidth, bmi.value]);
-
+  // Keep the user's pick across refetches; otherwise start on the saved goal, else the first option.
   useEffect(() => {
-    Animated.spring(indicatorAnim, {
-      toValue: indicatorTarget, friction: 8, tension: 80, useNativeDriver: true,
-    }).start();
-  }, [indicatorAnim, indicatorTarget]);
+    setSelectedSteps(previous => {
+      if (previous != null && goals.some(g => g.steps === previous)) return previous;
+      const saved = bmi.currentGoal?.daily_steps;
+      return goals.find(g => g.steps === saved)?.steps ?? goals[0]?.steps ?? null;
+    });
+  }, [goals, bmi.currentGoal]);
+
+  const selectGoal = useCallback((steps: number) => {
+    setSelectedSteps(steps);
+    setGoalSaved(false);
+  }, []);
+
+  const handleSetGoal = useCallback(async () => {
+    if (submittingRef.current) return;
+    if (!selectedSteps) { Alert.alert(i18n.t("stepCounter:stepGoal.selectGoal"), i18n.t("stepCounter:stepGoal.pleaseSelectYourDailyStep")); return; }
+    try {
+      submittingRef.current = true;
+      setSubmitting(true);
+      const res = await selectUserGoal({ daily_steps: selectedSteps });
+      if (!res.success) { Alert.alert(i18n.t("stepCounter:stepGoal.goalUpdateFailed"), res.message); return; }
+      invalidateFitnessQueries();
+      // Store the saved goal before showing success, so Start Tracking routes
+      // on fresh data and does not bounce back into setup.
+      await fetchFresh().catch(() => {});
+      setGoalSaved(true);
+      requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
+  }, [fetchFresh, invalidateFitnessQueries, selectedSteps]);
+
+  const startTracking = useCallback(() => {
+    // Setup is finished: Dashboard becomes the root so Back cannot reopen it.
+    if (manage) navigation.navigate("Dashboard");
+    else navigation.reset({ index: 0, routes: [{ name: "Dashboard" }] });
+  }, [manage, navigation]);
+
+  const openPicker = useCallback((field: "height" | "weight") => {
+    setPickerField(field);
+    setShowPicker(true);
+  }, []);
+
+  const pickerOptions: MeasurementOption[] = pickerField === "height" ? HEIGHT_OPTIONS : WEIGHT_OPTIONS;
+  const pickerValue = pickerField === "height" ? heightCm : weightKg;
+  const handlePickerSelect = useCallback((option: MeasurementOption) => {
+    if (pickerField === "height") setHeightCm(option.value);
+    else setWeightKg(option.value);
+    setShowPicker(false);
+  }, [pickerField]);
+
+  // ── Which state to show ───────────────────────────────────────────────────
+  const view: "loading" | "error" | "create" | "measure" | "plan" =
+    planQuery.isPending ? "loading"
+      : planQuery.isError && !planQuery.isSuccess ? "error"
+      : editing ? "measure"
+      : !measured ? "create"
+      : "plan";
+
+  const unchangedGoal = manage && !!bmi.currentGoal && selectedSteps === bmi.currentGoal.daily_steps;
+  const disabled = submitting || !selectedSteps || unchangedGoal;
+  const returning = manage && !!bmi.currentGoal;
+
+  // Hero copy per state.
+  const hero =
+    view === "measure" ? { eyebrow: tx("stepCounter:bMIScreen.yourDetails"), title: tx("stepCounter:bMIScreen.addMeasurements"), sub: tx("stepCounter:bMIScreen.addMeasurementsSub") }
+      : view === "create" ? { eyebrow: tx("stepCounter:dashboard.rpMove"), title: tx("stepCounter:bMIScreen.myPlanTitle"), sub: tx("stepCounter:bMIScreen.createPlanHeroSub") }
+      : returning ? { eyebrow: tx("stepCounter:dashboard.rpMove"), title: tx("stepCounter:bMIScreen.myPlanTitle"), sub: tx("stepCounter:bMIScreen.myPlanSub") }
+      : { eyebrow: null, title: tx("stepCounter:bMIScreen.planReady"), sub: tx("stepCounter:bMIScreen.planReadySub") };
+
+  // The measurement form uses a compact header (no artwork), as in the design.
+  const showArt = view !== "measure";
+  const art = showArt && heroKind ? goalHeroSize(heroKind, width, Math.max(height * 0.26, 190)) : null;
+  const showBack = !manage || (view === "measure" && measured);
+  const onBack = view === "measure" && measured ? closeMeasurements : () => navigation.goBack();
 
   return (
-    <SafeAreaView style={ss.safe} edges={["top", "bottom"]}>
-      <LinearGradient colors={VD.bg} style={ss.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={ss.scroll}>
+    <View style={ss.root}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
+      <LinearGradient colors={VD.bg} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} />
 
-          {/* ── Hero banner ───────────────────────────────────────── */}
-          <View style={[ss.hero, { width, height: bannerHeight }]}>
-            <BMIBanner width="100%" height="100%" preserveAspectRatio="xMidYMid slice" />
-
-            {/* Subtle dark overlay so text remains legible */}
-            <View style={ss.heroOverlay} />
-
-            {/* Back button */}
-            <TouchableOpacity style={ss.backBtn} onPress={() => navigation.goBack()} activeOpacity={0.8}>
-              <MaterialCommunityIcons name="chevron-left" size={24} color={VD.white} />
-            </TouchableOpacity>
-
-            {/* Step & time tags */}
-            <View style={ss.tagsRow}>
-              <MetricTag Icon={StepIcon}  label={tx('stepCounter:units.stepsCapN', { value: fmt(bmi.steps) })} />
-              <MetricTag Icon={ClockIcon} label={fmtMinutes(bmi.minutes)} />
-            </View>
-          </View>
-
-          {/* ── Content card ──────────────────────────────────────── */}
-          <View style={[ss.card, { padding: contentPadding }]}>
-
-            {loading ? <LoadingState /> : errorMessage ? (
-              <ErrorState
-                message={errorMessage}
-                onRetry={load}
-                onSetupProfile={isProfileMissing ? () => navigation.navigate("StepForm") : undefined}
-              />
-            ) : (
-              <>
-                {/* Current goal, if one is already set */}
-                {bmi.currentGoal && (
-                  <View style={ss.currentGoalCard}>
-                    <View style={ss.currentGoalIconWrap}>
-                      <StepIcon width={20} height={20} />
-                    </View>
-                    <View style={ss.currentGoalCopy}>
-                      <Text style={ss.currentGoalLabel}>{tx("stepCounter:bMIScreen.yourCurrentPlan")}</Text>
-                      <Text style={ss.currentGoalValue}>{fmt(bmi.currentGoal.daily_steps)} steps / day</Text>
-                      {!!goalSetDateLabel && <Text style={ss.currentGoalMeta}>Set on {goalSetDateLabel}</Text>}
-                    </View>
-                  </View>
-                )}
-
-                {/* BMI value */}
-                <Text style={ss.bmiTitle}>
-                  Your BMI is{" "}
-                  <Text style={[ss.bmiValue, { color: bmi.color }]}>{translateSourceText("stepCounter", bmi.label)}</Text>
-                </Text>
-
-                {/* BMI bar */}
-                <View
-                  style={ss.bmiBar}
-                  onLayout={e => setBarWidth(e.nativeEvent.layout.width)}
-                >
-                  {BMI_SEGMENTS.map((seg, i) => (
-                    <View
-                      key={seg.label}
-                      style={[
-                        ss.segment,
-                        i > 0 && ss.segmentWithGap,
-                        { backgroundColor: seg.color, flex: seg.max - seg.min },
-                      ]}
-                    />
-                  ))}
-                  <Animated.View style={[ss.indicator, { transform: [{ translateX: indicatorAnim }] }]} />
-                </View>
-
-                {/* BMI labels */}
-                <View style={ss.bmiLabelRow}>
-                  {BMI_SEGMENTS.map(seg => (
-                    <Text key={seg.label} style={[ss.bmiLbl, { flex: seg.max - seg.min }]}>{translateSourceText("stepCounter", seg.label)}</Text>
-                  ))}
-                </View>
-
-                {/* Category */}
-                <Text style={[ss.bmiCategory, { color: bmi.color }]}>{bmi.category}</Text>
-                <Text style={ss.guidance}>
-                  {tx("stepCounter:bMIScreen.weHavePutTogetherA")}
-                </Text>
-
-                <View style={ss.divider} />
-
-                <Text style={ss.goalLabel}>
-                  Goal: <Text style={ss.goalValue}>{bmi.goal}</Text>
-                </Text>
-
-                {/* Weekly plan card */}
-                <View style={ss.weekCard}>
-                  <LinearGradient colors={["#27305F", "#1B2148", "#2A1E50"]} style={ss.weekHeader}>
-                    <Text style={ss.weekHeading}>{tx("stepCounter:bMIScreen.weeklyBreakdown")}</Text>
-                  </LinearGradient>
-
-                  <View style={ss.weekGrid}>
-                    {bmi.plan.length > 0 ? (
-                      bmi.plan.map(item => (
-                        <WeeklyPlanCard key={`${item.week}-${item.steps}`} item={item} />
-                      ))
-                    ) : (
-                      <Text style={ss.weekEmpty}>{tx("stepCounter:bMIScreen.yourWeeklyPlanWillAppear")}</Text>
-                    )}
-                  </View>
-
-                  <View style={ss.lossBox}>
-                    <MaterialCommunityIcons name="trending-up" size={16} color={VD.success} />
-                    <Text style={ss.lossTxt}>
-                      Build toward{" "}
-                      <Text style={ss.lossBold}>{fmt(bmi.steps)} daily steps</Text>{" "}
-                      with a weekly plan tailored to your BMI.
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Reward card */}
-                <View style={ss.rewardCard}>
-                  <View style={ss.rewardIconWrap}>
-                    <RewardIcon width={36} height={36} />
-                  </View>
-                  <View style={ss.rewardText}>
-                    <Text style={ss.rewardTitle}>{tx("stepCounter:bMIScreen.coinsForConsistency")}</Text>
-                    <Text style={ss.rewardSub}>{tx("stepCounter:bMIScreen.stayConsistentAndEarnCoins")}</Text>
-                  </View>
-                </View>
-
-                {/* Primary CTA */}
-                <TouchableOpacity activeOpacity={0.9} onPress={() => navigation.navigate("StepGoal")} style={ss.ctaWrap}>
-                  <LinearGradient colors={["#8EA2FF", "#B9C4FF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
-                    <Text style={ss.ctaText}>{bmi.currentGoal ? i18n.t("stepCounter:r2.chooseANewPlan") : i18n.t("stepCounter:r2.makeThisMyGoal")}</Text>
-                    <MaterialCommunityIcons name="arrow-right" size={18} color="#070A16" />
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                {/* Secondary CTA — recalculate if measurements changed */}
-                <TouchableOpacity
-                  activeOpacity={0.78}
-                  onPress={() => { setUpdateError(""); setShowUpdateForm(true); }}
-                  style={ss.recalcBtn}
-                >
-                  <MaterialCommunityIcons name="pencil-ruler" size={15} color={VD.accentDark} />
-                  <Text style={ss.recalcBtnText}>{tx("stepCounter:bMIScreen.updateMeasurementsAmpRecalculateBmi")}</Text>
-                </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </ScrollView>
-      {/* ── Update measurements modal ─────────────────────────────── */}
-      <Modal
-        isVisible={showUpdateForm}
-        onBackdropPress={() => setShowUpdateForm(false)}
-        onBackButtonPress={() => setShowUpdateForm(false)}
-        useNativeDriver
-        hideModalContentWhileAnimating
-        style={ss.modalWrap}
+      <ScrollView
+        ref={scrollRef}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 28 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <View style={ss.updateSheet}>
-          <View style={ss.sheetHandle} />
+        {/* ── Hero ─────────────────────────────────────────────── */}
+        <LinearGradient
+          colors={H.sky}
+          start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
+          style={[
+            hs.hero,
+            { paddingTop: insets.top + 8, paddingHorizontal: pad },
+            showArt && { minHeight: insets.top + 12 + (art?.height ?? 190) },
+            isDark && hs.heroDark,
+          ]}
+        >
+          <View pointerEvents="none" style={hs.heroWave}>
+            <Svg width={width} height={70}>
+              <Path d={`M0 46 C ${width * 0.3} 6, ${width * 0.62} 70, ${width} 20 L ${width} 70 L 0 70 Z`} fill={H.wave} />
+            </Svg>
+          </View>
+          {heroKind && art && <GoalHeroArt kind={heroKind} width={art.width} />}
 
-          <Text style={ss.sheetTitle}>{tx("stepCounter:bMIScreen.updateMeasurements")}</Text>
-          <Text style={ss.sheetSubtitle}>{tx("stepCounter:bMIScreen.enterYourCurrentHeightAnd")}</Text>
-
-          {/* Height row */}
-          <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("height")} activeOpacity={0.84}>
-            <View style={ss.sheetRowLeft}>
-              <MaterialCommunityIcons name="human-male-height" size={18} color={VD.accentDark} />
-              <Text style={ss.sheetRowLabel}>{tx("stepCounter:bMIScreen.height")}</Text>
-            </View>
-            <View style={ss.sheetRowRight}>
-              <Text style={ss.sheetRowValue}>{heightValue}</Text>
-              <MaterialCommunityIcons name="chevron-down" size={18} color={VD.accentDark} />
-            </View>
-          </TouchableOpacity>
-
-          {/* Weight row */}
-          <TouchableOpacity style={ss.sheetRow} onPress={() => openPicker("weight")} activeOpacity={0.84}>
-            <View style={ss.sheetRowLeft}>
-              <MaterialCommunityIcons name="scale-bathroom" size={18} color={VD.accentDark} />
-              <Text style={ss.sheetRowLabel}>{tx("stepCounter:bMIScreen.weight")}</Text>
-            </View>
-            <View style={ss.sheetRowRight}>
-              <Text style={ss.sheetRowValue}>{weightValue}</Text>
-              <MaterialCommunityIcons name="chevron-down" size={18} color={VD.accentDark} />
-            </View>
-          </TouchableOpacity>
-
-          {!!updateError && (
-            <View style={ss.sheetError}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={13} color={VD.error} />
-              <Text style={ss.sheetErrorText}>{updateError}</Text>
-            </View>
+          {showBack ? (
+            <TouchableOpacity
+              style={hs.backBtn}
+              onPress={onBack}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={tx("common:actions.back")}
+            >
+              <MaterialCommunityIcons name="chevron-left" size={26} color={H.ink} />
+            </TouchableOpacity>
+          ) : (
+            <View style={hs.backSpacer} />
           )}
 
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={handleUpdateMeasurements}
-            disabled={updating}
-            style={ss.sheetCtaWrap}
-          >
-            <LinearGradient
-              colors={updating ? ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.10)"] : ["#8EA2FF", "#B9C4FF"]}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-              style={ss.sheetCta}
-            >
-              {updating
-                ? <ActivityIndicator color="#070A16" />
-                : <Text style={ss.sheetCtaText}>{tx("stepCounter:bMIScreen.recalculateBmi")}</Text>}
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </Modal>
+          <View style={[hs.copy, showArt && { width: width - pad - (art?.width ?? width * 0.45) * 0.62 }, !showArt && hs.copyCompact]}>
+            {!!hero.eyebrow && <Text style={hs.eyebrow} maxFontSizeMultiplier={1.3}>{hero.eyebrow}</Text>}
+            <Text style={[hs.title, width < 360 && hs.titleSmall]} maxFontSizeMultiplier={1.2}>
+              {hero.title}
+              {view === "plan" && !returning && (
+                <>
+                  {" "}
+                  <MaterialCommunityIcons name="party-popper" size={width < 360 ? 22 : 26} color={H.gold} />
+                </>
+              )}
+            </Text>
+            <Text style={hs.subtitle} maxFontSizeMultiplier={1.3}>{hero.sub}</Text>
 
-      {/* ── Picker modal (height / weight list) ──────────────────── */}
+            {view === "create" && (
+              <View style={hs.chips}>
+                <View style={hs.chip}>
+                  <MaterialCommunityIcons name="shoe-print" size={14} color={H.blue} />
+                  <Text style={hs.chipText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:units.stepsCapN", { value: fmt(liveSteps) })}</Text>
+                </View>
+                <View style={hs.chip}>
+                  <MaterialCommunityIcons name="clock-outline" size={14} color={H.blue} />
+                  <Text style={hs.chipText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.activeMinutesN", { n: fmt(activeMinutes) })}</Text>
+                </View>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+
+        {/* ── Content ──────────────────────────────────────────── */}
+        <View style={[ss.body, !showArt && ss.bodyFlat, { paddingHorizontal: pad }]}>
+          {view === "loading" ? (
+            <View style={ss.card}><LoadingState /></View>
+          ) : view === "error" ? (
+            <View style={ss.card}>
+              <ErrorState
+                message={(planQuery.error as Error)?.message || i18n.t("stepCounter:r2.failedToFetchProfilePlan")}
+                onRetry={() => { planQuery.refetch(); }}
+              />
+            </View>
+          ) : view === "create" ? (
+            /* ── State A: no plan yet ── */
+            <View style={[ss.card, ss.createCard]}>
+              <View style={ss.createIcon}>
+                <MaterialCommunityIcons name="clipboard-text-outline" size={34} color={VD.accent} />
+                <View style={ss.createBadge}>
+                  <MaterialCommunityIcons name="run-fast" size={14} color="#FFFFFF" />
+                </View>
+              </View>
+              <Text style={ss.createTitle} maxFontSizeMultiplier={1.3}>{tx("stepCounter:bMIScreen.createPlanTitle")}</Text>
+              <Text style={ss.createBody} maxFontSizeMultiplier={1.3}>{tx("stepCounter:bMIScreen.createPlanBody")}</Text>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                // Only the missing part is asked for: basic details go through
+                // StepForm; saved details open the measurement form here.
+                onPress={profilePlan ? openMeasurements : () => { void continueSetup(); }}
+                disabled={continuing}
+                style={[ss.ctaWrap, ss.ctaShadow, ss.fullWidth]}
+                accessibilityRole="button"
+              >
+                <LinearGradient colors={VD.cta} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
+                  {continuing
+                    ? <ActivityIndicator color={VD.ctaText} />
+                    : (
+                      <>
+                        <Text style={ss.ctaText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.createPlanCta")}</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={20} color={VD.ctaText} />
+                      </>
+                    )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          ) : view === "measure" ? (
+            /* ── State B: measurements + live preview ── */
+            <>
+              <View style={[ss.card, ss.measureRow]}>
+                <MeasureField
+                  label={tx("stepCounter:bMIScreen.height")}
+                  icon="human-male-height"
+                  value={optionLabel(HEIGHT_OPTIONS, heightCm)}
+                  onPress={() => openPicker("height")}
+                />
+                <MeasureField
+                  label={tx("stepCounter:bMIScreen.weight")}
+                  icon="weight-kilogram"
+                  value={optionLabel(WEIGHT_OPTIONS, weightKg)}
+                  onPress={() => openPicker("weight")}
+                />
+              </View>
+
+              <View style={ss.card}>
+                <CardHeader icon="chart-bar" title={tx("stepCounter:bMIScreen.planPreview")} />
+                <BmiHeadline
+                  label={tx("stepCounter:bMIScreen.bmiPreview")}
+                  value={`${preview.label} – ${translateSourceText("stepCounter", preview.category)}`}
+                />
+                <BmiMeter value={preview.value} />
+                <View style={ss.note}>
+                  <View style={ss.noteIcon}>
+                    <MaterialCommunityIcons name="bullseye-arrow" size={22} color={VD.accent} />
+                  </View>
+                  <Text style={ss.noteText} maxFontSizeMultiplier={1.3}>{tx("stepCounter:bMIScreen.previewNote")}</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={handleGeneratePlan}
+                disabled={saving}
+                style={[ss.ctaWrap, !saving && ss.ctaShadow]}
+                accessibilityRole="button"
+                accessibilityState={{ busy: saving }}
+              >
+                <LinearGradient colors={saving ? VD.ctaOff : VD.cta} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
+                  {saving
+                    ? <ActivityIndicator color={VD.ctaText} />
+                    : (
+                      <>
+                        <Text style={ss.ctaText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.generatePlan")}</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={20} color={VD.ctaText} />
+                      </>
+                    )}
+                </LinearGradient>
+              </TouchableOpacity>
+            </>
+          ) : (
+            /* ── State C: the plan ── */
+            <>
+              <View style={ss.card}>
+                <BmiHeadline
+                  label={tx("stepCounter:bMIScreen.yourBmi")}
+                  value={`${translateSourceText("stepCounter", bmi.label)} – ${translateSourceText("stepCounter", bmi.category)}`}
+                />
+                <BmiMeter value={bmi.value} />
+                <Text style={ss.guidance} maxFontSizeMultiplier={1.3}>{tx(`stepCounter:bMIScreen.${bmi.guidance}`)}</Text>
+              </View>
+
+              <View style={ss.card}>
+                <CardHeader icon="chart-bar" title={tx("stepCounter:bMIScreen.weeklyStepPlan")} />
+                {bmi.plan.length > 0 ? (
+                  <View style={ss.tileRow}>
+                    {bmi.plan.map(item => {
+                      const active = item.steps === selectedSteps;
+                      return (
+                        <View key={`${item.week}-${item.steps}`} style={[ss.tile, active && ss.tileActive]}>
+                          <Text style={[ss.tileWeek, active && ss.tileWeekActive]} numberOfLines={1}>
+                            {tx("stepCounter:units.weekN", { n: item.week })}
+                          </Text>
+                          <Text style={[ss.tileSteps, active && ss.tileStepsActive]} numberOfLines={1} adjustsFontSizeToFit>
+                            {fmt(item.steps)}
+                          </Text>
+                          <Text style={ss.tileUnit} numberOfLines={1}>{tx("stepCounter:bMIScreen.stepsDay")}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <Text style={ss.emptyText}>{tx("stepCounter:bMIScreen.yourWeeklyPlanWillAppear")}</Text>
+                )}
+              </View>
+
+              <View style={ss.card}>
+                <CardHeader icon="shoe-sneaker" title={tx("stepCounter:bMIScreen.chooseYourActivityGoal")} />
+                {goals.length > 0 ? (
+                  <View style={ss.tileRow}>
+                    {goals.map(goal => {
+                      const active = goal.steps === selectedSteps;
+                      return (
+                        <TouchableOpacity
+                          key={goal.key}
+                          activeOpacity={0.85}
+                          onPress={() => selectGoal(goal.steps)}
+                          style={[ss.tile, ss.chip, active && ss.tileActive]}
+                          accessibilityRole="radio"
+                          accessibilityState={{ selected: active }}
+                        >
+                          <Text style={[ss.tileSteps, active && ss.tileStepsActive]} numberOfLines={1} adjustsFontSizeToFit>
+                            {fmt(goal.steps)}
+                          </Text>
+                          <Text style={[ss.tileUnit, active && ss.tileWeekActive]} numberOfLines={1}>
+                            {tx("stepCounter:bMIScreen.stepsDay")}
+                          </Text>
+                          {active && (
+                            <View style={ss.checkBadge}>
+                              <MaterialCommunityIcons name="check" size={12} color="#FFFFFF" />
+                            </View>
+                          )}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <Text style={ss.emptyText}>{tx("stepCounter:stepGoal.noStepGoalsAvailableRight")}</Text>
+                )}
+                {bmi.currentGoal && (
+                  <Text style={ss.currentGoal} maxFontSizeMultiplier={1.3}>
+                    {tx("stepCounter:bMIScreen.currentGoalN", { steps: fmt(bmi.currentGoal.daily_steps) })}
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={handleSetGoal}
+                disabled={disabled}
+                style={[ss.ctaWrap, !disabled && ss.ctaShadow]}
+                accessibilityRole="button"
+                accessibilityState={{ disabled, busy: submitting }}
+              >
+                <LinearGradient colors={disabled ? VD.ctaOff : VD.cta} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.cta}>
+                  {submitting
+                    ? <ActivityIndicator color={VD.ctaText} />
+                    : <Text style={[ss.ctaText, disabled && ss.ctaTextDim]} maxFontSizeMultiplier={1.2}>{tx("stepCounter:stepGoal.setGoal")}</Text>}
+                </LinearGradient>
+              </TouchableOpacity>
+
+              {goalSaved && (
+                <View style={ss.doneCard}>
+                  <View style={ss.doneIcon}>
+                    <MaterialCommunityIcons name="check" size={20} color="#FFFFFF" />
+                  </View>
+                  <View style={ss.flex}>
+                    <Text style={ss.doneTitle} maxFontSizeMultiplier={1.3}>{tx("stepCounter:bMIScreen.goalSetSuccess")}</Text>
+                    <Text style={ss.doneSub} maxFontSizeMultiplier={1.3}>{tx("stepCounter:bMIScreen.goalSetSuccessSub")}</Text>
+                  </View>
+                  <TouchableOpacity activeOpacity={0.9} onPress={startTracking} accessibilityRole="button">
+                    <LinearGradient colors={["#426BFF", "#5B2EFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={ss.trackBtn}>
+                      <Text style={ss.trackText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.startTracking")}</Text>
+                      <MaterialCommunityIcons name="arrow-right" size={16} color="#FFFFFF" />
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Explicit changes only — nothing here runs on its own. */}
+              <View style={ss.actionRow}>
+                <TouchableOpacity activeOpacity={0.78} onPress={openMeasurements} style={ss.actionBtn} accessibilityRole="button">
+                  <MaterialCommunityIcons name="pencil-ruler" size={16} color={VD.accentDark} />
+                  <Text style={ss.actionText} numberOfLines={1} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.editMeasurements")}</Text>
+                </TouchableOpacity>
+                {manage && !!bmi.currentGoal && (
+                  <TouchableOpacity activeOpacity={0.78} onPress={() => navigation.navigate("StepGoal")} style={ss.actionBtn} accessibilityRole="button">
+                    <MaterialCommunityIcons name="swap-horizontal" size={16} color={VD.accentDark} />
+                    <Text style={ss.actionText} numberOfLines={1} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.changeGoal")}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </>
+          )}
+        </View>
+      </ScrollView>
+
+      {/* ── Height / weight picker ───────────────────────────────── */}
       <Modal
         isVisible={showPicker}
         onBackdropPress={() => setShowPicker(false)}
@@ -490,22 +773,30 @@ const BMIScreen: React.FC = () => {
       >
         <View style={ss.pickerSheet}>
           <View style={ss.sheetHandle} />
+          <Text style={ss.sheetTitle}>
+            {pickerField === "height" ? tx("stepCounter:bMIScreen.height") : tx("stepCounter:bMIScreen.weight")}
+          </Text>
           <FlatList
-            data={pickerItems}
-            keyExtractor={item => item}
+            data={pickerOptions}
+            keyExtractor={item => item.label}
             initialNumToRender={18}
             maxToRenderPerBatch={18}
             windowSize={7}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={ss.pickerItem} activeOpacity={0.8} onPress={() => handlePickerSelect(item)}>
-                <Text style={ss.pickerItemText}>{item}</Text>
-              </TouchableOpacity>
-            )}
+            initialScrollIndex={Math.max(0, pickerOptions.findIndex(o => o.value === pickerValue) - 2)}
+            getItemLayout={(_, index) => ({ length: PICKER_ROW, offset: PICKER_ROW * index, index })}
+            renderItem={({ item }) => {
+              const active = item.value === pickerValue;
+              return (
+                <TouchableOpacity style={ss.pickerItem} activeOpacity={0.8} onPress={() => handlePickerSelect(item)}>
+                  <Text style={[ss.pickerItemText, active && ss.pickerItemActive]}>{item.label}</Text>
+                  {active && <MaterialCommunityIcons name="check" size={18} color={VD.accent} />}
+                </TouchableOpacity>
+              );
+            }}
           />
         </View>
       </Modal>
-      </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -513,172 +804,209 @@ export default React.memo(BMIScreen);
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const ss = StyleSheet.create({
-  safe:     { flex: 1, backgroundColor: "#070A16" },
-  gradient: { flex: 1 },
-  scroll:   { alignItems: "center", paddingBottom: 32 },
+const PICKER_ROW = 52;
 
-  // Hero
-  hero: {
-    alignItems: "center", justifyContent: "center",
-    overflow: "hidden",
-    borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
-  },
-  heroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(7,10,22,0.52)",
-    borderBottomLeftRadius: 24, borderBottomRightRadius: 24,
-  },
+// Hero styles use the fixed light colours above.
+const hs = StyleSheet.create({
+  hero: { overflow: "hidden", paddingBottom: 34 },
+  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  heroWave: { position: "absolute", left: 0, right: 0, bottom: 0 },
   backBtn: {
-    position: "absolute", left: 18, top: 16,
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: "rgba(255,255,255,0.20)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.30)",
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: H.white,
     alignItems: "center", justifyContent: "center",
+    marginBottom: 14,
+    shadowColor: "#2B2F6B", shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  tagsRow: {
-    position: "absolute", left: 16, bottom: 14,
-    flexDirection: "row", gap: 8,
+  backSpacer: { height: 20 },
+  copy: { marginTop: "auto" },
+  copyCompact: { marginTop: 0, alignItems: "center" },
+  eyebrow: {
+    fontSize: 12, fontWeight: "700", letterSpacing: 2,
+    textTransform: "uppercase", color: H.label, marginBottom: 6,
   },
-  tag: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderWidth: 1, borderColor: "rgba(255,255,255,0.30)",
-    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, gap: 6,
+  title: { fontSize: 28, lineHeight: 34, fontWeight: "900", color: H.ink, marginBottom: 6 },
+  titleSmall: { fontSize: 24, lineHeight: 30 },
+  subtitle: { fontSize: 14, lineHeight: 20, color: H.muted },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  chip: {
+    flexDirection: "row", alignItems: "center", gap: 5,
+    backgroundColor: H.chip,
+    borderRadius: 14,
+    paddingHorizontal: 10, paddingVertical: 5,
   },
-  tagText: { fontSize: 12, fontWeight: "600", color: VD.white },
+  chipText: { fontSize: 12, fontWeight: "700", color: H.ink },
+});
 
-  // Content card
+const createStyles = (VD: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: VD.screen },
+  flex: { flex: 1 },
+  fullWidth: { alignSelf: "stretch" },
+  // Cards rise over the bottom of the hero, as in the design.
+  body: { marginTop: -22 },
+  bodyFlat: { marginTop: -18 },
+
   card: {
-    width: "100%",
     backgroundColor: VD.cardBg,
-    borderTopLeftRadius: 0, borderTopRightRadius: 0,
-  },
-
-  // BMI display
-  bmiTitle: {
-    fontSize: 16, fontWeight: "600", color: VD.whiteMid,
-    marginTop: SPACING.sm,
-  },
-  bmiValue:   { fontWeight: "900", fontSize: 18 },
-  bmiBar: {
-    flexDirection: "row", width: "100%", height: 6,
-    borderRadius: BORDER_RADIUS.pill, overflow: "visible",
-    marginTop: 16, marginBottom: 6,
-  },
-  segment:  { borderRadius: BORDER_RADIUS.pill },
-  segmentWithGap: { marginLeft: 3 },
-  indicator: {
-    position: "absolute", left: 0, top: -7,
-    width: 5, height: 20, borderRadius: BORDER_RADIUS.pill,
-    backgroundColor: VD.white,
-  },
-  bmiLabelRow: { flexDirection: "row" },
-  bmiLbl: {
-    fontSize: 10, fontWeight: "500", color: VD.whiteLow,
-    textAlign: "center",
-  },
-  bmiCategory: {
-    fontSize: 20, fontWeight: "800", marginTop: 16, letterSpacing: 0,
-  },
-  guidance: {
-    fontSize: 13, color: VD.whiteLow, lineHeight: 18, marginTop: 6,
-  },
-  divider:   { height: StyleSheet.hairlineWidth, backgroundColor: VD.cardBorder, marginVertical: 20 },
-  goalLabel: { fontSize: 15, fontWeight: "700", color: VD.whiteMid },
-  goalValue: { color: VD.accent },
-
-  // Current goal summary
-  currentGoalCard: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: VD.accentFaint,
-    borderRadius: BORDER_RADIUS.large,
+    borderRadius: 22,
     borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.md, marginBottom: SPACING.lg, gap: SPACING.sm,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: VD.shadow, shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
+    elevation: VD.elevation,
   },
-  currentGoalIconWrap: {
-    width: 38, height: 38, borderRadius: 12,
-    backgroundColor: VD.accentFaint,
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
+  cardTitle: { fontSize: 17, fontWeight: "800", color: VD.white },
+
+  // BMI
+  bmiHead: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 },
+  bmiIcon: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: VD.iconBg,
     alignItems: "center", justifyContent: "center",
   },
-  currentGoalCopy:  { flex: 1 },
-  currentGoalLabel: { fontSize: 11, fontWeight: "700", letterSpacing: 0.6, textTransform: "uppercase", color: VD.whiteLow },
-  currentGoalValue: { fontSize: 16, fontWeight: "800", color: VD.white, marginTop: 2 },
-  currentGoalMeta:  { fontSize: 11, color: VD.whiteLow, marginTop: 2 },
+  bmiLabel: { fontSize: 14, fontWeight: "600", color: VD.whiteMid },
+  bmiValue: { fontSize: 21, fontWeight: "900", color: VD.accent, marginTop: 2 },
+  bmiBar: { height: 12, flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  segment: { height: 12, borderRadius: BORDER_RADIUS.pill },
+  segmentGap: { marginLeft: 3 },
+  knob: {
+    position: "absolute", left: 0,
+    width: KNOB, height: KNOB, borderRadius: KNOB / 2,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1, borderColor: "rgba(16,21,45,0.08)",
+    shadowColor: "#10152D", shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
+  },
+  bmiLabelRow: { flexDirection: "row", marginBottom: 10 },
+  bmiLbl: { fontSize: 12, fontWeight: "600", color: VD.whiteMid, textAlign: "center" },
+  guidance: { fontSize: 13, lineHeight: 19, color: VD.whiteMid },
 
-  // Weekly plan card
-  weekCard: {
-    marginTop: SPACING.lg,
+  // Create plan (State A)
+  createCard: { alignItems: "center", paddingVertical: 24 },
+  createIcon: {
+    width: 76, height: 76, borderRadius: 24,
+    backgroundColor: VD.iconBg,
+    alignItems: "center", justifyContent: "center",
+    marginBottom: 14,
+  },
+  createBadge: {
+    position: "absolute", right: -6, bottom: -6,
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: VD.check,
+    borderWidth: 2, borderColor: VD.cardBg,
+    alignItems: "center", justifyContent: "center",
+  },
+  createTitle: { fontSize: 21, fontWeight: "900", color: VD.white, textAlign: "center" },
+  createBody: { fontSize: 14, lineHeight: 20, color: VD.whiteMid, textAlign: "center", marginTop: 6, marginBottom: 6 },
+
+  // Measurements (State B)
+  measureRow: { flexDirection: "row", gap: 12, padding: 14 },
+  measureCol: { flex: 1 },
+  measureLabel: { fontSize: 15, fontWeight: "700", color: VD.white, marginBottom: 8 },
+  measureBox: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    height: 56,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1.5, borderColor: VD.selectedBorder,
+    backgroundColor: VD.selectedBg,
+  },
+  measureValue: { flex: 1, fontSize: 18, fontWeight: "800", color: VD.white },
+  note: {
+    flexDirection: "row", alignItems: "center", gap: 12,
+    marginTop: 6,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: VD.noteBg,
+  },
+  noteIcon: {
+    width: 42, height: 42, borderRadius: 21,
     backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    overflow: "hidden",
-  },
-  weekHeader:  { paddingVertical: 12, paddingHorizontal: 16 },
-  weekHeading: { fontSize: 14, fontWeight: "700", color: VD.white },
-  weekGrid: {
-    flexDirection: "row", flexWrap: "wrap",
-    justifyContent: "space-between",
-    rowGap: SPACING.sm, padding: 14,
-  },
-  weekBox: {
-    width: "48%", minHeight: 78,
     alignItems: "center", justifyContent: "center",
-    borderRadius: BORDER_RADIUS.medium,
-    backgroundColor: VD.accentFaint,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.sm,
   },
-  weekBoxTitle: { fontSize: 11, fontWeight: "700", color: VD.accentDark, letterSpacing: 0.5 },
-  weekBoxSteps: { fontSize: 20, fontWeight: "900", color: VD.white, letterSpacing: 0, marginTop: 4 },
-  weekBoxLabel: { fontSize: 10, color: VD.whiteLow, fontWeight: "500" },
-  weekEmpty: {
-    fontSize: 13, color: VD.whiteLow, textAlign: "center",
-    paddingVertical: SPACING.lg, width: "100%",
-  },
-  lossBox: {
-    flexDirection: "row", alignItems: "flex-start",
-    gap: 8, margin: 14, padding: SPACING.md,
-    backgroundColor: VD.accentFaint,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-  },
-  lossTxt:  { flex: 1, fontSize: 12, color: VD.whiteLow, lineHeight: 18 },
-  lossBold: { color: VD.success, fontWeight: "800" },
+  noteText: { flex: 1, fontSize: 13, lineHeight: 18, color: VD.whiteMid },
 
-  // Reward card
-  rewardCard: {
-    marginTop: SPACING.lg,
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: VD.accentFaint,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.md, gap: SPACING.md,
+  // Week tiles and goal chips
+  tileRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tile: {
+    flexBasis: "22%", flexGrow: 1,
+    alignItems: "center",
+    paddingVertical: 10, paddingHorizontal: 4,
+    borderRadius: 16,
+    backgroundColor: VD.tile,
+    borderWidth: 1.5, borderColor: VD.tileBorder,
   },
-  rewardIconWrap: {
-    width: 52, height: 52, borderRadius: 14,
-    backgroundColor: "rgba(251,191,36,0.15)",
+  chip: { paddingVertical: 14 },
+  tileActive: { backgroundColor: VD.selectedBg, borderColor: VD.selectedBorder },
+  tileWeek: { fontSize: 12, fontWeight: "600", color: VD.whiteMid },
+  tileWeekActive: { color: VD.accent },
+  tileSteps: { fontSize: 18, fontWeight: "900", color: VD.white, marginVertical: 1 },
+  tileStepsActive: { color: VD.accent },
+  tileUnit: { fontSize: 11, color: VD.whiteLow },
+  checkBadge: {
+    position: "absolute", top: -6, right: -6,
+    width: 20, height: 20, borderRadius: 10,
+    backgroundColor: VD.check,
+    borderWidth: 2, borderColor: VD.cardBg,
     alignItems: "center", justifyContent: "center",
   },
-  rewardText:  { flex: 1 },
-  rewardTitle: { fontSize: 14, fontWeight: "700", color: VD.white },
-  rewardSub:   { fontSize: 12, color: VD.whiteLow, marginTop: 2 },
+  currentGoal: { fontSize: 12, color: VD.whiteLow, marginTop: 10 },
+  emptyText: { fontSize: 13, color: VD.whiteLow, textAlign: "center", paddingVertical: SPACING.md },
 
   // CTA
-  ctaWrap: { marginTop: SPACING.lg },
-  cta: {
-    height: RESPONSIVE.buttonHeight,
-    borderRadius: BORDER_RADIUS.large,
-    flexDirection: "row",
-    alignItems: "center", justifyContent: "center", gap: 8,
+  ctaWrap: { borderRadius: 28, marginTop: 4 },
+  ctaShadow: {
+    backgroundColor: VD.ctaBase,
+    shadowColor: VD.ctaBase, shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
   },
-  ctaText: { fontSize: 16, fontWeight: "800", color: "#070A16", letterSpacing: 0.2 },
+  cta: { height: 56, borderRadius: 28, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  ctaText: { fontSize: 18, fontWeight: "800", color: VD.ctaText },
+  ctaTextDim: { color: VD.whiteLow },
+
+  // Success
+  doneCard: {
+    flexDirection: "row", alignItems: "center", gap: 10,
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 20,
+    backgroundColor: VD.doneBg,
+    borderWidth: 1, borderColor: VD.doneBorder,
+    shadowColor: VD.shadow, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    elevation: VD.elevation,
+  },
+  doneIcon: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: VD.done,
+    alignItems: "center", justifyContent: "center",
+  },
+  doneTitle: { fontSize: 14, fontWeight: "800", color: VD.white },
+  doneSub: { fontSize: 12, color: VD.whiteMid, marginTop: 1 },
+  trackBtn: {
+    flexDirection: "row", alignItems: "center", gap: 4,
+    paddingHorizontal: 14, height: 40, borderRadius: 20,
+  },
+  trackText: { fontSize: 13, fontWeight: "800", color: "#FFFFFF" },
+
+  // Edit measurements / change goal
+  actionRow: { flexDirection: "row", gap: 10, marginTop: 14 },
+  actionBtn: {
+    flex: 1,
+    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
+    paddingVertical: 12, paddingHorizontal: 8,
+    borderRadius: BORDER_RADIUS.large,
+    borderWidth: 1, borderColor: VD.cardBorder,
+    backgroundColor: VD.glassFaint,
+  },
+  actionText: { flexShrink: 1, fontSize: 13, fontWeight: "700", color: VD.accentDark },
 
   // States
   stateBox: {
-    minHeight: 300,
+    minHeight: 260,
     alignItems: "center", justifyContent: "center",
-    paddingVertical: SPACING.xxl, gap: SPACING.sm,
+    paddingVertical: SPACING.xl, gap: SPACING.sm,
   },
   stateTitle: { fontSize: 18, fontWeight: "800", color: VD.white, textAlign: "center" },
   stateText:  { fontSize: 13, color: VD.whiteLow, textAlign: "center", lineHeight: 20 },
@@ -695,63 +1023,25 @@ const ss = StyleSheet.create({
     alignItems: "center", justifyContent: "center",
   },
 
-  // Recalculate BMI secondary button
-  recalcBtn: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    marginTop: SPACING.sm, paddingVertical: SPACING.sm,
-    borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    backgroundColor: "rgba(255,255,255,0.05)",
-  },
-  recalcBtnText: { fontSize: 13, fontWeight: "600", color: VD.accentDark },
-
-  // Update measurements modal
+  // Picker sheet
   modalWrap: { justifyContent: "flex-end", margin: 0 },
-  updateSheet: {
-    backgroundColor: "#111735",
-    borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    padding: SPACING.lg, paddingBottom: SPACING.xxl,
-  },
   sheetHandle: {
     width: 44, height: 4, borderRadius: BORDER_RADIUS.pill,
-    backgroundColor: VD.cardBorder, alignSelf: "center", marginBottom: SPACING.lg,
+    backgroundColor: VD.cardBorder, alignSelf: "center", marginBottom: SPACING.md,
   },
-  sheetTitle:    { fontSize: 18, fontWeight: "800", color: VD.white, marginBottom: 4 },
-  sheetSubtitle: { fontSize: 13, color: VD.whiteLow, lineHeight: 18, marginBottom: SPACING.lg },
-  sheetRow: {
-    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    backgroundColor: VD.cardBg, borderRadius: BORDER_RADIUS.large,
-    borderWidth: 1, borderColor: VD.cardBorder,
-    paddingHorizontal: SPACING.lg, paddingVertical: SPACING.md,
-    marginBottom: SPACING.sm,
-  },
-  sheetRowLeft:  { flexDirection: "row", alignItems: "center", gap: 8 },
-  sheetRowRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  sheetRowLabel: { fontSize: 14, color: VD.whiteMid, fontWeight: "600" },
-  sheetRowValue: { fontSize: 14, fontWeight: "700", color: VD.white },
-  sheetError: {
-    flexDirection: "row", alignItems: "center", gap: 6,
-    marginBottom: SPACING.sm,
-  },
-  sheetErrorText: { fontSize: 12, color: VD.error, flex: 1 },
-  sheetCtaWrap: { marginTop: SPACING.md },
-  sheetCta: {
-    height: RESPONSIVE.buttonHeight, borderRadius: BORDER_RADIUS.large,
-    alignItems: "center", justifyContent: "center",
-  },
-  sheetCtaText: { fontSize: 15, fontWeight: "800", color: "#070A16" },
-
-  // Picker sheet
+  sheetTitle: { fontSize: 17, fontWeight: "800", color: VD.white, marginBottom: SPACING.sm, paddingHorizontal: SPACING.md },
   pickerSheet: {
-    backgroundColor: "#111735",
+    backgroundColor: VD.sheet,
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     borderWidth: 1, borderColor: VD.cardBorder,
-    maxHeight: "60%", padding: SPACING.md,
+    maxHeight: "60%", padding: SPACING.md, paddingBottom: SPACING.xl,
   },
   pickerItem: {
-    paddingVertical: 15, paddingHorizontal: SPACING.md,
+    height: PICKER_ROW,
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: SPACING.md,
     borderBottomWidth: 1, borderBottomColor: VD.cardBorder,
   },
   pickerItemText: { fontSize: 15, fontWeight: "600", color: VD.white },
+  pickerItemActive: { color: VD.accent, fontWeight: "800" },
 });

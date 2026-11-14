@@ -17,7 +17,7 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import Modal from "react-native-modal";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { type RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
@@ -38,17 +38,27 @@ import {
   type GoalType,
 } from "../../api/ProfileAPI";
 import { useInvalidateFitnessQueries } from "../../api/useFitnessQueries";
+import { rememberSelectedGender } from "../../utils/userGender";
+import { useProfilePlanCache } from "../../api/useProfilePlan";
+import {
+  DEFAULT_HEIGHT_CM,
+  DEFAULT_WEIGHT_KG,
+  HEIGHT_OPTIONS,
+  WEIGHT_OPTIONS,
+  optionLabel,
+} from "../../utils/measurements";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
-import { translateSourceText } from "../../../../i18n/sourceText";
+import { translateSourceText } from "../../../../i18n/sourceText";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 type StepFormNavProp = NativeStackNavigationProp<FitnessStackParamList, "StepForm">;
 type FieldKey = "gender" | "age" | "height" | "weight";
 
 const genderList = ["Male", "Female", "Other"];
 const ageList = Array.from({ length: 70 }, (_, i) => `${i + 10} Years`);
-const heightList = ["4.5 ft", "4.8 ft", "5.0 ft", "5.2 ft", "5.4 ft", "5.6 ft", "5.8 ft", "6.0 ft", "6.2 ft"];
-const weightList = Array.from({ length: 100 }, (_, i) => `${30 + i} kg`);
+const heightList = HEIGHT_OPTIONS.map((o) => o.label);
+const weightList = WEIGHT_OPTIONS.map((o) => o.label);
 
 const goals = [
   { id: 1, label: "Weight Loss", goalType: "weight_loss" as GoalType, Icon: WeightLoss },
@@ -56,7 +66,7 @@ const goals = [
   { id: 3, label: "Stay Healthy", goalType: "stay_healthy" as GoalType, Icon: StayHealthy },
 ];
 
-const VD = {
+const VD_DARK = {
   bg: ["#070A16", "#111735", "#201A3F"],
   accent: "#8EA2FF",
   accentDark: "#B9C4FF",
@@ -68,6 +78,34 @@ const VD = {
   whiteMid: "#CDD2EA",
   whiteLow: "#979EBC",
   shadow: "#02030A",
+  popupGrad: ["rgba(255,255,255,0.105)", "rgba(255,255,255,0.06)"],
+  cta: ["#8EA2FF", "#B9C4FF"],
+  ctaOff: ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.10)"],
+  ctaText: "#070A16",
+  sheet: "#111735",
+  glassFaint: "rgba(255,255,255,0.06)",
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg: ["#F5F9FF", "#EEF4FF", "#F3EEFF"],
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBg: "#FFFFFF",
+  cardSoft: "#F3F6FD",
+  cardBorder: "#E9EEFA",
+  white: "#10152D",
+  whiteMid: "#4A5275",
+  whiteLow: "#777FA5",
+  shadow: "#4664A5",
+  popupGrad: ["#FFFFFF", "#F7F9FF"],
+  cta: ["#426BFF", "#773CFF"],
+  ctaOff: ["#E3EBFA", "#E9EEFA"],
+  ctaText: "#FFFFFF",
+  sheet: "#FFFFFF",
+  glassFaint: "#F7F9FF",
 };
 
 const parseLeadingNumber = (value: string) => {
@@ -75,23 +113,26 @@ const parseLeadingNumber = (value: string) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const heightFeetToCm = (value: string) => {
-  const feet = parseLeadingNumber(value);
-  return Math.round(feet * 30.48);
-};
+// Labels are feet + inches (5' 8"); the cm value comes from the same option.
+const heightLabelToCm = (label: string) =>
+  HEIGHT_OPTIONS.find((o) => o.label === label)?.value ?? DEFAULT_HEIGHT_CM;
 
 const StepForm = () => {
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<StepFormNavProp>();
+  const route = useRoute<RouteProp<FitnessStackParamList, "StepForm">>();
   const invalidateFitnessQueries = useInvalidateFitnessQueries();
+  const { invalidate: invalidateProfilePlan } = useProfilePlanCache();
   const { width, height } = useWindowDimensions();
 
-  const [step, setStep] = useState(1);
+  // Users whose basic details are already saved resume on measurements.
+  const [step, setStep] = useState(route.params?.startAt === "body" ? 3 : 1);
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
   const [gender, setGender] = useState("Female");
   const [age, setAge] = useState("24 Years");
-  const [heightValue, setHeightValue] = useState("5.8 ft");
-  const [weight, setWeight] = useState("55 kg");
+  const [heightValue, setHeightValue] = useState(() => optionLabel(HEIGHT_OPTIONS, DEFAULT_HEIGHT_CM));
+  const [weight, setWeight] = useState(() => optionLabel(WEIGHT_OPTIONS, DEFAULT_WEIGHT_KG));
   const [modalVisible, setModalVisible] = useState(false);
   const [currentField, setCurrentField] = useState<FieldKey | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -164,7 +205,9 @@ const StepForm = () => {
             return;
           }
 
+          rememberSelectedGender(gender.toLowerCase());
           invalidateFitnessQueries();
+          invalidateProfilePlan();
         } finally {
           setSubmitting(false);
         }
@@ -177,7 +220,7 @@ const StepForm = () => {
     try {
       setSubmitting(true);
       const res = await updateBodyProfile({
-        height_cm: heightFeetToCm(heightValue),
+        height_cm: heightLabelToCm(heightValue),
         weight_kg: Math.round(parseLeadingNumber(weight)),
       });
 
@@ -187,6 +230,7 @@ const StepForm = () => {
       }
 
       invalidateFitnessQueries();
+      invalidateProfilePlan();
       navigation.navigate("BMICart");
     } finally {
       setSubmitting(false);
@@ -196,6 +240,7 @@ const StepForm = () => {
     gender,
     heightValue,
     invalidateFitnessQueries,
+    invalidateProfilePlan,
     navigation,
     selectedGoalType,
     step,
@@ -218,7 +263,7 @@ const StepForm = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+      <StatusBar translucent backgroundColor="transparent" barStyle={isDark ? "light-content" : "dark-content"} />
       <LinearGradient
         colors={VD.bg}
         style={StyleSheet.absoluteFillObject}
@@ -240,7 +285,7 @@ const StepForm = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.popupCardWrap}>
-          <LinearGradient colors={["rgba(255,255,255,0.105)", "rgba(255,255,255,0.06)"]} style={styles.popupCard}>
+          <LinearGradient colors={VD.popupGrad} style={styles.popupCard}>
             <View style={styles.stepRow}>
               <TouchableOpacity
                 style={styles.iconBtn}
@@ -373,26 +418,29 @@ const GradientButton = React.memo(({
   disabled?: boolean;
   loading?: boolean;
   onPress: () => void;
-}) => (
+}) => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <TouchableOpacity activeOpacity={0.9} onPress={onPress} disabled={disabled} style={styles.buttonWrap}>
     <LinearGradient
-      colors={disabled ? ["rgba(255,255,255,0.15)", "rgba(255,255,255,0.10)"] : ["#8EA2FF", "#B9C4FF"]}
+      colors={disabled ? VD.ctaOff : VD.cta}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.button}
     >
       {loading ? (
-        <ActivityIndicator color={disabled ? VD.whiteLow : "#070A16"} />
+        <ActivityIndicator color={disabled ? VD.whiteLow : VD.ctaText} />
       ) : (
         <Text style={[styles.buttonText, disabled && styles.buttonTextDisabled]}>{label}</Text>
       )}
     </LinearGradient>
   </TouchableOpacity>
-));
+  );
+});
 
 export default React.memo(StepForm);
 
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: VD.bg[0],
@@ -410,7 +458,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: RESPONSIVE.cardMaxWidth,
     borderRadius: BORDER_RADIUS.xl,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: VD.glassFaint,
     shadowColor: VD.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 18,
@@ -543,13 +591,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     ...TYPOGRAPHY.bodyMedium,
-    color: "#070A16",
+    color: VD.ctaText,
   },
   buttonTextDisabled: {
     color: VD.whiteLow,
   },
   modalBox: {
-    backgroundColor: "#111735",
+    backgroundColor: VD.sheet,
     borderRadius: BORDER_RADIUS.xl,
     borderWidth: 1,
     borderColor: VD.cardBorder,

@@ -15,11 +15,28 @@ import {
 } from '../../api/DashboardAPI';
 import { useTodayHourlyStatsQuery } from '../../api/useFitnessQueries';
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 const { width } = Dimensions.get('window');
 
-const VD = {
+const VD_LIGHT = {
+  accent:      "#426BFF",
+  accentDark:  "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBorder:  "#E9EEFA",
+  ink:         "#10152D",
+  muted:       "#777FA5",
+  white:       "#FFFFFF",
+  whiteLow:    "#777FA5",
+  whiteGhost:  "#E3EBFA",
+  warning:     "#F5A524",
+};
+
+type Palette = typeof VD_LIGHT;
+
+// Original dark palette.
+const VD_DARK: Palette = {
   accent:      "#8EA2FF",
   accentDark:  "#B9C4FF",
   accentFaint: "rgba(142,162,255,0.12)",
@@ -58,6 +75,7 @@ const parseHour = (time: string) => {
 };
 
 const StatisticsGraph: React.FC = () => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const hourlyStatsQuery = useTodayHourlyStatsQuery();
   const hourlyStats =
@@ -171,7 +189,7 @@ const StatisticsGraph: React.FC = () => {
 
 export default React.memo(StatisticsGraph);
 
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   card: {
     backgroundColor: "transparent",  // glassCard wrapper in Dashboard provides bg
     borderRadius: 18,

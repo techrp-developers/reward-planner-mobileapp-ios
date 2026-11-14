@@ -33,7 +33,8 @@ import FireIcon from "../../assets/StepCount/lightning.svg";
 import LocationIcon from "../../assets/StepCount/location.svg";
 import ClockIcon from "../../assets/StepCount/clock_icon.svg";
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 
 type ProgressNav = NativeStackNavigationProp<FitnessStackParamList, "PlanProcess">;
@@ -59,7 +60,7 @@ const selectedDateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "long",
 });
 
-const VD = {
+const VD_DARK = {
   bg: ["#070A16", "#111735", "#201A3F"],
   ink: "#F6F7FF",
   muted: "#A8AEC8",
@@ -74,6 +75,25 @@ const VD = {
   warning: "#F8B84E",
   danger: "#F38C9A",
   shadow: "#02030A",
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg: ["#F5F9FF", "#EEF4FF", "#F3EEFF"],
+  ink: "#10152D",
+  muted: "#777FA5",
+  softText: "#8A92B2",
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBg: "#FFFFFF",
+  cardSoft: "#F3F6FD",
+  cardBorder: "#E9EEFA",
+  success: "#16A34A",
+  warning: "#C27C00",
+  danger: "#E5484D",
+  shadow: "#4664A5",
 };
 
 const pad2 =(value: number) => String(value).padStart(2, "0");
@@ -138,6 +158,7 @@ const buildCalendarCells = (
 };
 
 const ProgressScreen: React.FC = () => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<ProgressNav>();
   const { width } = useWindowDimensions();
@@ -328,7 +349,9 @@ type CalendarGridProps = {
   onSelectDate: (date: string) => void;
 };
 
-const CalendarGrid = React.memo(({ cells, onSelectDate }: CalendarGridProps) => (
+const CalendarGrid = React.memo(({ cells, onSelectDate }: CalendarGridProps) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <View>
     <View style={styles.weekRow}>
       {WEEK_DAYS.map((day) => (
@@ -341,7 +364,8 @@ const CalendarGrid = React.memo(({ cells, onSelectDate }: CalendarGridProps) => 
       ))}
     </View>
   </View>
-));
+  );
+});
 
 type DayItemProps = {
   cell: CalendarCell;
@@ -349,6 +373,7 @@ type DayItemProps = {
 };
 
 const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   if (!cell.dayNumber || !cell.isoDate) {
     return <View style={styles.dayOuter} />;
   }
@@ -399,17 +424,20 @@ type StatProps = {
   color?: string;
 };
 
-const Stat = React.memo(({ value, label, Icon, color = VD.accentDark }: StatProps) => (
+const Stat = React.memo(({ value, label, Icon, color }: StatProps) => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <View style={styles.statItem}>
     <Icon width={24} height={24} />
     <View style={styles.statTextRow}>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={[styles.statValue, { color: color ?? VD.accentDark }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
     </View>
   </View>
-));
+  );
+});
 
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: VD.bg[0],

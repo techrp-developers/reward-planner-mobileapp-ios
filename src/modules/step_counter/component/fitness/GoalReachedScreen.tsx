@@ -15,6 +15,7 @@ import type { OverallSummary } from "../../api/Stepsapi";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 import { formatNumber } from "../../../../i18n/format";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 // Dashboard-overlay only (no registered route) — shown right after the
@@ -98,7 +99,9 @@ const ConfettiPiece: React.FC<{ index: number }> = ({ index }) => {
 };
 
 // ─── Goal Illustration ────────────────────────────────────────────────────────
-const GoalIllustration: React.FC<{ scale: Animated.Value }> = ({ scale }) => (
+const GoalIllustration: React.FC<{ scale: Animated.Value }> = ({ scale }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <Animated.View style={[styles.illustrationBox, { transform: [{ scale }] }]}>
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {Array.from({ length: CONFETTI_COUNT }).map((_, i) => (
@@ -129,7 +132,8 @@ const GoalIllustration: React.FC<{ scale: Animated.Value }> = ({ scale }) => (
       </View>
     </View>
   </Animated.View>
-);
+  );
+};
 
 // ─── Animated Section Card ────────────────────────────────────────────────────
 const SectionCard: React.FC<{
@@ -137,7 +141,9 @@ const SectionCard: React.FC<{
   fadeAnim: Animated.Value;
   slideAnim: Animated.Value;
   highlighted?: boolean;
-}> = ({ children, fadeAnim, slideAnim, highlighted }) => (
+}> = ({ children, fadeAnim, slideAnim, highlighted }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <Animated.View
     style={[
       styles.sectionCard,
@@ -147,10 +153,12 @@ const SectionCard: React.FC<{
   >
     {children}
   </Animated.View>
-);
+  );
+};
 
 // ─── Gradient Progress Bar ────────────────────────────────────────────────────
 const GradientBar: React.FC<{ progress: number }> = ({ progress }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const widthAnimRef = useRef(new Animated.Value(0));
   const widthAnim    = widthAnimRef.current;
 
@@ -188,6 +196,7 @@ const GoalReachedScreen: React.FC<Props> = ({
   onContinue,
   onBack,
 }) => {
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const heroScaleRef = useRef(new Animated.Value(0.8));
   const heroScale    = heroScaleRef.current;
@@ -228,7 +237,7 @@ const GoalReachedScreen: React.FC<Props> = ({
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="dark-content" backgroundColor="#EDEEF8" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={VD.bg0} />
 
       {/* ── Header ── */}
       <View style={styles.header}>
@@ -309,7 +318,7 @@ const GoalReachedScreen: React.FC<Props> = ({
 export default GoalReachedScreen;
 
 // ─── Violet Dusk palette (mirrors TodayGoalCompletedScreen.tsx) ─────────────
-const VD = {
+const VD_DARK = {
   bg0:         "#1A1040",
   accent:      "#C4A8FF",
   accentDim:   "rgba(196,168,255,0.25)",
@@ -320,10 +329,29 @@ const VD = {
   whiteLow:    "rgba(255,255,255,0.45)",
   success:     "#4ADE80",
   warning:     "#FBBF24",
+  glassFaint: "rgba(255,255,255,0.05)",
+  track: "rgba(255,255,255,0.10)",
+};
+
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg0: "#F4F0FF",
+  accent: "#773CFF",
+  accentDim: "rgba(119,60,255,0.18)",
+  cardBg: "#FFFFFF",
+  cardBorder: "rgba(119,60,255,0.16)",
+  white: "#10152D",
+  whiteMid: "rgba(16,21,45,0.70)",
+  whiteLow: "rgba(16,21,45,0.45)",
+  success: "#16A34A",
+  warning: "#C27C00",
+  glassFaint: "#F7F4FF",
+  track: "rgba(119,60,255,0.12)",
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: VD.bg0 },
 
   header: {
@@ -332,7 +360,7 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "ios" ? 58 : 28,
     paddingBottom: 10,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: VD.glassFaint,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: VD.cardBorder,
   },
@@ -408,7 +436,7 @@ const styles = StyleSheet.create({
   summaryValue:    { fontSize: 13.5, fontWeight: "700", color: VD.accent },
   gradBarContainer:{ marginTop: 12 },
 
-  gradBarTrack: { height: 8, backgroundColor: "rgba(255,255,255,0.10)", borderRadius: 6, overflow: "hidden" },
+  gradBarTrack: { height: 8, backgroundColor: VD.track, borderRadius: 6, overflow: "hidden" },
   gradBarFill:  { height: "100%", borderRadius: 6, backgroundColor: VD.accent },
 
   streakRow:      { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
@@ -430,7 +458,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingBottom: Platform.OS === "ios" ? 38 : 22,
     paddingTop: 10,
-    backgroundColor: "rgba(255,255,255,0.05)",
+    backgroundColor: VD.glassFaint,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: VD.cardBorder,
   },

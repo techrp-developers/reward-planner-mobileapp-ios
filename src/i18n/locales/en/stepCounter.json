@@ -40,7 +40,36 @@
     "enterYourCurrentHeightAnd": "Enter your current height and weight to recalculate your BMI.",
     "height": "Height",
     "weight": "Weight",
-    "recalculateBmi": "Recalculate BMI"
+    "recalculateBmi": "Recalculate BMI",
+    "planReady": "Your Plan is Ready!",
+    "planReadySub": "Here's your personalized plan based on your details.",
+    "yourBmi": "Your BMI",
+    "guidanceUnder": "You're currently in the underweight range. Let's build healthy habits with a gradual and sustainable step plan.",
+    "guidanceNormal": "You're in the healthy range. Let's keep you active with a steady, sustainable step plan.",
+    "guidanceOver": "You're currently in the overweight range. A gradual step plan will help you move more, comfortably.",
+    "guidanceObese": "You're currently in the obese range. We'll start gently and build up your daily steps week by week.",
+    "weeklyStepPlan": "Weekly Step Plan",
+    "chooseYourActivityGoal": "Choose Your Activity Goal",
+    "currentGoalN": "Current goal: {{steps}} steps/day",
+    "goalSetSuccess": "Goal set successfully!",
+    "goalSetSuccessSub": "Your personalized plan is ready.",
+    "startTracking": "Start Tracking",
+    "myPlanTitle": "Your Personal Plan",
+    "myPlanSub": "Your BMI, weekly targets and daily goal in one place.",
+    "createPlanHeroSub": "Get a step plan built around your body and your goal.",
+    "activeMinutesN": "{{n}} min active",
+    "createPlanTitle": "Create Your Personal Plan",
+    "createPlanBody": "Add your height and weight and we'll build a weekly step plan and daily goal around your BMI.",
+    "createPlanCta": "Create My Plan",
+    "yourDetails": "Your details",
+    "addMeasurements": "Add your measurements",
+    "addMeasurementsSub": "This helps us create a plan that's right for you.",
+    "planPreview": "Your Plan Preview",
+    "bmiPreview": "BMI Preview",
+    "previewNote": "Your recommended daily goal is worked out from your BMI when you generate your plan.",
+    "generatePlan": "Generate My Plan",
+    "editMeasurements": "Edit Measurements",
+    "changeGoal": "Change Goal"
   },
   "coinHistoryAndPlan": {
     "coinHistory": "Coin History",
@@ -68,7 +97,20 @@
     "km": "km",
     "min": "min",
     "statistics": "Statistics",
-    "coinsPlan": "Coins & Plan"
+    "coinsPlan": "Coins & Plan",
+    "rpMove": "RP Move",
+    "hello": "Hello {{name}}",
+    "helloNoName": "Hello",
+    "goalSuffix": "/ {{goal}} steps",
+    "noGoal": "No daily goal set yet",
+    "goalProgress": "{{percent}}% of daily goal",
+    "calories": "Calories",
+    "distance": "Distance",
+    "activeTime": "Active time",
+    "startStreak": "Hit today's goal to start a streak",
+    "goalMet": "goal met",
+    "goalNotMet": "goal not met",
+    "home": "Home"
   },
   "goalReachedScreen": {
     "goal": "GOAL",
@@ -131,13 +173,16 @@
     "pleaseSelectYourDailyStep": "Please select your daily step goal.",
     "goalUpdateFailed": "Goal update failed",
     "activityTarget": "Activity target",
-    "pickThePaceThatFeels": "Pick the pace that feels realistic. You can adjust it later.",
+    "titleLead": "Choose your",
+    "titleAccent": "activity goal",
+    "pickTheGoalThatFeels": "Pick the goal that feels right for you. You can adjust it later anytime.",
     "loadingYourRecommendedGoals": "Loading your recommended goals…",
     "retry": "Retry",
     "noStepGoalsAvailableRight": "No step goals available right now.",
     "dailyStepTarget": "Daily step target",
     "theLongerYouWalkThe": "The longer you walk, the bigger the reward.",
-    "setGoal": "Set Goal"
+    "setGoal": "Set Goal",
+    "finalStep": "Final step"
   },
   "stepWelcome": {
     "everyStepYouTakeBrings": "Every step you take brings you closer to better health and more coins.",
@@ -444,5 +489,11 @@
       "dashboard": "Go to Dashboard"
     },
     "genericError": "Something went wrong. Please try again."
+  },
+  "tabs": {
+    "rpMove": "RP Move",
+    "achievements": "Achievements",
+    "coinHistory": "Coin History",
+    "myPlan": "My Plan"
   }
 }

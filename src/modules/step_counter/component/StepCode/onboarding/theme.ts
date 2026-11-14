@@ -1,7 +1,8 @@
 import { Platform, type ViewStyle } from 'react-native';
 
-// Single visual system for every step-tracker onboarding screen (Android + iOS).
-export const OB = {
+// Single visual system for every step-tracker onboarding screen (Android + iOS),
+// in light and dark variants with identical keys.
+export const OB_LIGHT = {
   bg: '#FFFFFF',
   bgAlt: '#F8F9FF',
   text: '#10152D',
@@ -24,8 +25,38 @@ export const OB = {
   warningBg: '#FFF6E5',
   error: '#C9303F',
   errorBg: '#FFF0F1',
+  card: '#FFFFFF',
   white: '#FFFFFF',
-} as const;
+};
+
+export type ObPalette = typeof OB_LIGHT;
+
+export const OB_DARK: ObPalette = {
+  bg: '#0B1020',
+  bgAlt: '#10162E',
+  text: '#F2F4FF',
+  muted: '#A3AACB',
+  subtle: '#6E7699',
+  border: 'rgba(174,188,255,0.14)',
+  track: '#2A3252',
+  selected: '#9B7BFF',
+  selectedBg: 'rgba(128,87,255,0.16)',
+  lavender: 'rgba(128,87,255,0.14)',
+  lavenderText: '#B9A6FF',
+  glow: 'rgba(128,82,255,0.12)',
+  glowBlue: 'rgba(66,107,255,0.10)',
+  gradient: ['#426BFF', '#8052FF'],
+  success: '#34D399',
+  successBg: 'rgba(34,178,95,0.16)',
+  coin: '#FFC24D',
+  coinBg: 'rgba(242,165,22,0.16)',
+  warning: '#FFC24D',
+  warningBg: 'rgba(245,165,36,0.14)',
+  error: '#FF6B76',
+  errorBg: 'rgba(201,48,63,0.18)',
+  card: '#161C33',
+  white: '#FFFFFF',
+};
 
 export const OB_LAYOUT = {
   padding: 24,

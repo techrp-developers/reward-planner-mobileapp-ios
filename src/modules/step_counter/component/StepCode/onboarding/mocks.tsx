@@ -8,7 +8,8 @@ import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { OB } from './theme';
+// The mock-ups depict the phone's own system screens, so they stay light in both modes.
+import { OB_LIGHT as OB } from './theme';
 import { ONBOARDING_ASSETS, REWARD_PLANNERS_ICON } from './assets';
 
 const RpIcon = ({ size }: { size: number }) => (

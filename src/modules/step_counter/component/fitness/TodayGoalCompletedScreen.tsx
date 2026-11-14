@@ -17,7 +17,8 @@ import type { PlanOverview, OverallSummary } from "../../api/Stepsapi";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 import { translateSourceText } from "../../../../i18n/sourceText";
-import { formatNumber } from "../../../../i18n/format";
+import { formatNumber } from "../../../../i18n/format";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,9 @@ const ConfettiPiece: React.FC<{ index: number }> = ({ index }) => {
 const GoalIllustration: React.FC<{
   scale: Animated.Value;
   planType: string;
-}> = ({ scale, planType }) => (
+}> = ({ scale, planType }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <Animated.View style={[styles.illustrationBox, { transform: [{ scale }] }]}>
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       {Array.from({ length: CONFETTI_COUNT }).map((_, i) => (
@@ -150,7 +153,8 @@ const GoalIllustration: React.FC<{
       <Text style={styles.illustrationBold}>{planType} plan.</Text>
     </Text>
   </Animated.View>
-);
+  );
+};
 
 // ─── Animated Section Card ────────────────────────────────────────────────────
 const SectionCard: React.FC<{
@@ -158,7 +162,9 @@ const SectionCard: React.FC<{
   fadeAnim: Animated.Value;
   slideAnim: Animated.Value;
   highlighted?: boolean;
-}> = ({ children, fadeAnim, slideAnim, highlighted }) => (
+}> = ({ children, fadeAnim, slideAnim, highlighted }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  return (
   <Animated.View
     style={[
       styles.sectionCard,
@@ -168,10 +174,12 @@ const SectionCard: React.FC<{
   >
     {children}
   </Animated.View>
-);
+  );
+};
 
 // ─── Gradient Progress Bar ────────────────────────────────────────────────────
 const GradientBar: React.FC<{ progress: number }> = ({ progress }) => {
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const widthAnimRef = useRef(new Animated.Value(0));
   const widthAnim    = widthAnimRef.current;
 
@@ -203,6 +211,7 @@ const GradientBar: React.FC<{ progress: number }> = ({ progress }) => {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const overlay = isOverlay(props);
 
@@ -265,7 +274,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle="light-content" backgroundColor={VD.bg0} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={VD.bg0} />
 
       {/* ── Header ── */}
       <View style={styles.header}>
@@ -354,7 +363,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
 export default TodayGoalCompletedScreen;
 
 // ─── Step counter dark palette (mirrors Dashboard.tsx) ───────────────────────
-const VD = {
+const VD_DARK = {
   bg0:         "#070A16",
   bg1:         "#111735",
   bg2:         "#201A3F",
@@ -372,8 +381,28 @@ const VD = {
   warning:     "#F5B86B",
 };
 
+type Palette = typeof VD_DARK;
+
+const VD_LIGHT: Palette = {
+  bg0: "#F5F9FF",
+  bg1: "#EEF4FF",
+  bg2: "#F3EEFF",
+  accent: "#426BFF",
+  accentDark: "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  accentDim: "rgba(66,107,255,0.22)",
+  cardBg: "#FFFFFF",
+  cardBorder: "#E9EEFA",
+  white: "#10152D",
+  whiteMid: "#4A5275",
+  whiteLow: "#777FA5",
+  whiteGhost: "#E3EBFA",
+  success: "#16A34A",
+  warning: "#C27C00",
+};
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: VD.bg0 },
 
   header: {

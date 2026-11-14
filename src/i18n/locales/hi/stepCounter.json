@@ -40,7 +40,36 @@
     "enterYourCurrentHeightAnd": "BMI फिर से निकालने के लिए अपनी मौजूदा लंबाई और वज़न लिखें।",
     "height": "लंबाई",
     "weight": "वज़न",
-    "recalculateBmi": "BMI फिर से निकालें"
+    "recalculateBmi": "BMI फिर से निकालें",
+    "planReady": "आपका प्लान तैयार है!",
+    "planReadySub": "आपकी जानकारी के आधार पर आपका व्यक्तिगत प्लान।",
+    "yourBmi": "आपका BMI",
+    "guidanceUnder": "आप अभी कम वज़न की श्रेणी में हैं। आइए धीरे-धीरे और टिकाऊ कदम प्लान से अच्छी आदतें बनाएँ।",
+    "guidanceNormal": "आप स्वस्थ श्रेणी में हैं। आइए एक स्थिर कदम प्लान से आपको सक्रिय रखें।",
+    "guidanceOver": "आप अभी अधिक वज़न की श्रेणी में हैं। धीरे-धीरे बढ़ता कदम प्लान आपको आराम से ज़्यादा चलने में मदद करेगा।",
+    "guidanceObese": "आप अभी मोटापे की श्रेणी में हैं। हम आराम से शुरू करेंगे और हर हफ़्ते कदम बढ़ाएँगे।",
+    "weeklyStepPlan": "साप्ताहिक कदम प्लान",
+    "chooseYourActivityGoal": "अपना एक्टिविटी लक्ष्य चुनें",
+    "currentGoalN": "मौजूदा लक्ष्य: {{steps}} कदम/दिन",
+    "goalSetSuccess": "लक्ष्य सफलतापूर्वक तय हो गया!",
+    "goalSetSuccessSub": "आपका व्यक्तिगत प्लान तैयार है।",
+    "startTracking": "ट्रैकिंग शुरू करें",
+    "myPlanTitle": "आपका व्यक्तिगत प्लान",
+    "myPlanSub": "आपका BMI, साप्ताहिक लक्ष्य और रोज़ का लक्ष्य एक जगह।",
+    "createPlanHeroSub": "अपने शरीर और लक्ष्य के हिसाब से कदम प्लान पाएँ।",
+    "activeMinutesN": "{{n}} मिनट सक्रिय",
+    "createPlanTitle": "अपना व्यक्तिगत प्लान बनाएँ",
+    "createPlanBody": "अपनी लंबाई और वज़न जोड़ें, हम आपके BMI के हिसाब से साप्ताहिक कदम प्लान और रोज़ का लक्ष्य बनाएँगे।",
+    "createPlanCta": "मेरा प्लान बनाएँ",
+    "yourDetails": "आपकी जानकारी",
+    "addMeasurements": "अपना माप जोड़ें",
+    "addMeasurementsSub": "इससे हम आपके लिए सही प्लान बना पाते हैं।",
+    "planPreview": "आपके प्लान की झलक",
+    "bmiPreview": "BMI झलक",
+    "previewNote": "प्लान बनाते समय आपका सुझाया गया रोज़ का लक्ष्य आपके BMI से तय होता है।",
+    "generatePlan": "मेरा प्लान बनाएँ",
+    "editMeasurements": "माप बदलें",
+    "changeGoal": "लक्ष्य बदलें"
   },
   "coinHistoryAndPlan": {
     "coinHistory": "कॉइन इतिहास",
@@ -131,13 +160,16 @@
     "pleaseSelectYourDailyStep": "कृपया अपना रोज़ का कदम लक्ष्य चुनें।",
     "goalUpdateFailed": "लक्ष्य अपडेट नहीं हो सका",
     "activityTarget": "गतिविधि लक्ष्य",
-    "pickThePaceThatFeels": "ऐसी रफ़्तार चुनें जो आपको सही लगे। आप इसे बाद में बदल सकते हैं।",
+    "titleLead": "अपना",
+    "titleAccent": "एक्टिविटी लक्ष्य चुनें",
+    "pickTheGoalThatFeels": "वह लक्ष्य चुनें जो आपको सही लगे। आप इसे कभी भी बदल सकते हैं।",
     "loadingYourRecommendedGoals": "आपके सुझाए गए लक्ष्य लोड हो रहे हैं…",
     "retry": "फिर से कोशिश करें",
     "noStepGoalsAvailableRight": "अभी कोई कदम लक्ष्य उपलब्ध नहीं है।",
     "dailyStepTarget": "रोज़ का कदम लक्ष्य",
     "theLongerYouWalkThe": "जितना ज़्यादा चलेंगे, उतना बड़ा रिवॉर्ड।",
-    "setGoal": "लक्ष्य तय करें"
+    "setGoal": "लक्ष्य तय करें",
+    "finalStep": "आख़िरी चरण"
   },
   "stepWelcome": {
     "everyStepYouTakeBrings": "आपका हर कदम आपको बेहतर सेहत और ज़्यादा कॉइन के करीब लाता है।",
@@ -344,5 +376,11 @@
     "streakHeadline": "आपकी {streak}-दिन की स्ट्रीक सफलतापूर्वक पूरी हुई",
     "trailHeadline": "शानदार सैर! आज आपने नई जगह देखी",
     "sunriseHeadline": "जल्दी शुरुआत! आपने दिन की शुरुआत बढ़िया कदमों से की"
+  },
+  "tabs": {
+    "rpMove": "RP Move",
+    "achievements": "उपलब्धियाँ",
+    "coinHistory": "कॉइन इतिहास",
+    "myPlan": "मेरा प्लान"
   }
 }

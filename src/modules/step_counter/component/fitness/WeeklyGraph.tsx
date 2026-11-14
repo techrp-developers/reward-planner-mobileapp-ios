@@ -1,124 +1,113 @@
 import React from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { useTranslation } from "react-i18next";
 
 import type { DailyData } from "../../navigation/type";
-import {
-  BORDER_RADIUS,
-  SPACING,
-  TYPOGRAPHY,
-} from "../../utils/theme";
-import { useTranslation } from "react-i18next";
+import { useStepStyles } from "../../utils/useStepTheme";
 
 interface WeeklyGraphProps {
   weeklyData: DailyData[];
   onViewMore: () => void;
 }
 
-const VD = {
-  accent: "#8EA2FF",
-  accentDark: "#B9C4FF",
-  accentDim: "rgba(142,162,255,0.22)",
-  accentFaint: "rgba(142,162,255,0.12)",
-  ink: "#F6F7FF",
-  muted: "#A8AEC8",
-  white: "#FFFFFF",
-  whiteLow: "#979EBC",
-  cardBg: "rgba(255,255,255,0.075)",
-  cardBorder: "rgba(174,188,255,0.16)",
-  track: "rgba(255,255,255,0.09)",
+const C_LIGHT = {
+  ink: "#10152D",
+  muted: "#777FA5",
+  blue: "#426BFF",
+  purple: "#773CFF",
+  cyan: "#36CFFF",
+  card: "#FFFFFF",
+  border: "#E9EEFA",
+  track: "#E3EBFA",
+  column: "#F7F9FF",
+  todayColumn: "#F1ECFF",
+  fill: "#B4CBFF",
+  chip: "#EEF3FF",
+  shadow: "#4664A5",
+};
+
+type Palette = typeof C_LIGHT;
+
+const C_DARK: Palette = {
+  ink: "#F2F4FF",
+  muted: "#9AA3C7",
+  blue: "#7B93FF",
+  purple: "#A585FF",
+  cyan: "#36CFFF",
+  card: "#161C33",
+  border: "rgba(174,188,255,0.14)",
+  track: "#252D4A",
+  column: "#1C2340",
+  todayColumn: "#2A2152",
+  fill: "#4C66C9",
+  chip: "rgba(123,147,255,0.16)",
   shadow: "#02030A",
 };
 
-const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
-  weeklyData,
-  onViewMore,
-}) => {
+const BAR_HEIGHT = 92;
+const BAR_WIDTH = 24;
+
+const WeeklyGraph: React.FC<WeeklyGraphProps> = ({ weeklyData, onViewMore }) => {
   const { t: tx } = useTranslation();
-  const today = new Date().getDate();
+  const { palette: C, styles } = useStepStyles(C_LIGHT, C_DARK, createStyles);
 
   return (
-    <View style={styles.weeklyCard}>
-      {/* Header */}
-      <View style={styles.weekHeader}>
-        <Text style={styles.sectionLabel}>
-          {tx("stepCounter:weeklyGraph.thisWeek")}
-        </Text>
-
+    <View style={styles.card}>
+      <View style={styles.header}>
+        <Text style={styles.title}>{tx("stepCounter:weeklyGraph.thisWeek")}</Text>
         <TouchableOpacity
-          activeOpacity={0.86}
-          style={styles.viewMoreButton}
+          activeOpacity={0.8}
+          style={styles.viewMore}
           onPress={onViewMore}
+          accessibilityRole="button"
+          hitSlop={6}
         >
-          <Text style={styles.viewMore}>
-            {tx("stepCounter:weeklyGraph.viewMore")}
-          </Text>
-
-          <MaterialCommunityIcons
-            name="arrow-right"
-            size={16}
-            color={VD.accentDark}
-          />
+          <Text style={styles.viewMoreText}>{tx("stepCounter:weeklyGraph.viewMore")}</Text>
+          <MaterialCommunityIcons name="arrow-right" size={16} color={C.blue} />
         </TouchableOpacity>
       </View>
 
-      {/* Weekly Bars */}
-      <View style={styles.barsRow}>
+      <View style={styles.columns}>
         {weeklyData.map((item, index) => {
-          const isToday =
-            item.date === today;
-
-          const fillHeight = Math.max(
-            item.progress * 100,
-            6
-          );
-
+          const ratio = Math.max(0, Math.min(item.progress, 1));
+          // Any recorded steps show at least a round cap so small days stay visible.
+          const fillHeight = ratio > 0 ? Math.max(BAR_WIDTH, ratio * BAR_HEIGHT) : 0;
+          const percent = item.percent ?? Math.round(item.progress * 100);
           return (
             <View
-              key={`${item.day}-${index}`}
-              style={styles.barColumn}
+              key={item.key ?? index}
+              style={[styles.column, item.isToday && styles.columnToday]}
+              accessible
+              accessibilityLabel={`${item.day} ${item.date}, ${percent}%`}
             >
-              <View style={styles.barTrack}>
-                <View
-                  style={[
-                    styles.barFill,
-                    isToday && styles.todayBarFill,
-                    {
-                      height: `${fillHeight}%`,
-                      backgroundColor: item.done
-                        ? VD.accent
-                        : isToday
-                        ? "#B9C4FF"
-                        : VD.accentDim,
-                    },
-                  ]}
-                />
-              </View>
-
               <Text
-                style={[
-                  styles.dayLabel,
-                  isToday &&
-                    styles.todayText,
-                ]}
+                style={[styles.percent, item.isToday && styles.todayText]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
+              >
+                {percent}%
+              </Text>
+              <View style={styles.track}>
+                {fillHeight > 0 &&
+                  (item.isToday ? (
+                    <LinearGradient
+                      colors={[C.cyan, C.blue, C.purple]}
+                      style={[styles.fill, { height: fillHeight }]}
+                    />
+                  ) : (
+                    <View style={[styles.fill, styles.fillPast, { height: fillHeight }]} />
+                  ))}
+              </View>
+              <Text
+                style={[styles.day, item.isToday && styles.todayText]}
+                numberOfLines={1}
+                adjustsFontSizeToFit
               >
                 {item.day}
               </Text>
-
-              <Text
-                style={[
-                  styles.dateLabel,
-                  isToday &&
-                    styles.todayText,
-                ]}
-              >
-                {item.date}
-              </Text>
+              <Text style={[styles.date, item.isToday && styles.todayText]}>{item.date}</Text>
             </View>
           );
         })}
@@ -129,108 +118,59 @@ const WeeklyGraph: React.FC<WeeklyGraphProps> = ({
 
 export default React.memo(WeeklyGraph);
 
-const styles = StyleSheet.create({
-  weeklyCard: {
-    backgroundColor: VD.cardBg,
-    borderRadius:
-      BORDER_RADIUS.large,
+const createStyles = (C: Palette) => StyleSheet.create({
+  card: {
+    backgroundColor: C.card,
+    borderRadius: 22,
     borderWidth: 1,
-    borderColor: VD.cardBorder,
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
-    shadowColor: VD.shadow,
+    borderColor: C.border,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: C.shadow,
     shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
+    elevation: 3,
   },
-
-  weekHeader: {
-    flexDirection: "row",
-    justifyContent:
-      "space-between",
-    alignItems: "center",
-    marginBottom: SPACING.md,
-  },
-
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: "800",
-    color: VD.ink,
-    textTransform: "uppercase",
-    letterSpacing: 0,
-  },
-
-  viewMoreButton: {
-    minHeight: 32,
+  header: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal:
-      SPACING.md,
-    marginRight: SPACING.xs,
-    borderRadius:
-      BORDER_RADIUS.pill,
-    backgroundColor:
-      VD.accentFaint,
-    borderWidth: 1,
-    borderColor:
-      VD.cardBorder,
+    justifyContent: "space-between",
+    marginBottom: 14,
   },
-
+  title: { fontSize: 16, fontWeight: "800", color: C.ink, textTransform: "uppercase" },
   viewMore: {
-    ...TYPOGRAPHY.caption,
-    color: VD.accentDark,
-    marginRight: 4,
-  },
-
-  barsRow: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent:
-      "space-between",
-    height: 130,
-  },
-
-  barColumn: {
-    flex: 1,
     alignItems: "center",
+    gap: 4,
+    minHeight: 36,
+    paddingHorizontal: 14,
+    borderRadius: 18,
+    backgroundColor: C.chip,
   },
-
-  barTrack: {
-    width: 22,
-    height: 90,
-    backgroundColor:
-      VD.track,
-    borderRadius: 12,
+  viewMoreText: { fontSize: 14, fontWeight: "700", color: C.blue },
+  columns: { flexDirection: "row", gap: 6 },
+  column: {
+    flex: 1,
+    minWidth: 0,
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: C.column,
+  },
+  columnToday: { backgroundColor: C.todayColumn },
+  percent: { fontSize: 12, fontWeight: "600", color: C.muted, marginBottom: 8 },
+  track: {
+    width: BAR_WIDTH,
+    height: BAR_HEIGHT,
+    borderRadius: BAR_WIDTH / 2,
+    backgroundColor: C.track,
     justifyContent: "flex-end",
     overflow: "hidden",
-    marginBottom: 8,
   },
-
-  barFill: {
-    width: "100%",
-    borderRadius: 12,
-  },
-
-  todayBarFill: {
-    borderWidth: 1,
-    borderColor: VD.accent,
-  },
-
-  dayLabel: {
-    fontSize: 11,
-    color: VD.whiteLow,
-    fontWeight: "600",
-  },
-
-  dateLabel: {
-    fontSize: 10,
-    color: VD.whiteLow,
-    marginTop: 2,
-  },
-
-  todayText: {
-    color: VD.accentDark,
-    fontWeight: "700",
-  },
+  fill: { width: "100%", borderRadius: BAR_WIDTH / 2 },
+  fillPast: { backgroundColor: C.fill },
+  day: { fontSize: 13, fontWeight: "700", color: C.muted, marginTop: 8 },
+  date: { fontSize: 12, color: C.muted, marginTop: 2 },
+  todayText: { color: C.purple, fontWeight: "800" },
 });

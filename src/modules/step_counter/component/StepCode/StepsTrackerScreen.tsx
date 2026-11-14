@@ -25,11 +25,14 @@ import {
 } from './onboarding/mocks';
 import { ONBOARDING_ASSETS, warnMissingOnboardingAssets } from './onboarding/assets';
 import { CURRENT_PLATFORM, useOnboardingFlow } from './onboarding/useOnboardingFlow';
-import { OB } from './onboarding/theme';
+import { OB_DARK, OB_LIGHT, type ObPalette } from './onboarding/theme';
+import { useStepStyles } from '../../utils/useStepTheme';
+import { stageOf, useContinueSetup, useFitnessSetup } from '../../utils/fitnessSetup';
 
 const A = ONBOARDING_ASSETS;
 
 export default function StepsTrackerScreen() {
+  const { palette: OB, styles: s } = useStepStyles(OB_LIGHT, OB_DARK, createStyles);
   const { t: tx } = useTranslation();
   const t = useCallback((key: string) => tx(`stepCounter:onboarding.${key}`), [tx]);
   const navigation = useNavigation<any>();
@@ -45,14 +48,17 @@ export default function StepsTrackerScreen() {
     action();
   }, []);
 
-  // Returning users whose setup is already complete skip onboarding entirely
-  // (same behaviour as before). Only while still on the first step, so a
-  // fresh completion lands on the success screen instead.
+  // Health access already works on this device: skip the permission steps
+  // and continue at the first incomplete stage (details, plan or Dashboard).
+  // Only while still on the first step, so a fresh completion lands on the
+  // success screen instead.
+  const { continueSetup, busy: continuing } = useContinueSetup();
+  const setup = useFitnessSetup();
   useEffect(() => {
     if (step === 'select' && flow.isSetupComplete && flow.ready) {
-      leave(() => navigation.replace('Dashboard'));
+      leave(() => { void continueSetup({ healthReady: true }); });
     }
-  }, [step, flow.isSetupComplete, flow.ready, leave, navigation]);
+  }, [step, flow.isSetupComplete, flow.ready, leave, continueSetup]);
 
   const backRef = useRef(flow.back);
   backRef.current = flow.back;
@@ -74,10 +80,10 @@ export default function StepsTrackerScreen() {
     navigation.setOptions({ gestureEnabled: step === 'select' });
   }, [navigation, step]);
 
-  const finish = useCallback(() => {
-    if (flow.profileCompleted) leave(() => navigation.replace('Dashboard'));
-    else leave(() => navigation.navigate('StepForm'));
-  }, [flow.profileCompleted, leave, navigation]);
+  // Continue at the first incomplete stage; users whose profile and goal are
+  // already saved (e.g. a new phone) go straight to the Dashboard.
+  const finish = useCallback(() => { void continueSetup({ healthReady: true }); }, [continueSetup]);
+  const nextIsDashboard = setup.resolved && stageOf(setup.plan, true) === 'ready';
 
   const common = { progress: flow.progress, onBack: handleBack, backLabel: t('back') };
 
@@ -367,9 +373,9 @@ export default function StepsTrackerScreen() {
           {...common}
           footer={
             <GradientPrimaryButton
-              label={t(flow.profileCompleted ? 'success.dashboard' : 'continue')}
+              label={t(nextIsDashboard ? 'success.dashboard' : 'continue')}
               onPress={finish}
-              loading={flow.profileCompleted === null}
+              loading={!setup.resolved || continuing}
             />
           }
         >
@@ -390,7 +396,7 @@ export default function StepsTrackerScreen() {
   }
 }
 
-const s = StyleSheet.create({
+const createStyles = (OB: ObPalette) => StyleSheet.create({
   appName: { fontSize: 22, fontWeight: '800', color: OB.text, textAlign: 'center', marginTop: 18 },
   publisher: { fontSize: 14, color: OB.muted, textAlign: 'center', marginTop: 4, marginBottom: 20 },
   facts: {
@@ -414,5 +420,5 @@ const s = StyleSheet.create({
     marginTop: 10,
     marginBottom: 22,
   },
-  badgeText: { fontSize: 13.5, fontWeight: '600', color: '#178A49' },
+  badgeText: { fontSize: 13.5, fontWeight: '600', color: OB.success },
 });

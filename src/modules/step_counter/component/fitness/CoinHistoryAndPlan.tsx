@@ -20,9 +20,30 @@ import { BORDER_RADIUS, SPACING, TYPOGRAPHY } from '../../utils/theme';
 import CoinIcon from '../../../../assets/product/rewards.svg';
 import HeartPlantIcon from '../../assets/StepCount/heartPlant.svg';
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+import { useStepStyles } from "../../utils/useStepTheme";
 
-const VD = {
+const VD_LIGHT = {
+  accent:      "#426BFF",
+  accentDark:  "#5B3FD9",
+  accentFaint: "rgba(66,107,255,0.10)",
+  cardBg:      "#F7F9FF",
+  cardSoft:    "#EEF3FF",
+  cardBorder:  "#E9EEFA",
+  ink:         "#10152D",
+  muted:       "#777FA5",
+  white:       "#FFFFFF",
+  whiteMid:    "#4A5275",
+  whiteLow:    "#777FA5",
+  success:     "#22C55E",
+  warning:     "#F5A524",
+  shadow:      "#4664A5",
+};
+
+type Palette = typeof VD_LIGHT;
+
+// Original dark palette.
+const VD_DARK: Palette = {
   accent:      "#8EA2FF",
   accentDark:  "#B9C4FF",
   accentFaint: "rgba(142,162,255,0.12)",
@@ -55,6 +76,7 @@ const formatHistoryDate = (value: string) => {
 };
 
 const CoinHistoryAndPlan: React.FC = () => {
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<CoinHistoryNavProp>();
   const [history, setHistory] = useState<StepHistoryItem[]>([]);
@@ -189,7 +211,7 @@ const CoinHistoryAndPlan: React.FC = () => {
           <TouchableOpacity
             activeOpacity={0.86}
             style={styles.getPlanButton}
-            onPress={() => navigation.navigate('BMICart')}
+            onPress={() => navigation.navigate('MyPlan')}
           >
             <Text style={styles.getPlan}>{tx("stepCounter:coinHistoryAndPlan.getMyPlan")}</Text>
             <MaterialCommunityIcons
@@ -210,7 +232,7 @@ const CoinHistoryAndPlan: React.FC = () => {
 
 export default React.memo(CoinHistoryAndPlan);
 
-const styles = StyleSheet.create({
+const createStyles = (VD: Palette) => StyleSheet.create({
   container: {
     marginBottom: SPACING.lg,
   },
