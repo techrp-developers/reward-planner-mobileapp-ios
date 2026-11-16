@@ -13,8 +13,28 @@ export function updateOtpDigits(previous: string[], text: string, index: number)
   return { digits: next, focusIndex: Math.min(start + digits.length, OTP_LENGTH - 1) };
 }
 
+type AuthFailure = {
+  code?: string;
+  message?: string;
+  response?: { status?: number; data?: { message?: unknown } };
+};
+
+export function isAuthTimeout(error: unknown): boolean {
+  const failure = error as AuthFailure;
+  return !failure?.response && (failure?.code === "ECONNABORTED" || failure?.code === "ETIMEDOUT" || /timeout.*exceeded/i.test(failure?.message ?? ""));
+}
+
+export function isAuthConnectionError(error: unknown): boolean {
+  const failure = error as AuthFailure;
+  return isAuthTimeout(error) || (!failure?.response &&
+    (failure?.code === "ERR_NETWORK" || /network error|offline/i.test(failure?.message ?? ""))) ||
+    (failure?.response?.status ?? 0) >= 500 || failure?.response?.status === 408;
+}
+
 export function authErrorMessage(error: unknown, fallback: string): string {
-  const failure = error as { response?: { data?: { message?: unknown } }; message?: string };
+  const failure = error as AuthFailure;
+  if (isAuthTimeout(error)) return "The server is taking longer than expected. Please try again shortly.";
+  if (isAuthConnectionError(error)) return "We couldn't connect to the sign-in service. Check your connection and try again.";
   const message = failure?.response?.data?.message || failure?.message;
   return typeof message === "string" && message ? message : fallback;
 }

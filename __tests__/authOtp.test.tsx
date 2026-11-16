@@ -253,6 +253,30 @@ it('prevents duplicate OTP requests and surfaces send errors', async () => {
   });
   expect(mockRequest).toHaveBeenCalledTimes(1);
   await act(async () => reject(new Error('Network Error')));
-  expect(JSON.stringify(renderer.toJSON())).toContain('Network Error');
+  expect(JSON.stringify(renderer.toJSON())).toContain("Check your connection and try again");
   expect(navigation.navigate).not.toHaveBeenCalled();
+});
+
+
+it('keeps the OTP after a timeout and allows a manual retry without auto-retrying', async () => {
+  mockVerify.mockRejectedValueOnce({ code: 'ECONNABORTED', message: 'timeout of 30000ms exceeded' });
+  await renderOtp();
+  await act(async () => field(0).props.onChangeText('123456'));
+  expect(JSON.stringify(renderer.toJSON())).toContain('The server is taking longer than expected');
+  expect(JSON.stringify(renderer.toJSON())).not.toContain('30000ms');
+  expect(renderer.root.findAllByType(TextInput).map(input => input.props.value).join('')).toBe('123456');
+  await act(async () => jest.advanceTimersByTime(30000));
+  expect(mockVerify).toHaveBeenCalledTimes(1);
+  await act(async () => renderer.root.findByType(AuthButton).props.onPress());
+  expect(mockVerify).toHaveBeenCalledTimes(2);
+});
+it('does not navigate or resend automatically when sending times out', async () => {
+  mockRequest.mockRejectedValueOnce({ code: 'ECONNABORTED', message: 'timeout of 45000ms exceeded' });
+  await renderLogin();
+  await act(async () => action('Continue with Email').props.onPress());
+  await act(async () => field(0).props.onChangeText('employee@example.com'));
+  await act(async () => renderer.root.findByType(AuthButton).props.onPress());
+  expect(JSON.stringify(renderer.toJSON())).toContain('Already received a code?');
+  expect(navigation.navigate).not.toHaveBeenCalled();
+  expect(mockRequest).toHaveBeenCalledTimes(1);
 });

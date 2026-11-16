@@ -7,7 +7,7 @@ import { useAppTheme } from "../../../../theme/ThemeContext";
 import { AuthButton, AuthLayout, authStyles } from "../components/AuthLayout";
 import { OTP_LENGTH, OTP_RESEND_COOLDOWN_SECONDS } from "../constants/otp";
 import { useOtpTimer } from "../hooks/useOtpTimer";
-import { authErrorMessage, emptyOtp, rateLimitDelay, updateOtpDigits } from "../utils/otpInput";
+import { authErrorMessage, isAuthConnectionError, emptyOtp, rateLimitDelay, updateOtpDigits } from "../utils/otpInput";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "LoginOTP">;
 
@@ -24,6 +24,7 @@ export default function OTPScreen({ route, navigation }: Props) {
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
   const [error, setError] = useState("");
+  const [connectionError, setConnectionError] = useState(false);
   const [notice, setNotice] = useState("");
   const inFlight = useRef(false);
   const verified = useRef(false);
@@ -56,6 +57,7 @@ export default function OTPScreen({ route, navigation }: Props) {
     inFlight.current = true;
     setVerifying(true);
     setError("");
+    setConnectionError(false);
     setNotice("");
     try {
       inputs.current.forEach(input => input?.blur());
@@ -69,8 +71,9 @@ export default function OTPScreen({ route, navigation }: Props) {
         rateLimit.reset(retryAfter);
         cooldown.reset(Math.max(retryAfter, cooldown.secondsLeft));
       }
+      setConnectionError(isAuthConnectionError(failure));
       setError(authErrorMessage(failure, "This code couldn't be verified. Check the code or request a new one."));
-      inputs.current[0]?.focus();
+      if (!isAuthConnectionError(failure)) inputs.current[0]?.focus();
     } finally {
       inFlight.current = false;
       if (mounted.current) setVerifying(false);
@@ -84,6 +87,7 @@ export default function OTPScreen({ route, navigation }: Props) {
     if (code !== digitsRef.current.join("")) {
       lastAutoCode.current = null;
       setError("");
+      setConnectionError(false);
       setNotice("");
     }
     applyDigits(next.digits);
@@ -96,6 +100,7 @@ export default function OTPScreen({ route, navigation }: Props) {
     inFlight.current = true;
     setResending(true);
     setError("");
+    setConnectionError(false);
     setNotice("");
     try {
       await requestLoginOtp(identifier);
@@ -111,6 +116,7 @@ export default function OTPScreen({ route, navigation }: Props) {
         cooldown.reset(retryAfter);
         rateLimit.reset(retryAfter);
       }
+      setConnectionError(isAuthConnectionError(failure));
       setError(authErrorMessage(failure, "We couldn't resend your code. Please try again."));
     } finally {
       inFlight.current = false;
@@ -140,6 +146,7 @@ export default function OTPScreen({ route, navigation }: Props) {
           ref={ref => { inputs.current[index] = ref; }}
           testID={`otp-digit-${index}`}
           accessibilityLabel={`Code digit ${index + 1} of ${OTP_LENGTH}`}
+          editable={!busy}
           value={digit} keyboardType="number-pad" inputMode="numeric"
           // Allow a full pasted code in any field; updateOtpDigits distributes it.
           selectTextOnFocus
@@ -156,12 +163,13 @@ export default function OTPScreen({ route, navigation }: Props) {
               lastAutoCode.current = null;
               applyDigits(next);
               setError("");
+              setConnectionError(false);
               inputs.current[index - 1]?.focus();
             }
           }}
           style={[styles.otpInput, {
             color: theme.text, backgroundColor: theme.card,
-            borderColor: error ? (isDark ? "#FDA4AF" : "#C62842") : focusedIndex === index ? theme.primary : theme.border,
+            borderColor: error && !connectionError ? (isDark ? "#FDA4AF" : "#C62842") : focusedIndex === index ? theme.primary : theme.border,
           }]}
         />)}
       </View>

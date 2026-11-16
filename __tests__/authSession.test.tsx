@@ -34,11 +34,11 @@ it('uses the existing OTP APIs, persists tokens and fetches profile and terms', 
   (secureGetItem as jest.Mock).mockResolvedValue('existing-device-id');
   (api.post as jest.Mock).mockResolvedValueOnce({ data: { success: true } }).mockResolvedValueOnce({ data: { accessToken: 'access', refreshToken: 'refresh' } });
   await act(async () => { await auth.requestLoginOtp('9876543210'); });
-  expect(api.post).toHaveBeenCalledWith('/v1/auth/request-otp', { login: '9876543210' });
+  expect(api.post).toHaveBeenCalledWith('/v1/auth/request-otp', { login: '9876543210' }, { timeout: 45000 });
   await act(async () => { await auth.verifyLoginOtp('9876543210', '123456'); });
   expect(api.post).toHaveBeenLastCalledWith('/v1/auth/verify-otp', {
     login: '9876543210', otp: '123456', device_id: 'existing-device-id', device_name: expect.any(String),
-  });
+  }, { timeout: 30000 });
   expect(persistAuthToken).toHaveBeenCalledWith('access');
   expect(secureSetItem).toHaveBeenCalledWith('@rewardsplanners_refresh_token', 'refresh');
   expect(api.get).toHaveBeenCalledWith('/v1/auth/user-info');

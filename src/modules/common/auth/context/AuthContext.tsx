@@ -1,3 +1,4 @@
+import { OTP_REQUEST_TIMEOUT_MS, OTP_VERIFY_TIMEOUT_MS } from "../constants/otp";
 import React, {
   createContext,
   useCallback,
@@ -193,7 +194,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const requestLoginOtp = useCallback(async (identifier: string) => {
     setLoading(true);
     try {
-      const response = await api.post("/v1/auth/request-otp", { login: identifier });
+      const response = await api.post("/v1/auth/request-otp", { login: identifier }, { timeout: OTP_REQUEST_TIMEOUT_MS });
       if (response.data?.success === false) {
         throw new Error(response.data?.message || "Unable to send the login code");
       }
@@ -214,7 +215,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           otp,
           device_id: deviceId,
           device_name: deviceName,
-        });
+        }, { timeout: OTP_VERIFY_TIMEOUT_MS });
 
         const nextAccessToken = response.data?.accessToken || null;
         const nextRefreshToken = response.data?.refreshToken || null;

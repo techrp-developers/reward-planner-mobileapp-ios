@@ -6,7 +6,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import { useAuth } from "../context/AuthContext";
 import type { AuthStackParamList } from "../navigation/types";
 import { normalizeIndianMobile, parseLoginIdentifier } from "../utils/loginIdentifier";
-import { authErrorMessage, rateLimitDelay } from "../utils/otpInput";
+import { authErrorMessage, isAuthConnectionError, isAuthTimeout, rateLimitDelay } from "../utils/otpInput";
 import { useAppTheme } from "../../../../theme/ThemeContext";
 import { AuthButton, AuthLayout, authStyles } from "../components/AuthLayout";
 import { AuthPressable } from "../components/AuthMotion";
@@ -24,6 +24,8 @@ export default function LoginScreen({ navigation }: Props) {
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [connectionError, setConnectionError] = useState(false);
+  const [uncertainIdentifier, setUncertainIdentifier] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [hintLoading, setHintLoading] = useState(false);
   const input = useRef<TextInput>(null);
@@ -40,6 +42,8 @@ export default function LoginScreen({ navigation }: Props) {
     setHintLoading(false);
     setMethod(null);
     setError("");
+    setConnectionError(false);
+    setUncertainIdentifier(null);
   }, []);
 
   useFocusEffect(useCallback(() => {
@@ -60,6 +64,8 @@ export default function LoginScreen({ navigation }: Props) {
   const chooseMethod = async (nextMethod: Method) => {
     setMethod(nextMethod);
     setError("");
+    setConnectionError(false);
+    setUncertainIdentifier(null);
     if (nextMethod !== "phone" || Platform.OS !== "android") return;
     const generation = ++hintGeneration.current;
     setHintLoading(true);
@@ -74,10 +80,13 @@ export default function LoginScreen({ navigation }: Props) {
     if (sendingRef.current || !limiter.canResend || hintLoading) return;
     const parsed = parseLoginIdentifier(method === "phone" ? mobile : email);
     if (parsed.kind !== method || (parsed.kind !== "phone" && parsed.kind !== "email")) {
+      setConnectionError(false);
       setError(method === "phone" ? "Enter a valid 10-digit Indian mobile number." : "Enter a valid email address.");
       return;
     }
     setError("");
+    setConnectionError(false);
+    setUncertainIdentifier(null);
     // Returning to edit the destination must not resend the same code early.
     if (lastSent.current?.identifier === parsed.normalized && lastSent.current.deadline > Date.now()) {
       navigation.navigate("LoginOTP", { identifier: parsed.normalized, resendAvailableAt: lastSent.current.deadline });
@@ -93,6 +102,8 @@ export default function LoginScreen({ navigation }: Props) {
     } catch (failure) {
       const retryAfter = rateLimitDelay(failure);
       if (retryAfter) limiter.reset(retryAfter);
+      setConnectionError(isAuthConnectionError(failure));
+      if (isAuthTimeout(failure)) setUncertainIdentifier(parsed.normalized);
       setError(authErrorMessage(failure, "We couldn't send your code. Please try again."));
     } finally {
       sendingRef.current = false;
@@ -117,11 +128,13 @@ export default function LoginScreen({ navigation }: Props) {
           {method === "phone" ? "Use your registered mobile number. Your code will arrive on WhatsApp." : "Use the email address registered with your employer."}
         </Text>
         <Text style={[authStyles.label, { color: theme.text }]}>{method === "phone" ? "Mobile number" : "Email address"}</Text>
-        <View style={[styles.inputWrap, { backgroundColor: theme.card, borderColor: error ? "#C62842" : theme.border }]}>
+        <View style={[styles.inputWrap, { backgroundColor: theme.card, borderColor: error && !connectionError ? "#C62842" : theme.border }]}>
           {method === "phone" && <Text style={[styles.prefix, { color: theme.text }]}>+91</Text>}
           <TextInput key={method} ref={input} value={method === "phone" ? mobile : email}
             onChangeText={value => {
               setError("");
+              setConnectionError(false);
+              setUncertainIdentifier(null);
               if (method === "phone") setMobile(normalizeIndianMobile(value) || value);
               else setEmail(value);
             }}
@@ -138,6 +151,14 @@ export default function LoginScreen({ navigation }: Props) {
         {!!error && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={[authStyles.error, isDark && styles.darkError]}>{error}</Text>}
         <AuthButton title={sending ? "Sending code…" : limiter.secondsLeft > 0 ? `Try again in ${limiter.secondsLeft}s` : "Continue"}
           onPress={() => { void onContinue(); }} busy={sending} disabled={hintLoading || !limiter.canResend} />
+        {uncertainIdentifier && !sending && (
+          <AuthPressable accessibilityRole="button" onPress={() => navigation.navigate("LoginOTP", {
+            identifier: uncertainIdentifier,
+            resendAvailableAt: Date.now() + OTP_RESEND_COOLDOWN_SECONDS * 1000,
+          })}>
+            <Text style={[authStyles.link, { color: theme.primary }]}>Already received a code? Enter it here</Text>
+          </AuthPressable>
+        )}
         <Text style={[styles.hint, { color: theme.secondaryText }]}>Use the contact details provided to your employer.</Text>
       </>}
     </AuthLayout>
