@@ -1,7 +1,9 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -94,16 +96,16 @@ const VD_LIGHT: Palette = {
 };
 
 const formatNumber = (value: number) =>
-  Number.isFinite(value) ? value.toLocaleString('en-IN') : '0';
+  Number.isFinite(value) ? value.toLocaleString(i18n.language) : '0';
 
 const formatDateParts = (value: string | null) => {
   if (!value) return { date: '--', year: '' };
 
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value.replace(" ", "T"));
   if (Number.isNaN(date.getTime())) return { date: value, year: '' };
 
   return {
-    date: new Intl.DateTimeFormat('en-US', {
+    date: new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: '2-digit',
     }).format(date),
@@ -112,12 +114,12 @@ const formatDateParts = (value: string | null) => {
 };
 
 const formatFullDate = (value: string | null) => {
-  if (!value) return 'No expiry';
+  if (!value) return i18n.t("stepCounter:ui.noExpiry");
 
-  const date = new Date(`${value}T00:00:00`);
+  const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00:00` : value.replace(" ", "T"));
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(i18n.language, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -125,7 +127,7 @@ const formatFullDate = (value: string | null) => {
 };
 
 const PointsStatementScreen: React.FC = () => {
-  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<PointsNavProp>();
   // Includes the RP Move tab bar floating over this screen.
@@ -188,6 +190,7 @@ const PointsStatementScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={VD.bg[0]} />
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -201,7 +204,7 @@ const PointsStatementScreen: React.FC = () => {
               <TouchableOpacity
                 activeOpacity={0.82}
                 style={styles.backButton}
-                onPress={() => navigation.goBack()}
+                onPress={() => goBackInFitness(navigation)}
               >
                 <Icon name="chevron-left" size={24} color={VD.accentDark} />
               </TouchableOpacity>
@@ -223,7 +226,7 @@ const PointsStatementScreen: React.FC = () => {
                   <Text style={styles.balanceTitle}>{tx("stepCounter:pointStatement.myBalance")}</Text>
                   <Text style={styles.balanceValue} maxFontSizeMultiplier={1.25}>
                     {formatNumber(summary?.balance || 0)}
-                    <Text style={styles.balanceUnit}> Coins</Text>
+                    <Text style={styles.balanceUnit}>{" "}{tx("stepCounter:ui.coins")}</Text>
                   </Text>
                 </View>
               </View>
@@ -247,10 +250,10 @@ const PointsStatementScreen: React.FC = () => {
                 </View>
                 <View style={styles.expiryCopy}>
                   <Text style={styles.expiryText}>
-                    {formatNumber(summary?.expiring_coins || 0)} RP Coins Expiring
+                    {tx("stepCounter:ui.expiringCoins", { count: summary?.expiring_coins || 0 })}
                   </Text>
                   <Text style={styles.expiryDate}>
-                    Expiry: {formatFullDate(summary?.expiry_date || null)}
+                    {tx("stepCounter:ui.expiry", { date: formatFullDate(summary?.expiry_date || null) })}
                   </Text>
                 </View>
               </View>

@@ -97,7 +97,20 @@
     "km": "कि.मी.",
     "min": "मिनिटे",
     "statistics": "आकडेवारी",
-    "coinsPlan": "कॉइन आणि प्लॅन"
+    "coinsPlan": "कॉइन आणि प्लॅन",
+    "rpMove": "RP Move",
+    "hello": "नमस्कार {{name}}",
+    "helloNoName": "नमस्कार",
+    "goalSuffix": "/ {{goal}} पावले",
+    "noGoal": "अजून दैनिक लक्ष्य ठरवलेले नाही",
+    "goalProgress": "दैनिक लक्ष्याचे {{percent}}%",
+    "calories": "कॅलरी",
+    "distance": "अंतर",
+    "activeTime": "सक्रिय वेळ",
+    "startStreak": "सातत्य सुरू करण्यासाठी आजचे लक्ष्य पूर्ण करा",
+    "goalMet": "लक्ष्य पूर्ण झाले",
+    "goalNotMet": "लक्ष्य पूर्ण झाले नाही",
+    "home": "मुख्यपृष्ठ"
   },
   "goalReachedScreen": {
     "goal": "लक्ष्य",
@@ -389,5 +402,117 @@
     "achievements": "यश",
     "coinHistory": "कॉइन इतिहास",
     "myPlan": "माझा प्लॅन"
+  },
+  "ui": {
+    "monthSummary": "{{completed}} दिवस पूर्ण · {{missed}} दिवस चुकले",
+    "highestDay": "सर्वाधिक पावलांचा दिवस",
+    "stepsValue": "{{count}} पावले",
+    "coins": "कॉइन्स",
+    "expiringCoins": "{{count}} RP कॉइन्सची मुदत संपत आहे",
+    "expiry": "मुदत: {{date}}",
+    "noExpiry": "मुदत समाप्ती नाही",
+    "currentStreak": "सध्याचे सातत्य",
+    "totalReward": "आजचे एकूण बक्षीस:",
+    "welcomeTitle": "RP Move मध्ये\nआपले स्वागत आहे"
+  },
+  "onboarding": {
+    "back": "मागे जा",
+    "continue": "पुढे चला",
+    "next": "पुढे",
+    "select": {
+      "title": "तुम्ही कोणते डिव्हाइस वापरता?",
+      "subtitle": "तुमच्या पावलांचा डेटा जोडण्यासाठी सोप्या पायऱ्या दाखवू.",
+      "android": "Android",
+      "iphone": "iPhone",
+      "thisPhone": "हा फोन",
+      "otherTitle": "त्या फोनवर सेटअप करा",
+      "otherOnIos": "तुम्ही iPhone वापरत आहात. Android वरील पावले मोजण्यासाठी त्या फोनवर Reward Planners इंस्टॉल करून साइन इन करा.",
+      "otherOnAndroid": "तुम्ही Android वापरत आहात. iPhone वरील पावले मोजण्यासाठी तुमच्या iPhone वर Reward Planners इंस्टॉल करून साइन इन करा."
+    },
+    "install": {
+      "title": "Health Connect इंस्टॉल करा",
+      "subtitle": "Health Connect तुमच्या पावलांचा डेटा Reward Planners सोबत सुरक्षितपणे शेअर करते.",
+      "updateTitle": "Health Connect अपडेट करा",
+      "updateSubtitle": "पावलांचा डेटा शेअर करण्यासाठी Health Connect ची नवीन आवृत्ती आवश्यक आहे.",
+      "appName": "Health Connect",
+      "publisher": "Google LLC",
+      "factFree": "मोफत",
+      "factFreeLabel": "किंमत",
+      "factOfficial": "Google",
+      "factOfficialLabel": "अधिकृत ॲप",
+      "factPrivate": "खाजगी",
+      "factPrivateLabel": "प्रवेश तुमच्या नियंत्रणात",
+      "cta": "Google Play वरून मिळवा",
+      "updateCta": "Google Play वर अपडेट करा",
+      "alreadyInstalled": "आधीच इंस्टॉल केले आहे? पुढे चला",
+      "notFoundTitle": "Health Connect अजून सापडले नाही",
+      "notFound": "Google Play वरून Health Connect इंस्टॉल किंवा अपडेट करा, मग येथे परत या."
+    },
+    "open": {
+      "title": "Health Connect उघडा",
+      "subtitle": "पावलांचा डेटा व्यवस्थापित करण्यासाठी Health Connect उघडा.",
+      "tipTitle": "सापडत नाही?",
+      "tip": "ॲप यादीत Health Connect शोधा. Android 14 किंवा नंतर: Settings › Security & privacy › Privacy › Health Connect.",
+      "cta": "Health Connect उघडा",
+      "skip": "ही पायरी वगळा",
+      "illustration": "फोनच्या ॲप यादीत Health Connect ठळक केले आहे"
+    },
+    "permission": {
+      "title": "पावलांची परवानगी द्या",
+      "subtitle": "Reward Planners ला तुमची पावलांची संख्या वाचू द्या.",
+      "steps": "पावले",
+      "tipTitle": "फक्त तुमची पावले",
+      "tip": "Reward Planners फक्त पावलांची संख्या वाचते. Health Connect मध्ये तुम्ही हे कधीही बंद करू शकता.",
+      "cta": "पावलांचा प्रवेश सुरू करा",
+      "deniedTitle": "पावलांचा प्रवेश बंद आहे",
+      "denied": "Health Connect › App permissions मध्ये Reward Planners साठी Steps सुरू करा, मग येथे परत या.",
+      "noSourceTitle": "अजून पावलांचा डेटा नाही",
+      "noSource": "पावलांचा प्रवेश सुरू आहे, पण कोणतेही ॲप Health Connect मध्ये पावले जतन करत नाही. Google Fit, Samsung Health किंवा तुमचे फिटनेस ॲप उघडून Health Connect सिंक सुरू करा आणि पुन्हा प्रयत्न करा.",
+      "openHealthConnect": "Health Connect उघडा",
+      "illustration": "Health Connect परवानगी स्क्रीनवर Reward Planners साठी Steps सुरू आहे"
+    },
+    "apple": {
+      "title": "Apple Health वापरा",
+      "subtitle": "तुमच्या iPhone वरील Health ॲपमध्ये पावले आधीच मोजली जातात.",
+      "appName": "Apple Health",
+      "badge": "सहसा आधीच इंस्टॉल केलेले",
+      "info": "Health ॲप तुमच्या iPhone वर आधीच इंस्टॉल आहे. तुम्हाला काहीही इंस्टॉल करण्याची गरज नाही.",
+      "cta": "Apple Health जोडा",
+      "manage": "पावले दिसत नाहीत? परवानग्या तपासा",
+      "unavailableTitle": "Apple Health उपलब्ध नाही",
+      "unavailable": "या डिव्हाइसवर Apple Health उपलब्ध नाही, त्यामुळे येथे पावले मोजता येत नाहीत.",
+      "failedTitle": "Apple Health जोडता आले नाही"
+    },
+    "settings": {
+      "title": "iPhone ची Settings उघडा",
+      "subtitle": "तुमच्या iPhone च्या Settings किंवा Health ॲपमध्ये आरोग्याच्या परवानग्या व्यवस्थापित करा.",
+      "apps": "ॲप्स",
+      "illustration": "iPhone च्या Settings मध्ये Apps ठळक केले आहे"
+    },
+    "find": {
+      "title": "Reward Planners शोधा",
+      "subtitle": "संबंधित ॲप किंवा Health परवानगी यादीत Reward Planners निवडा.",
+      "tipTitle": "तुमच्या iOS आवृत्तीवर अवलंबून आहे",
+      "tip": "iOS 18 किंवा नंतर: Settings › Apps › Reward Planners › Health.\niOS 17 किंवा आधी: Settings › Reward Planners › Health.\nकिंवा: Health ॲप › तुमची प्रोफाइल › Apps › Reward Planners.",
+      "illustration": "iPhone च्या ॲप यादीत Reward Planners ठळक केले आहे"
+    },
+    "allow": {
+      "title": "Health चा प्रवेश द्या",
+      "subtitle": "Reward Planners ला तुमच्या पावलांचा डेटा वाचू द्या.",
+      "steps": "पावले",
+      "mockBody": "Reward Planners ला तुमच्या आरोग्य डेटाचा प्रवेश हवा आहे.",
+      "tip": "Steps सुरू करून येथे परत या. गोपनीयतेसाठी Apple ॲप्सना वाचन परवानगीची स्थिती सांगत नाही. चालल्यानंतरही पावले 0 दिसल्यास ही सेटिंग पुन्हा तपासा.",
+      "cta": "परवानगी देऊन पुढे चला",
+      "openSettings": "Settings उघडा",
+      "illustration": "Health प्रवेश स्क्रीनवर Steps सुरू आहे"
+    },
+    "success": {
+      "title": "सर्व तयार आहे!",
+      "body": "तुमच्या पावलांचा डेटा जोडला आहे. प्रगती पाहण्यासाठी डॅशबोर्डवर परत या.",
+      "sync": "पावले आपोआप सिंक होतील",
+      "coins": "लक्ष्य पूर्ण करून कॉइन्स मिळवा",
+      "dashboard": "डॅशबोर्डवर जा"
+    },
+    "genericError": "काहीतरी चूक झाली. कृपया पुन्हा प्रयत्न करा."
   }
 }

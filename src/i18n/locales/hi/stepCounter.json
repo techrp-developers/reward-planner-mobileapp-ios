@@ -97,7 +97,20 @@
     "km": "कि.मी.",
     "min": "मिनट",
     "statistics": "आँकड़े",
-    "coinsPlan": "कॉइन और प्लान"
+    "coinsPlan": "कॉइन और प्लान",
+    "rpMove": "RP Move",
+    "hello": "नमस्ते {{name}}",
+    "helloNoName": "नमस्ते",
+    "goalSuffix": "/ {{goal}} कदम",
+    "noGoal": "अभी दैनिक लक्ष्य तय नहीं है",
+    "goalProgress": "दैनिक लक्ष्य का {{percent}}%",
+    "calories": "कैलोरी",
+    "distance": "दूरी",
+    "activeTime": "सक्रिय समय",
+    "startStreak": "सिलसिला शुरू करने के लिए आज का लक्ष्य पूरा करें",
+    "goalMet": "लक्ष्य पूरा हुआ",
+    "goalNotMet": "लक्ष्य पूरा नहीं हुआ",
+    "home": "होम"
   },
   "goalReachedScreen": {
     "goal": "लक्ष्य",
@@ -389,5 +402,117 @@
     "achievements": "उपलब्धियाँ",
     "coinHistory": "कॉइन इतिहास",
     "myPlan": "मेरा प्लान"
+  },
+  "ui": {
+    "monthSummary": "{{completed}} दिन पूरे · {{missed}} दिन छूटे",
+    "highestDay": "सबसे अधिक कदम वाला दिन",
+    "stepsValue": "{{count}} कदम",
+    "coins": "कॉइन्स",
+    "expiringCoins": "{{count}} RP कॉइन्स की अवधि समाप्त होने वाली है",
+    "expiry": "समाप्ति: {{date}}",
+    "noExpiry": "कोई समाप्ति तिथि नहीं",
+    "currentStreak": "वर्तमान सिलसिला",
+    "totalReward": "आज का कुल इनाम:",
+    "welcomeTitle": "RP Move में\nआपका स्वागत है"
+  },
+  "onboarding": {
+    "back": "वापस जाएँ",
+    "continue": "जारी रखें",
+    "next": "आगे",
+    "select": {
+      "title": "आप कौन-सा डिवाइस इस्तेमाल करते हैं?",
+      "subtitle": "हम आपके कदमों का डेटा जोड़ने के आसान चरण दिखाएँगे।",
+      "android": "Android",
+      "iphone": "iPhone",
+      "thisPhone": "यह फ़ोन",
+      "otherTitle": "उस फ़ोन पर सेटअप करें",
+      "otherOnIos": "आप iPhone इस्तेमाल कर रहे हैं। Android के कदम ट्रैक करने के लिए उस फ़ोन पर Reward Planners इंस्टॉल करके साइन इन करें।",
+      "otherOnAndroid": "आप Android इस्तेमाल कर रहे हैं। iPhone के कदम ट्रैक करने के लिए अपने iPhone पर Reward Planners इंस्टॉल करके साइन इन करें।"
+    },
+    "install": {
+      "title": "Health Connect इंस्टॉल करें",
+      "subtitle": "Health Connect आपके कदमों का डेटा Reward Planners के साथ सुरक्षित रूप से साझा करता है।",
+      "updateTitle": "Health Connect अपडेट करें",
+      "updateSubtitle": "कदमों का डेटा साझा करने के लिए Health Connect का नया संस्करण चाहिए।",
+      "appName": "Health Connect",
+      "publisher": "Google LLC",
+      "factFree": "मुफ़्त",
+      "factFreeLabel": "कीमत",
+      "factOfficial": "Google",
+      "factOfficialLabel": "आधिकारिक ऐप",
+      "factPrivate": "निजी",
+      "factPrivateLabel": "पहुँच आपके नियंत्रण में",
+      "cta": "Google Play से डाउनलोड करें",
+      "updateCta": "Google Play पर अपडेट करें",
+      "alreadyInstalled": "पहले से इंस्टॉल है? जारी रखें",
+      "notFoundTitle": "Health Connect अभी नहीं मिला",
+      "notFound": "Google Play से Health Connect इंस्टॉल या अपडेट करें, फिर यहाँ लौटें।"
+    },
+    "open": {
+      "title": "Health Connect खोलें",
+      "subtitle": "कदमों का डेटा प्रबंधित करने के लिए Health Connect खोलें।",
+      "tipTitle": "मिल नहीं रहा?",
+      "tip": "ऐप सूची में Health Connect खोजें। Android 14 या नए संस्करण में: Settings › Security & privacy › Privacy › Health Connect।",
+      "cta": "Health Connect खोलें",
+      "skip": "यह चरण छोड़ें",
+      "illustration": "फ़ोन की ऐप सूची में Health Connect हाइलाइट किया गया है"
+    },
+    "permission": {
+      "title": "कदमों की अनुमति दें",
+      "subtitle": "Reward Planners को आपके कदमों की संख्या पढ़ने दें।",
+      "steps": "कदम",
+      "tipTitle": "केवल आपके कदम",
+      "tip": "Reward Planners केवल कदमों की संख्या पढ़ता है। आप Health Connect में इसे कभी भी बंद कर सकते हैं।",
+      "cta": "कदमों की पहुँच चालू करें",
+      "deniedTitle": "कदमों की पहुँच बंद है",
+      "denied": "Health Connect › App permissions में Reward Planners के लिए Steps चालू करें, फिर यहाँ लौटें।",
+      "noSourceTitle": "अभी कदमों का डेटा नहीं है",
+      "noSource": "कदमों की पहुँच चालू है, लेकिन कोई ऐप Health Connect में कदम सहेज नहीं रहा। Google Fit, Samsung Health या अपना फ़िटनेस ऐप खोलकर Health Connect सिंक चालू करें और फिर कोशिश करें।",
+      "openHealthConnect": "Health Connect खोलें",
+      "illustration": "Health Connect अनुमति स्क्रीन पर Reward Planners के लिए Steps चालू है"
+    },
+    "apple": {
+      "title": "Apple Health इस्तेमाल करें",
+      "subtitle": "आपके iPhone के Health ऐप में आपके कदम पहले से ट्रैक होते हैं।",
+      "appName": "Apple Health",
+      "badge": "आमतौर पर पहले से इंस्टॉल",
+      "info": "Health ऐप आपके iPhone पर पहले से इंस्टॉल है। कुछ भी इंस्टॉल करने की ज़रूरत नहीं है।",
+      "cta": "Apple Health जोड़ें",
+      "manage": "कदम नहीं दिख रहे? अनुमतियाँ देखें",
+      "unavailableTitle": "Apple Health उपलब्ध नहीं है",
+      "unavailable": "इस डिवाइस पर Apple Health उपलब्ध नहीं है, इसलिए यहाँ कदम ट्रैक नहीं हो सकते।",
+      "failedTitle": "Apple Health नहीं जुड़ सका"
+    },
+    "settings": {
+      "title": "iPhone की Settings खोलें",
+      "subtitle": "अपने iPhone की Settings या Health ऐप में स्वास्थ्य अनुमतियाँ प्रबंधित करें।",
+      "apps": "ऐप्स",
+      "illustration": "iPhone की Settings में Apps हाइलाइट किया गया है"
+    },
+    "find": {
+      "title": "Reward Planners खोजें",
+      "subtitle": "संबंधित ऐप या Health अनुमति सूची में Reward Planners चुनें।",
+      "tipTitle": "आपके iOS संस्करण पर निर्भर है",
+      "tip": "iOS 18 या नया: Settings › Apps › Reward Planners › Health।\niOS 17 या पुराना: Settings › Reward Planners › Health।\nया: Health ऐप › आपकी प्रोफ़ाइल › Apps › Reward Planners।",
+      "illustration": "iPhone की ऐप सूची में Reward Planners हाइलाइट किया गया है"
+    },
+    "allow": {
+      "title": "Health की पहुँच दें",
+      "subtitle": "Reward Planners को आपके कदमों का डेटा पढ़ने दें।",
+      "steps": "कदम",
+      "mockBody": "Reward Planners आपके स्वास्थ्य डेटा की पहुँच चाहता है।",
+      "tip": "Steps चालू करके यहाँ लौटें। गोपनीयता के कारण Apple ऐप्स को पढ़ने की अनुमति की स्थिति नहीं बताता। चलने के बाद भी कदम 0 रहें तो यह सेटिंग फिर जाँचें।",
+      "cta": "अनुमति देकर जारी रखें",
+      "openSettings": "Settings खोलें",
+      "illustration": "Health पहुँच स्क्रीन पर Steps चालू है"
+    },
+    "success": {
+      "title": "सब तैयार है!",
+      "body": "आपके कदमों का डेटा जुड़ गया है। अपनी प्रगति देखने के लिए डैशबोर्ड पर लौटें।",
+      "sync": "कदम अपने आप सिंक होंगे",
+      "coins": "लक्ष्य पूरे करके कॉइन्स पाएँ",
+      "dashboard": "डैशबोर्ड पर जाएँ"
+    },
+    "genericError": "कुछ गलत हुआ। कृपया फिर कोशिश करें।"
   }
 }

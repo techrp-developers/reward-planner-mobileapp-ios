@@ -502,5 +502,17 @@
     "achievements": "Achievements",
     "coinHistory": "Coin History",
     "myPlan": "My Plan"
+  },
+  "ui": {
+    "monthSummary": "{{completed}} days completed · {{missed}} days missed",
+    "highestDay": "Highest step day",
+    "stepsValue": "{{count}} steps",
+    "coins": "Coins",
+    "expiringCoins": "{{count}} RP Coins expiring",
+    "expiry": "Expiry: {{date}}",
+    "noExpiry": "No expiry",
+    "currentStreak": "Current streak",
+    "totalReward": "Total reward today:",
+    "welcomeTitle": "Welcome to\nRP Move"
   }
 }

@@ -1,3 +1,4 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -151,7 +152,7 @@ const BMI_SEGMENTS = [
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
-const fmt   = (v: number) => (Number.isFinite(v) ? v.toLocaleString("en-IN") : "0");
+const fmt   = (v: number) => (Number.isFinite(v) ? v.toLocaleString(i18n.language) : "0");
 
 const toTitle = (v: string) =>
   v.replace(/[_-]/g, " ")
@@ -473,7 +474,7 @@ const BMIScreen: React.FC = () => {
   // Art is decorative and capped so it never sets a tall, empty hero.
   const art = showArt && heroKind ? goalHeroSize(heroKind, width, Math.min(200, Math.max(150, height * 0.22))) : null;
   const showBack = !manage || (view === "measure" && measured);
-  const onBack = view === "measure" && measured ? closeMeasurements : () => navigation.goBack();
+  const onBack = view === "measure" && measured ? closeMeasurements : () => goBackInFitness(navigation, manage ? "Dashboard" : "StepForm");
 
   return (
     <View style={ss.root}>

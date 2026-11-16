@@ -200,9 +200,9 @@ const StepWelcome = () => {
             </TouchableOpacity>
 
             <View style={[styles.copy, { width: width * 0.55 }]}>
-              <Text style={styles.eyebrow}>RP Move</Text>
+              <Text style={styles.eyebrow}>{tx("stepCounter:dashboard.rpMove")}</Text>
               <Text style={[styles.title, compact && styles.titleCompact]}>
-                Welcome to{"\n"}RP Move
+                {tx("stepCounter:ui.welcomeTitle")}
               </Text>
               <Text style={[styles.subtitle, compact && styles.subtitleCompact]}>
                 {tx("stepCounter:stepWelcome.everyStepYouTakeBrings")}

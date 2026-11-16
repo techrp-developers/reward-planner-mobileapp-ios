@@ -1,3 +1,4 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -47,16 +48,6 @@ type CalendarCell = {
   isFuture?: boolean;
 };
 
-const WEEK_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
-const monthTitleFormatter = new Intl.DateTimeFormat("en-US", { month: "long" });
-const fullMonthFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "long",
-  year: "numeric",
-});
-const selectedDateFormatter = new Intl.DateTimeFormat("en-US", {
-  day: "numeric",
-  month: "long",
-});
 
 const VD_DARK = {
   bg: ["#070A16", "#111735", "#201A3F"],
@@ -100,17 +91,17 @@ const toIsoDate = (year: number, monthIndex: number, day: number) =>
   `${year}-${pad2(monthIndex + 1)}-${pad2(day)}`;
 
 const formatNumber = (value: number) =>
-  Number.isFinite(value) ? value.toLocaleString("en-IN") : "0";
+  Number.isFinite(value) ? value.toLocaleString(i18n.language) : "0";
 
 const safeNumber = (value?: number | null) =>
   Number.isFinite(Number(value)) ? Number(value) : 0;
 
-const buildMonthOptions = (baseDate: Date) => {
+const buildMonthOptions = (baseDate: Date, language: string) => {
   return Array.from({ length: 6 }, (_, index) => {
     const date = new Date(baseDate.getFullYear(), baseDate.getMonth() - 2 + index, 1);
     return {
       key: toMonthKey(date),
-      label: monthTitleFormatter.format(date),
+      label: new Intl.DateTimeFormat(language, { month: "long" }).format(date),
       date,
     };
   });
@@ -158,7 +149,10 @@ const buildCalendarCells = (
 
 const ProgressScreen: React.FC = () => {
   const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
-  const { t: tx } = useTranslation();
+  const { t: tx, i18n: locale } = useTranslation();
+  const language = locale.language;
+  const fullMonthFormatter = useMemo(() => new Intl.DateTimeFormat(language, { month: "long", year: "numeric" }), [language]);
+  const selectedDateFormatter = useMemo(() => new Intl.DateTimeFormat(language, { month: "long", day: "numeric" }), [language]);
   const navigation = useNavigation<ProgressNav>();
   const { width } = useWindowDimensions();
   const today = useMemo(() => new Date(), []);
@@ -168,7 +162,7 @@ const ProgressScreen: React.FC = () => {
     toIsoDate(today.getFullYear(), today.getMonth(), today.getDate())
   );
 
-  const monthOptions = useMemo(() => buildMonthOptions(today), [today]);
+  const monthOptions = useMemo(() => buildMonthOptions(today, language), [today, language]);
   const calendarQuery = useCalendarProgressQuery(selectedMonth);
   const calendarData = useMemo(
     () => calendarQuery.data?.data?.calendar || {},
@@ -200,7 +194,7 @@ const ProgressScreen: React.FC = () => {
   const selectedDateLabel = useMemo(() => {
     if (!selectedDate) return fullMonthFormatter.format(new Date(`${selectedMonth}-01T00:00:00`));
     return selectedDateFormatter.format(new Date(`${selectedDate}T00:00:00`));
-  }, [selectedDate, selectedMonth]);
+  }, [selectedDate, selectedMonth, fullMonthFormatter, selectedDateFormatter]);
 
   const highestStepDay = useMemo(() => {
     const todayKey = toIsoDate(today.getFullYear(), today.getMonth(), today.getDate());
@@ -230,7 +224,7 @@ const ProgressScreen: React.FC = () => {
       <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={VD.bg[0]} />
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <View style={styles.header}>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel={tx("common:actions.back")} style={styles.iconButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={tx("common:actions.back")} style={styles.iconButton} onPress={() => goBackInFitness(navigation)} activeOpacity={0.82}>
             <MaterialCommunityIcons name="chevron-left" size={25} color={VD.accentDark} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{tx("stepCounter:progressScreen.yourProgress")}</Text>
@@ -271,7 +265,7 @@ const ProgressScreen: React.FC = () => {
 
             <Text style={styles.subText}>
               <Text style={styles.subTextStrong}>{fullMonthFormatter.format(new Date(`${selectedMonth}-01T00:00:00`))}</Text>{"\n"}
-              {monthStats.completed} days Completed • {monthStats.missed} days Missed
+              {tx("stepCounter:ui.monthSummary", monthStats)}
             </Text>
 
             <View style={styles.card}>
@@ -327,12 +321,12 @@ const ProgressScreen: React.FC = () => {
                 </View>
                 <View style={styles.highestCopy}>
                   <Text style={styles.highestTitle}>
-                    Your <Text style={styles.highestAccent}>{tx("stepCounter:progressScreen.highest")}</Text>{"\n"}Step Day
+                    {tx("stepCounter:ui.highestDay")}
                   </Text>
                 </View>
                 <View style={styles.highestRight}>
                   <Text style={styles.highestValue}>
-                    {formatNumber(safeNumber(highestStepDay.data.steps))} Steps
+                    {tx("stepCounter:ui.stepsValue", { count: safeNumber(highestStepDay.data.steps) })}
                   </Text>
                   <Text style={styles.highestDate}>
                     {selectedDateFormatter.format(new Date(`${highestStepDay.date}T00:00:00`))}
@@ -356,10 +350,14 @@ type CalendarGridProps = {
 
 const CalendarGrid = React.memo(({ cells, onSelectDate }: CalendarGridProps) => {
   const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { i18n: locale } = useTranslation();
+  const weekDays = Array.from({ length: 7 }, (_, index) =>
+    new Intl.DateTimeFormat(locale.language, { weekday: "short" }).format(new Date(2024, 0, 1 + index)),
+  );
   return (
   <View>
     <View style={styles.weekRow}>
-      {WEEK_DAYS.map((day) => (
+      {weekDays.map((day) => (
         <Text key={day} style={styles.weekText}>{day}</Text>
       ))}
     </View>
@@ -378,7 +376,7 @@ type DayItemProps = {
 };
 
 const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
-  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   if (!cell.dayNumber || !cell.isoDate) {
     return <View style={styles.dayOuter} />;
   }
@@ -409,7 +407,7 @@ const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
         ]}
       >
         {completed ? (
-          <MaterialCommunityIcons name="check" size={16} color="#FFFFFF" />
+          <MaterialCommunityIcons name="check" size={16} color={cell.isSelected ? VD.accentDark : "#FFFFFF"} />
         ) : (
           <Text
             style={[

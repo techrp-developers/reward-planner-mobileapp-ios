@@ -1,3 +1,4 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -268,7 +269,7 @@ const StepForm = () => {
       setStep((prev) => prev - 1);
       return true;
     }
-    navigation.goBack();
+    goBackInFitness(navigation, "StepWelcome");
     return true;
   }, [navigation, step]);
 

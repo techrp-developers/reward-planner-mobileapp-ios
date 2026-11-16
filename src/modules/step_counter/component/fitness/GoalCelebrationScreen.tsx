@@ -499,7 +499,7 @@ const GoalCelebrationScreen: React.FC<Props> = (props) => {
 
         <View style={styles.totalRewardRow}>
           <Text style={styles.totalRewardText}>
-            Total reward today:{" "}
+            {i18n.t("stepCounter:ui.totalReward")}{" "}
             <Text style={styles.totalRewardCoins}>🪙 {response.reward} coins</Text>
           </Text>
         </View>

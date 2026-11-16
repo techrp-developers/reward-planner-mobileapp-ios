@@ -284,7 +284,7 @@ const GoalReachedScreen: React.FC<Props> = ({
           <View style={styles.streakRow}>
             <View>
               <Text style={styles.sectionTitle}>
-                Current Streak {"  "}
+                {i18n.t("stepCounter:ui.currentStreak")} {"  "}
                 <Text style={styles.streakLightning}>⚡</Text>
               </Text>
             </View>

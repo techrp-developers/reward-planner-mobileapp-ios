@@ -1,8 +1,10 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useMemo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -30,7 +32,8 @@ import Walking_Enthusiast from "../../assets/StepCount/Walking_Enthusiast.svg";
 import icon_Walking_Enthusiast from "../../assets/StepCount/Achivement_icon(2).svg";
 import { useTranslation } from "react-i18next";
 import { translateSourceText } from "../../../../i18n/sourceText";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+
 import { useStepStyles } from "../../utils/useStepTheme";
 
 const { width } = Dimensions.get("window");
@@ -230,7 +233,7 @@ const AchievementCard = ({ title, description, children }: AchievementCardProps)
 
 /* ---------------- MAIN SCREEN ---------------- */
 export default function AchievementsScreen() {
-  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation();
   // Includes the RP Move tab bar floating over this screen.
@@ -267,13 +270,14 @@ export default function AchievementsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={VD.bg[0]} />
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomInset + 16 }}>
           {/* HEADER */}
           <View style={styles.header}>
             <TouchableOpacity
               style={styles.iconButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => goBackInFitness(navigation)}
               activeOpacity={0.82}
             >
               <MaterialCommunityIcons

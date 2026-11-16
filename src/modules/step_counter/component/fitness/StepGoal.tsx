@@ -1,3 +1,4 @@
+import { goBackInFitness } from "../../utils/fitnessNavigation";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -142,7 +143,7 @@ const SETUP_PHASES = 3;
 
 type GoalOption = { id: number; dailySteps: number; label: string; coins: number };
 
-const fmt = (n: number) => (Number.isFinite(n) ? n.toLocaleString("en-IN") : "0");
+const fmt = (n: number) => (Number.isFinite(n) ? n.toLocaleString(i18n.language) : "0");
 
 // ─── Pieces ───────────────────────────────────────────────────────────────────
 
@@ -285,7 +286,7 @@ const StepGoal: React.FC = () => {
           <View style={hs.header}>
             <TouchableOpacity
               style={hs.backBtn}
-              onPress={() => navigation.goBack()}
+              onPress={() => goBackInFitness(navigation, "StepWelcome")}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel={tx("common:actions.back")}

@@ -10,3 +10,13 @@ export function fitnessTabAction(state: NavigationState, tab: FitnessTab) {
     : StackActions.replace(tab);
   return { ...action, target: state.key, source: current?.key };
 }
+
+/** Deep links can open a screen with no previous fitness route. */
+export function goBackInFitness(navigation: {
+  canGoBack: () => boolean;
+  goBack: () => void;
+  dispatch: (action: ReturnType<typeof CommonActions.navigate>) => void;
+}, fallback = 'Dashboard') {
+  if (navigation.canGoBack()) navigation.goBack();
+  else navigation.dispatch(CommonActions.navigate(fallback));
+}

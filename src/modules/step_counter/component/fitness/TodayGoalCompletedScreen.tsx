@@ -325,7 +325,7 @@ const TodayGoalCompletedScreen: React.FC<Props> = (props) => {
           <View style={styles.streakRow}>
             <View>
               <Text style={styles.sectionTitle}>
-                Current Streak {"  "}
+                {i18n.t("stepCounter:ui.currentStreak")} {"  "}
                 <Text style={styles.streakLightning}>⚡</Text>
               </Text>
               <Text style={styles.streakSub}>{tx("stepCounter:todayGoalCompletedScreen.youReBuildingStrongHabits")}</Text>
