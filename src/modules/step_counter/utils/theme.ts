@@ -80,7 +80,8 @@ export const BORDER_RADIUS = {
 };
 
 export const RESPONSIVE = {
-  horizontalPadding: Math.max(16, Math.min(28, width * 0.05)),
+  // ~24pt on a 390pt iPhone, matching the RP Move designs (was ~19pt).
+  horizontalPadding: Math.round(Math.max(20, Math.min(28, width * 0.062))),
   cardWidth: "100%" as const,
   cardMaxWidth: 430,
   buttonHeight: Platform.select({

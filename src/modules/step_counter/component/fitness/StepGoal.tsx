@@ -11,7 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
 import Svg, { Path } from "react-native-svg";
 import type { SvgProps } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
@@ -28,6 +28,7 @@ import { selectUserGoal } from "../../api/ProfileAPI";
 import { useProfilePlanCache, useProfilePlanQuery } from "../../api/useProfilePlan";
 import { useInvalidateFitnessQueries } from "../../api/useFitnessQueries";
 import { GoalHeroArt, goalHeroSize, useGoalHeroKind } from "./GoalHeroArt";
+import StatusBarShield from "./StatusBarShield";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 
@@ -173,7 +174,7 @@ const StepGoal: React.FC = () => {
   const { palette: VD, styles: ss, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation              = useNavigation<Nav>();
-  const { width }               = useWindowDimensions();
+  const { width, height }       = useWindowDimensions();
   const insets                  = useSafeAreaInsets();
   const invalidateFitnessQueries = useInvalidateFitnessQueries();
   const [selected,    setSelected]    = useState<number | null>(null);
@@ -244,10 +245,15 @@ const StepGoal: React.FC = () => {
   const inSetup = !!profilePlan && !profilePlan.current_goal;
 
   const pad = RESPONSIVE.horizontalPadding;
-  const { width: artWidth, height: artHeight } = heroKind ? goalHeroSize(heroKind, width) : { width: 0, height: 0 };
+  // Art is decorative and capped, so it never makes the hero tall and empty.
+  const { width: artWidth, height: artHeight } = heroKind
+    ? goalHeroSize(heroKind, width, Math.min(210, Math.max(160, height * 0.25)))
+    : { width: 0, height: 0 };
   const textWidth = width - pad - Math.max(artWidth, width * 0.42) * 0.78;
-  const titleSize = width < 360 ? 27 : 31;
-  const footerHeight = 56 + 24 + insets.bottom;
+  const titleSize = width < 360 ? 27 : 30;
+  // The fixed CTA's real height (it grows with larger text); the list is
+  // padded by it so the last goal card is never hidden behind the button.
+  const [footerHeight, setFooterHeight] = useState(56 + 36 + insets.bottom);
 
   return (
     <View style={ss.root}>
@@ -256,7 +262,7 @@ const StepGoal: React.FC = () => {
       <Waves width={width} colors={VD.waves} />
 
       <ScrollView
-        contentContainerStyle={{ paddingBottom: footerHeight + 12 }}
+        contentContainerStyle={{ paddingBottom: footerHeight + 16 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero: header, copy on the left, artwork bottom-right */}
@@ -265,7 +271,7 @@ const StepGoal: React.FC = () => {
           start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}
           style={[
             hs.hero,
-            { paddingTop: insets.top + 8, paddingHorizontal: pad, minHeight: insets.top + 30 + artHeight },
+            { paddingTop: insets.top + 8, paddingHorizontal: pad, minHeight: insets.top + 8 + artHeight + 18 },
             isDark && hs.heroDark,
           ]}
         >
@@ -296,7 +302,7 @@ const StepGoal: React.FC = () => {
               <Text style={hs.badgeText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:dashboard.rpMove")}</Text>
             </View>
             <Text style={hs.eyebrow} maxFontSizeMultiplier={1.3}>{tx("stepCounter:stepGoal.activityTarget")}</Text>
-            <Text style={[hs.title, { fontSize: titleSize, lineHeight: titleSize + 6 }]} maxFontSizeMultiplier={1.2}>
+            <Text style={[hs.title, { fontSize: titleSize, lineHeight: Math.round(titleSize * 1.24) }]} maxFontSizeMultiplier={1.2}>
               {tx("stepCounter:stepGoal.titleLead")}{"\n"}
               <Text style={hs.titleAccent}>{tx("stepCounter:stepGoal.titleAccent")}</Text>
             </Text>
@@ -341,8 +347,8 @@ const StepGoal: React.FC = () => {
                     <Shoe width={62} height={46} />
                   </View>
                   <View style={ss.goalCopy}>
-                    <Text style={ss.goalLabel} numberOfLines={1} maxFontSizeMultiplier={1.3}>{item.label}</Text>
-                    <Text style={ss.goalMeta} numberOfLines={1} maxFontSizeMultiplier={1.3}>{tx("stepCounter:stepGoal.dailyStepTarget")}</Text>
+                    <Text style={ss.goalLabel} maxFontSizeMultiplier={1.3}>{item.label}</Text>
+                    <Text style={ss.goalMeta} maxFontSizeMultiplier={1.3}>{tx("stepCounter:stepGoal.dailyStepTarget")}</Text>
                   </View>
                   {item.coins > 0 && (
                     <View style={ss.coinBadge}>
@@ -364,12 +370,14 @@ const StepGoal: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+      <StatusBarShield color={H.sky[0]} />
 
       {/* CTA stays reachable on small screens while the cards scroll underneath */}
       <LinearGradient
         colors={VD.footer}
         start={{ x: 0, y: 0 }} end={{ x: 0, y: 0.35 }}
         style={[ss.footer, { paddingHorizontal: pad, paddingBottom: insets.bottom + 12 }]}
+        onLayout={e => setFooterHeight(e.nativeEvent.layout.height)}
       >
         <TouchableOpacity
           activeOpacity={0.9}
@@ -406,8 +414,9 @@ export default React.memo(StepGoal);
 
 // Hero styles use the fixed light colours above.
 const hs = StyleSheet.create({
-  hero: { overflow: "hidden", paddingBottom: 18 },
-  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  // Grows with its text; only the artwork box clips itself.
+  hero: { paddingBottom: 18 },
+  heroDark: { overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   heroWave: { position: "absolute", left: 0, right: 0, bottom: 0 },
   flex: { flex: 1 },
 
@@ -447,9 +456,9 @@ const hs = StyleSheet.create({
     fontSize: 12, fontWeight: "700", letterSpacing: 2,
     textTransform: "uppercase", color: H.label, marginBottom: 6,
   },
-  title: { fontWeight: "900", color: H.ink, marginBottom: 10 },
+  title: { flexShrink: 1, fontWeight: "900", color: H.ink, paddingVertical: 2, marginBottom: 8 },
   titleAccent: { color: H.accent },
-  subtitle: { fontSize: 14, lineHeight: 20, color: H.muted },
+  subtitle: { flexShrink: 1, fontSize: 14, lineHeight: 21, color: H.muted },
 
   waves: { position: "absolute", left: 0, right: 0, bottom: 0 },
 });
@@ -464,8 +473,8 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     backgroundColor: VD.cardBg,
     borderRadius: 22,
     borderWidth: 2, borderColor: VD.cardBorder,
-    paddingVertical: 12, paddingLeft: 12, paddingRight: 14,
-    marginBottom: 12,
+    paddingVertical: 16, paddingLeft: 14, paddingRight: 16,
+    marginBottom: 14,
     shadowColor: VD.shadow, shadowOpacity: 0.08, shadowRadius: 14, shadowOffset: { width: 0, height: 6 },
     elevation: VD.elevation,
   },
@@ -476,9 +485,9 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     alignItems: "center", justifyContent: "center",
     marginRight: 14,
   },
-  goalCopy:  { flex: 1, marginRight: 8 },
-  goalLabel: { fontSize: 19, fontWeight: "800", color: VD.white },
-  goalMeta:  { fontSize: 13, color: VD.whiteMid, marginTop: 3 },
+  goalCopy:  { flex: 1, minWidth: 0, marginRight: 10 },
+  goalLabel: { fontSize: 19, lineHeight: 25, fontWeight: "800", color: VD.white },
+  goalMeta:  { fontSize: 13, lineHeight: 18, color: VD.whiteMid, marginTop: 3 },
   coinBadge: {
     flexDirection: "row", alignItems: "center", gap: 4,
     backgroundColor: VD.coinBg,
@@ -520,7 +529,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     paddingHorizontal: 16, paddingVertical: 9,
     marginTop: 6,
   },
-  mottoText: { flexShrink: 1, fontSize: 14, color: VD.motto, textAlign: "center" },
+  mottoText: { flexShrink: 1, fontSize: 14, lineHeight: 20, color: VD.motto, textAlign: "center" },
 
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingTop: 24 },
   ctaWrap: { borderRadius: 28 },
@@ -530,10 +539,10 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     elevation: 6,
   },
   cta: {
-    height: 56, borderRadius: 28,
+    minHeight: 56, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 28,
     flexDirection: "row", gap: 10,
     alignItems: "center", justifyContent: "center",
   },
-  ctaText:    { fontSize: 18, fontWeight: "800", color: VD.ctaText },
+  ctaText:    { flexShrink: 1, fontSize: 18, lineHeight: 24, fontWeight: "800", color: VD.ctaText },
   ctaTextDim: { color: VD.whiteLow },
 });

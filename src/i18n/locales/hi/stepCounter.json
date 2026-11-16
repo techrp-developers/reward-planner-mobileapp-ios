@@ -153,7 +153,14 @@
     "finalCheck": "आखिरी जाँच",
     "almostThere": "बस थोड़ा और",
     "addYourBodyMetricsTo": "अपना प्लान बनाने के लिए शरीर का माप जोड़ें।",
-    "submit": "जमा करें"
+    "submit": "जमा करें",
+    "tellUsAboutYourself": "अपने बारे में बताइए!",
+    "selectGenderSub": "अपना जेंडर चुनें ताकि हम आपका फ़िटनेस अनुभव आपके हिसाब से बना सकें।",
+    "male": "पुरुष",
+    "female": "महिला",
+    "others": "अन्य",
+    "age": "उम्र",
+    "stepOf": "चरण {{step}} / {{total}}"
   },
   "stepGoal": {
     "selectGoal": "लक्ष्य चुनें",

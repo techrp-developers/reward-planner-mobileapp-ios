@@ -416,7 +416,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     borderBottomColor: VD.cardBorder,
   },
   backBtn:      { width: 36, alignItems: "flex-start", justifyContent: "center" },
-  backArrow:    { fontSize: 34, color: VD.accentDark, lineHeight: 38, fontWeight: "300" },
+  backArrow:    { fontSize: 34, color: VD.accentDark, lineHeight: 41, fontWeight: "300" },
   headerCenter: { flex: 1, alignItems: "center" },
   headerTitle:  { fontSize: 16, fontWeight: "800", color: VD.white, letterSpacing: -0.2 },
   headerSub:    { fontSize: 11.5, fontWeight: "700", color: VD.whiteMid, marginTop: 2, letterSpacing: 0.2 },

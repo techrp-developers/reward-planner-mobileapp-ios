@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, useWindowDimensions } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaInsetsContext, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { useTranslation } from 'react-i18next';
 import type { GoalSyncData, PlanOverview, OverallSummary } from '../api/Stepsapi';
 import FitnessTabBar, {
+  FITNESS_TAB_LOGO_OVERHANG,
   FitnessChromeContext,
   TAB_OF_ROUTE,
   type FitnessTab,
@@ -19,6 +20,8 @@ import {
   useFitnessSetup,
 } from '../utils/fitnessSetup';
 import { useStepPalette } from '../utils/useStepTheme';
+import { screenInsets } from '../utils/layout';
+import { fitnessTabBarHeight } from '../../../bottombar/BottomTabs';
 
 export type FitnessStackParamList = {
   StepWelcome: undefined;
@@ -51,8 +54,8 @@ const Stack = createNativeStackNavigator<FitnessStackParamList>();
 const SETUP_REQUIRED = new Set<string>(['Dashboard', 'AfterGoal', 'AchievementCard', 'CoinHistory', 'PlanProcess']);
 
 const GATE = {
-  light: { bg: '#F5F9FF', text: '#4A5275', accent: '#426BFF', button: 'rgba(66,107,255,0.10)' },
-  dark: { bg: '#070A16', text: '#CDD2EA', accent: '#8EA2FF', button: 'rgba(142,162,255,0.12)' },
+  light: { bg: '#F5F9FF', text: '#4A5275', accent: '#426BFF', button: 'rgba(66,107,255,0.10)', tabRegion: '#F1EDFF' },
+  dark: { bg: '#070A16', text: '#CDD2EA', accent: '#8EA2FF', button: 'rgba(142,162,255,0.12)', tabRegion: '#14122B' },
 };
 
 /** Shown while the setup state is resolved before RP Move opens. */
@@ -103,6 +106,7 @@ function FitnessLayout({
 }) {
   const appNavigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
   const { palette: C } = useStepPalette(GATE.light, GATE.dark);
   const stackNav = useRef<any>(null);
   const [focused, setFocused] = useState<string>(entry.name);
@@ -159,9 +163,11 @@ function FitnessLayout({
   // Existing app-wide action of the center logo: the main app home.
   const handleCenterPress = useCallback(() => appNavigation.navigate('Dashboard'), [appNavigation]);
 
-  // While the bar shows it owns the bottom inset, so screens don't pad twice.
+  // The bar has its own region below the screens (not over them). Screens
+  // only need to clear the raised logo, so that is their bottom inset; the
+  // device inset is inside the bar region and is not applied twice.
   const innerInsets = useMemo(
-    () => (showBar ? { ...insets, bottom: 0 } : insets),
+    () => screenInsets(insets, showBar, FITNESS_TAB_LOGO_OVERHANG),
     [insets, showBar],
   );
 
@@ -255,7 +261,9 @@ function FitnessLayout({
           </View>
         </SafeAreaInsetsContext.Provider>
         {showBar && activeTab && (
-          <FitnessTabBar active={activeTab} onTabPress={handleTabPress} onCenterPress={handleCenterPress} />
+          <View style={[layoutStyles.tabRegion, { height: fitnessTabBarHeight(fontScale) + insets.bottom, backgroundColor: C.tabRegion }]}>
+            <FitnessTabBar active={activeTab} onTabPress={handleTabPress} onCenterPress={handleCenterPress} />
+          </View>
         )}
       </View>
     </FitnessChromeContext.Provider>
@@ -265,6 +273,8 @@ function FitnessLayout({
 const layoutStyles = StyleSheet.create({
   root: { flex: 1 },
   content: { flex: 1 },
+  // In-flow, so the screens above end where the bar starts.
+  tabRegion: { width: '100%' },
 });
 
 const gateStyles = StyleSheet.create({

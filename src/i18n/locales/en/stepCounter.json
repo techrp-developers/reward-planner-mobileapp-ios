@@ -166,7 +166,14 @@
     "finalCheck": "Final check",
     "almostThere": "Almost there",
     "addYourBodyMetricsTo": "Add your body metrics to generate your plan.",
-    "submit": "Submit"
+    "submit": "Submit",
+    "tellUsAboutYourself": "Tell us about yourself!",
+    "selectGenderSub": "Select your gender to help us personalise your fitness experience.",
+    "male": "Male",
+    "female": "Female",
+    "others": "Others",
+    "age": "Age",
+    "stepOf": "Step {{step}} of {{total}}"
   },
   "stepGoal": {
     "selectGoal": "Select goal",

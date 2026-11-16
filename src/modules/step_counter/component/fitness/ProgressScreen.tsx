@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  SafeAreaView,
+  StatusBar,
   ScrollView,
   StyleSheet,
   Text,
@@ -9,7 +9,8 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -28,17 +29,13 @@ import {
 } from "../../utils/theme";
 
 import TrophyIcon from "../../assets/StepCount/trophy.svg";
-import StepIcon from "../../assets/StepCount/step_icon.svg";
-import FireIcon from "../../assets/StepCount/lightning.svg";
-import LocationIcon from "../../assets/StepCount/location.svg";
-import ClockIcon from "../../assets/StepCount/clock_icon.svg";
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+
 import { useStepStyles } from "../../utils/useStepTheme";
 
 
 type ProgressNav = NativeStackNavigationProp<FitnessStackParamList, "PlanProcess">;
-type SvgIcon = React.FC<{ width?: number; height?: number; style?: object }>;
 
 type CalendarCell = {
   key: string;
@@ -47,6 +44,7 @@ type CalendarCell = {
   status?: CalendarDayStatus;
   isToday?: boolean;
   isSelected?: boolean;
+  isFuture?: boolean;
 };
 
 const WEEK_DAYS = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
@@ -143,7 +141,8 @@ const buildCalendarCells = (
       key: isoDate,
       dayNumber,
       isoDate,
-      status: calendarData[isoDate]?.status,
+      status: isoDate > todayIso ? undefined : calendarData[isoDate]?.status,
+      isFuture: isoDate > todayIso,
       isToday: isoDate === todayIso,
       isSelected: isoDate === selectedIsoDate,
     };
@@ -158,7 +157,7 @@ const buildCalendarCells = (
 };
 
 const ProgressScreen: React.FC = () => {
-  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { palette: VD, styles, isDark } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<ProgressNav>();
   const { width } = useWindowDimensions();
@@ -204,7 +203,8 @@ const ProgressScreen: React.FC = () => {
   }, [selectedDate, selectedMonth]);
 
   const highestStepDay = useMemo(() => {
-    const entries = Object.entries(calendarData);
+    const todayKey = toIsoDate(today.getFullYear(), today.getMonth(), today.getDate());
+    const entries = Object.entries(calendarData).filter(([date, data]) => date <= todayKey && safeNumber(data.steps) > 0);
     if (entries.length === 0) return null;
 
     return entries.reduce(
@@ -212,20 +212,30 @@ const ProgressScreen: React.FC = () => {
         safeNumber(data.steps) > safeNumber(best.data.steps) ? { date, data } : best,
       { date: entries[0][0], data: entries[0][1] }
     );
-  }, [calendarData]);
+  }, [calendarData, today]);
 
   const handleMonthPress = useCallback((monthKey: string) => {
     setSelectedMonth(monthKey);
-    setSelectedDate(null);
-  }, []);
+    setSelectedDate(monthKey === toMonthKey(today)
+      ? toIsoDate(today.getFullYear(), today.getMonth(), today.getDate())
+      : `${monthKey}-01`);
+  }, [today]);
 
   const handleRetry = useCallback(() => {
     calendarQuery.refetch();
   }, [calendarQuery]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={["top", "bottom", "left", "right"]}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={VD.bg[0]} />
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+        <View style={styles.header}>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel={tx("common:actions.back")} style={styles.iconButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
+            <MaterialCommunityIcons name="chevron-left" size={25} color={VD.accentDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{tx("stepCounter:progressScreen.yourProgress")}</Text>
+          <View style={styles.headerSpacer} />
+        </View>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
@@ -234,14 +244,6 @@ const ProgressScreen: React.FC = () => {
           ]}
         >
           <View style={[styles.content, { maxWidth: contentMaxWidth }]}>
-            <View style={styles.header}>
-              <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()} activeOpacity={0.82}>
-                <MaterialCommunityIcons name="chevron-left" size={25} color={VD.accentDark} />
-              </TouchableOpacity>
-              <Text style={styles.headerTitle}>{tx("stepCounter:progressScreen.yourProgress")}</Text>
-              <View style={styles.headerSpacer} />
-            </View>
-
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -253,6 +255,8 @@ const ProgressScreen: React.FC = () => {
                 return (
                   <TouchableOpacity
                     key={item.key}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: active }}
                     style={[styles.monthTab, active && styles.monthTabActive]}
                     activeOpacity={0.84}
                     onPress={() => handleMonthPress(item.key)}
@@ -266,7 +270,7 @@ const ProgressScreen: React.FC = () => {
             </ScrollView>
 
             <Text style={styles.subText}>
-              <Text style={styles.subTextStrong}>{selectedDateLabel}:</Text>{" "}
+              <Text style={styles.subTextStrong}>{fullMonthFormatter.format(new Date(`${selectedMonth}-01T00:00:00`))}</Text>{"\n"}
               {monthStats.completed} days Completed • {monthStats.missed} days Missed
             </Text>
 
@@ -290,27 +294,28 @@ const ProgressScreen: React.FC = () => {
                 />
               )}
 
+              <Text style={styles.detailTitle}>{selectedDateLabel}</Text>
               <View style={styles.statsRow}>
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.steps))}
                   label={tx("stepCounter:progressScreen.steps")}
-                  Icon={StepIcon}
+                  icon="shoe-print"
                 />
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.calories))}
                   label={tx("stepCounter:progressScreen.kcal")}
-                  Icon={FireIcon}
+                  icon="fire"
                   color={VD.warning}
                 />
                 <Stat
                   value={safeNumber(selectedDayData?.distance_km).toFixed(1)}
                   label={tx("stepCounter:progressScreen.km")}
-                  Icon={LocationIcon}
+                  icon="map-marker-outline"
                 />
                 <Stat
                   value={formatNumber(safeNumber(selectedDayData?.active_minutes))}
                   label={tx("stepCounter:progressScreen.moveMin")}
-                  Icon={ClockIcon}
+                  icon="clock-outline"
                 />
               </View>
             </View>
@@ -373,7 +378,7 @@ type DayItemProps = {
 };
 
 const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
-  const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
+  const { styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   if (!cell.dayNumber || !cell.isoDate) {
     return <View style={styles.dayOuter} />;
   }
@@ -386,6 +391,10 @@ const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
     <TouchableOpacity
       activeOpacity={0.84}
       style={styles.dayOuter}
+      accessibilityRole="button"
+      accessibilityLabel={`${cell.isoDate}${cell.status ? `, ${cell.status}` : ""}`}
+      accessibilityState={{ selected: cell.isSelected, disabled: cell.isFuture }}
+      disabled={cell.isFuture}
       onPress={() => onSelectDate(cell.isoDate!)}
     >
       <View
@@ -394,17 +403,18 @@ const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
           completed && styles.completedDay,
           missed && styles.missedDay,
           partial && styles.partialDay,
+          cell.isFuture && styles.futureDay,
           cell.isToday && styles.todayDay,
           cell.isSelected && styles.selectedDay,
         ]}
       >
         {completed ? (
-          <MaterialCommunityIcons name="check" size={16} color={VD.ink} />
+          <MaterialCommunityIcons name="check" size={16} color="#FFFFFF" />
         ) : (
           <Text
             style={[
               styles.dayText,
-              completed && styles.completedText,
+              cell.isFuture && styles.futureText,
               partial && styles.partialText,
               cell.isSelected && styles.selectedText,
             ]}
@@ -420,15 +430,17 @@ const DayItem = React.memo(({ cell, onSelectDate }: DayItemProps) => {
 type StatProps = {
   value: string;
   label: string;
-  Icon: SvgIcon;
+  icon: string;
   color?: string;
 };
 
-const Stat = React.memo(({ value, label, Icon, color }: StatProps) => {
+const Stat = React.memo(({ value, label, icon, color }: StatProps) => {
   const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   return (
   <View style={styles.statItem}>
-    <Icon width={24} height={24} />
+    <View style={styles.statIcon}>
+      <MaterialCommunityIcons name={icon} size={22} color={color ?? VD.accent} />
+    </View>
     <View style={styles.statTextRow}>
       <Text style={[styles.statValue, { color: color ?? VD.accentDark }]}>{value}</Text>
       <Text style={styles.statLabel}>{label}</Text>
@@ -447,7 +459,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   scrollContent: {
     alignItems: "center",
-    paddingTop: SPACING.xl + SPACING.md,
+    paddingTop: 8,
     paddingBottom: SPACING.xxl,
   },
   content: {
@@ -458,12 +470,14 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: SPACING.md,
+    marginBottom: 12,
+    paddingHorizontal: RESPONSIVE.horizontalPadding,
+    paddingVertical: 12,
   },
   iconButton: {
     width: 42,
     height: 42,
-    borderRadius: BORDER_RADIUS.medium,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: VD.cardSoft,
@@ -471,7 +485,8 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     borderColor: VD.cardBorder,
   },
   headerTitle: {
-    ...TYPOGRAPHY.bodyMedium,
+    fontSize: 20, lineHeight: 28, fontWeight: "800",
+    flex: 1, minWidth: 0, paddingHorizontal: 12, paddingVertical: 2,
     color: VD.ink,
     textAlign: "center",
   },
@@ -483,17 +498,17 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     paddingVertical: SPACING.xs,
   },
   monthTab: {
-    minHeight: 40,
+    minHeight: 44,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.medium,
+    borderRadius: 22,
     marginRight: SPACING.sm,
     borderWidth: 1,
     borderColor: VD.cardBorder,
   },
   monthTabActive: {
-    backgroundColor: VD.accentFaint,
+    backgroundColor: VD.accent,
     borderColor: VD.accent,
   },
   monthText: {
@@ -501,7 +516,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     color: VD.muted,
   },
   monthTextActive: {
-    color: VD.accentDark,
+    color: "#FFFFFF",
   },
   subText: {
     ...TYPOGRAPHY.caption,
@@ -516,13 +531,13 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   card: {
     width: "100%",
     backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    padding: SPACING.md,
+    borderRadius: 24,
+    padding: 16,
     marginBottom: SPACING.lg,
     borderWidth: 1,
     borderColor: VD.cardBorder,
     shadowColor: VD.shadow,
-    shadowOpacity: 0.16,
+    shadowOpacity: 0.06,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
     elevation: 3,
@@ -543,12 +558,13 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   dayOuter: {
     width: `${100 / 7}%`,
-    aspectRatio: 1,
+    minHeight: 44,
+    aspectRatio: 0.95,
     padding: 3,
   },
   dayBox: {
     flex: 1,
-    borderRadius: BORDER_RADIUS.medium,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: VD.cardSoft,
@@ -560,8 +576,8 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     borderColor: VD.accent,
   },
   missedDay: {
-    backgroundColor: "rgba(243,140,154,0.12)",
-    borderColor: "rgba(243,140,154,0.28)",
+    backgroundColor: VD.cardSoft,
+    borderColor: VD.cardBorder,
   },
   partialDay: {
     backgroundColor: "rgba(248,184,78,0.14)",
@@ -580,30 +596,32 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     ...TYPOGRAPHY.caption,
     color: VD.ink,
   },
-  completedText: {
-    color: VD.ink,
-  },
+  futureDay: { backgroundColor: "transparent", borderColor: "transparent" },
+  futureText: { color: VD.softText, opacity: 0.55 },
   partialText: {
     color: VD.warning,
   },
   selectedText: {
     color: VD.accentDark,
   },
+  detailTitle: { fontSize: 15, lineHeight: 22, fontWeight: "700", color: VD.ink, paddingTop: 20, paddingBottom: 12 },
   statsRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: SPACING.lg,
+    flexWrap: "wrap",
+    gap: 8,
   },
+  statIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: VD.accentFaint, alignItems: "center", justifyContent: "center" },
   statItem: {
-    flex: 1,
-    alignItems: "center",
+    flexGrow: 1, flexBasis: "45%", minWidth: 0,
+    backgroundColor: VD.cardSoft, borderRadius: 16, padding: 12,
+    alignItems: "flex-start",
   },
   statTextRow: {
-    alignItems: "center",
+    alignSelf: "stretch",
     marginTop: SPACING.xs,
   },
   statValue: {
-    ...TYPOGRAPHY.bodyMedium,
+    fontSize: 22, lineHeight: 30, fontWeight: "800", paddingVertical: 2,
   },
   statLabel: {
     ...TYPOGRAPHY.caption,
@@ -613,13 +631,13 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: VD.cardBg,
-    borderRadius: BORDER_RADIUS.large,
-    padding: SPACING.md,
+    borderRadius: 24,
+    padding: 16,
     marginBottom: SPACING.lg,
     borderWidth: 1,
     borderColor: VD.cardBorder,
     shadowColor: VD.shadow,
-    shadowOpacity: 0.14,
+    shadowOpacity: 0.06,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
@@ -634,7 +652,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     marginRight: SPACING.md,
   },
   highestCopy: {
-    flex: 1,
+    flex: 1, minWidth: 0,
   },
   highestTitle: {
     ...TYPOGRAPHY.caption,
@@ -645,7 +663,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     fontWeight: "800",
   },
   highestRight: {
-    alignItems: "flex-end",
+    flex: 1, minWidth: 0, alignItems: "flex-end",
   },
   highestValue: {
     ...TYPOGRAPHY.bodyMedium,

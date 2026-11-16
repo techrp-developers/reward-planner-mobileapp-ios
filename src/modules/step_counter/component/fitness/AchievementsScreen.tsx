@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import LinearGradient from "./FitnessGradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -233,6 +233,8 @@ export default function AchievementsScreen() {
   const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation();
+  // Includes the RP Move tab bar floating over this screen.
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const achievementsQuery = useAchievementsQuery();
   const loading = achievementsQuery.isLoading;
   const errorMessage =
@@ -266,7 +268,7 @@ export default function AchievementsScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
       <LinearGradient colors={VD.bg} style={styles.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: bottomInset + 16 }}>
           {/* HEADER */}
           <View style={styles.header}>
             <TouchableOpacity

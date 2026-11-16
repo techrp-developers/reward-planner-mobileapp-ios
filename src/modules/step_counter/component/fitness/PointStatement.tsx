@@ -8,8 +8,8 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import LinearGradient from './FitnessGradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -30,7 +30,8 @@ import {
 
 import Coin from '../../../../assets/product/rewards.svg';
 import { useTranslation } from "react-i18next";
-import i18n from "../../../../i18n";
+import i18n from "../../../../i18n";
+
 import { useStepStyles } from "../../utils/useStepTheme";
 
 type PointsNavProp = NativeStackNavigationProp<FitnessStackParamList, 'CoinHistory'>;
@@ -127,6 +128,8 @@ const PointsStatementScreen: React.FC = () => {
   const { palette: VD, styles } = useStepStyles(VD_LIGHT, VD_DARK, createStyles);
   const { t: tx } = useTranslation();
   const navigation = useNavigation<PointsNavProp>();
+  // Includes the RP Move tab bar floating over this screen.
+  const { bottom: bottomInset } = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const contentMaxWidth = Math.min(width - RESPONSIVE.horizontalPadding * 2, 560);
   const [history, setHistory] = useState<StepHistoryItem[]>([]);
@@ -190,7 +193,7 @@ const PointsStatementScreen: React.FC = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingHorizontal: RESPONSIVE.horizontalPadding },
+            { paddingHorizontal: RESPONSIVE.horizontalPadding, paddingBottom: bottomInset + 16 },
           ]}
         >
           <View style={[styles.content, { maxWidth: contentMaxWidth }]}>
@@ -218,8 +221,9 @@ const PointsStatementScreen: React.FC = () => {
                 </View>
                 <View style={styles.balanceTextContainer}>
                   <Text style={styles.balanceTitle}>{tx("stepCounter:pointStatement.myBalance")}</Text>
-                  <Text style={styles.balanceValue}>
-                    {formatNumber(summary?.balance || 0)} Coins
+                  <Text style={styles.balanceValue} maxFontSizeMultiplier={1.25}>
+                    {formatNumber(summary?.balance || 0)}
+                    <Text style={styles.balanceUnit}> Coins</Text>
                   </Text>
                 </View>
               </View>
@@ -292,10 +296,10 @@ const TransactionRow = React.memo(({ item }: { item: StepHistoryItem }) => {
       </View>
 
       <View style={styles.activityContainer}>
-        <Text numberOfLines={1} style={styles.activityTitle}>
+        <Text style={styles.activityTitle}>
           {item.title || (isDebit ? i18n.t("stepCounter:r2.coinsUsed") : i18n.t("stepCounter:r2.coinsCredited"))}
         </Text>
-        <Text numberOfLines={2} style={styles.activityDesc}>
+        <Text style={styles.activityDesc}>
           {item.description || item.category || i18n.t("stepCounter:r2.stepWalletActivity")}
         </Text>
       </View>
@@ -375,8 +379,10 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   headerTitle: {
     ...TYPOGRAPHY.bodyMedium,
+    flex: 1,
     color: VD.white,
     textAlign: 'center',
+    paddingHorizontal: SPACING.sm,
   },
   headerPlaceholder: {
     width: 42,
@@ -384,7 +390,8 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   balanceGradient: {
     borderRadius: BORDER_RADIUS.xl,
-    padding: SPACING.xl,
+    paddingVertical: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
     borderWidth: 1,
     borderColor: VD.heroBorder,
@@ -404,6 +411,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   balanceTextContainer: {
     flex: 1,
+    minWidth: 0,
   },
   balanceTitle: {
     ...TYPOGRAPHY.body,
@@ -411,8 +419,14 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   balanceValue: {
     ...TYPOGRAPHY.h2,
+    flexShrink: 1,
     color: VD.white,
     marginTop: 2,
+  },
+  balanceUnit: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: VD.heroText,
   },
   balanceMetaRow: {
     flexDirection: 'row',
@@ -421,8 +435,10 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   balanceMiniCard: {
     flex: 1,
+    minWidth: 0,
     borderRadius: BORDER_RADIUS.large,
-    padding: SPACING.md,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
     backgroundColor: VD.glassMid,
     borderWidth: 1,
     borderColor: VD.glassBorder,
@@ -433,6 +449,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   balanceMiniValue: {
     ...TYPOGRAPHY.bodyMedium,
+    paddingVertical: 2,
     color: VD.white,
     marginTop: 2,
   },
@@ -459,6 +476,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   expiryCopy: {
     flex: 1,
+    minWidth: 0,
   },
   expiryText: {
     ...TYPOGRAPHY.bodyMedium,
@@ -480,14 +498,15 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     textTransform: 'uppercase',
   },
   dateColumn: {
-    width: 74,
+    width: 60,
   },
   activityColumn: {
     flex: 1,
     paddingHorizontal: SPACING.sm,
   },
   amountColumn: {
-    width: 86,
+    minWidth: 56,
+    flexShrink: 1,
     textAlign: 'right',
   },
   transactionsContainer: {
@@ -504,10 +523,11 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     borderColor: VD.cardBorder,
   },
   dateContainer: {
-    width: 74,
+    width: 60,
   },
   dateMain: {
     ...TYPOGRAPHY.bodyMedium,
+    paddingVertical: 2,
     color: VD.white,
   },
   dateYear: {
@@ -517,10 +537,12 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   activityContainer: {
     flex: 1,
+    minWidth: 0,
     paddingHorizontal: SPACING.sm,
   },
   activityTitle: {
     ...TYPOGRAPHY.bodyMedium,
+    paddingVertical: 2,
     color: VD.white,
   },
   activityDesc: {
@@ -529,11 +551,14 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     marginTop: 2,
   },
   amountContainer: {
-    width: 86,
+    minWidth: 56,
+    flexShrink: 1,
     alignItems: 'flex-end',
   },
   coinContainer: {
     minHeight: 32,
+    paddingVertical: 6,
+    gap: 4,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.sm,

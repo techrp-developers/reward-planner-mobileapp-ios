@@ -11,14 +11,12 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useQuery } from "@tanstack/react-query";
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from "react-native-svg";
 
-import StatisticsGraph from "./StatisticsGraph";
-import CoinHistoryAndPlan from "./CoinHistoryAndPlan";
 import type { DailyData } from "../../navigation/type";
 import { fetchUserInfo } from "../../../common/auth/api/AuthAPI";
 import {
@@ -30,12 +28,14 @@ import {
 import { useStepTracker } from "../StepCode/useStepTracker";
 import GoalCelebrationScreen from "./GoalCelebrationScreen";
 import { useHideFitnessTabBar } from "./FitnessTabBar";
+import StatusBarShield from "./StatusBarShield";
 import GoalReachedScreen from "./GoalReachedScreen";
 import TodayGoalCompletedScreen from "./TodayGoalCompletedScreen";
 import type { GoalSyncData } from "../../api/Stepsapi";
 import WeeklyGraph from "./WeeklyGraph";
 import { genderFromUserInfo, type UserGender } from "../../utils/userGender";
 import { useStepStyles } from "../../utils/useStepTheme";
+import { RESPONSIVE } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
 import i18n from "../../../../i18n";
 
@@ -53,7 +53,6 @@ const H = {
   sky: ["#CFE5FF", "#E4F1FF", "#F5F9FF"],
   shadow: "#4664A5",
 };
-const GRADIENT = [H.cyan, H.blue, H.purple];
 
 const C_LIGHT = {
   bg: "#F5F9FF",
@@ -75,7 +74,6 @@ const C_LIGHT = {
   streakBg: "#FFE6EE",
   dot: "#F1F4FB",
   dotToday: "#EEE9FF",
-  achBg: "#F1ECFF",
   onAccent: "#FFFFFF",
 };
 
@@ -101,7 +99,6 @@ const C_DARK: Palette = {
   streakBg: "rgba(255,55,117,0.16)",
   dot: "#1F2744",
   dotToday: "rgba(165,133,255,0.20)",
-  achBg: "rgba(165,133,255,0.16)",
   onAccent: "#FFFFFF",
 };
 
@@ -151,20 +148,16 @@ interface RingProps {
 const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
   const { t: tx } = useTranslation();
   const { styles } = useDashStyles();
-  const stroke = Math.round(size * 0.085);
-  const outer = size + 28;
+  const stroke = 10;
+  const outer = size + 16;
   const c = outer / 2;
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
   const hasGoal = goal > 0;
   const percent = hasGoal ? Math.round((steps / goal) * 100) : 0;
   // Visible fill is clamped; the step count itself is never capped.
-  const fill = hasGoal ? Math.min(steps / goal, 1) : 0;
-  const decoR = size / 2 + 11;
-  const decoDots = [200, 160, 20, -20].map(deg => {
-    const rad = (deg * Math.PI) / 180;
-    return { x: c + decoR * Math.cos(rad), y: c - decoR * Math.sin(rad) };
-  });
+  const fill = hasGoal ? Math.max(0, Math.min(steps / goal, 1)) : 0;
+
 
   return (
     <View
@@ -182,11 +175,7 @@ const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
             <Stop offset="1" stopColor={H.purple} />
           </SvgGradient>
         </Defs>
-        {/* Decorative outer orbit */}
-        <Circle cx={c} cy={c} r={decoR} fill="none" stroke="rgba(66,107,255,0.22)" strokeWidth={1} />
-        {decoDots.map((p, i) => (
-          <Circle key={i} cx={p.x} cy={p.y} r={4} fill={i % 2 ? H.purple : H.blue} />
-        ))}
+        <Circle cx={c} cy={c} r={size / 2} fill={H.white} />
         <Circle cx={c} cy={c} r={r} fill="none" stroke={H.track} strokeWidth={stroke} />
         {fill > 0 && (
           <Circle
@@ -196,7 +185,7 @@ const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
             fill="none"
             stroke="url(#ringGrad)"
             strokeWidth={stroke}
-            strokeLinecap="round"
+            strokeLinecap={fill < 0.02 ? "butt" : "round"}
             strokeDasharray={`${circumference} ${circumference}`}
             strokeDashoffset={circumference * (1 - fill)}
             transform={`rotate(-90 ${c} ${c})`}
@@ -204,10 +193,9 @@ const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
         )}
       </Svg>
 
-      <View style={[styles.ringInner, { width: size - stroke * 2 - 8, height: size - stroke * 2 - 8, top: 14 + stroke + 4, left: 14 + stroke + 4 }]}>
-        <MaterialCommunityIcons name="shoe-print" size={Math.round(size * 0.13)} color={H.blue} />
+      <View style={[styles.ringInner, { width: size - stroke * 2 - 8, height: size - stroke * 2 - 8, top: 8 + stroke + 4, left: 8 + stroke + 4 }]}>
         <Text
-          style={[styles.ringSteps, { fontSize: Math.round(size * 0.21) }]}
+          style={[styles.ringSteps, { fontSize: Math.round(size * 0.23) }]}
           numberOfLines={1}
           adjustsFontSizeToFit
           maxFontSizeMultiplier={1.2}
@@ -220,21 +208,20 @@ const StepRing = React.memo(({ steps, goal, size, numberFmt }: RingProps) => {
         <Text style={styles.ringGoal} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
           {hasGoal ? (
             <>
-              <Text style={styles.ringGoalStrong}>{numberFmt.format(steps)}</Text>
-              {" "}
               {tx("stepCounter:dashboard.goalSuffix", { goal: numberFmt.format(goal) })}
             </>
           ) : (
             tx("stepCounter:dashboard.noGoal")
           )}
         </Text>
+        {hasGoal && (
+          <View style={styles.ringPill}>
+            <Text style={styles.ringPillText} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>
+              {percent === 0 && fill > 0 ? '<1' : numberFmt.format(percent)}%
+            </Text>
+          </View>
+        )}
       </View>
-
-      {hasGoal && (
-        <LinearGradient colors={GRADIENT} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ringPill}>
-          <Text style={styles.ringPillText} maxFontSizeMultiplier={1.2}>{percent}%</Text>
-        </LinearGradient>
-      )}
     </View>
   );
 });
@@ -327,22 +314,6 @@ const StreakCard = React.memo(
   },
 );
 
-const AchievementsTeaser: React.FC<{ onPress: () => void }> = ({ onPress }) => {
-  const { palette: C, styles } = useDashStyles();
-  return (
-  <TouchableOpacity style={[styles.card, styles.achCard]} onPress={onPress} activeOpacity={0.85} accessibilityRole="button">
-    <View style={styles.achIcon}>
-      <MaterialCommunityIcons name="trophy-outline" size={26} color={C.purple} />
-    </View>
-    <View style={styles.flex}>
-      <Text style={styles.achTitle}>{i18n.t("stepCounter:dashboard.achievements")}</Text>
-      <Text style={styles.achSub}>{i18n.t("stepCounter:dashboard.seeYourUnlockedMilestonesAnd")}</Text>
-    </View>
-    <MaterialCommunityIcons name="chevron-right" size={22} color={C.muted} />
-  </TouchableOpacity>
-  );
-};
-
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const Dashboard: React.FC = () => {
   const { t: tx } = useTranslation();
@@ -355,7 +326,7 @@ const Dashboard: React.FC = () => {
   // Kept in state and refreshed on focus so the header/week roll over at midnight.
   const [today, setToday] = useState(() => new Date());
 
-  const pad = width < 360 ? 16 : 20;
+  const pad = RESPONSIVE.horizontalPadding;
   const contentWidth = Math.min(width - pad * 2, 560);
   const ringSize = Math.round(Math.max(160, Math.min(contentWidth * 0.5, 220)));
   const heroArtWidth = Math.min(width * 0.56, 300);
@@ -501,7 +472,6 @@ const Dashboard: React.FC = () => {
   }, [dashboardQuery, refreshSteps, summaryQuery, weeklyQuery, streakQuery]);
 
   const handleViewMore = useCallback(() => navigation.navigate("PlanProcess"), [navigation]);
-  const handleAchievements = useCallback(() => navigation.navigate("AchievementCard"), [navigation]);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -517,9 +487,6 @@ const Dashboard: React.FC = () => {
 
           <View style={styles.heroHeader}>
             <View style={styles.flexShrink}>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{tx("stepCounter:dashboard.rpMove")}</Text>
-              </View>
               <Text style={styles.hello} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.25}>
                 {firstName ? tx("stepCounter:dashboard.hello", { name: firstName }) : tx("stepCounter:dashboard.helloNoName")}
               </Text>
@@ -590,20 +557,12 @@ const Dashboard: React.FC = () => {
 
                 <StreakCard streak={streakCount} days={weekDays} stacked={contentWidth < 400} />
 
-                <AchievementsTeaser onPress={handleAchievements} />
-
-                <View style={styles.card}>
-                  <StatisticsGraph />
-                </View>
-
-                <View style={styles.card}>
-                  <CoinHistoryAndPlan />
-                </View>
               </>
             )}
           </View>
         </View>
       </ScrollView>
+      <StatusBarShield color={H.sky[0]} />
 
       {/* ── Celebration overlay ── */}
       {celebrationData && (
@@ -646,24 +605,15 @@ export default React.memo(Dashboard);
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const createStyles = (C: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: C.bg },
-  flex: { flex: 1 },
   flexShrink: { flexShrink: 1 },
 
   // ── Hero ──
-  hero: { overflow: "hidden", paddingBottom: 40 },
+  // Grows with its text; the artwork is positioned inside it.
+  hero: { paddingBottom: 40 },
   // Dark mode: the light hero reads as a rounded panel on the dark page.
-  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28, paddingBottom: 48, marginBottom: 8 },
+  heroDark: { overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28, paddingBottom: 48, marginBottom: 8 },
   heroArt: { position: "absolute", right: 0, bottom: 0 },
   heroHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
-  badge: {
-    alignSelf: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.85)",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginBottom: 10,
-  },
-  badgeText: { fontSize: 12, fontWeight: "800", color: H.blue, letterSpacing: 0.6, textTransform: "uppercase" },
   hello: { fontSize: 30, lineHeight: 36, fontWeight: "800", color: H.ink },
   date: { fontSize: 15, fontWeight: "600", color: H.muted, marginTop: 2 },
   homeBtn: {
@@ -677,7 +627,7 @@ const createStyles = (C: Palette) => StyleSheet.create({
   },
 
   // ── Ring ──
-  ringWrap: { marginTop: 14, marginLeft: -14, alignSelf: "flex-start" },
+  ringWrap: { marginTop: 18, marginLeft: -8, alignSelf: "flex-start" },
   ringInner: {
     position: "absolute",
     borderRadius: 999,
@@ -685,23 +635,20 @@ const createStyles = (C: Palette) => StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 10,
-    ...shadow(H.shadow),
   },
-  ringSteps: { fontWeight: "900", color: H.ink, marginTop: 2 },
-  ringLabel: { fontSize: 13, fontWeight: "800", color: H.blue, letterSpacing: 0.8, textTransform: "uppercase" },
-  ringGoal: { fontSize: 12, color: H.muted, marginTop: 4 },
-  ringGoalStrong: { color: H.purple, fontWeight: "800" },
+  ringSteps: { fontWeight: "800", color: H.ink, fontVariant: ["tabular-nums"], letterSpacing: -1.5, includeFontPadding: false },
+  ringLabel: { fontSize: 11, fontWeight: "600", color: H.muted, letterSpacing: 1.4, textTransform: "uppercase" },
+  ringGoal: { fontSize: 11, color: H.muted, marginTop: 4 },
   ringPill: {
-    position: "absolute",
-    top: 2,
-    alignSelf: "center",
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 5,
-    minWidth: 64,
+    marginTop: 8,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    backgroundColor: "#EEF3FF",
     alignItems: "center",
+    maxWidth: "100%",
   },
-  ringPillText: { fontSize: 16, fontWeight: "800", color: H.white },
+  ringPillText: { fontSize: 11, fontWeight: "700", color: H.blue, includeFontPadding: false },
 
   // ── Body ──
   body: { marginTop: -22, alignItems: "center" },
@@ -720,19 +667,19 @@ const createStyles = (C: Palette) => StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    // Icon above the text so values get the full card width on narrow phones.
+    alignItems: "flex-start",
+    gap: 10,
     backgroundColor: C.card,
     borderRadius: 18,
     borderWidth: 1,
     borderColor: C.border,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
     ...shadow(C.shadow),
   },
   statIcon: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  statText: { flex: 1, minWidth: 0 },
+  statText: { alignSelf: "stretch", minWidth: 0 },
   statValue: { fontSize: 20, fontWeight: "800", color: C.ink },
   statUnit: { fontSize: 13, color: C.muted, fontWeight: "600" },
 
@@ -757,12 +704,6 @@ const createStyles = (C: Palette) => StyleSheet.create({
   streakDotToday: { backgroundColor: C.dotToday, borderWidth: 1.5, borderColor: C.purple },
   streakDotText: { fontSize: 12, fontWeight: "700", color: C.muted },
   streakDotTextToday: { color: C.purple },
-
-  // ── Achievements ──
-  achCard: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16 },
-  achIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: C.achBg, alignItems: "center", justifyContent: "center" },
-  achTitle: { fontSize: 16, fontWeight: "800", color: C.ink },
-  achSub: { fontSize: 13, color: C.muted, marginTop: 2 },
 
   // ── States ──
   stateBox: { minHeight: 200, alignItems: "center", justifyContent: "center", padding: 24 },

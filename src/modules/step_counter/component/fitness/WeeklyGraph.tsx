@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useTranslation } from "react-i18next";
 
@@ -124,7 +124,7 @@ const createStyles = (C: Palette) => StyleSheet.create({
     borderRadius: 22,
     borderWidth: 1,
     borderColor: C.border,
-    padding: 16,
+    padding: 20,
     marginBottom: 16,
     shadowColor: C.shadow,
     shadowOpacity: 0.08,

@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
 import Svg, { Path } from "react-native-svg";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -44,6 +44,8 @@ import i18n from "../../../../i18n";
 import { translateSourceText } from "../../../../i18n/sourceText";
 import { useStepStyles } from "../../utils/useStepTheme";
 import { GoalHeroArt, goalHeroSize, useGoalHeroKind } from "./GoalHeroArt";
+import StatusBarShield from "./StatusBarShield";
+import { TILE_GAP, tileGrid } from "../../utils/layout";
 
 type Nav = NativeStackNavigationProp<FitnessStackParamList, "BMICart" | "MyPlan">;
 
@@ -273,7 +275,7 @@ const MeasureField = React.memo(({ label, icon, value, onPress }: {
       <Text style={ss.measureLabel} maxFontSizeMultiplier={1.3}>{label}</Text>
       <TouchableOpacity style={ss.measureBox} onPress={onPress} activeOpacity={0.85} accessibilityRole="button" accessibilityLabel={`${label}: ${value}`}>
         <MaterialCommunityIcons name={icon} size={22} color={VD.accentDark} />
-        <Text style={ss.measureValue} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>{value}</Text>
+        <Text style={ss.measureValue} maxFontSizeMultiplier={1.2}>{value}</Text>
         <MaterialCommunityIcons name="chevron-down" size={20} color={VD.whiteMid} />
       </TouchableOpacity>
     </View>
@@ -295,7 +297,7 @@ const BMIScreen: React.FC = () => {
   const planQuery     = useProfilePlanQuery();
   const { fetchFresh } = useProfilePlanCache();
   const { continueSetup, busy: continuing } = useContinueSetup();
-  const { width, height } = useWindowDimensions();
+  const { width, height, fontScale } = useWindowDimensions();
   const insets        = useSafeAreaInsets();
   const heroKind      = useGoalHeroKind();
   const scrollRef     = useRef<ScrollView>(null);
@@ -451,6 +453,10 @@ const BMIScreen: React.FC = () => {
       : !measured ? "create"
       : "plan";
 
+  // Tile columns from the real space inside the card (border included).
+  const tileInner = width - pad * 2 - TILE_CARD_PADDING * 2 - 2;
+  const goalGrid = tileGrid(tileInner, goals.length, fontScale);
+
   const unchangedGoal = manage && !!bmi.currentGoal && selectedSteps === bmi.currentGoal.daily_steps;
   const disabled = submitting || !selectedSteps || unchangedGoal;
   const returning = manage && !!bmi.currentGoal;
@@ -464,7 +470,8 @@ const BMIScreen: React.FC = () => {
 
   // The measurement form uses a compact header (no artwork), as in the design.
   const showArt = view !== "measure";
-  const art = showArt && heroKind ? goalHeroSize(heroKind, width, Math.max(height * 0.26, 190)) : null;
+  // Art is decorative and capped so it never sets a tall, empty hero.
+  const art = showArt && heroKind ? goalHeroSize(heroKind, width, Math.min(200, Math.max(150, height * 0.22))) : null;
   const showBack = !manage || (view === "measure" && measured);
   const onBack = view === "measure" && measured ? closeMeasurements : () => navigation.goBack();
 
@@ -486,7 +493,8 @@ const BMIScreen: React.FC = () => {
           style={[
             hs.hero,
             { paddingTop: insets.top + 8, paddingHorizontal: pad },
-            showArt && { minHeight: insets.top + 12 + (art?.height ?? 190) },
+            // Tall enough for the art below the status bar; text adds to it.
+            showArt && { minHeight: insets.top + 8 + (art?.height ?? 150) + HERO_OVERLAP },
             isDark && hs.heroDark,
           ]}
         >
@@ -511,18 +519,19 @@ const BMIScreen: React.FC = () => {
             <View style={hs.backSpacer} />
           )}
 
-          <View style={[hs.copy, showArt && { width: width - pad - (art?.width ?? width * 0.45) * 0.62 }, !showArt && hs.copyCompact]}>
-            {!!hero.eyebrow && <Text style={hs.eyebrow} maxFontSizeMultiplier={1.3}>{hero.eyebrow}</Text>}
-            <Text style={[hs.title, width < 360 && hs.titleSmall]} maxFontSizeMultiplier={1.2}>
-              {hero.title}
+          <View style={[hs.copy, showArt && { width: width - pad - (art?.width ?? width * 0.45) * 0.62 }]}>
+            {!!hero.eyebrow && <Text style={[hs.eyebrow, !showArt && hs.textCenter]} maxFontSizeMultiplier={1.3}>{hero.eyebrow}</Text>}
+            {/* The celebration icon sits beside the title, not inside it: an
+                icon glyph inside the heading mixes font metrics on iOS. */}
+            <View style={hs.titleRow}>
+              <Text style={[hs.title, width < 360 && hs.titleSmall, !showArt && hs.textCenter]} maxFontSizeMultiplier={1.2}>
+                {hero.title}
+              </Text>
               {view === "plan" && !returning && (
-                <>
-                  {" "}
-                  <MaterialCommunityIcons name="party-popper" size={width < 360 ? 22 : 26} color={H.gold} />
-                </>
+                <MaterialCommunityIcons name="party-popper" size={width < 360 ? 22 : 26} color={H.gold} style={hs.titleIcon} />
               )}
-            </Text>
-            <Text style={hs.subtitle} maxFontSizeMultiplier={1.3}>{hero.sub}</Text>
+            </View>
+            <Text style={[hs.subtitle, !showArt && hs.textCenter]} maxFontSizeMultiplier={1.3}>{hero.sub}</Text>
 
             {view === "create" && (
               <View style={hs.chips}>
@@ -585,7 +594,7 @@ const BMIScreen: React.FC = () => {
           ) : view === "measure" ? (
             /* ── State B: measurements + live preview ── */
             <>
-              <View style={[ss.card, ss.measureRow]}>
+              <View style={[ss.card, ss.measureRow, (width < 360 || fontScale > 1.2) && { flexDirection: "column" }]}>
                 <MeasureField
                   label={tx("stepCounter:bMIScreen.height")}
                   icon="human-male-height"
@@ -647,31 +656,7 @@ const BMIScreen: React.FC = () => {
                 <Text style={ss.guidance} maxFontSizeMultiplier={1.3}>{tx(`stepCounter:bMIScreen.${bmi.guidance}`)}</Text>
               </View>
 
-              <View style={ss.card}>
-                <CardHeader icon="chart-bar" title={tx("stepCounter:bMIScreen.weeklyStepPlan")} />
-                {bmi.plan.length > 0 ? (
-                  <View style={ss.tileRow}>
-                    {bmi.plan.map(item => {
-                      const active = item.steps === selectedSteps;
-                      return (
-                        <View key={`${item.week}-${item.steps}`} style={[ss.tile, active && ss.tileActive]}>
-                          <Text style={[ss.tileWeek, active && ss.tileWeekActive]} numberOfLines={1}>
-                            {tx("stepCounter:units.weekN", { n: item.week })}
-                          </Text>
-                          <Text style={[ss.tileSteps, active && ss.tileStepsActive]} numberOfLines={1} adjustsFontSizeToFit>
-                            {fmt(item.steps)}
-                          </Text>
-                          <Text style={ss.tileUnit} numberOfLines={1}>{tx("stepCounter:bMIScreen.stepsDay")}</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-                ) : (
-                  <Text style={ss.emptyText}>{tx("stepCounter:bMIScreen.yourWeeklyPlanWillAppear")}</Text>
-                )}
-              </View>
-
-              <View style={ss.card}>
+              <View style={[ss.card, ss.tileCard]}>
                 <CardHeader icon="shoe-sneaker" title={tx("stepCounter:bMIScreen.chooseYourActivityGoal")} />
                 {goals.length > 0 ? (
                   <View style={ss.tileRow}>
@@ -682,14 +667,14 @@ const BMIScreen: React.FC = () => {
                           key={goal.key}
                           activeOpacity={0.85}
                           onPress={() => selectGoal(goal.steps)}
-                          style={[ss.tile, ss.chip, active && ss.tileActive]}
+                          style={[ss.tile, ss.chip, { width: goalGrid.tileWidth }, active && ss.tileActive]}
                           accessibilityRole="radio"
                           accessibilityState={{ selected: active }}
                         >
-                          <Text style={[ss.tileSteps, active && ss.tileStepsActive]} numberOfLines={1} adjustsFontSizeToFit>
+                          <Text style={[ss.tileSteps, active && ss.tileStepsActive]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.85} maxFontSizeMultiplier={1.2}>
                             {fmt(goal.steps)}
                           </Text>
-                          <Text style={[ss.tileUnit, active && ss.tileWeekActive]} numberOfLines={1}>
+                          <Text style={[ss.tileUnit, active && ss.tileWeekActive]} maxFontSizeMultiplier={1.2}>
                             {tx("stepCounter:bMIScreen.stepsDay")}
                           </Text>
                           {active && (
@@ -748,12 +733,12 @@ const BMIScreen: React.FC = () => {
               <View style={ss.actionRow}>
                 <TouchableOpacity activeOpacity={0.78} onPress={openMeasurements} style={ss.actionBtn} accessibilityRole="button">
                   <MaterialCommunityIcons name="pencil-ruler" size={16} color={VD.accentDark} />
-                  <Text style={ss.actionText} numberOfLines={1} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.editMeasurements")}</Text>
+                  <Text style={ss.actionText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.editMeasurements")}</Text>
                 </TouchableOpacity>
                 {manage && !!bmi.currentGoal && (
                   <TouchableOpacity activeOpacity={0.78} onPress={() => navigation.navigate("StepGoal")} style={ss.actionBtn} accessibilityRole="button">
                     <MaterialCommunityIcons name="swap-horizontal" size={16} color={VD.accentDark} />
-                    <Text style={ss.actionText} numberOfLines={1} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.changeGoal")}</Text>
+                    <Text style={ss.actionText} maxFontSizeMultiplier={1.2}>{tx("stepCounter:bMIScreen.changeGoal")}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -761,6 +746,7 @@ const BMIScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+      <StatusBarShield color={H.sky[0]} />
 
       {/* ── Height / weight picker ───────────────────────────────── */}
       <Modal
@@ -805,11 +791,18 @@ export default React.memo(BMIScreen);
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const PICKER_ROW = 52;
+// How far the first card rises over the hero.
+const HERO_OVERLAP = 18;
+// Tile cards use a little less side padding so four tiles fit on 390pt phones.
+const TILE_CARD_PADDING = 14;
 
 // Hero styles use the fixed light colours above.
 const hs = StyleSheet.create({
-  hero: { overflow: "hidden", paddingBottom: 34 },
-  heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  // No overflow clipping in light mode: the hero grows with its text, and
+  // only the artwork box clips itself. Bottom padding clears the cards that
+  // rise over the hero (HERO_OVERLAP) plus a gap.
+  hero: { paddingBottom: HERO_OVERLAP + 20 },
+  heroDark: { overflow: "hidden", borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   heroWave: { position: "absolute", left: 0, right: 0, bottom: 0 },
   backBtn: {
     width: 44, height: 44, borderRadius: 22,
@@ -820,15 +813,17 @@ const hs = StyleSheet.create({
     elevation: 4,
   },
   backSpacer: { height: 20 },
-  copy: { marginTop: "auto" },
-  copyCompact: { marginTop: 0, alignItems: "center" },
+  copy: { alignSelf: "stretch" },
+  textCenter: { textAlign: "center", alignSelf: "stretch" },
+  titleRow: { flexDirection: "row", alignItems: "flex-start", gap: 6, marginBottom: 4 },
+  titleIcon: { marginTop: 4 },
   eyebrow: {
     fontSize: 12, fontWeight: "700", letterSpacing: 2,
-    textTransform: "uppercase", color: H.label, marginBottom: 6,
+    textTransform: "uppercase", color: H.label, marginBottom: 6, lineHeight: 16,
   },
-  title: { fontSize: 28, lineHeight: 34, fontWeight: "900", color: H.ink, marginBottom: 6 },
-  titleSmall: { fontSize: 24, lineHeight: 30 },
-  subtitle: { fontSize: 14, lineHeight: 20, color: H.muted },
+  title: { flexShrink: 1, fontSize: 28, lineHeight: 35, fontWeight: "900", color: H.ink, paddingVertical: 2 },
+  titleSmall: { fontSize: 24, lineHeight: 31 },
+  subtitle: { flexShrink: 1, fontSize: 14, lineHeight: 21, color: H.muted },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
   chip: {
     flexDirection: "row", alignItems: "center", gap: 5,
@@ -836,7 +831,7 @@ const hs = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 10, paddingVertical: 5,
   },
-  chipText: { fontSize: 12, fontWeight: "700", color: H.ink },
+  chipText: { fontSize: 12, lineHeight: 16, fontWeight: "700", color: H.ink },
 });
 
 const createStyles = (VD: Palette) => StyleSheet.create({
@@ -844,20 +839,20 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   flex: { flex: 1 },
   fullWidth: { alignSelf: "stretch" },
   // Cards rise over the bottom of the hero, as in the design.
-  body: { marginTop: -22 },
-  bodyFlat: { marginTop: -18 },
+  body: { marginTop: -HERO_OVERLAP },
+  bodyFlat: { marginTop: -HERO_OVERLAP },
 
   card: {
     backgroundColor: VD.cardBg,
     borderRadius: 22,
     borderWidth: 1, borderColor: VD.cardBorder,
-    padding: 16,
-    marginBottom: 12,
+    padding: 20,
+    marginBottom: 14,
     shadowColor: VD.shadow, shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
     elevation: VD.elevation,
   },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
-  cardTitle: { fontSize: 17, fontWeight: "800", color: VD.white },
+  cardTitle: { flexShrink: 1, fontSize: 17, lineHeight: 23, fontWeight: "800", color: VD.white, paddingVertical: 2 },
 
   // BMI
   bmiHead: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 },
@@ -866,8 +861,8 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     backgroundColor: VD.iconBg,
     alignItems: "center", justifyContent: "center",
   },
-  bmiLabel: { fontSize: 14, fontWeight: "600", color: VD.whiteMid },
-  bmiValue: { fontSize: 21, fontWeight: "900", color: VD.accent, marginTop: 2 },
+  bmiLabel: { fontSize: 14, lineHeight: 20, fontWeight: "600", color: VD.whiteMid },
+  bmiValue: { flexShrink: 1, fontSize: 21, lineHeight: 28, fontWeight: "900", color: VD.accent, marginTop: 2 },
   bmiBar: { height: 12, flexDirection: "row", alignItems: "center", marginBottom: 8 },
   segment: { height: 12, borderRadius: BORDER_RADIUS.pill },
   segmentGap: { marginLeft: 3 },
@@ -881,7 +876,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   },
   bmiLabelRow: { flexDirection: "row", marginBottom: 10 },
   bmiLbl: { fontSize: 12, fontWeight: "600", color: VD.whiteMid, textAlign: "center" },
-  guidance: { fontSize: 13, lineHeight: 19, color: VD.whiteMid },
+  guidance: { fontSize: 13, lineHeight: 20, color: VD.whiteMid },
 
   // Create plan (State A)
   createCard: { alignItems: "center", paddingVertical: 24 },
@@ -902,22 +897,23 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   createBody: { fontSize: 14, lineHeight: 20, color: VD.whiteMid, textAlign: "center", marginTop: 6, marginBottom: 6 },
 
   // Measurements (State B)
-  measureRow: { flexDirection: "row", gap: 12, padding: 14 },
+  measureRow: { flexDirection: "row", gap: 12, padding: 16 },
   measureCol: { flex: 1 },
   measureLabel: { fontSize: 15, fontWeight: "700", color: VD.white, marginBottom: 8 },
   measureBox: {
     flexDirection: "row", alignItems: "center", gap: 8,
-    height: 56,
+    minHeight: 56,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 16,
     borderWidth: 1.5, borderColor: VD.selectedBorder,
     backgroundColor: VD.selectedBg,
   },
-  measureValue: { flex: 1, fontSize: 18, fontWeight: "800", color: VD.white },
+  measureValue: { flex: 1, minWidth: 0, fontSize: 18, lineHeight: 24, fontWeight: "800", color: VD.white, paddingVertical: 2 },
   note: {
     flexDirection: "row", alignItems: "center", gap: 12,
-    marginTop: 6,
-    padding: 12,
+    marginTop: 8,
+    padding: 14,
     borderRadius: 16,
     backgroundColor: VD.noteBg,
   },
@@ -929,22 +925,22 @@ const createStyles = (VD: Palette) => StyleSheet.create({
   noteText: { flex: 1, fontSize: 13, lineHeight: 18, color: VD.whiteMid },
 
   // Week tiles and goal chips
-  tileRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  tileCard: { paddingHorizontal: TILE_CARD_PADDING },
+  tileRow: { flexDirection: "row", flexWrap: "wrap", gap: TILE_GAP },
   tile: {
-    flexBasis: "22%", flexGrow: 1,
     alignItems: "center",
-    paddingVertical: 10, paddingHorizontal: 4,
+    justifyContent: "center",
+    minHeight: 108, paddingVertical: 14, paddingHorizontal: 6,
     borderRadius: 16,
     backgroundColor: VD.tile,
     borderWidth: 1.5, borderColor: VD.tileBorder,
   },
-  chip: { paddingVertical: 14 },
+  chip: { paddingVertical: 18 },
   tileActive: { backgroundColor: VD.selectedBg, borderColor: VD.selectedBorder },
-  tileWeek: { fontSize: 12, fontWeight: "600", color: VD.whiteMid },
   tileWeekActive: { color: VD.accent },
-  tileSteps: { fontSize: 18, fontWeight: "900", color: VD.white, marginVertical: 1 },
+  tileSteps: { fontSize: 18, lineHeight: 24, fontWeight: "900", color: VD.white, marginVertical: 2 },
   tileStepsActive: { color: VD.accent },
-  tileUnit: { fontSize: 11, color: VD.whiteLow },
+  tileUnit: { fontSize: 11, lineHeight: 15, color: VD.whiteLow, textAlign: "center" },
   checkBadge: {
     position: "absolute", top: -6, right: -6,
     width: 20, height: 20, borderRadius: 10,
@@ -952,7 +948,7 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     borderWidth: 2, borderColor: VD.cardBg,
     alignItems: "center", justifyContent: "center",
   },
-  currentGoal: { fontSize: 12, color: VD.whiteLow, marginTop: 10 },
+  currentGoal: { fontSize: 12, lineHeight: 17, color: VD.whiteLow, marginTop: 12 },
   emptyText: { fontSize: 13, color: VD.whiteLow, textAlign: "center", paddingVertical: SPACING.md },
 
   // CTA
@@ -962,15 +958,15 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     shadowColor: VD.ctaBase, shadowOpacity: 0.35, shadowRadius: 14, shadowOffset: { width: 0, height: 8 },
     elevation: 6,
   },
-  cta: { height: 56, borderRadius: 28, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
-  ctaText: { fontSize: 18, fontWeight: "800", color: VD.ctaText },
+  cta: { minHeight: 56, paddingVertical: 14, paddingHorizontal: 20, borderRadius: 28, flexDirection: "row", gap: 8, alignItems: "center", justifyContent: "center" },
+  ctaText: { flexShrink: 1, fontSize: 18, lineHeight: 24, fontWeight: "800", color: VD.ctaText, textAlign: "center" },
   ctaTextDim: { color: VD.whiteLow },
 
   // Success
   doneCard: {
     flexDirection: "row", alignItems: "center", gap: 10,
-    marginTop: 12,
-    padding: 12,
+    marginTop: 14,
+    padding: 14,
     borderRadius: 20,
     backgroundColor: VD.doneBg,
     borderWidth: 1, borderColor: VD.doneBorder,
@@ -982,25 +978,26 @@ const createStyles = (VD: Palette) => StyleSheet.create({
     backgroundColor: VD.done,
     alignItems: "center", justifyContent: "center",
   },
-  doneTitle: { fontSize: 14, fontWeight: "800", color: VD.white },
-  doneSub: { fontSize: 12, color: VD.whiteMid, marginTop: 1 },
+  doneTitle: { fontSize: 14, lineHeight: 20, fontWeight: "800", color: VD.white, paddingVertical: 2 },
+  doneSub: { fontSize: 12, lineHeight: 17, color: VD.whiteMid, marginTop: 1 },
   trackBtn: {
     flexDirection: "row", alignItems: "center", gap: 4,
-    paddingHorizontal: 14, height: 40, borderRadius: 20,
+    paddingHorizontal: 14, minHeight: 40, paddingVertical: 8, borderRadius: 20,
   },
-  trackText: { fontSize: 13, fontWeight: "800", color: "#FFFFFF" },
+  trackText: { fontSize: 13, lineHeight: 18, fontWeight: "800", color: "#FFFFFF" },
 
   // Edit measurements / change goal
-  actionRow: { flexDirection: "row", gap: 10, marginTop: 14 },
+  actionRow: { flexDirection: "row", alignItems: "stretch", gap: 10, marginTop: 16 },
   actionBtn: {
     flex: 1,
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-    paddingVertical: 12, paddingHorizontal: 8,
+    minHeight: 48,
+    paddingVertical: 10, paddingHorizontal: 10,
     borderRadius: BORDER_RADIUS.large,
     borderWidth: 1, borderColor: VD.cardBorder,
     backgroundColor: VD.glassFaint,
   },
-  actionText: { flexShrink: 1, fontSize: 13, fontWeight: "700", color: VD.accentDark },
+  actionText: { flexShrink: 1, fontSize: 13, lineHeight: 18, fontWeight: "700", color: VD.accentDark, textAlign: "center" },
 
   // States
   stateBox: {

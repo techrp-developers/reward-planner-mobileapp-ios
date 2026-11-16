@@ -153,7 +153,14 @@
     "finalCheck": "अंतिम तपासणी",
     "almostThere": "आता थोडेच बाकी",
     "addYourBodyMetricsTo": "तुमचा प्लॅन तयार करण्यासाठी शरीराची मोजमापे जोडा.",
-    "submit": "सबमिट करा"
+    "submit": "सबमिट करा",
+    "tellUsAboutYourself": "तुमच्याबद्दल सांगा!",
+    "selectGenderSub": "तुमचा फिटनेस अनुभव तुमच्यानुसार बनवण्यासाठी तुमचे लिंग निवडा.",
+    "male": "पुरुष",
+    "female": "स्त्री",
+    "others": "इतर",
+    "age": "वय",
+    "stepOf": "पायरी {{step}} / {{total}}"
   },
   "stepGoal": {
     "selectGoal": "लक्ष्य निवडा",

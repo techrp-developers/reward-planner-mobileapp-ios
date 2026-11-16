@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Image, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Animated, Image, View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useIsFocused } from "@react-navigation/native";
 import { useTranslation } from "react-i18next";
@@ -23,10 +23,14 @@ const FLOATING_BOTTOM_GAP = 4;
 const FLOATING_BAR_HEIGHT = 64;
 const CENTER_BUTTON_SIZE = 58;
 export const TAB_BAR_HEIGHT = FLOATING_BAR_HEIGHT + FLOATING_BOTTOM_GAP;
+export const fitnessTabBarHeight = (fontScale: number) =>
+  Math.max(76, 40 + Math.ceil(28 * Math.min(fontScale, 1.2))) + FLOATING_BOTTOM_GAP;
 
-type AppMode = "Product" | "Services" | "Payments" | "DineOut";
+type AppMode = "Product" | "Services" | "Payments" | "DineOut" | "Fitness";
 
-export type TabKey = "Home" | "Notes" | "Cart" | "History" | "Profile" | "Search" | "Chat";
+export type TabKey = "Home" | "Notes" | "Cart" | "History" | "Profile" | "Search" | "Chat"
+  // RP Move (step counter)
+  | "RPMove" | "Achievements" | "CoinHistory" | "MyPlan";
 
 type Props = {
   activeMode?: AppMode;
@@ -50,6 +54,7 @@ type TabConfig = {
 };
 
 type TabItemProps = {
+  multiline?: boolean;
   label: string;
   tabKey: TabKey;
   active: boolean;
@@ -87,6 +92,18 @@ const ChatIcon = ({ width, color }: { width: number; height: number; color?: str
   <MaterialCommunityIcons name="chat-outline" size={width} color={color} />
 );
 
+const iconTab = (name: string) => ({ width, color }: { width: number; height: number; color?: string }) => (
+  <MaterialCommunityIcons name={name} size={width} color={color} />
+);
+
+// RP Move uses the same bar; its parent (RewardHomeStack) maps these keys to routes.
+const FITNESS_TABS: TabConfig[] = [
+  { key: "RPMove", label: "stepCounter:tabs.rpMove", Icon: iconTab("shoe-print") },
+  { key: "Achievements", label: "stepCounter:tabs.achievements", Icon: iconTab("trophy-outline") },
+  { key: "CoinHistory", label: "stepCounter:tabs.coinHistory", Icon: iconTab("database-outline") },
+  { key: "MyPlan", label: "stepCounter:tabs.myPlan", Icon: iconTab("account-outline") },
+];
+
 const DASHBOARD_TABS: TabConfig[] = [
   { key: "Notes", label: "common:tabs.todoList", Icon: ExploreIcon },
   { key: "Chat", label: "common:tabs.chat", Icon: ChatIcon },
@@ -110,6 +127,10 @@ const TAB_ICON_THEME: Record<AppMode, { activeIcon: string; activeLabel: string 
     activeIcon: "#E91E63",
     activeLabel: "#1F0A13",
   },
+  Fitness: {
+    activeIcon: "#773CFF",
+    activeLabel: "#1A1035",
+  },
 };
 const CENTER_BUTTON_THEME: Record<AppMode, { background: string; border: string; shadow: string }> = {
   Product: {
@@ -132,6 +153,11 @@ const CENTER_BUTTON_THEME: Record<AppMode, { background: string; border: string;
     border: "#FFE4F0",
     shadow: "#E91E63",
   },
+  Fitness: {
+    background: "#773CFF",
+    border: "#EDE4FF",
+    shadow: "#773CFF",
+  },
 };
 
 // Icon "pop" when a tab becomes active — spring overshoots past ACTIVE_ICON_SCALE
@@ -141,6 +167,7 @@ const ICON_SPRING_CONFIG = { useNativeDriver: true, tension: 220, friction: 5 };
 
 const TabItem = React.memo(({
   label,
+  multiline = false,
   tabKey,
   active,
   onPress,
@@ -186,7 +213,13 @@ const TabItem = React.memo(({
           </View>
         )}
       </View>
-      <Text style={[styles.label, { color: inactiveColor }, active && styles.labelActive, active && { color: activeLabelColor }]}>
+      <Text
+        style={[styles.label, multiline && styles.fitnessLabel, { color: inactiveColor }, active && styles.labelActive, active && { color: activeLabelColor }]}
+        numberOfLines={multiline && tabKey !== "Achievements" ? 2 : 1}
+        adjustsFontSizeToFit={!multiline || tabKey === "Achievements"}
+        minimumFontScale={0.85}
+        maxFontSizeMultiplier={1.2}
+      >
         {label}
       </Text>
     </TouchableOpacity>
@@ -263,6 +296,8 @@ function BottomTabs({
   hasUnviewedStatus = false,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
+  const barHeight = activeMode === "Fitness" ? fitnessTabBarHeight(fontScale) : TAB_BAR_HEIGHT;
   const isFocused = useIsFocused();
   // Re-renders the bar when the app language changes.
   const { t } = useTranslation();
@@ -312,7 +347,9 @@ function BottomTabs({
     ? DASHBOARD_TABS
     : activeMode === "Payments"
       ? PAYMENT_TABS
-      : TABS;
+      : activeMode === "Fitness"
+        ? FITNESS_TABS
+        : TABS;
   const tabTheme = TAB_ICON_THEME[activeMode] ?? TAB_ICON_THEME.Product;
   const inactiveColor = isDark ? theme.secondaryText : INACTIVE_COLOR;
   const barBackgroundColor = isDark ? theme.card : "rgba(255,255,255,0.78)";
@@ -330,6 +367,10 @@ function BottomTabs({
       Cart: () => handlePress("Cart"),
       History: () => handlePress("History"),
       Profile: () => handlePress("Profile"),
+      RPMove: () => handlePress("RPMove"),
+      Achievements: () => handlePress("Achievements"),
+      CoinHistory: () => handlePress("CoinHistory"),
+      MyPlan: () => handlePress("MyPlan"),
     }),
     [handleDashboardPress, handlePress, isDashboard],
   );
@@ -352,7 +393,7 @@ function BottomTabs({
       style={[
         layoutMode === "navigator" ? styles.navigatorWrap : styles.wrap,
         {
-          height: TAB_BAR_HEIGHT + bottomInset,
+          height: barHeight + bottomInset,
           backgroundColor: layoutMode === "navigator" ? theme.background : "transparent",
         },
       ]}
@@ -361,8 +402,9 @@ function BottomTabs({
         onLayout={isDashboard ? event => setDashboardWidth(event.nativeEvent.layout.width) : undefined}
         style={[
           styles.bar,
+          activeMode === "Fitness" && styles.barWide,
           {
-            height: FLOATING_BAR_HEIGHT,
+            height: barHeight - FLOATING_BOTTOM_GAP,
             bottom: bottomInset + FLOATING_BOTTOM_GAP,
             backgroundColor: barBackgroundColor,
             borderColor: barBorderColor,
@@ -392,6 +434,7 @@ function BottomTabs({
             key={tab.key}
             tabKey={tab.key}
             label={t(tab.label)}
+            multiline={activeMode === "Fitness"}
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
@@ -411,6 +454,7 @@ function BottomTabs({
             key={tab.key}
             tabKey={tab.key}
             label={t(tab.label)}
+            multiline={activeMode === "Fitness"}
             active={activeTab === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
@@ -467,18 +511,30 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 18,
   },
+  // RP Move labels ("Achievements", "Coin History") are longer than the
+  // other modules' — give the four slots the full width.
+  barWide: {
+    left: 12,
+    right: 12,
+    paddingHorizontal: 6,
+  },
   item: {
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
-    height: 56,
+    minWidth: 0,
+    minHeight: 56,
+    paddingHorizontal: 2,
   },
   label: {
     marginTop: 3,
+    lineHeight: 14,
+    textAlign: "center",
     fontSize: 10.5,
     color: INACTIVE_COLOR,
     fontWeight: "600",
   },
+  fitnessLabel: { minHeight: 28, alignSelf: "stretch", paddingHorizontal: 1 },
   labelActive: {
     fontWeight: "700",
   },

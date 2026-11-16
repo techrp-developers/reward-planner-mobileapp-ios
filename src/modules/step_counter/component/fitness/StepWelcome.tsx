@@ -10,7 +10,8 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import LinearGradient from "react-native-linear-gradient";
+import LinearGradient from "./FitnessGradient";
+import StatusBarShield from "./StatusBarShield";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useQuery } from "@tanstack/react-query";
@@ -21,6 +22,7 @@ import i18n from "../../../../i18n";
 import type { FitnessStackParamList } from "../../navigation/RewardHomeStack";
 import { useContinueSetup } from "../../utils/fitnessSetup";
 import { useStepStyles } from "../../utils/useStepTheme";
+import { RESPONSIVE } from "../../utils/theme";
 import { fetchUserInfo } from "../../../common/auth/api/AuthAPI";
 import MaleBanner from "../../assets/StepCount/step_counter_banner.svg";
 import FemaleBanner from "../../assets/StepCount/step_counter_banner_woman.svg";
@@ -179,7 +181,7 @@ const StepWelcome = () => {
         bounces={false}
       >
         {/* Hero — fixed size, so the banner never shifts the layout */}
-        <View style={[styles.hero, isDark && styles.heroDark, { height: heroTotalHeight }]}>
+        <View style={[styles.hero, isDark && styles.heroDark, { minHeight: heroTotalHeight }]}>
           {/* While user-info is still loading, keep the plain sky so the
               wrong gender is never shown. */}
           {!genderPending && (
@@ -270,6 +272,7 @@ const StepWelcome = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <StatusBarShield color={H.hero} />
     </SafeAreaView>
   );
 };
@@ -285,7 +288,7 @@ const createStyles = (C: Palette) => StyleSheet.create({
   hero: { width: "100%", overflow: "hidden", backgroundColor: H.hero },
   // Dark mode: the light banner reads as a rounded panel on the dark page.
   heroDark: { borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
-  heroContent: { flex: 1, paddingHorizontal: 20 },
+  heroContent: { paddingBottom: 48, paddingHorizontal: RESPONSIVE.horizontalPadding },
   backBtn: {
     width: 40,
     height: 40,
@@ -311,11 +314,11 @@ const createStyles = (C: Palette) => StyleSheet.create({
     lineHeight: 40,
     marginBottom: 10,
   },
-  titleCompact: { fontSize: 29, lineHeight: 34 },
+  titleCompact: { fontSize: 29, lineHeight: 35 },
   subtitle: { fontSize: 15, lineHeight: 21, color: H.body },
   subtitleCompact: { fontSize: 14, lineHeight: 19 },
 
-  body: { paddingHorizontal: 16, marginTop: -28 },
+  body: { paddingHorizontal: RESPONSIVE.horizontalPadding, marginTop: -28 },
 
   featureCard: {
     backgroundColor: C.card,
@@ -363,7 +366,9 @@ const createStyles = (C: Palette) => StyleSheet.create({
 
   ctaWrap: { width: "100%" },
   cta: {
-    height: 56,
+    minHeight: 56,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 28,
     flexDirection: "row",
     alignItems: "center",
@@ -371,5 +376,5 @@ const createStyles = (C: Palette) => StyleSheet.create({
     gap: 8,
   },
   ctaDisabled: { opacity: 0.6 },
-  ctaText: { fontSize: 17, fontWeight: "800", color: C.onAccent },
+  ctaText: { flexShrink: 1, textAlign: "center", lineHeight: 24, paddingVertical: 2, fontSize: 17, fontWeight: "800", color: C.onAccent },
 });
