@@ -69,6 +69,7 @@ function FitnessTabBar({ active, onTabPress, onCenterPress }: Props) {
   return (
     <BottomTabs
       activeMode="Fitness"
+      layoutMode="navigator"
       activeTabKey={KEY_OF_TAB[active]}
       onTabPress={handlePress}
       onCenterPress={onCenterPress}

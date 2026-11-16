@@ -21,6 +21,7 @@ import {
 } from '../utils/fitnessSetup';
 import { useStepPalette } from '../utils/useStepTheme';
 import { screenInsets } from '../utils/layout';
+import { fitnessTabAction } from '../utils/fitnessNavigation';
 import { fitnessTabBarHeight } from '../../../bottombar/BottomTabs';
 
 export type FitnessStackParamList = {
@@ -113,12 +114,22 @@ function FitnessLayout({
   const [hiders, setHiders] = useState<Set<object>>(() => new Set());
 
   const screenListeners = useCallback(
-    ({ navigation, route }: { navigation: any; route: { name: string } }) => ({
-      focus: () => {
-        stackNav.current = navigation;
-        setFocused(route.name);
-      },
-    }),
+    ({ navigation, route }: { navigation: any; route: { name: string } }) => {
+      // Initial focus can happen before the listener is attached. Every screen
+      // navigation object can dispatch to this stack, so capture it immediately.
+      stackNav.current = navigation;
+      return {
+        focus: () => {
+          stackNav.current = navigation;
+          setFocused(route.name);
+        },
+        state: () => {
+          const state = navigation.getState();
+          const current = state.routes[state.index];
+          if (current) setFocused(current.name);
+        },
+      };
+    },
     [],
   );
 
@@ -152,13 +163,10 @@ function FitnessLayout({
 
   const handleTabPress = useCallback((tab: FitnessTab) => {
     const nav = stackNav.current;
-    if (!nav || tab === activeTab) return;
-    // Dashboard stays the base of the stack and at most one other tab sits on
-    // top of it, so switching never piles up entries and Back returns to RP Move.
-    if (tab === 'Dashboard') nav.navigate('Dashboard');
-    else if (activeTab === 'Dashboard') nav.navigate(tab);
-    else nav.replace(tab);
-  }, [activeTab]);
+    if (!nav) return;
+    const action = fitnessTabAction(nav.getState(), tab);
+    if (action) nav.dispatch(action);
+  }, []);
 
   // Existing app-wide action of the center logo: the main app home.
   const handleCenterPress = useCallback(() => appNavigation.navigate('Dashboard'), [appNavigation]);
@@ -274,7 +282,7 @@ const layoutStyles = StyleSheet.create({
   root: { flex: 1 },
   content: { flex: 1 },
   // In-flow, so the screens above end where the bar starts.
-  tabRegion: { width: '100%' },
+  tabRegion: { width: '100%', zIndex: 1 },
 });
 
 const gateStyles = StyleSheet.create({

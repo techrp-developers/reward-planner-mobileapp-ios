@@ -125,14 +125,18 @@ export function useFitnessAccountScope() {
   const queryClient = useQueryClient();
   const userId = user?.userId ?? user?.user_id ?? null;
   // Runs during the first render, before any child query reads the cache.
-  useState(() => {
+  const lastAccount = useRef<number | null | undefined>(undefined);
+  if (lastAccount.current !== userId) {
     if (scopedUserId !== undefined && scopedUserId !== userId) {
+      void queryClient.cancelQueries({ queryKey: ["fitness"] });
+      void queryClient.cancelQueries({ queryKey: fitnessQueryKeys.all });
+      void queryClient.cancelQueries({ queryKey: ["user-info"] });
       queryClient.removeQueries({ queryKey: ["fitness"] });
       queryClient.removeQueries({ queryKey: fitnessQueryKeys.all });
       queryClient.removeQueries({ queryKey: ["user-info"] });
       clearSelectedGender();
     }
     scopedUserId = userId;
-    return null;
-  });
+    lastAccount.current = userId;
+  }
 }

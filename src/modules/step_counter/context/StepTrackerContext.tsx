@@ -25,6 +25,8 @@ import type { Permission } from 'react-native-health-connect';
 import { syncStepsToServer, type GoalSyncData } from '../api/Stepsapi';
 import { fetchProfileStepStatus } from '../api/ProfileAPI';
 import { fitnessQueryKeys } from '../api/fitnessQueryKeys';
+import { useAuth } from '../../common/auth/context/AuthContext';
+import { stepSyncStorageKey } from '../utils/stepData';
 import i18n from "../../../i18n";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -62,7 +64,6 @@ export type StepTrackerContextValue = {
 const MIN_STEP_DIFF   = 100;
 const COOLDOWN_MS     = 15 * 60 * 1000; // 15 minutes
 
-const STORAGE_LAST_SYNC = '@step_tracker/last_synced_steps';
 // Health permission is device- and platform-specific. Never let an Android
 // Health Connect completion (or backend account flag) bypass Apple Health
 // onboarding on a new iPhone.
@@ -138,6 +139,18 @@ const StepTrackerContext = createContext<StepTrackerContextValue | null>(null);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function StepTrackerProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const accountId = user?.userId ?? user?.user_id ?? null;
+  return <StepTrackerSession key={accountId ?? "pending"} accountId={accountId}>{children}</StepTrackerSession>;
+}
+
+function StepTrackerSession({ children, accountId }: { children: ReactNode; accountId: number | null }) {
+  const storageLastSync = stepSyncStorageKey(accountId ?? "pending");
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => { active.current = false; };
+  }, []);
   const queryClient = useQueryClient();
 
   // ── Refs: never cause re-renders, always current ──────────────────────────
@@ -164,7 +177,8 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
 
   // ── Restore persisted state on mount ─────────────────────────────────────
   useEffect(() => {
-    AsyncStorage.multiGet([STORAGE_LAST_SYNC, STORAGE_SETUP]).then(async pairs => {
+    AsyncStorage.multiGet([storageLastSync, STORAGE_SETUP]).then(async pairs => {
+      if (!active.current) return;
       const [lastSyncPair, setupPair] = pairs;
       const today = localDateString(new Date());
       const rawLastSync = lastSyncPair[1];
@@ -201,7 +215,7 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
         }
       }
     }).catch(() => {});
-  }, []);
+  }, [storageLastSync]);
 
   // ── Sync gate — only reads refs, safe to call anywhere ───────────────────
   const shouldSync = (count: number): boolean => {
@@ -234,18 +248,19 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
 
   // ── Internal sync (accepts explicit count to avoid stale closure issues) ──
   const doSync = useCallback(async (count: number): Promise<void> => {
-    if (!shouldSync(count)) return;
+    if (accountId == null || !active.current || !shouldSync(count)) return;
 
     isSyncing.current = true;
     try {
       const payload = buildPayload(count);
       const res = await syncStepsToServer(payload);
+      if (!active.current) return;
       if (!res.success) throw new Error(res.message || i18n.t("stepCounter:r2.syncFailed"));
 
       lastSyncedDate.current  = payload.date;
       lastSyncedSteps.current = count;
       lastSyncTime.current    = Date.now();
-      await AsyncStorage.setItem(STORAGE_LAST_SYNC, JSON.stringify({ date: payload.date, steps: count }));
+      await AsyncStorage.setItem(storageLastSync, JSON.stringify({ date: payload.date, steps: count }));
 
       // Show the celebration for either a completed daily goal OR a newly
       // unlocked lifetime achievement — these are now independent (the
@@ -263,10 +278,11 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
     } finally {
       isSyncing.current = false;
     }
-  }, [queryClient]); // queryClient is stable from useQueryClient()
+  }, [accountId, queryClient, storageLastSync]);
 
   // ── Read Health Connect + conditionally sync ──────────────────────────────
   const readAndSync = useCallback(async (): Promise<number> => {
+    if (!active.current) return 0;
     setLoading(true);
     setStepDataState('loading');
     try {
@@ -469,8 +485,9 @@ export function StepTrackerProvider({ children }: { children: ReactNode }) {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   const refreshSteps = useCallback(async () => {
+    if (!active.current) return;
     const granted = await initAndCheck();
-    if (hasStepsPerm(granted)) await readAndSync();
+    if (active.current && hasStepsPerm(granted)) await readAndSync();
   }, [initAndCheck, readAndSync]);
 
   // Public syncSteps() reads from stepsRef so it's never stale in callbacks

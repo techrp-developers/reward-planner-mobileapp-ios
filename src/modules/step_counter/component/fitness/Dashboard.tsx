@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   Image,
   ScrollView,
   StatusBar,
@@ -37,6 +38,7 @@ import { genderFromUserInfo, type UserGender } from "../../utils/userGender";
 import { useStepStyles } from "../../utils/useStepTheme";
 import { RESPONSIVE } from "../../utils/theme";
 import { useTranslation } from "react-i18next";
+import { dashboardStepCount } from "../../utils/stepData";
 import i18n from "../../../../i18n";
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
@@ -247,17 +249,17 @@ const StatCard = React.memo(
   }) => {
     const { styles } = useDashStyles();
     return (
-    <View style={styles.statCard} accessible accessibilityLabel={`${label}: ${value} ${unit}`}>
-      <View style={[styles.statIcon, { backgroundColor: bg }]}>
-        <MaterialCommunityIcons name={icon} size={22} color={color} />
+      <View style={styles.statCard} accessible accessibilityLabel={`${label}: ${value} ${unit}`}>
+        <View style={[styles.statIcon, { backgroundColor: bg }]}>
+          <MaterialCommunityIcons name={icon} size={22} color={color} />
+        </View>
+        <View style={styles.statText}>
+          <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
+            {value}
+          </Text>
+          <Text style={styles.statUnit} numberOfLines={1} maxFontSizeMultiplier={1.3}>{unit}</Text>
+        </View>
       </View>
-      <View style={styles.statText}>
-        <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.3}>
-          {value}
-        </Text>
-        <Text style={styles.statUnit} numberOfLines={1} maxFontSizeMultiplier={1.3}>{unit}</Text>
-      </View>
-    </View>
     );
   },
 );
@@ -355,12 +357,7 @@ const Dashboard: React.FC = () => {
     refreshSteps,
   } = useStepTracker();
 
-  useFocusEffect(useCallback(() => {
-    setToday(prev => (localDateKey(prev) === localDateKey(new Date()) ? prev : new Date()));
-    void refreshSteps();
-    const interval = setInterval(() => { void refreshSteps(); }, 60_000);
-    return () => clearInterval(interval);
-  }, [refreshSteps]));
+
 
 
   // Goal completion shows two overlays in sequence: GoalReachedScreen (quick
@@ -391,6 +388,30 @@ const Dashboard: React.FC = () => {
   const weeklyQuery = useWeeklyProgressQuery();
   const streakQuery = useFitnessStreakQuery();
 
+  const { refetch: refetchDashboard } = dashboardQuery;
+  const { refetch: refetchSummary } = summaryQuery;
+  const { refetch: refetchWeekly } = weeklyQuery;
+  const { refetch: refetchStreak } = streakQuery;
+  const [refreshing, setRefreshing] = useState(false);
+  const refreshDashboard = useCallback(async () => {
+    setToday(new Date());
+    await Promise.allSettled([
+      refreshSteps(), refetchDashboard(), refetchSummary(),
+      refetchWeekly(), refetchStreak(),
+    ]);
+  }, [refreshSteps, refetchDashboard, refetchSummary, refetchWeekly, refetchStreak]);
+
+  useFocusEffect(useCallback(() => {
+    void refreshDashboard();
+    const interval = setInterval(() => { void refreshDashboard(); }, 60_000);
+    return () => clearInterval(interval);
+  }, [refreshDashboard]));
+
+  const handlePullRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try { await refreshDashboard(); } finally { setRefreshing(false); }
+  }, [refreshDashboard]);
+
   // ── Derived data ──────────────────────────────────────────────────────────
   const numberFmt = useMemo(() => new Intl.NumberFormat(lang), [lang]);
   const decimalFmt = useMemo(
@@ -413,11 +434,10 @@ const Dashboard: React.FC = () => {
 
   const server = summaryQuery.data?.data ?? null;
   const dashboardData = dashboardQuery.data?.data ?? null;
-  // A successful health read is authoritative even at 0 steps — never let a
-  // valid 0 fall back to a stale server value.
+  // Preserve synced activity when HealthKit returns no data or read access is restricted.
   const liveReadOk = stepDataState === "ok" || stepDataState === "no_steps_today";
 
-  const currentSteps = liveReadOk ? liveSteps : (server?.steps ?? dashboardData?.today_steps ?? 0);
+  const currentSteps = dashboardStepCount(liveReadOk ? liveSteps : null, server?.steps, dashboardData?.today_steps);
   const goalSteps = server?.goal_steps || dashboardData?.goal_steps || 0;
 
   const metrics = useMemo(() => {
@@ -479,7 +499,7 @@ const Dashboard: React.FC = () => {
       {/* The hero is always a light sky panel, so status-bar icons stay dark over it. */}
       <StatusBar translucent backgroundColor="transparent" barStyle="dark-content" />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handlePullRefresh} tintColor={C.blue} />} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
         {/* ── Hero ── */}
         <View style={[styles.hero, isDark && styles.heroDark, { paddingTop: insets.top + 12, paddingHorizontal: pad, minHeight: insets.top + 12 + heroArtWidth / HERO_ART.male.aspect }]}>
           <LinearGradient colors={H.sky} style={StyleSheet.absoluteFill} />
@@ -492,7 +512,7 @@ const Dashboard: React.FC = () => {
               </Text>
               <Text style={styles.date} maxFontSizeMultiplier={1.3}>{dateLabel}</Text>
             </View>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.homeBtn}
               onPress={handleGoHome}
               activeOpacity={0.75}
@@ -500,7 +520,7 @@ const Dashboard: React.FC = () => {
               accessibilityLabel={tx("stepCounter:dashboard.home")}
             >
               <MaterialCommunityIcons name="home-variant-outline" size={22} color={H.ink} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {!isLoading && !(errorMsg && !hasAnyData) && (

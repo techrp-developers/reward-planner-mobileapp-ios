@@ -435,7 +435,7 @@ function BottomTabs({
             tabKey={tab.key}
             label={t(tab.label)}
             multiline={activeMode === "Fitness"}
-            active={activeTab === tab.key}
+            active={(activeMode === "Fitness" ? activeTabKey : activeTab) === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
             activeIconColor={tabTheme.activeIcon}
@@ -455,7 +455,7 @@ function BottomTabs({
             tabKey={tab.key}
             label={t(tab.label)}
             multiline={activeMode === "Fitness"}
-            active={activeTab === tab.key}
+            active={(activeMode === "Fitness" ? activeTabKey : activeTab) === tab.key}
             onPress={pressHandlers[tab.key]}
             Icon={tab.Icon}
             activeIconColor={tabTheme.activeIcon}
